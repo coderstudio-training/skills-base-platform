@@ -7,7 +7,7 @@ Skills Base is an enterprise-grade platform for managing skills, learning paths,
 ## Project Structure
 
 ```
-skills-base/
+skills-base-platform/
 ├── packages/
 │   ├── user-service/
 │   ├── skills-service/
@@ -41,7 +41,7 @@ skills-base/
 1. Clone the repository:
 
    ```bash
-   git clone https://gitlab.com/your-org/skills-base.git
+   git clone https://gitlab.com/your-org/skills-base-platform.git
    cd skills-base
    ```
 
