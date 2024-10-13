@@ -1,0 +1,20 @@
+services:
+  user-service:
+    build:
+      context: ./packages/user-service
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/user-service
+
+  skills-service:
+    build:
+      context: ./packages/skills-service
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/skills-service
+
+  # ... other services

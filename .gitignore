@@ -1,0 +1,21 @@
+# Environment variables
+.env
+
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+
+# Logs
+*.log
+
+# Docker volumes
+docker-volumes
+
+# IDE specific files
+.vscode
+.idea
+
+# n8n
+.n8n

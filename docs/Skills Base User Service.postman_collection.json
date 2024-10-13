@@ -1,0 +1,328 @@
+{
+  "info": {
+    "_postman_id": "4f29e685-b3da-4c62-8c53-f806cdc0acb7",
+    "name": "Skills Base User Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "1372516",
+    "_collection_link": "https://cloudy-meadow-3305.postman.co/workspace/Skills-Platform~13ccfc74-1fd2-4804-baa8-fac3462d8286/collection/1372516-4f29e685-b3da-4c62-8c53-f806cdc0acb7?action=share&source=collection_link&creator=1372516"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Response has user data\", function () {",
+                  "    pm.expect(jsonData.email).to.eql(pm.environment.get(\"adminEmail\"));",
+                  "    pm.expect(jsonData.firstName).to.be.a('string');",
+                  "    pm.expect(jsonData.lastName).to.be.a('string');",
+                  "    pm.expect(jsonData.roles).to.include(\"admin\");",
+                  "});",
+                  "",
+                  "console.log(\"Admin user created:\", jsonData);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\",\n    \"firstName\": \"Admin\",\n    \"lastName\": \"User\",\n    \"roles\": [\"admin\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Response has access_token\", function () {",
+                  "    pm.expect(jsonData.access_token).to.be.a('string');",
+                  "});",
+                  "",
+                  "if (jsonData.access_token) {",
+                  "    pm.environment.set(\"authToken\", jsonData.access_token);",
+                  "    console.log(\"Auth Token set:\", jsonData.access_token);",
+                  "} else {",
+                  "    console.error(\"No access_token in response\");",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "if (jsonData.length > 0) {",
+                  "    pm.test(\"User objects have correct properties\", function () {",
+                  "        pm.expect(jsonData[0]).to.have.property('email');",
+                  "        pm.expect(jsonData[0]).to.have.property('firstName');",
+                  "        pm.expect(jsonData[0]).to.have.property('lastName');",
+                  "        pm.expect(jsonData[0]).to.have.property('roles');",
+                  "    });",
+                  "}",
+                  "",
+                  "console.log(\"Users retrieved:\", jsonData.length);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Ensure we have a valid auth token",
+                  "if (!pm.environment.get(\"authToken\")) {",
+                  "    console.log(\"No auth token found. Attempting to login...\");",
+                  "    pm.sendRequest({",
+                  "        url: pm.environment.get(\"baseUrl\") + \"/auth/login\",",
+                  "        method: \"POST\",",
+                  "        header: {",
+                  "            \"Content-Type\": \"application/json\"",
+                  "        },",
+                  "        body: {",
+                  "            mode: \"raw\",",
+                  "            raw: JSON.stringify({",
+                  "                email: pm.environment.get(\"adminEmail\"),",
+                  "                password: pm.environment.get(\"adminPassword\")",
+                  "            })",
+                  "        }",
+                  "    }, function (err, res) {",
+                  "        if (err) {",
+                  "            console.error(err);",
+                  "        } else {",
+                  "            var jsonData = res.json();",
+                  "            if (jsonData.access_token) {",
+                  "                pm.environment.set(\"authToken\", jsonData.access_token);",
+                  "                console.log(\"New auth token set:\", jsonData.access_token);",
+                  "            } else {",
+                  "                console.error(\"Login failed: No access_token in response\");",
+                  "            }",
+                  "        }",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&limit=3",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "3"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Response has user data\", function () {",
+                  "    pm.expect(jsonData.email).to.be.a('string');",
+                  "    pm.expect(jsonData.firstName).to.be.a('string');",
+                  "    pm.expect(jsonData.lastName).to.be.a('string');",
+                  "    pm.expect(jsonData.roles).to.be.an('array');",
+                  "});",
+                  "",
+                  "console.log(\"User created:\", jsonData);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{$randomEmail}}\",\n    \"password\": \"{{$randomPassword}}\",\n    \"firstName\": \"{{$randomFirstName}}\",\n    \"lastName\": \"{{$randomLastName}}\",\n    \"roles\": [\"user\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "pm.test(\"Response has user data\", function () {",
+                  "    pm.expect(jsonData.email).to.be.a('string');",
+                  "    pm.expect(jsonData.firstName).to.be.a('string');",
+                  "    pm.expect(jsonData.lastName).to.be.a('string');",
+                  "    pm.expect(jsonData.roles).to.be.an('array');",
+                  "});",
+                  "",
+                  "console.log(\"User profile:\", jsonData);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "profile"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "authToken",
+      "value": ""
+    }
+  ]
+}
