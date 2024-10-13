@@ -2,7 +2,7 @@
 
 ## Overview
 
-Skills Base is an enterprise-grade platform for managing skills, learning paths, and user progress in organizations. It's built on a microservices architecture using NestJS for backend services and Next.js for the frontend, all managed within a Lerna monorepo using npm workspaces.
+Skills Base Platform is an enterprise-grade platform for managing skills, learning paths, and user progress in organizations. It's built on a microservices architecture using NestJS for backend services and Next.js for the frontend, all managed within a Lerna monorepo using npm workspaces.
 
 ## Project Structure
 
