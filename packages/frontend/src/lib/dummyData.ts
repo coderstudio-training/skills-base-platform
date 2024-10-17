@@ -1,0 +1,50 @@
+import { AdminData } from '@/types/admin'
+
+export const dummyAdminData: AdminData = {
+  totalEmployees: 500,
+  totalDepartments: 8,
+  averagePerformance: 82,
+  skillGrowth: 12,
+  performanceTrend: [
+    { month: 'Jan', performance: 75 },
+    { month: 'Feb', performance: 78 },
+    { month: 'Mar', performance: 80 },
+    { month: 'Apr', performance: 79 },
+    { month: 'May', performance: 82 },
+    { month: 'Jun', performance: 84 },
+  ],
+  departmentPerformance: [
+    { name: 'Engineering', performance: 88 },
+    { name: 'Marketing', performance: 76 },
+    { name: 'Sales', performance: 84 },
+    { name: 'HR', performance: 79 },
+    { name: 'Finance', performance: 81 },
+    { name: 'Product', performance: 85 },
+    { name: 'Customer Support', performance: 80 },
+    { name: 'Operations', performance: 78 },
+  ],
+  topSkills: [
+    { name: 'JavaScript', prevalence: 85 },
+    { name: 'Project Management', prevalence: 75 },
+    { name: 'Data Analysis', prevalence: 70 },
+    { name: 'Communication', prevalence: 90 },
+    { name: 'Python', prevalence: 65 },
+  ],
+  skillGaps: [
+    { name: 'Machine Learning', currentLevel: 40, gap: 30 },
+    { name: 'Cloud Architecture', currentLevel: 55, gap: 25 },
+    { name: 'Cybersecurity', currentLevel: 50, gap: 35 },
+    { name: 'UX Design', currentLevel: 60, gap: 20 },
+    { name: 'Blockchain', currentLevel: 30, gap: 40 },
+  ],
+  topPerformers: [
+    { name: 'John Doe', department: 'Engineering', performanceScore: 95 },
+    { name: 'Jane Smith', department: 'Sales', performanceScore: 93 },
+    { name: 'Mike Johnson', department: 'Marketing', performanceScore: 91 },
+    { name: 'Emily Brown', department: 'Product', performanceScore: 90 },
+    { name: 'Chris Lee', department: 'Finance', performanceScore: 89 },
+  ],
+  totalTrainingHours: 2500,
+  employeesInTraining: 350,
+  averageTrainingSatisfaction: 4.5,
+}

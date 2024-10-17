@@ -28,6 +28,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@skills-base/shared": "^1.0.0",
     "bcrypt": "^5.1.1",
+    "helmet": "^8.0.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",
