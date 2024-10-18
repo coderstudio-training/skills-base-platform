@@ -3,21 +3,22 @@ import { getServerSession } from 'next-auth/next'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import AdminDashboard from '@/components/dashboard/AdminDashboard'
+import { logger } from "@/lib/utils"
 
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions)
-  console.log("Server-side session:", session)
+  logger.log("Server-side session:", session)
 
   if (!session) {
-    console.log("No session, redirecting to login")
+    logger.log("No session, redirecting to login")
     redirect('/admin-login?error=Unauthenticated')
   }
 
   if (session.user.role !== 'admin') {
-    console.log("User is not admin, redirecting to unauthorized")
+    logger.log("User is not admin, redirecting to unauthorized")
     redirect('/unauthorized')
   }
 
-  console.log("Rendering AdminDashboard")
+  logger.log("Rendering AdminDashboard")
   return <AdminDashboard />
 }

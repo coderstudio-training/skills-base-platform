@@ -13,7 +13,7 @@ interface DecodedToken {
   exp: number
 }
 
-console.log("Starting to load auth options in lib/auth.ts...")
+logger.log("Starting to load auth options in lib/auth.ts...")
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
         access_token: { label: "Access Token", type: "text" }
       },
       async authorize(credentials): Promise<any> {
-        console.log('Authorize function called with credentials: ' + JSON.stringify(credentials, null, 2))
+        logger.log('Authorize function called with credentials: ' + JSON.stringify(credentials, null, 2))
 
         logger.log('Starting authorize function')
         if (!credentials?.access_token) {
@@ -102,96 +102,3 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   debug: true,
 }
-
-
-// // lib/auth.ts
-// import { NextAuthOptions } from "next-auth"
-// import CredentialsProvider from "next-auth/providers/credentials"
-
-// export const authOptions: NextAuthOptions = {
-//   providers: [
-//     CredentialsProvider({
-//       name: "Credentials",
-//       credentials: {
-//         email: { label: "Email", type: "email" },
-//         password: { label: "Password", type: "password" }
-//       },
-//       async authorize(credentials) {
-//         console.log("Authorize function called with credentials:", credentials)
-
-//         if (!credentials?.email || !credentials?.password) {
-//           console.log("Missing email or password")
-//           return null
-//         }
-
-//         try {
-//           console.log("Attempting to authenticate with User Service")
-//           const res = await fetch("http://localhost:3001/auth/login", {
-//             method: "POST",
-//             body: JSON.stringify(credentials),
-//             headers: { "Content-Type": "application/json" }
-//           })
-
-//           console.log("User Service response status:", res.status)
-
-//           const userData = await res.json()
-//           console.log("User Service response body:", userData)
-
-//           if (res.ok && userData) {
-//             console.log("Authentication successful")
-//             return {
-//               id: userData.id,
-//               name: userData.name,
-//               email: userData.email,
-//               accessToken: userData.accessToken,
-//               role: userData.role as 'employee' | 'manager' | 'admin'
-//             }
-//           }
-
-//           console.log("Authentication failed")
-//           return null
-//         } catch (error) {
-//           console.error("Authentication error:", error)
-//           return null
-//         }
-//       }
-//     })
-//   ],
-//   callbacks: {
-//     async signIn({ user, account, profile, email, credentials }) {
-//       console.log("SignIn callback:", { user, account, profile, email, credentials });
-//       return true;
-//     },
-//     async jwt({ token, user }) {
-//       console.log("JWT Callback - Token:", token, "User:", user)
-//       if (user) {
-//         token.id = user.id
-//         token.name = user.name
-//         token.email = user.email
-//         token.accessToken = user.accessToken
-//         token.role = user.role
-//       }
-//       return token
-//     },
-//     async session({ session, token }) {
-//       console.log("Session Callback - Session:", session, "Token:", token)
-//       session.user = {
-//         id: token.id,
-//         name: token.name,
-//         email: token.email,
-//         accessToken: token.accessToken,
-//         role: token.role
-//       }
-//       return session
-//     }
-//   },
-//   events: {
-//     async signIn(message) { console.log("Signed in", message) },
-//     async signOut(message) { console.log("Signed out", message) },
-//     //async error(message) { console.log("Error", message) },
-//   },
-//   pages: {
-//     signIn: '/admin-login',
-//   },
-//   debug: true,
-// }

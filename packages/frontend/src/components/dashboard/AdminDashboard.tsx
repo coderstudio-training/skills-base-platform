@@ -1,19 +1,21 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession, signOut } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
-import { Upload, Download, Loader2, Check, X, Award, BookOpen, Users, TrendingUp } from 'lucide-react'
+import { Upload, Download, Loader2, Check, X, Award, BookOpen, Users, TrendingUp, LogOut } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { dummyAdminData } from '@/lib/dummyData'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
 export default function AdminDashboard() {
+  const { data: session } = useSession()
   const [adminData, setAdminData] = useState(dummyAdminData)
   const [syncStatus, setSyncStatus] = useState<Record<string, 'idle' | 'syncing' | 'success' | 'error'>>({
     'Self-Assessment': 'idle',
@@ -38,6 +40,10 @@ export default function AdminDashboard() {
     alert('Report exported successfully!')
   }
 
+  const handleLogout = () => {
+    signOut({ callbackUrl: '/' })
+  }
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -45,6 +51,16 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
           <p className="text-muted-foreground">Skills Base Platform Overview</p>
         </div>
+        <div className="flex items-center space-x-4">
+          <span className="text-sm font-medium">{session?.user?.name || 'Admin'}</span>
+          <Button variant="outline" size="sm" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center mb-6">
         <div className="flex space-x-2">
           <Button>
             <Upload className="mr-2 h-4 w-4" />

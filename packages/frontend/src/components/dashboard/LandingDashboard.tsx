@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession } from "next-auth/react"
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -44,6 +45,7 @@ const isAllowedDomain = (email: string): boolean => {
 }
 
 export default function LandingDashboard() {
+	const { data: session, status } = useSession()
   const [activeTab, setActiveTab] = useState('overview')
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -73,6 +75,24 @@ export default function LandingDashboard() {
     } else {
       setError('Your email domain is not authorized to access this application.')
     }
+
+    useEffect(() => {
+			if (status === "authenticated" && session?.user?.role) {
+					const baseRoute = "/dashboard";
+					const role = session.user.role.toLowerCase();
+
+					switch (role) {
+					case "admin":
+					case "manager":
+					case "employee":
+							router.push(`${baseRoute}/${role}`);
+							break;
+					default:
+							// Use the current user's role as the default route
+							router.push(`${baseRoute}/${role}`);
+					}
+			}
+		}, [session, status, router]);
 
     setIsLoading(false)
   }
