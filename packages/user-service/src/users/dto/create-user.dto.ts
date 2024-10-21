@@ -7,6 +7,7 @@ import {
   MinLength,
   IsEnum,
   IsArray,
+  IsOptional,
 } from 'class-validator';
 import { UserRole } from '@skills-base/shared';
 
@@ -16,9 +17,9 @@ export class CreateUserDto {
   email!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MinLength(8)
-  password!: string;
+  password?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -31,4 +32,8 @@ export class CreateUserDto {
   @IsArray()
   @IsEnum(UserRole, { each: true })
   roles!: UserRole[];
+
+  @IsString()
+  @IsOptional()
+  googleId?: string;
 }

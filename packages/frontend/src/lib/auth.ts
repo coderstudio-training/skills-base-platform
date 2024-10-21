@@ -4,6 +4,8 @@ import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { jwtDecode } from "jwt-decode"
 import { logger } from '@/lib/utils'
+import GoogleProvider from "next-auth/providers/google"
+import { getSession } from "next-auth/react"
 
 interface DecodedToken {
   email: string
@@ -53,7 +55,7 @@ export const authOptions: NextAuthOptions = {
 
           const role = decodedToken.roles.includes('admin')
             ? 'admin'
-            : (decodedToken.roles.includes('manager') ? 'manager' : 'employee')
+            : (decodedToken.roles.includes('manager') ? 'manager' : 'staff')
 
           return {
             id: decodedToken.sub,
@@ -67,9 +69,39 @@ export const authOptions: NextAuthOptions = {
           return null
         }
       }
-    })
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      logger.log("Starting Google login...")
+      if (account?.provider === "google") {
+        // Call your user service to check/create user and get role
+        const response = await fetch(`${process.env.NEXT_PUBLIC_USER_SERVICE_URL}/auth/google`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: account.id_token
+          }),
+        })
+        const data = await response.json()
+        logger.log("Google Auth: ", JSON.stringify(data))
+
+        if (response.ok) {
+          user.role = data.roles[0]
+          user.accessToken = data.access_token
+          user.image = profile?.image
+          logger.log("Google Auth USER: ", JSON.stringify(user))
+          return true
+        } else {
+          return '/auth/error'
+        }
+      }
+      return true
+    },
     async jwt({ token, user }) {
       logger.log('JWT Callback - Token:', JSON.stringify(token))
       logger.log('JWT Callback - User:', user ? JSON.stringify(user) : 'No user')
@@ -89,10 +121,21 @@ export const authOptions: NextAuthOptions = {
         name: token.name as string,
         email: token.email as string,
         accessToken: token.accessToken as string,
-        role: token.role as 'employee' | 'manager' | 'admin'
+        image: token.picture as string,
+        role: token.role as 'staff' | 'manager' | 'admin'
       }
       logger.log('Session Callback - Session:', JSON.stringify(session))
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // Customize the redirect based on the user's role
+      if (url.startsWith(baseUrl)) {
+        const session = await getSession()
+        if (session?.user?.role) {
+          return `${baseUrl}/dashboard/${session.user.role.toLowerCase()}`
+        }
+      }
+      return url
     }
   },
   pages: {

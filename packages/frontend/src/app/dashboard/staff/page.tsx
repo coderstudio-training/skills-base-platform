@@ -1,10 +1,10 @@
 import { getServerSession } from 'next-auth/next'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
-import ManagerDashboard from '@/components/dashboard/ManagerDashboard'
+import StaffDashboard from '@/components/dashboard/StaffDashboard'
 import { logger } from "@/lib/utils"
 
-export default async function ManagerDashboardPage() {
+export default async function StaffDashboardPage() {
     const session = await getServerSession(authOptions)
     logger.log("Server-side session:", session)
 
@@ -13,11 +13,11 @@ export default async function ManagerDashboardPage() {
         redirect('/')
     }
 
-    if (session.user.role !== 'manager') {
-        logger.log("User is not manager, redirecting to unauthorized")
+    if (session.user.role !== 'staff') {
+        logger.log("User is not staff, redirecting to unauthorized")
         redirect('/unauthorized')
     }
 
-    logger.log("Rendering ManagerDashboard")
-    return <ManagerDashboard />
+    logger.log("Rendering StaffDashboard")
+    return <StaffDashboard />
 }
