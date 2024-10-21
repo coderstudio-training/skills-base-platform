@@ -117,7 +117,7 @@ async function authenticateUser(email: string, password: string): Promise<{ succ
             email,
             password,
             access_token: data.access_token,
-            callbackUrl: '/dashboard/admin'
+            callbackUrl: `${window.location.origin}/dashboard/admin`
         })
 
         logger.log('NextAuth signIn result:', result)
