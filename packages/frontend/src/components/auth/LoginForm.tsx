@@ -16,33 +16,50 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { logger } from '@/lib/utils';
 
-export default function AdminLoginPage() {
+interface AuthResponse {
+  access_token?: string;
+  message?: string;
+  status?: number;
+}
+
+export default function LoginForm() {  // Changed from AdminLoginPage to LoginForm
   const router = useRouter();
   const searchParams = useSearchParams();
-  //const { data: session, status } = useSession()
-  const [email, setEmail] = useState(searchParams.get('email') || '');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [formState, setFormState] = useState({
+    email: searchParams.get('email') || '',
+    password: '',
+    error: '',
+    isLoading: false
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
+    setFormState(prev => ({ ...prev, isLoading: true, error: '' }));
 
     try {
-      const result = await authenticateUser(email, password);
+      const result = await authenticateUser(formState.email, formState.password);
       if (result.success) {
         router.push('/dashboard/admin');
       } else {
-        setError('Invalid email or password');
+        setFormState(prev => ({
+          ...prev,
+          error: result.error || 'Invalid email or password'
+        }));
       }
     } catch (err) {
-      console.error('Login Error:', err);
-      setError('An unexpected error occurred. Please try again.');
+      logger.error('Login Error:', err);
+      setFormState(prev => ({
+        ...prev,
+        error: 'An unexpected error occurred. Please try again.'
+      }));
     } finally {
-      setIsLoading(false);
+      setFormState(prev => ({ ...prev, isLoading: false }));
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormState(prev => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -60,10 +77,11 @@ export default function AdminLoginPage() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="admin@example.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                value={formState.email}
+                onChange={handleInputChange}
                 required
               />
             </div>
@@ -71,19 +89,24 @@ export default function AdminLoginPage() {
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
+                value={formState.password}
+                onChange={handleInputChange}
                 required
               />
             </div>
-            {error && (
+            {formState.error && (
               <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>{formState.error}</AlertDescription>
               </Alert>
             )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Logging in...' : 'Log in'}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={formState.isLoading}
+            >
+              {formState.isLoading ? 'Logging in...' : 'Log in'}
             </Button>
           </form>
         </CardContent>
@@ -96,40 +119,39 @@ async function authenticateUser(
   email: string,
   password: string
 ): Promise<{ success: boolean; error?: string }> {
-  logger.log('Starting signIn process');
+  logger.log('Starting authentication process');
+
+  const userServiceUrl = process.env.NEXT_PUBLIC_USER_SERVICE_URL;
+  if (!userServiceUrl) {
+    logger.error('User service URL not configured');
+    return {
+      success: false,
+      error: 'Authentication service not properly configured'
+    };
+  }
+
   try {
-    const userServiceUrl = process.env.NEXT_PUBLIC_USER_SERVICE_URL;
-    logger.log(
-      `Authenticating with User Service: ${userServiceUrl}/auth/login`
-    );
+    // First step: Get token from user service
     const apiResponse = await fetch(`${userServiceUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await apiResponse.json();
-    logger.log('User Service Response:', {
-      status: apiResponse.status,
-      data: JSON.stringify(data),
-    });
+    const data: AuthResponse = await apiResponse.json();
 
-    if (!apiResponse.ok) {
-      logger.error('User Service authentication failed');
-      return { success: false, error: data.message || 'Authentication failed' };
-    }
-
-    if (!data.access_token) {
-      logger.error('No access token in response');
+    if (!apiResponse.ok || !data.access_token) {
+      logger.error('Authentication failed:', {
+        status: apiResponse.status,
+        message: data.message
+      });
       return {
         success: false,
-        error: 'Invalid response from authentication service',
+        error: data.message || 'Authentication failed'
       };
     }
 
-    logger.log(
-      'User Service authentication successful, calling NextAuth signIn'
-    );
+    // Second step: Sign in with NextAuth
     const result = await signIn('credentials', {
       redirect: false,
       email,
@@ -138,25 +160,22 @@ async function authenticateUser(
       callbackUrl: `${window.location.origin}/dashboard/admin`,
     });
 
-    logger.log('NextAuth signIn result:', result);
-
-    if (result?.error) {
-      logger.error('NextAuth signIn failed:', result.error);
-      return { success: false, error: result.error };
+    if (!result?.ok) {
+      logger.error('NextAuth signin failed:', result?.error);
+      return {
+        success: false,
+        error: 'Failed to establish session'
+      };
     }
 
-    if (result?.ok) {
-      logger.log('NextAuth signIn successful');
-      return { success: true };
-    }
+    logger.log('Authentication successful');
+    return { success: true };
 
-    logger.error('Unexpected result from NextAuth signIn');
-    return { success: false, error: 'An unexpected error occurred' };
   } catch (error) {
-    logger.error('SignIn Error:', error);
+    logger.error('Authentication error:', error);
     return {
       success: false,
-      error: 'An unexpected error occurred. Please try again.',
+      error: 'Network error occurred. Please try again.'
     };
   }
 }
