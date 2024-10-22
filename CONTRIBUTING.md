@@ -39,6 +39,7 @@ We welcome suggestions for enhancements. Please create an issue in our project m
 ## Git Workflow and Standards
 
 ### Branch Structure
+
 - Main branch: `main` (protected)
 - Development branch: `develop`
 - Feature branches: `feature/JIRA-123-short-description`
@@ -46,6 +47,7 @@ We welcome suggestions for enhancements. Please create an issue in our project m
 - Hotfix branches: `hotfix/JIRA-789-short-description`
 
 ### Workflow
+
 1. Create feature branch from `develop`
 2. Work on feature and commit changes
 3. Push feature branch to remote
@@ -55,6 +57,7 @@ We welcome suggestions for enhancements. Please create an issue in our project m
 7. After testing, merge release branch into `main` and `develop`
 
 ### Commit Message Format
+
 ```
 <type>(<scope>): <subject>
 
@@ -82,6 +85,7 @@ Closes JIRA-789
 ```
 
 #### Types
+
 - feat: A new feature
 - fix: A bug fix
 - docs: Documentation only changes
@@ -92,22 +96,27 @@ Closes JIRA-789
 - chore: Changes to the build process or auxiliary tools and libraries
 
 #### Scope
+
 Optional, can be anything specifying the place of the commit change
 
 #### Subject
+
 - Use the imperative, present tense: "change" not "changed" nor "changes"
 - Don't capitalize the first letter
 - No dot (.) at the end
 
 #### Body
+
 - Just as in the subject, use the imperative, present tense
 - Include motivation for the change and contrasts with previous behavior
 
 #### Footer
+
 - Mention BREAKING CHANGES if any
 - Reference JIRA issues that this commit addresses
 
 ### Git Commands Cheat Sheet
+
 - Create a new branch: `git checkout -b branch-name`
 - Switch to a branch: `git checkout branch-name`
 - Stage changes: `git add .`

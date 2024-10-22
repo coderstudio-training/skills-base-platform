@@ -1,34 +1,40 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
-import { Upload, Download, Users, TrendingUp, Award, LogOut } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ManagerData } from '@/types/manager'
-import { dummyManagerData } from '@/lib/dummyData'
+import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// import { Progress } from "@/components/ui/progress"
+// import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
+import { Upload, Download, LogOut } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+// import { ManagerData } from '@/types/manager'
+// import { dummyManagerData } from '@/lib/dummyData'
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+// const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
 export default function ManagerDashboard() {
-  const { data: session } = useSession()
-  const [timeRange, setTimeRange] = useState<string>('6m')
-  const [managerData, setManagerData] = useState<ManagerData>(dummyManagerData)
+  const { data: session } = useSession();
+  const [timeRange, setTimeRange] = useState<string>('6m');
+  //   const [managerData, setManagerData] = useState<ManagerData>(dummyManagerData)
 
   const handleLogout = () => {
-    signOut({ callbackUrl: '/' })
-  }
+    signOut({ callbackUrl: '/' });
+  };
 
   const handleExportReport = async () => {
     // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    alert('Report exported successfully!')
-  }
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    alert('Report exported successfully!');
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -39,7 +45,10 @@ export default function ManagerDashboard() {
         </div>
         <div className="flex items-center space-x-4">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
+            <AvatarImage
+              src={session?.user?.image || ''}
+              alt={session?.user?.name || ''}
+            />
             <AvatarFallback>{session?.user?.name?.[0] || 'M'}</AvatarFallback>
           </Avatar>
           <span className="text-sm font-medium">{session?.user?.name}</span>
@@ -61,7 +70,10 @@ export default function ManagerDashboard() {
             Export Report
           </Button>
         </div>
-        <Select value={timeRange} onValueChange={(value: string) => setTimeRange(value)}>
+        <Select
+          value={timeRange}
+          onValueChange={(value: string) => setTimeRange(value)}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select time range" />
           </SelectTrigger>
@@ -82,9 +94,7 @@ export default function ManagerDashboard() {
           <TabsTrigger value="development">Development</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
-          {/* Overview content */}
-        </TabsContent>
+        <TabsContent value="overview">{/* Overview content */}</TabsContent>
 
         <TabsContent value="team-skills">
           {/* Team Skills content */}
@@ -99,5 +109,5 @@ export default function ManagerDashboard() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

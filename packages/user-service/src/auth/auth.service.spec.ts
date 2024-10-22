@@ -14,19 +14,20 @@ describe('AuthService', () => {
   let jwtService: jest.Mocked<JwtService>;
   let configService: jest.Mocked<ConfigService>;
 
-  const mockUser = (overrides: Partial<User> = {}): User => ({
-    _id: new Types.ObjectId(),
-    id: 'user-id',
-    email: 'test@example.com',
-    password: 'hashed-password',
-    firstName: 'John',
-    lastName: 'Doe',
-    roles: [UserRole.USER],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    googleId: undefined,
-    ...overrides,
-  } as User);
+  const mockUser = (overrides: Partial<User> = {}): User =>
+    ({
+      _id: new Types.ObjectId(),
+      id: 'user-id',
+      email: 'test@example.com',
+      password: 'hashed-password',
+      firstName: 'John',
+      lastName: 'Doe',
+      roles: [UserRole.USER],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      googleId: undefined,
+      ...overrides,
+    }) as User;
 
   beforeEach(async () => {
     const mockUsersService = {
@@ -81,12 +82,14 @@ describe('AuthService', () => {
         getPayload: () => mockPayload,
       });
       usersService.findByEmail.mockResolvedValue(null);
-      usersService.create.mockResolvedValue(mockUser({
-        email: mockPayload.email,
-        googleId: mockPayload.sub,
-        firstName: mockPayload.given_name,
-        lastName: mockPayload.family_name,
-      }));
+      usersService.create.mockResolvedValue(
+        mockUser({
+          email: mockPayload.email,
+          googleId: mockPayload.sub,
+          firstName: mockPayload.given_name,
+          lastName: mockPayload.family_name,
+        }),
+      );
       jwtService.sign.mockReturnValue('mock-jwt-token');
 
       const result = await service.verifyGoogleToken('mock-token');
@@ -113,24 +116,34 @@ describe('AuthService', () => {
       (service as any).googleClient.verifyIdToken.mockResolvedValue({
         getPayload: () => mockPayload,
       });
-      usersService.findByEmail.mockResolvedValue(mockUser({ email: mockPayload.email }));
-      usersService.update.mockResolvedValue(mockUser({
-        email: mockPayload.email,
-        googleId: mockPayload.sub,
-      }));
+      usersService.findByEmail.mockResolvedValue(
+        mockUser({ email: mockPayload.email }),
+      );
+      usersService.update.mockResolvedValue(
+        mockUser({
+          email: mockPayload.email,
+          googleId: mockPayload.sub,
+        }),
+      );
       jwtService.sign.mockReturnValue('mock-jwt-token');
 
       const result = await service.verifyGoogleToken('mock-token');
 
-      expect(usersService.update).toHaveBeenCalledWith('user-id', { googleId: mockPayload.sub });
+      expect(usersService.update).toHaveBeenCalledWith('user-id', {
+        googleId: mockPayload.sub,
+      });
       expect(result).toEqual({ access_token: 'mock-jwt-token' });
     });
 
     it('should throw UnauthorizedException for invalid token', async () => {
       configService.get.mockReturnValue('mock-client-id');
-      (service as any).googleClient.verifyIdToken.mockRejectedValue(new Error('Invalid token'));
+      (service as any).googleClient.verifyIdToken.mockRejectedValue(
+        new Error('Invalid token'),
+      );
 
-      await expect(service.verifyGoogleToken('invalid-token')).rejects.toThrow(UnauthorizedException);
+      await expect(service.verifyGoogleToken('invalid-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 });

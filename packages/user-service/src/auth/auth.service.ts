@@ -53,13 +53,18 @@ export class AuthService {
       });
 
       // Generate JWT token
-      const payload = { email: newUser.email, sub: newUser.id, roles: newUser.roles };
+      const payload = {
+        email: newUser.email,
+        sub: newUser.id,
+        roles: newUser.roles,
+      };
       return {
         access_token: this.jwtService.sign(payload),
         roles: newUser.roles,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
       const errorStack = error instanceof Error ? error.stack : undefined;
       this.logger.error(`Failed to register user: ${errorMessage}`, errorStack);
       throw error;
@@ -77,7 +82,9 @@ export class AuthService {
       }
 
       if (!user.password) {
-        throw new UnauthorizedException('This account uses Google OAuth. Please sign in with Google.');
+        throw new UnauthorizedException(
+          'This account uses Google OAuth. Please sign in with Google.',
+        );
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -92,7 +99,8 @@ export class AuthService {
         roles: user.roles,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
       const errorStack = error instanceof Error ? error.stack : undefined;
       this.logger.error(`Failed to login user: ${errorMessage}`, errorStack);
       throw error;
@@ -104,7 +112,9 @@ export class AuthService {
       const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
       if (!clientId) {
         this.logger.error('Google Client ID is not defined');
-        throw new InternalServerErrorException('Google Client ID is not defined');
+        throw new InternalServerErrorException(
+          'Google Client ID is not defined',
+        );
       }
 
       const ticket = await this.googleClient.verifyIdToken({
@@ -120,9 +130,13 @@ export class AuthService {
 
       return this.handleGoogleUser(payload);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
       const errorStack = error instanceof Error ? error.stack : undefined;
-      this.logger.error(`Failed to verify Google token: ${errorMessage}`, errorStack);
+      this.logger.error(
+        `Failed to verify Google token: ${errorMessage}`,
+        errorStack,
+      );
       throw new UnauthorizedException('Invalid Google token');
     }
   }
@@ -160,10 +174,16 @@ export class AuthService {
         roles: user.roles,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
       const errorStack = error instanceof Error ? error.stack : undefined;
-      this.logger.error(`Failed to handle Google user: ${errorMessage}`, errorStack);
-      throw new InternalServerErrorException('Failed to process Google authentication');
+      this.logger.error(
+        `Failed to handle Google user: ${errorMessage}`,
+        errorStack,
+      );
+      throw new InternalServerErrorException(
+        'Failed to process Google authentication',
+      );
     }
   }
 }

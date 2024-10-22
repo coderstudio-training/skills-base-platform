@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useState } from 'react';
 
-const DialogContext = createContext<{
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
-} | undefined>(undefined);
+const DialogContext = createContext<
+  | {
+      isOpen: boolean;
+      setIsOpen: (isOpen: boolean) => void;
+    }
+  | undefined
+>(undefined);
 
 export const Dialog = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +47,8 @@ export const DialogTitle = ({ children }: { children: React.ReactNode }) => (
   <h2 className="text-xl font-bold">{children}</h2>
 );
 
-export const DialogDescription = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-gray-600">{children}</p>
-);
+export const DialogDescription = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => <p className="text-gray-600">{children}</p>;

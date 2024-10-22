@@ -10,7 +10,7 @@
     "postinstall": "lerna run build",
     "build": "lerna run build",
     "test": "lerna run test",
-    "format": "lerna run format",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -27,6 +27,7 @@
     "@commitlint/config-conventional": "^19.5.0",
     "husky": "^8.0.0",
     "lerna": "^8.1.8",
-    "lint-staged": "^15.2.10"
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3"
   }
 }

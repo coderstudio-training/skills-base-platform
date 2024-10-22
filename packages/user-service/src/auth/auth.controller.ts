@@ -29,7 +29,10 @@ export class AuthController {
   @Post('google')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Authenticate with Google OAuth' })
-  @ApiResponse({ status: 200, description: 'User successfully authenticated with Google' })
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully authenticated with Google',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async googleAuth(@Body('token') token: string) {
     return this.authService.verifyGoogleToken(token);

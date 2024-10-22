@@ -67,12 +67,14 @@ This document provides an overview of the authentication API, including how to u
 To authenticate users with Google OAuth:
 
 1. Set up Google OAuth in your frontend application:
+
    - Configure the Google Sign-In button in your frontend.
    - When the user clicks the button, initiate the Google Sign-In flow.
 
 2. After successful Google Sign-In, you'll receive a Google ID token.
 
 3. Send this token to your backend:
+
    ```javascript
    const response = await fetch('/auth/google', {
      method: 'POST',
