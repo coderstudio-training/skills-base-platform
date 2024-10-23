@@ -16,5 +16,14 @@ services:
       - "3002:3000"
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/skills-service
+  
+  email-service:
+    build:
+      context: ./packages/email-service
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3005"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/email-service
 
   # ... other services
