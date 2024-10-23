@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { BulkWriteResult } from 'mongodb';
+import { Model } from 'mongoose';
 import { Employee } from './entities/employee.entity';
 
 @Injectable()
@@ -32,20 +32,63 @@ export class EmployeesService {
     }
   }
 
+  private validateEmployee(employee: Record<string, any>): string[] {
+    const errors: string[] = [];
+
+    if (!employee.employee_id) {
+      errors.push('Employee ID is required');
+    }
+
+    // if (!employee.role) {
+    //   errors.push('Role is required');
+    // }
+
+    return errors;
+  }
+
   async bulkUpsert(employeesData: Record<string, any>): Promise<{
+    employeeCount: number;
     updatedCount: number;
+    modifiedCount: number;
+    insertedCount: number;
     statusCode: number;
     errors: any[];
+    invalidRecords: { record: Record<string, any>; errors: string[] }[];
   }> {
     let totalUpdatedCount = 0;
+    let modifiedCount = 0;
+    let insertedCount = 0;
     const errors = [];
+    const invalidRecords: { record: Record<string, any>; errors: string[] }[] =
+      [];
     const employees = Object.values(employeesData);
 
-    for (let i = 0; i < employees.length; i += this.BATCH_SIZE) {
-      const batch = employees.slice(i, i + this.BATCH_SIZE);
+    // Validate all employees first
+    const validEmployees = employees.filter((employee) => {
+      const validationErrors = this.validateEmployee(employee);
+      if (validationErrors.length > 0) {
+        invalidRecords.push({
+          record: employee,
+          errors: validationErrors,
+        });
+        return false;
+      }
+      return true;
+    });
+
+    // If there are invalid records, throw BadRequestException
+    if (invalidRecords.length > 0) {
+      this.logger.error('Invalid records found', invalidRecords);
+    }
+
+    // Process valid employees in batches
+    for (let i = 0; i < validEmployees.length; i += this.BATCH_SIZE) {
+      const batch = validEmployees.slice(i, i + this.BATCH_SIZE);
       try {
         const result = await this.processBatch(batch);
         totalUpdatedCount += result.modifiedCount + result.upsertedCount;
+        modifiedCount += result.modifiedCount;
+        insertedCount += result.upsertedCount;
         this.logger.debug(
           `Batch ${Math.floor(i / this.BATCH_SIZE) + 1} processed successfully`,
         );
@@ -67,9 +110,13 @@ export class EmployeesService {
     }
 
     return {
+      employeeCount: employees.length,
       updatedCount: totalUpdatedCount,
-      statusCode: 200,
+      modifiedCount,
+      insertedCount,
+      statusCode: errors.length > 0 ? 207 : 201,
       errors,
+      invalidRecords,
     };
   }
 
@@ -80,7 +127,6 @@ export class EmployeesService {
         update: {
           $set: {
             ...employee,
-            lastUpdated: new Date(),
           },
         },
         upsert: true,
@@ -90,6 +136,7 @@ export class EmployeesService {
     const result = await this.employeeModel.bulkWrite(operations, {
       ordered: false,
     });
+
     this.logger.debug(
       `Batch processed: ${result.modifiedCount} updated, ${result.upsertedCount} inserted`,
     );
