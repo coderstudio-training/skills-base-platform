@@ -1,0 +1,468 @@
+{
+  "name": "Employee Sync Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a395cbea-4e58-4099-89e2-43a871e6c416",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        1200,
+        960
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.100.70:3001/employees/sync",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.validItems.toJsonString() }}",
+        "options": {}
+      },
+      "id": "23dc4521-9a5e-4a56-87c6-246beb5dee01",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2680,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1jyQRnBOd7NIxuD6OvyHclgAYZdT4fUiSG6kxVSM6nfo"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 355135599,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jyQRnBOd7NIxuD6OvyHclgAYZdT4fUiSG6kxVSM6nfo/edit#gid=355135599"
+        },
+        "options": {}
+      },
+      "id": "674b834d-82b3-40d0-837c-1be42a93598c",
+      "name": "Google Sheets2",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2180,
+        760
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wajh95stBgF50X7Y",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0d255f04-41b2-4f32-aea4-efe224bb20e8",
+        "options": {}
+      },
+      "id": "ccf09e56-1d32-48a7-af5d-9e88be96d2ac",
+      "name": "Webhook2",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        760
+      ],
+      "webhookId": "0d255f04-41b2-4f32-aea4-efe224bb20e8",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the access token from the login response\n// const accessToken = $node['Login to API'].json.access_token;\n// if (!accessToken) {\n//   throw new Error('Failed to obtain access token');\n// }\n\nconst accessToken = \"\";\n\n// Function to normalize keys (lowercase and replace spaces with underscores)\nfunction normalizeKey(key) {\n  return key.toLowerCase().replace(/\\s+/g, '_');\n}\n\n// Function to process roles string into array\nfunction processRoles(rolesString) {\n  if (!rolesString) return [];\n  // Remove any brackets if they exist\n  const cleanString = rolesString.replace(/[\\[\\]]/g, '');\n  // Split by comma, trim whitespace, and filter out empty strings\n  return cleanString.split(',')\n    .map(role => role.trim().toLowerCase())\n    .filter(role => role.length > 0);\n}\n\n// Function to process certification details dynamically\nfunction processCertifications(row) {\n  const certifications = [];\n  const certPrefix = 'certifications_details_';\n  \n  const keys = Object.keys(row);\n  const certKeys = keys.filter(key => key.toLowerCase().startsWith(certPrefix));\n  \n  // Get unique certification numbers\n  const certNumbers = new Set(certKeys.map(key => {\n    const match = key.toLowerCase().match(new RegExp(`${certPrefix}(\\\\d+)_`));\n    return match ? parseInt(match[1]) : null;\n  }).filter(num => num !== null));\n\n  certNumbers.forEach(certNumber => {\n    const cert = {};\n    const certRegex = new RegExp(`^${certPrefix}${certNumber}_(.+)$`, 'i');\n    \n    certKeys.forEach(key => {\n      const match = key.toLowerCase().match(certRegex);\n      if (match) {\n        const fieldName = normalizeKey(match[1]);\n        if (row[key] !== null && row[key] !== undefined && row[key] !== '') {\n          cert[fieldName] = row[key];\n        }\n      }\n    });\n    if (Object.keys(cert).length > 0) {\n      certifications.push(cert);\n    }\n  });\n  return certifications;\n}\n\n// Initialize containers for valid items and errors\nconst finalOutput = {};\nconst errors = [];\nlet recordCounter = 1;\n\n// Process all input items\n$input.all().forEach((item, index) => {\n  const row = item.json;\n  \n  // Convert the row object to an array of values, creating a mapping for key indexes\n  const keyMapping = Object.keys(row);\n  const rowValues = Object.values(row);\n  \n  // Find the index of the employee ID field\n  const empIdIndex = keyMapping.findIndex(key => \n    normalizeKey(key) === 'emp_id' || \n    normalizeKey(key) === 'employee_id' || \n    normalizeKey(key) === 'employeeid'\n  );\n  \n  // Check if the employee_id is a valid number\n  const employeeId = rowValues[empIdIndex !== -1 ? empIdIndex : 1];\n  if (typeof employeeId !== 'number' || isNaN(employeeId)) {\n    errors.push({\n      index,\n      error: 'Invalid or missing employee_id',\n      data: row\n    });\n    return\n  }\n  \n  try {\n    // Process certifications\n    const certifications = processCertifications(row);\n    \n    // Create the validated document with normalized keys\n    const validatedDocument = {};\n    \n    // Copy keys from the row, normalizing them in the process\n    Object.keys(row).forEach(key => {\n      let normalizedKey = normalizeKey(key);\n      // Rename emp_id to employee_id if found\n      if (normalizedKey === 'emp_id') {\n        normalizedKey = 'employee_id';\n      }\n      \n      // Special handling for roles field\n      if (normalizedKey === 'roles') {\n        validatedDocument[normalizedKey] = processRoles(row[key]);\n      } else {\n        validatedDocument[normalizedKey] = row[key];\n      }\n    });\n    \n    // Remove the specified fields\n    ['row_number'].forEach(field => {\n      delete validatedDocument[normalizeKey(field)];\n    });\n    \n    // Always add certifications field, even if it's empty\n    validatedDocument.certifications = certifications;\n    \n    // Remove the original certification fields\n    Object.keys(validatedDocument).forEach(key => {\n      if (key.startsWith('certifications_details_')) {\n        delete validatedDocument[key];\n      }\n    });\n    \n    // Add the validated document to the final output with a numeric key\n    finalOutput[recordCounter.toString()] = validatedDocument;\n    recordCounter++;\n    \n  } catch (error) {\n    errors.push({\n      index,\n      error: error.message,\n      data: row\n    });\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    validItems: finalOutput,\n    errors\n  }\n};"
+      },
+      "id": "9707bce2-663d-424f-9b35-a91a2390019d",
+      "name": "Validate and Transform2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.errors.length > 0 }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "name": "Check for Validation Errors1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        2680,
+        1100
+      ],
+      "id": "ab4be4be-dcca-4c44-a8f3-b32d50f9497b"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/error-logs/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "errors",
+              "value": "={{ $json.errors }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Errors to API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        2960,
+        1100
+      ],
+      "id": "fc0b301d-223c-4b81-a956-8f56f9e61fd4",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.statusCode == 201 }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Check API Response1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        2920,
+        760
+      ],
+      "id": "0be703bf-f9ac-48de-a0ad-3f1de02858de"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/notifications/success",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "=Skills Matrix update completed successfully. Updated {{ $json.body.updatedCount }} records."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Send Success Notification API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        3120,
+        660
+      ],
+      "id": "239ddd89-8c45-498c-a86c-72bc856fb41c",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/notifications/error",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "=Error occurred during Skills Matrix update: {{ $json.body }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Send Error Notification API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        3120,
+        860
+      ],
+      "id": "c589a099-b2a8-4cfd-b97c-fb659a0053ff",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.100.70:3001/auth/login",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "admin@example.com"
+            },
+            {
+              "name": "password",
+              "value": "AdminPassword123!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Login to API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1500,
+        760
+      ],
+      "id": "980dd6ae-49d2-4ece-9020-5beec1482011"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        560
+      ],
+      "id": "2c4be3aa-2fc1-40da-ba48-73cbe8f4b4e6",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "'1ZAj-G_dFJKmxw6On2sn8b5PHw0G2Eti4' in parents and name = 'Employment Details for L&D'",
+        "filter": {},
+        "options": {}
+      },
+      "id": "7f73379f-6fd0-4b2a-9480-4a6300b15110",
+      "name": "Check for Folder and File2",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1700,
+        760
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "FVFzfdM9q1HBBzAP",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1fd6c03e-8598-49da-a2a1-bac2edfe8c21",
+              "leftValue": "={{$json.isEmpty()}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bcf8bf91-81bb-4625-8194-592fee9327da",
+      "name": "If Exists2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        760
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets2": {
+      "main": [
+        [
+          {
+            "node": "Validate and Transform2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and Transform2": {
+      "main": [
+        [
+          {
+            "node": "Check for Validation Errors1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Login to API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Response1": {
+      "main": [
+        [
+          {
+            "node": "Send Success Notification API1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Notification API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Validation Errors1": {
+      "main": [
+        [
+          {
+            "node": "Log Errors to API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Check API Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login to API1": {
+      "main": [
+        [
+          {
+            "node": "Check for Folder and File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Exists2": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Folder and File2": {
+      "main": [
+        [
+          {
+            "node": "If Exists2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4bcfe334-d049-4c4c-aacf-d122d7f4ff8e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f5176b00fa2d24bacd6209668b23765657e914066e3bf11efab5df2b9a884b80"
+  },
+  "id": "Uul48PCo42elinXX",
+  "tags": []
+}
