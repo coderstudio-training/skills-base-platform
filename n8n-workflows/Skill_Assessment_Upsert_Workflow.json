@@ -1,0 +1,725 @@
+{
+  "name": "Skill Assessment Upsert Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -840,
+        200
+      ],
+      "id": "26709d68-d40f-4372-9235-0a4ec9ecf400"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.22.156.50:3001/auth/login",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "admin@example.com"
+            },
+            {
+              "name": "password",
+              "value": "AdminPassword123!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Login to API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -640,
+        200
+      ],
+      "id": "694eb308-4dc4-4f81-86cc-f5db3fcb225e"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [
+        -900,
+        960
+      ],
+      "id": "9f8adb97-e876-43fa-ae32-cda79d8199bf",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "feE9JVAcVI0VzCDr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the access token from the login response\nconst accessToken = $node['Login to API'].json.access_token;\n\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\n// Process the data from Google Sheets\nconst sheetData = $node['Google Sheets'].json.values;\nconst headers = sheetData[0];\nconst data = sheetData.slice(1);\n\nconst processedData = data.map(row => {\n  const item = {};\n  headers.forEach((header, index) => {\n    item[header] = row[index];\n  });\n  return {\n    employeeId: item.EmployeeID,\n    name: item.Name,\n    department: item.Department,\n    skills: {\n      JavaScript: parseInt(item.JavaScript) || 0,\n      Python: parseInt(item.Python) || 0\n      // Add more skills as needed\n    }\n  };\n});\n\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  if (!item.employeeId) {\n    errors.push({ index, error: 'Missing EmployeeID' });\n  } else if (Object.values(item.skills).some(level => level < 0 || level > 5)) {\n    errors.push({ index, error: 'Skill levels must be between 0 and 5' });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    validItems,\n    errors\n  }\n};"
+      },
+      "name": "Process and Validate Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        960
+      ],
+      "id": "35b3e59b-1f01-463e-aeb3-2fc44b470bb4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/skills-matrix/bulk-update",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ $json.validItems }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Skills Matrix API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -560,
+        960
+      ],
+      "id": "148de34e-64ca-4ed1-9906-6887e567e07b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.statusCode }}",
+              "value2": 200
+            }
+          ]
+        }
+      },
+      "name": "Check API Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -360,
+        960
+      ],
+      "id": "23b869ee-551c-4fcf-bf2a-dd67df4f7523"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/notifications/success",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "=Skills Matrix update completed successfully. Updated {{ $json.body.updatedCount }} records."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Send Success Notification API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -160,
+        860
+      ],
+      "id": "52aacf51-c93f-40f1-821a-09f125aa40b6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/notifications/error",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "=Error occurred during Skills Matrix update: {{ $json.body }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Send Error Notification API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -160,
+        1060
+      ],
+      "id": "e00eb5d7-8192-4b74-89ac-7f60e6a38219"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.errors.length > 0 }}"
+            }
+          ]
+        }
+      },
+      "name": "Check for Validation Errors",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        1320
+      ],
+      "id": "479f3835-58c9-460c-9b4a-73f29d3f08e0"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/error-logs/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "errors",
+              "value": "={{ $json.errors }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Errors to API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -160,
+        1280
+      ],
+      "id": "dfb0bdfd-5dae-4f10-8e44-cbe58ebd480e"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1as7YZtwV0K7TlaMjz2Q3VkAKVqOeRiIKTAZg-gYJ_YU",
+          "mode": "list",
+          "cachedResultName": "Copy of SKILLS MATRIX DASHBOARD - QA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1as7YZtwV0K7TlaMjz2Q3VkAKVqOeRiIKTAZg-gYJ_YU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1719772248,
+          "mode": "list",
+          "cachedResultName": "Self",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1as7YZtwV0K7TlaMjz2Q3VkAKVqOeRiIKTAZg-gYJ_YU/edit#gid=1719772248"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically"
+            }
+          },
+          "outputFormatting": {
+            "values": {
+              "general": "UNFORMATTED_VALUE",
+              "date": "FORMATTED_STRING"
+            }
+          }
+        }
+      },
+      "id": "9f763b45-3987-4540-9c52-27139ad521a0",
+      "name": "Read Self Assessments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -340,
+        -20
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "feE9JVAcVI0VzCDr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1as7YZtwV0K7TlaMjz2Q3VkAKVqOeRiIKTAZg-gYJ_YU",
+          "mode": "list",
+          "cachedResultName": "Copy of SKILLS MATRIX DASHBOARD - QA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1as7YZtwV0K7TlaMjz2Q3VkAKVqOeRiIKTAZg-gYJ_YU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 950415049,
+          "mode": "list",
+          "cachedResultName": "Manager",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1as7YZtwV0K7TlaMjz2Q3VkAKVqOeRiIKTAZg-gYJ_YU/edit#gid=950415049"
+        },
+        "options": {}
+      },
+      "id": "2e297857-6a75-4f8e-bb3a-b7dce2c4eee3",
+      "name": "Read Manager Assessments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -340,
+        360
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "feE9JVAcVI0VzCDr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract the access token from the login response\nconst accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\nconst processedData = sheetData.map(row => {\n  // Extract basic information dynamically, making the keys camelCase\n  const basicInfo = {\n    email: row['Email Address'],\n    timestamp: row['Timestamp'],\n    resourceName: row['Name of Resource'],\n    name: row['Name of Respondent'],\n    capability: row['Capability'],\n    careerLevel: row['Career Level of Resource'] || '',\n  };\n\n  // Dynamically create the skills object\n  const skills = {};\n  Object.keys(row).forEach(key => {\n    if (\n      key !== 'row_number' &&\n      key !== 'Email Address' &&\n      key !== 'Timestamp' &&\n      key !== 'Name of Resource' &&\n      key !== 'Name of Respondent' &&\n      key !== 'Capability' &&\n      key !== 'Career Level of Resource' &&\n      !isNaN(parseInt(row[key])) // Ensure that the value is numeric\n    ) {\n      const camelCaseKey = toCamelCase(key);\n      skills[camelCaseKey] = parseInt(row[key]) || 0;\n    }\n  });\n\n  return {\n    ...basicInfo,\n    skills\n  };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if email exists\n  if (!item.email) {\n    validationErrors.push('Missing Email Address');\n  }\n\n  // Check if name exists\n  if (!item.name) {\n    validationErrors.push('Missing Name of Respondent');\n  }\n\n  // Check if capability exists\n  if (!item.capability) {\n    validationErrors.push('Missing Capability');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.name,\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
+      },
+      "name": "Process and Validate Data1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -20
+      ],
+      "id": "c4900ed5-7968-43df-b797-230c8652866c"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Configuration for essential fields\nconst essentialFields = {\n  email: 'Email Address',\n  timestamp: 'Timestamp',\n  resourceName: 'Name of Resource',\n  emailOfResource: 'Email of Resource',\n  name: 'Name of Respondent',\n  capability: 'Capability',\n  careerLevel: 'Career Level of Resource'\n};\n\n// Extract the access token from the login response\nconst accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\nconst processedData = sheetData.map(row => {\n  // Extract basic information dynamically\n  const basicInfo = {};\n  Object.entries(essentialFields).forEach(([key, header]) => {\n    basicInfo[key] = row[header] || ''; // Assign empty string if the field is missing\n  });\n\n  // Dynamically create the skills object\n  const skills = {};\n  Object.keys(row).forEach(key => {\n    // Exclude essential fields and row_number\n    if (!Object.values(essentialFields).includes(key) && key !== 'row_number' && !isNaN(parseInt(row[key]))) {\n      const camelCaseKey = toCamelCase(key);\n      skills[camelCaseKey] = parseInt(row[key]) || 0;\n    }\n  });\n\n  return {\n    ...basicInfo,\n    skills\n  };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if email exists\n  if (!item.email) {\n    validationErrors.push('Missing Email Address');\n  }\n\n  // Check if name exists\n  if (!item.name) {\n    validationErrors.push('Missing Name of Respondent');\n  }\n\n  // Check if capability exists\n  if (!item.capability) {\n    validationErrors.push('Missing Capability');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.name,\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
+      },
+      "name": "Process and Validate Data2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        360
+      ],
+      "id": "28ab3fbc-a5cd-43aa-b8b0-f0ac63b2b0d3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "56abc4cf-8ec3-410f-b0f6-32b0a82311dd",
+              "leftValue": "={{ $json.errors.isEmpty() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "f68f62bf-d8a6-4708-93da-8bfbaf6567d6",
+      "name": "Check for Validation Errors1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        140,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "56abc4cf-8ec3-410f-b0f6-32b0a82311dd",
+              "leftValue": "={{ $json.errors.isEmpty() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "3a4f8add-2aa6-49dc-b16f-3698816abdd4",
+      "name": "Check for Validation Errors2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        140,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/error-logs/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "errors",
+              "value": "={{ $json.errors }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Errors to API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        380,
+        160
+      ],
+      "id": "3ba792c2-6562-4d1e-9df2-2253531d43b6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/skills-matrix/bulk-update",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ $json.validItems }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Skills Matrix API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        400,
+        -220
+      ],
+      "id": "8ecf50a0-2073-4c11-9fe3-1a833f1535c5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/skills-matrix/bulk-update",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ $json.validItems }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Skills Matrix API2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        420,
+        520
+      ],
+      "id": "8b0a0297-5d62-45b8-9b56-11cdd39f9638"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Login to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login to API": {
+      "main": [
+        [
+          {
+            "node": "Read Self Assessments",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Manager Assessments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Process and Validate Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process and Validate Data": {
+      "main": [
+        [
+          {
+            "node": "Update Skills Matrix API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check for Validation Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Skills Matrix API": {
+      "main": [
+        [
+          {
+            "node": "Check API Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Response": {
+      "main": [
+        [
+          {
+            "node": "Send Success Notification API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Notification API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Validation Errors": {
+      "main": [
+        [
+          {
+            "node": "Log Errors to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Self Assessments": {
+      "main": [
+        [
+          {
+            "node": "Process and Validate Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Manager Assessments": {
+      "main": [
+        [
+          {
+            "node": "Process and Validate Data2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process and Validate Data1": {
+      "main": [
+        [
+          {
+            "node": "Check for Validation Errors1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process and Validate Data2": {
+      "main": [
+        [
+          {
+            "node": "Check for Validation Errors2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Validation Errors2": {
+      "main": [
+        [
+          {
+            "node": "Update Skills Matrix API2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Errors to API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Validation Errors1": {
+      "main": [
+        [
+          {
+            "node": "Update Skills Matrix API1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Errors to API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e89fcff0-42ee-4622-a8ff-71ec96bb2406",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a31f8c9eb797a311bc289ce7bafeb2442b7772146dd18635dc019f72cb5829a0"
+  },
+  "id": "ywSj2r7j8rqYit96",
+  "tags": []
+}
