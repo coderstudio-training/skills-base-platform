@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { UserRole } from '@skills-base/shared';
 import { BulkWriteResult } from 'mongodb';
 import { Model } from 'mongoose';
 import { Employee } from './entities/employee.entity';
@@ -24,11 +25,10 @@ export class EmployeesService {
       );
       this.logger.log('Indexes ensured for Employees collection');
     } catch (error) {
-      if (error instanceof Error) {
-        this.logger.error(`Error ensuring indexes: ${error.message}`);
-      } else {
-        this.logger.error(`Unknown error: ${error}`);
-      }
+      this.logger.error(
+        'Error ensuring indexes:',
+        error instanceof Error ? error.message : error,
+      );
     }
   }
 
@@ -39,84 +39,96 @@ export class EmployeesService {
       errors.push('Employee ID is required');
     }
 
-    // if (!employee.role) {
-    //   errors.push('Role is required');
-    // }
+    if (employee.roles) {
+      if (!Array.isArray(employee.roles)) {
+        errors.push('Roles must be an array');
+      } else {
+        const invalidRoles = employee.roles.filter(
+          (role: string) => !Object.values(UserRole).includes(role as UserRole),
+        );
+        if (invalidRoles.length > 0) {
+          errors.push(`Invalid roles found: ${invalidRoles.join(', ')}`);
+        }
+      }
+    }
 
     return errors;
   }
 
+  private normalizeEmployee(
+    employee: Record<string, any>,
+  ): Record<string, any> {
+    return {
+      ...employee,
+      roles:
+        Array.isArray(employee.roles) && employee.roles.length > 0
+          ? employee.roles
+          : [UserRole.USER],
+    };
+  }
+
   async bulkUpsert(employeesData: Record<string, any>): Promise<{
-    employeeCount: number;
-    updatedCount: number;
-    modifiedCount: number;
-    insertedCount: number;
+    summary: {
+      total: number;
+      updated: number;
+      inserted: number;
+      invalid: number;
+      errors: number;
+    };
+    details: {
+      invalidRecords: { record: Record<string, any>; errors: string[] }[];
+      errors: any[];
+    };
     statusCode: number;
-    errors: any[];
-    invalidRecords: { record: Record<string, any>; errors: string[] }[];
   }> {
-    let totalUpdatedCount = 0;
-    let modifiedCount = 0;
-    let insertedCount = 0;
-    const errors = [];
+    const employees = Object.values(employeesData);
     const invalidRecords: { record: Record<string, any>; errors: string[] }[] =
       [];
-    const employees = Object.values(employeesData);
+    const errors: any[] = [];
+    let modifiedCount = 0;
+    let insertedCount = 0;
 
-    // Validate all employees first
-    const validEmployees = employees.filter((employee) => {
-      const validationErrors = this.validateEmployee(employee);
-      if (validationErrors.length > 0) {
-        invalidRecords.push({
-          record: employee,
-          errors: validationErrors,
-        });
-        return false;
-      }
-      return true;
-    });
-
-    // If there are invalid records, throw BadRequestException
-    if (invalidRecords.length > 0) {
-      this.logger.error('Invalid records found', invalidRecords);
-    }
+    // Validate and normalize employees
+    const validEmployees = employees
+      .map(this.normalizeEmployee)
+      .filter((employee) => {
+        const validationErrors = this.validateEmployee(employee);
+        if (validationErrors.length > 0) {
+          invalidRecords.push({ record: employee, errors: validationErrors });
+          return false;
+        }
+        return true;
+      });
 
     // Process valid employees in batches
     for (let i = 0; i < validEmployees.length; i += this.BATCH_SIZE) {
       const batch = validEmployees.slice(i, i + this.BATCH_SIZE);
       try {
         const result = await this.processBatch(batch);
-        totalUpdatedCount += result.modifiedCount + result.upsertedCount;
         modifiedCount += result.modifiedCount;
         insertedCount += result.upsertedCount;
-        this.logger.debug(
-          `Batch ${Math.floor(i / this.BATCH_SIZE) + 1} processed successfully`,
-        );
       } catch (error) {
-        if (error instanceof Error) {
-          const batchNumber = Math.floor(i / this.BATCH_SIZE) + 1;
-          this.logger.error(
-            `Error processing batch ${batchNumber}: ${error.message}`,
-          );
-          errors.push({
-            batchIndex: batchNumber,
-            error: error.message,
-            affectedRecords: batch.map((emp) => emp.employee_id),
-          });
-        } else {
-          this.logger.error(`Unknown error: ${error}`);
-        }
+        errors.push({
+          batchIndex: Math.floor(i / this.BATCH_SIZE),
+          error: error instanceof Error ? error.message : 'Unknown error',
+          affectedRecords: batch.map((emp) => emp.employee_id),
+        });
       }
     }
 
     return {
-      employeeCount: employees.length,
-      updatedCount: totalUpdatedCount,
-      modifiedCount,
-      insertedCount,
-      statusCode: errors.length > 0 ? 207 : 201,
-      errors,
-      invalidRecords,
+      summary: {
+        total: employees.length,
+        updated: modifiedCount,
+        inserted: insertedCount,
+        invalid: invalidRecords.length,
+        errors: errors.length,
+      },
+      details: {
+        invalidRecords,
+        errors,
+      },
+      statusCode: 201,
     };
   }
 
@@ -124,23 +136,12 @@ export class EmployeesService {
     const operations = batch.map((employee) => ({
       updateOne: {
         filter: { employee_id: employee.employee_id },
-        update: {
-          $set: {
-            ...employee,
-          },
-        },
+        update: { $set: employee },
         upsert: true,
       },
     }));
 
-    const result = await this.employeeModel.bulkWrite(operations, {
-      ordered: false,
-    });
-
-    this.logger.debug(
-      `Batch processed: ${result.modifiedCount} updated, ${result.upsertedCount} inserted`,
-    );
-    return result;
+    return this.employeeModel.bulkWrite(operations, { ordered: false });
   }
 
   async findAll(): Promise<Employee[]> {
