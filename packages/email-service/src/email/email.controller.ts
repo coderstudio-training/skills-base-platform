@@ -20,6 +20,20 @@ export class EmailController {
   //   return await this.emailService.sendEmail(to, subject, template, data);
   // }
 
+  @Post('send-success')
+  async sendSuccessEmail(@Body() body: { to: string; details: string }): Promise<{ message: string }> {
+    const { to, details } = body;
+    await this.emailService.sendSuccessEmail(to, details);
+    return { message: 'Success email sent successfully' };
+  }
+
+  @Post('send-error')
+  async sendErrorEmail(@Body() body: { to: string; error: string }): Promise<{ message: string }> {
+    const { to, error } = body;
+    await this.emailService.sendErrorEmail(to, error);
+    return { message: 'Error email sent successfully' };
+  }
+
   @Get('templates')
   getEmailTemplates(): { templates: string[] } {
     const templates = this.emailService.getEmailTemplates();

@@ -31,7 +31,7 @@ export class EmailService {
   }
 
   async sendWelcomeEmail(to: string, name: string): Promise<void> {
-    const html = await this.getEmailTemplate('welcome', { name });
+    const html = await this.getEmailTemplate('welcome-email-template', { name });
     const mailOptions = {
       from: 'stratpoint@gmail.com',
       to: to,
@@ -47,6 +47,28 @@ export class EmailService {
       from: 'stratpoint@gmail.com',
       to: to,
       subject: subject,
+      html: html,
+    };
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendSuccessEmail(to: string, details: string): Promise<void> {
+    const html = await this.getEmailTemplate('success-email-template', { details });
+    const mailOptions = {
+      from: 'stratpoint@gmail.com',
+      to: to,
+      subject: 'Workflow Successful!',
+      html: html,
+    };
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendErrorEmail(to: string, error: string): Promise<void> {
+    const html = await this.getEmailTemplate('error-email-template', { error });
+    const mailOptions = {
+      from: 'stratpoint@gmail.com',
+      to: to,
+      subject: 'Workflow Failed!',
       html: html,
     };
     await this.transporter.sendMail(mailOptions);
