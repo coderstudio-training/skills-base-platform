@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { readFileSync } from 'fs';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import * as handlebars from 'handlebars';
 import { createTransport, Transporter } from 'nodemailer';
 import { join } from 'path';
@@ -39,5 +39,53 @@ export class EmailService {
       html: html,
     };
     await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendEmail(to: string, subject: string, templateName: string, data: any): Promise<void> {
+    const html = await this.getEmailTemplate(templateName, data);
+    const mailOptions = {
+      from: 'stratpoint@gmail.com',
+      to: to,
+      subject: subject,
+      html: html,
+    };
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  // async sendWelcomeEmail(to: string, name: string): Promise<void> {
+  //   await this.sendEmail(to, 'Welcome!', 'welcome', { name });
+  // }
+
+  getEmailTemplates(): string[] {
+    const templateDir = join(__dirname, '..', 'src/templates');
+    return readdirSync(templateDir).filter((file) => file.endsWith('.html')).map((file) => file.replace('.html', ''));
+  }
+
+  createEmailTemplate(templateName: string, content: string): void {
+    const templatePath = join(__dirname, '..', 'src/templates', `${templateName}.html`);
+    if (existsSync(templatePath)) {
+      throw new Error(`Template ${templateName} already exists`);
+    }
+    writeFileSync(templatePath, content);
+  }
+
+  updateEmailTemplate(templateName: string, content: string): void {
+    const templatePath = join(__dirname, '..', 'src/templates', `${templateName}.html`);
+    if (!existsSync(templatePath)) {
+      throw new NotFoundException(`Template ${templateName} not found`);
+    }
+    writeFileSync(templatePath, content);
+  }
+
+  deleteEmailTemplate(templateName: string): void {
+    const templatePath = join(__dirname, '..', 'src/templates', `${templateName}.html`);
+    if (!existsSync(templatePath)) {
+      throw new NotFoundException(`Template ${templateName} not found`);
+    }
+    unlinkSync(templatePath);
+  }
+
+  async renderTemplate(templateName: string, data: any): Promise<string> {
+    return this.getEmailTemplate(templateName, data);
   }
 }

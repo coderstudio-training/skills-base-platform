@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { EmailService } from './email.service';
 
 @Controller('email')
@@ -10,5 +10,51 @@ export class EmailController {
     const { to, name } = body;
     await this.emailService.sendWelcomeEmail(to, name);
     return { message: 'Email sent successfully' };
+  }
+
+  // @Post('send')
+  // async sendEmail(
+  //   @Body() sendEmailDto: SendEmailDto
+  // ) {
+  //   const { to, subject, template, data } = sendEmailDto;
+  //   return await this.emailService.sendEmail(to, subject, template, data);
+  // }
+
+  @Get('templates')
+  getEmailTemplates(): { templates: string[] } {
+    const templates = this.emailService.getEmailTemplates();
+    return { templates };
+  }
+
+  @Post('templates')
+  createEmailTemplate(@Body() body: { templateName: string; content: string }): { message: string } {
+    const { templateName, content } = body;
+    this.emailService.createEmailTemplate(templateName, content);
+    return { message: 'Template created successfully' };
+  }
+
+  @Put('templates/:id')
+  updateEmailTemplate(
+    @Param('id') templateName: string,
+    @Body() body: { content: string }
+  ): { message: string } {
+    const { content } = body;
+    this.emailService.updateEmailTemplate(templateName, content);
+    return { message: 'Template updated successfully' };
+  }
+
+  @Delete('templates/:id')
+  deleteEmailTemplate(@Param('id') templateName: string): { message: string } {
+    this.emailService.deleteEmailTemplate(templateName);
+    return { message: 'Template deleted successfully' };
+  }
+
+  @Post('templates/render')
+  async renderTemplate(
+    @Body() body: { templateName: string; data: any }
+  ): Promise<{ rendered: string }> {
+    const { templateName, data } = body;
+    const rendered = await this.emailService.renderTemplate(templateName, data);
+    return { rendered };
   }
 }
