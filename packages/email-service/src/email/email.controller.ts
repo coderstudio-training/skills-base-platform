@@ -21,16 +21,16 @@ export class EmailController {
   // }
 
   @Post('send-success')
-  async sendSuccessEmail(@Body() body: { to: string; details: string; workflowName: string }): Promise<{ message: string }> {
-    const { to, details, workflowName } = body;
-    await this.emailService.sendSuccessEmail(to, details, workflowName);
+  async sendSuccessEmail(@Body() body: { workflowName: string }): Promise<{ message: string }> {
+    const { workflowName } = body;
+    await this.emailService.sendSuccessEmail(workflowName);
     return { message: 'Success email sent successfully' };
   }
 
   @Post('send-error')
-  async sendErrorEmail(@Body() body: { to: string; error: string; workflowName: string }): Promise<{ message: string }> {
-    const { to, error, workflowName } = body;
-    await this.emailService.sendErrorEmail(to, error, workflowName);
+  async sendErrorEmail(@Body() body: {error: string; workflowName: string }): Promise<{ message: string }> {
+    const { error, workflowName } = body;
+    await this.emailService.sendErrorEmail(error, workflowName);
     return { message: 'Error email sent successfully' };
   }
 

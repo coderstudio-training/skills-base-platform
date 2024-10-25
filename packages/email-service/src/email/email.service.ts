@@ -7,9 +7,11 @@ import { join } from 'path';
 @Injectable()
 export class EmailService {
   private transporter: Transporter;
+  private adminEmails: string[];
 
   constructor() {
     this.transporter = this.createTransporter();
+    this.adminEmails = this.getAdminEmails();
   }
 
   private createTransporter(): Transporter {
@@ -21,6 +23,14 @@ export class EmailService {
         rejectUnauthorized: false,
       },
     });
+  }
+
+  private getAdminEmails(): string[] {
+    const emails = process.env.ADMIN_EMAILS;
+    if (!emails) {
+      throw new Error('Admin email/s not found');
+    }
+    return emails.split(',').map((email) => email.trim());
   }
 
   private async getEmailTemplate(templateName: string, data: any): Promise<string> {
@@ -52,22 +62,22 @@ export class EmailService {
     await this.transporter.sendMail(mailOptions);
   }
 
-  async sendSuccessEmail(to: string, details: string, workflowName: string): Promise<void> {
-    const html = await this.getEmailTemplate('success-email-template', { details, workflowName });
+  async sendSuccessEmail(workflowName: string): Promise<void> {
+    const html = await this.getEmailTemplate('success-email-template', {workflowName });
     const mailOptions = {
       from: 'stratpoint@gmail.com',
-      to: to,
+      to: this.adminEmails.join(','),
       subject: 'Workflow Successful!',
       html: html,
     };
     await this.transporter.sendMail(mailOptions);
   }
 
-  async sendErrorEmail(to: string, error: string, workflowName: string): Promise<void> {
+  async sendErrorEmail(error: string, workflowName: string): Promise<void> {
     const html = await this.getEmailTemplate('error-email-template', { error, workflowName });
     const mailOptions = {
       from: 'stratpoint@gmail.com',
-      to: to,
+      to: this.adminEmails.join(','),
       subject: 'Workflow Failed!',
       html: html,
     };
