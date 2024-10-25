@@ -25,6 +25,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
+    "@types/nodemailer": "^6.4.16",
     "husky": "^8.0.0",
     "lerna": "^8.1.8",
     "lint-staged": "^15.2.10",
