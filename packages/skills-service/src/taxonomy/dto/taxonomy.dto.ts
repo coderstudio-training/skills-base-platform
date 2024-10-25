@@ -1,34 +1,34 @@
-import { IsString, IsArray, IsOptional, IsObject, ValidateNested, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsArray, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class TaxonomyDTO {
   @IsString()
   @IsNotEmpty({ message: 'document id must not be empty!'})
-  doc_Id: string;
+  DOC_Id: string;
 
   @IsString()
   @IsNotEmpty()
-  doc_revisionId: string;
+  DOC_RevisionId: string;
 
   @IsString()
   @IsNotEmpty()
-  doc_title: string;
+  DOC_Title: string;
 
   @IsString()
   @IsNotEmpty()
-  TSCTitle: string;
+  TSC_Title: string;
 
   @IsString()
   @IsNotEmpty()
-  TSCCategory: string;
+  TSC_Category: string;
 
   @IsString()
   @IsNotEmpty()
-  TSCDescription: string;
+  TSC_Description: string;
 
   @IsObject()
   @IsNotEmpty()
-  TSCProficiencyDescription: Record<string, any>;
+  TSC_ProficiencyDescription: Record<string, any>;
 
   @IsObject()
   @IsNotEmpty()

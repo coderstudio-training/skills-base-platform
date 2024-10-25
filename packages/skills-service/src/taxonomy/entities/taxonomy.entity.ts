@@ -5,25 +5,25 @@ import { Document } from 'mongoose';
 export class Taxonomy extends Document {
     // No attribute to index yet. Should also extend from BaseEntity from shared. 
   @Prop({ required: true, unique: true, index: true})
-  doc_Id: string;
+  DOC_Id: string;
 
   @Prop({ required: true })
-  doc_revisionId: string;
+  DOC_RevisionId: string;
 
   @Prop({ required: true })
-  doc_title: string;
+  DOC_Title: string;
 
   @Prop({ required: true })
-  TSCTitle: string;
+  TSC_Title: string;
 
   @Prop({ required: true })
-  TSCCategory: string;
+  TSC_Category: string;
 
   @Prop({ required: true })
-  TSCDescription: string;
+  TSC_Description: string;
 
   @Prop({ type: Object, required: true })
-  TSCProficiencyDescription: Record<string, any>;
+  TSC_ProficiencyDescription: Record<string, any>;
 
   @Prop({ type: Object, required: true })
   Abilities: Record<string, any>;
