@@ -4,31 +4,31 @@ import { BaseEntity } from '@skills-base/shared';
 @Schema()
 export class Taxonomy extends BaseEntity {
   @Prop({ required: true, unique: true, index: true})
-  DOC_Id: string;
+  DOC_Id!: string;
 
   @Prop({ required: true })
-  DOC_RevisionId: string;
+  DOC_RevisionId!: string;
 
   @Prop({ required: true })
-  DOC_Title: string;
+  DOC_Title!: string;
 
   @Prop({ required: true })
-  TSC_Title: string;
+  TSC_Title!: string;
 
   @Prop({ required: true })
-  TSC_Category: string;
+  TSC_Category!: string;
 
   @Prop({ required: true })
-  TSC_Description: string;
+  TSC_Description!: string;
 
   @Prop({ type: Object, required: true })
-  TSC_ProficiencyDescription: Record<string, any>;
+  TSC_ProficiencyDescription!: Record<string, any>;
 
   @Prop({ type: Object, required: true })
-  Abilities: Record<string, any>;
+  Abilities!: Record<string, any>;
 
   @Prop({ type: Object, required: true })
-  Knowledge: Record<string, any>;
+  Knowledge!: Record<string, any>;
 
   @Prop({ type: [String], required: false })
   RangeOfApplication?: string[];

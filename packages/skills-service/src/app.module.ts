@@ -1,11 +1,20 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
+import { DatabaseModule, LoggerMiddleware } from '@skills-base/shared';
 
 @Module({
-  imports: [TaxonomyModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    DatabaseModule,
+    TaxonomyModule,
+  ],
 })
-export class AppModule {}
+
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

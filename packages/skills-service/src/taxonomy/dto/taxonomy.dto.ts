@@ -5,39 +5,39 @@ import { IsArray, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } f
 export class TaxonomyDTO extends BaseDto{
   @IsString()
   @IsNotEmpty({ message: 'document id must not be empty!'})
-  DOC_Id: string;
+  DOC_Id!: string;
 
   @IsString()
   @IsNotEmpty()
-  DOC_RevisionId: string;
+  DOC_RevisionId!: string;
 
   @IsString()
   @IsNotEmpty()
-  DOC_Title: string;
+  DOC_Title!: string;
 
   @IsString()
   @IsNotEmpty()
-  TSC_Title: string;
+  TSC_Title!: string;
 
   @IsString()
   @IsNotEmpty()
-  TSC_Category: string;
+  TSC_Category!: string;
 
   @IsString()
   @IsNotEmpty()
-  TSC_Description: string;
+  TSC_Description!: string;
 
   @IsObject()
   @IsNotEmpty()
-  TSC_ProficiencyDescription: Record<string, any>;
+  TSC_ProficiencyDescription!: Record<string, any>;
 
   @IsObject()
   @IsNotEmpty()
-  Abilities: Record<string, any>;
+  Abilities!: Record<string, any>;
 
   @IsObject()
   @IsNotEmpty()
-  Knowledge: Record<string, any>;
+  Knowledge!: Record<string, any>;
 
   @IsArray()
   @IsOptional()
@@ -47,5 +47,5 @@ export class TaxonomyDTO extends BaseDto{
 export class BulkUpsertTaxonomyDTO {
     @ValidateNested({ each: true })
     @Type(() => TaxonomyDTO)
-    data: TaxonomyDTO[];
+    data!: TaxonomyDTO[];
 }

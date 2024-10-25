@@ -5,12 +5,9 @@ import { TaxonomyController } from './taxonomy.controller';
 import { TaxonomyService } from './taxonomy.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Taxonomy.name, schema: TaxonomyEntity}
-    ]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: Taxonomy.name, schema: TaxonomyEntity}])],
+  controllers: [TaxonomyController],
   providers: [TaxonomyService],
-  controllers: [TaxonomyController]
 })
+
 export class TaxonomyModule {}
