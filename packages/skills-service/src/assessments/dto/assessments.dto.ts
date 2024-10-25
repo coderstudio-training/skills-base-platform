@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class BaseSkillsDto {
-  @IsString()
+  @IsEmail()
   @IsNotEmpty()
   email!: string;
 

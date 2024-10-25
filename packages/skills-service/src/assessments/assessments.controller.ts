@@ -17,4 +17,9 @@ export class SkillsController {
     // Pass the assessmentType and data to the service for processing
     return this.skillsService.bulkUpsert(assessmentType, { data });
   }
+
+  // @Get(':assessmentType')
+  // async getAll(@Param('assessmentType') assessmentType: string) {
+  //   return await this.skillsService.getAllRecords(assessmentType);
+  // }
 }
