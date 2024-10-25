@@ -20,7 +20,7 @@ export class TaxonomyService {
   private async ensureIndexes(): Promise<void> {
     try {
       await this.taxonomyModel.collection.createIndex(
-        {doc_Id: 1},
+        { DOC_Id: 1 },
         { unique: true, background: true },
       );
 
