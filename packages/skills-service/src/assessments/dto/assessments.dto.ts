@@ -1,38 +1,41 @@
 import { Type } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsObject,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 
-export class SelfSkillsDto {
+export class BaseSkillsDto {
   @IsString()
   @IsNotEmpty()
-  email!: string; // Definite assignment assertion
+  email!: string;
 
   @IsString()
   @IsNotEmpty()
-  timestamp!: string; // Definite assignment assertion
+  timestamp!: string;
 
   @IsString()
   @IsNotEmpty()
-  resourceName!: string; // Definite assignment assertion
+  resourceName!: string;
+
+  @IsOptional() 
+  @IsString()
+  emailOfResource?: string;
 
   @IsString()
   @IsNotEmpty()
-  capability!: string; // Definite assignment assertion
+  capability!: string;
 
   @IsString()
   @IsNotEmpty()
-  careerLevel!: string; // Definite assignment assertion
+  careerLevel!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  nameOfRespondent!: string;
 
   @IsObject()
-  skills!: Record<string, number>; // Directly accepts skill names mapped to skill levels
+  skills!: Record<string, number>; // Accept skill names mapped to skill levels
 }
 
-export class BulkUpdateSelfSkillsDto {
+export class BulkUpdateSkillsDto {
   @ValidateNested({ each: true })
-  @Type(() => SelfSkillsDto)
-  data!: SelfSkillsDto[]; // Definite assignment assertion
+  @Type(() => BaseSkillsDto)
+  data!: BaseSkillsDto[];
 }

@@ -1,37 +1,20 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-// import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-// import { Roles } from '../auth/roles.decorator';
-// import { RolesGuard } from '../auth/roles.guard';
-// import { UserRole } from '../auth/user-role.enum';
-import { SelfSkillsService } from './assessments.service';
-import { BulkUpdateSelfSkillsDto } from './dto/assessments.dto';
+// assessments.controller.ts
+import { Body, Controller, Post } from '@nestjs/common';
+import { SkillsService } from './assessments.service';
+import { BaseSkillsDto } from './dto/assessments.dto';
 
 @Controller('api/skills-matrix')
-// @UseGuards(JwtAuthGuard, RolesGuard)
-export class SelfSkillsController {
-  constructor(private readonly SelfSkillsService: SelfSkillsService) {}
+export class SkillsController {
+  constructor(private readonly skillsService: SkillsService) {}
 
   @Post('bulk-update')
-  // @Roles(UserRole.ADMIN)
-  async bulkUpdate(@Body() bulkUpdateDto: BulkUpdateSelfSkillsDto) {
-    return this.SelfSkillsService.bulkUpsert(bulkUpdateDto);
-  }
+  async bulkUpdate(@Body() body: { assessmentType: string; data: BaseSkillsDto[] }) {
+    const { assessmentType, data } = body;
 
-  @Get()
-  // @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  async findAll() {
-    return this.SelfSkillsService.findAll();
-  }
+    // Log the incoming request body
+    console.log('Incoming body:', body);
 
-  @Get('email/:email') // Updated to use email as the parameter
-  // @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.EMPLOYEE)
-  async findOne(@Param('email') email: string) {
-    return this.SelfSkillsService.findByEmail(email); // Updated method call to match the service
-  }
-
-  @Get('analytics/skills-distribution')
-  // @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  async getSkillsDistribution() {
-    return this.SelfSkillsService.getSkillsDistribution();
+    // Pass the assessmentType and data to the service for processing
+    return this.skillsService.bulkUpsert(assessmentType, { data });
   }
 }

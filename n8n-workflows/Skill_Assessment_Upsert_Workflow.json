@@ -15,7 +15,7 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
       "position": [
-        -840,
+        -1020,
         200
       ],
       "id": "26709d68-d40f-4372-9235-0a4ec9ecf400"
@@ -52,7 +52,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        -640,
+        -760,
         200
       ],
       "id": "694eb308-4dc4-4f81-86cc-f5db3fcb225e"
@@ -65,7 +65,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 2,
       "position": [
-        -900,
+        -1420,
         960
       ],
       "id": "9f8adb97-e876-43fa-ae32-cda79d8199bf",
@@ -74,7 +74,8 @@
           "id": "feE9JVAcVI0VzCDr",
           "name": "Google Sheets account"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -84,10 +85,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        -760,
+        -1280,
         960
       ],
-      "id": "35b3e59b-1f01-463e-aeb3-2fc44b470bb4"
+      "id": "35b3e59b-1f01-463e-aeb3-2fc44b470bb4",
+      "disabled": true
     },
     {
       "parameters": {
@@ -117,10 +119,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        -560,
+        -1080,
         960
       ],
-      "id": "148de34e-64ca-4ed1-9906-6887e567e07b"
+      "id": "148de34e-64ca-4ed1-9906-6887e567e07b",
+      "disabled": true
     },
     {
       "parameters": {
@@ -137,10 +140,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        -360,
+        -880,
         960
       ],
-      "id": "23b869ee-551c-4fcf-bf2a-dd67df4f7523"
+      "id": "23b869ee-551c-4fcf-bf2a-dd67df4f7523",
+      "disabled": true
     },
     {
       "parameters": {
@@ -170,10 +174,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        -160,
+        -680,
         860
       ],
-      "id": "52aacf51-c93f-40f1-821a-09f125aa40b6"
+      "id": "52aacf51-c93f-40f1-821a-09f125aa40b6",
+      "disabled": true
     },
     {
       "parameters": {
@@ -203,10 +208,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        -160,
+        -680,
         1060
       ],
-      "id": "e00eb5d7-8192-4b74-89ac-7f60e6a38219"
+      "id": "e00eb5d7-8192-4b74-89ac-7f60e6a38219",
+      "disabled": true
     },
     {
       "parameters": {
@@ -222,10 +228,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        -500,
+        -1020,
         1320
       ],
-      "id": "479f3835-58c9-460c-9b4a-73f29d3f08e0"
+      "id": "479f3835-58c9-460c-9b4a-73f29d3f08e0",
+      "disabled": true
     },
     {
       "parameters": {
@@ -255,10 +262,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        -160,
+        -680,
         1280
       ],
-      "id": "dfb0bdfd-5dae-4f10-8e44-cbe58ebd480e"
+      "id": "dfb0bdfd-5dae-4f10-8e44-cbe58ebd480e",
+      "disabled": true
     },
     {
       "parameters": {
@@ -340,7 +348,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract the access token from the login response\nconst accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\nconst processedData = sheetData.map(row => {\n  // Extract basic information dynamically, making the keys camelCase\n  const basicInfo = {\n    email: row['Email Address'],\n    timestamp: row['Timestamp'],\n    resourceName: row['Name of Resource'],\n    name: row['Name of Respondent'],\n    capability: row['Capability'],\n    careerLevel: row['Career Level of Resource'] || '',\n  };\n\n  // Dynamically create the skills object\n  const skills = {};\n  Object.keys(row).forEach(key => {\n    if (\n      key !== 'row_number' &&\n      key !== 'Email Address' &&\n      key !== 'Timestamp' &&\n      key !== 'Name of Resource' &&\n      key !== 'Name of Respondent' &&\n      key !== 'Capability' &&\n      key !== 'Career Level of Resource' &&\n      !isNaN(parseInt(row[key])) // Ensure that the value is numeric\n    ) {\n      const camelCaseKey = toCamelCase(key);\n      skills[camelCaseKey] = parseInt(row[key]) || 0;\n    }\n  });\n\n  return {\n    ...basicInfo,\n    skills\n  };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if email exists\n  if (!item.email) {\n    validationErrors.push('Missing Email Address');\n  }\n\n  // Check if name exists\n  if (!item.name) {\n    validationErrors.push('Missing Name of Respondent');\n  }\n\n  // Check if capability exists\n  if (!item.capability) {\n    validationErrors.push('Missing Capability');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.name,\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
+        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract the access token from the login response\nconst accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\n// Initialize arrays for valid items and errors\nconst validItems = [];\nconst errors = [];\n\n// Process each row of data\nconst processedData = sheetData.map(row => {\n  const { \n    'Email Address': email,\n    'Timestamp': timestamp,\n    'Name of Resource': resourceName,\n    'Name of Respondent': nameOfRespondent,  // Changed from name to nameOfRespondent\n    'Capability': capability,\n    'Career Level of Resource': careerLevel \n  } = row;\n\n  // Dynamically create the skills object\n  const skills = {};\n  Object.keys(row).forEach(key => {\n    if (\n      key !== 'row_number' &&\n      key !== 'Email Address' &&\n      key !== 'Timestamp' &&\n      key !== 'Name of Resource' &&\n      key !== 'Name of Respondent' &&\n      key !== 'Capability' &&\n      key !== 'Career Level of Resource' &&\n      !isNaN(parseInt(row[key])) // Ensure that the value is numeric\n    ) {\n      const camelCaseKey = toCamelCase(key);\n      skills[camelCaseKey] = parseInt(row[key]) || 0;\n    }\n  });\n\n  return {\n    email,\n    timestamp,\n    resourceName,\n    nameOfRespondent,  // Updated here as well\n    capability,\n    careerLevel: careerLevel || '',\n    skills\n  };\n});\n\n// Validate the data\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if email exists\n  if (!item.email) {\n    validationErrors.push('Missing Email Address');\n  }\n\n  // Check if name exists\n  if (!item.nameOfRespondent) {  // Updated here\n    validationErrors.push('Missing Name of Respondent');\n  }\n\n  // Check if capability exists\n  if (!item.capability) {\n    validationErrors.push('Missing Capability');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.nameOfRespondent,  // Updated here\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Determine assessment type based on the first valid item\nconst assessmentType = validItems.length > 0 && validItems[0].resourceName === validItems[0].nameOfRespondent ? \"self\" : \"manager\";  // Updated here\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
       },
       "name": "Process and Validate Data1",
       "type": "n8n-nodes-base.code",
@@ -353,7 +361,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Configuration for essential fields\nconst essentialFields = {\n  email: 'Email Address',\n  timestamp: 'Timestamp',\n  resourceName: 'Name of Resource',\n  emailOfResource: 'Email of Resource',\n  name: 'Name of Respondent',\n  capability: 'Capability',\n  careerLevel: 'Career Level of Resource'\n};\n\n// Extract the access token from the login response\nconst accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\nconst processedData = sheetData.map(row => {\n  // Extract basic information dynamically\n  const basicInfo = {};\n  Object.entries(essentialFields).forEach(([key, header]) => {\n    basicInfo[key] = row[header] || ''; // Assign empty string if the field is missing\n  });\n\n  // Dynamically create the skills object\n  const skills = {};\n  Object.keys(row).forEach(key => {\n    // Exclude essential fields and row_number\n    if (!Object.values(essentialFields).includes(key) && key !== 'row_number' && !isNaN(parseInt(row[key]))) {\n      const camelCaseKey = toCamelCase(key);\n      skills[camelCaseKey] = parseInt(row[key]) || 0;\n    }\n  });\n\n  return {\n    ...basicInfo,\n    skills\n  };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if email exists\n  if (!item.email) {\n    validationErrors.push('Missing Email Address');\n  }\n\n  // Check if name exists\n  if (!item.name) {\n    validationErrors.push('Missing Name of Respondent');\n  }\n\n  // Check if capability exists\n  if (!item.capability) {\n    validationErrors.push('Missing Capability');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.name,\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
+        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Configuration for essential fields\nconst essentialFields = {\n  email: 'Email Address',\n  timestamp: 'Timestamp',\n  resourceName: 'Name of Resource',\n  emailOfResource: 'Email of Resource',\n  nameOfRespondent: 'Name of Respondent',\n  capability: 'Capability',\n  careerLevel: 'Career Level of Resource'\n};\n\n// Extract the access token from the login response\nconst accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\nconst processedData = sheetData.map(row => {\n  // Extract basic information dynamically\n  const basicInfo = {};\n  Object.entries(essentialFields).forEach(([key, header]) => {\n    basicInfo[key] = row[header] || ''; // Assign empty string if the field is missing\n  });\n\n  // Dynamically create the skills object\n  const skills = {};\n  Object.keys(row).forEach(key => {\n    // Exclude essential fields and row_number\n    if (!Object.values(essentialFields).includes(key) && key !== 'row_number' && !isNaN(parseInt(row[key]))) {\n      const camelCaseKey = toCamelCase(key);\n      skills[camelCaseKey] = parseInt(row[key]) || 0;\n    }\n  });\n\n  return {\n    ...basicInfo,\n    skills\n  };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if email exists\n  if (!item.email) {\n    validationErrors.push('Missing Email Address');\n  }\n\n  // Check if name exists\n  if (!item.nameOfRespondent) {\n    validationErrors.push('Missing Name of Respondent');\n  }\n\n  // Check if capability exists\n  if (!item.capability) {\n    validationErrors.push('Missing Capability');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.nameOfRespondent,\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\nconst assessmentType = validItems.length > 0 && validItems[0].resourceName === validItems[0].name ? \"self\" : \"manager\";\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
       },
       "name": "Process and Validate Data2",
       "type": "n8n-nodes-base.code",
@@ -465,12 +473,13 @@
         380,
         160
       ],
-      "id": "3ba792c2-6562-4d1e-9df2-2253531d43b6"
+      "id": "3ba792c2-6562-4d1e-9df2-2253531d43b6",
+      "disabled": true
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://your-nestjs-api.com/api/skills-matrix/bulk-update",
+        "url": "http://172.22.156.50:3002/api/skills-matrix/bulk-update",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -484,38 +493,9 @@
         "bodyParameters": {
           "parameters": [
             {
-              "name": "data",
-              "value": "={{ $json.validItems }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Update Skills Matrix API1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        400,
-        -220
-      ],
-      "id": "8ecf50a0-2073-4c11-9fe3-1a833f1535c5"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://your-nestjs-api.com/api/skills-matrix/bulk-update",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
+              "name": "assessmentType",
+              "value": "={{ $json.assessmentType }}"
+            },
             {
               "name": "data",
               "value": "={{ $json.validItems }}"
@@ -532,6 +512,59 @@
         520
       ],
       "id": "8b0a0297-5d62-45b8-9b56-11cdd39f9638"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.22.156.50:3002/api/skills-matrix/bulk-update",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "assessmentType",
+              "value": "={{ $json.assessmentType }}"
+            },
+            {
+              "name": "data",
+              "value": "={{ $json.validItems }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Skills Matrix API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        380,
+        -140
+      ],
+      "id": "24ab3f9d-156b-4fc4-a48b-17a62ba3a1c7"
+    },
+    {
+      "parameters": {
+        "content": "## Reference",
+        "height": 756.3366169586252,
+        "width": 1037.2586577128786,
+        "color": 3
+      },
+      "id": "33c4815d-a6f5-44a0-a5e6-c863818965f7",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1479.8155918491493,
+        793.0434187591229
+      ]
     }
   ],
   "pinData": {},
@@ -715,7 +748,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "e89fcff0-42ee-4622-a8ff-71ec96bb2406",
+  "versionId": "90047a65-cd30-42db-a36a-e707dd9eea84",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "a31f8c9eb797a311bc289ce7bafeb2442b7772146dd18635dc019f72cb5829a0"
