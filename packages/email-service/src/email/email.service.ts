@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import * as handlebars from 'handlebars';
 import { createTransport, Transporter } from 'nodemailer';
@@ -8,6 +8,8 @@ import { join } from 'path';
 export class EmailService {
   private transporter: Transporter;
   private adminEmails: string[];
+  private readonly logger = new Logger(EmailService.name);
+
 
   constructor() {
     this.transporter = this.createTransporter();
@@ -34,10 +36,52 @@ export class EmailService {
   }
 
   private async getEmailTemplate(templateName: string, data: any): Promise<string> {
-    const templatePath = join(__dirname,'..', 'src/templates', `${templateName}.html`);
-    const templateSource = readFileSync(templatePath, 'utf-8');
-    const template = handlebars.compile(templateSource);
-    return template(data);
+    this.logger.log("Loading email templates...");
+    try {
+      const templatePath = join(__dirname,'..', 'src/templates', `${templateName}.html`);
+      const templateSource = readFileSync(templatePath, 'utf-8');
+      const template = handlebars.compile(templateSource);
+      return template(data);
+    } catch (error) {
+      this.logger.error(`Failed to load email template: ${templateName}`, error.stack);
+      throw new InternalServerErrorException(`Error loading template: ${templateName}`);
+    }
+  }
+
+  async sendSuccessEmail(workflowName: string): Promise<void> {
+    this.logger.log("Sending success email...")
+    try {
+      const html = await this.getEmailTemplate('success-email-template', {workflowName });
+      const mailOptions = {
+        from: 'stratpoint@gmail.com',
+        to: this.adminEmails.join(','),
+        subject: 'Workflow Successful!',
+        html: html,
+      };
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log("Success email sent successfully");
+    } catch (error) {
+      this.logger.error(`Failed to send success email for workflow: ${workflowName}`, error.stack);
+      throw new InternalServerErrorException('Failed to send success email.');
+    }
+  }
+
+  async sendErrorEmail(error: string, workflowName: string): Promise<void> {
+    this.logger.log("Sending error email...")
+    try {
+      const html = await this.getEmailTemplate('error-email-template', { error, workflowName });
+      const mailOptions = {
+        from: 'stratpoint@gmail.com',
+        to: this.adminEmails.join(','),
+        subject: 'Workflow Failed!',
+        html: html,
+      };
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log("Error email sent successfully")
+    } catch (sendError) {
+      this.logger.error(`Failed to send failure email for workflow: ${workflowName}`, sendError.stack);
+      throw new InternalServerErrorException('Failed to send fail email.');
+    }
   }
 
   async sendWelcomeEmail(to: string, name: string): Promise<void> {
@@ -57,28 +101,6 @@ export class EmailService {
       from: 'stratpoint@gmail.com',
       to: to,
       subject: subject,
-      html: html,
-    };
-    await this.transporter.sendMail(mailOptions);
-  }
-
-  async sendSuccessEmail(workflowName: string): Promise<void> {
-    const html = await this.getEmailTemplate('success-email-template', {workflowName });
-    const mailOptions = {
-      from: 'stratpoint@gmail.com',
-      to: this.adminEmails.join(','),
-      subject: 'Workflow Successful!',
-      html: html,
-    };
-    await this.transporter.sendMail(mailOptions);
-  }
-
-  async sendErrorEmail(error: string, workflowName: string): Promise<void> {
-    const html = await this.getEmailTemplate('error-email-template', { error, workflowName });
-    const mailOptions = {
-      from: 'stratpoint@gmail.com',
-      to: this.adminEmails.join(','),
-      subject: 'Workflow Failed!',
       html: html,
     };
     await this.transporter.sendMail(mailOptions);

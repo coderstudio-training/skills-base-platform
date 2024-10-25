@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { FailEmailDto } from './dto/fail-email.dto';
+import { SuccessEmailDto } from './dto/success-email.dto';
 import { EmailService } from './email.service';
 
 @Controller('email')
@@ -21,17 +23,25 @@ export class EmailController {
   // }
 
   @Post('send-success')
-  async sendSuccessEmail(@Body() body: { workflowName: string }): Promise<{ message: string }> {
-    const { workflowName } = body;
-    await this.emailService.sendSuccessEmail(workflowName);
-    return { message: 'Success email sent successfully' };
+  async sendSuccessEmail(@Body() successEmailDto: SuccessEmailDto): Promise<{ message: string }> {
+    const { workflowName } = successEmailDto;
+    try {
+      await this.emailService.sendSuccessEmail(workflowName);
+      return { message: 'Success email sent successfully' };
+    } catch (error) {
+      throw new BadRequestException('Failed to send success email.');
+    }
   }
 
   @Post('send-error')
-  async sendErrorEmail(@Body() body: {error: string; workflowName: string }): Promise<{ message: string }> {
-    const { error, workflowName } = body;
-    await this.emailService.sendErrorEmail(error, workflowName);
-    return { message: 'Error email sent successfully' };
+  async sendErrorEmail(@Body() failEmailDto: FailEmailDto): Promise<{ message: string }> {
+    const { error, workflowName } = failEmailDto;
+    try {
+      await this.emailService.sendErrorEmail(error, workflowName);
+      return { message: 'Error email sent successfully' };
+    } catch (error) {
+      throw new BadRequestException('Failed to send fail email.');
+    }
   }
 
   @Get('templates')
