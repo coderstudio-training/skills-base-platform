@@ -2,17 +2,6 @@
   "name": "Employee Sync Workflow",
   "nodes": [
     {
-      "parameters": {},
-      "id": "a395cbea-4e58-4099-89e2-43a871e6c416",
-      "name": "When clicking ‘Test workflow’",
-      "type": "n8n-nodes-base.manualTrigger",
-      "position": [
-        1200,
-        960
-      ],
-      "typeVersion": 1
-    },
-    {
       "parameters": {
         "method": "POST",
         "url": "http://192.168.100.70:3001/employees/sync",
@@ -60,23 +49,6 @@
           "name": "Google Sheets account 2"
         }
       }
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "0d255f04-41b2-4f32-aea4-efe224bb20e8",
-        "options": {}
-      },
-      "id": "ccf09e56-1d32-48a7-af5d-9e88be96d2ac",
-      "name": "Webhook2",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2,
-      "position": [
-        1200,
-        760
-      ],
-      "webhookId": "0d255f04-41b2-4f32-aea4-efe224bb20e8",
-      "disabled": true
     },
     {
       "parameters": {
@@ -168,25 +140,10 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://your-nestjs-api.com/api/notifications/success",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
-            }
-          ]
-        },
+        "url": "http://192.168.100.70:3005/email/send-success",
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "message",
-              "value": "=Skills Matrix update completed successfully. Updated {{ $json.body.updatedCount }} records."
-            }
-          ]
-        },
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"workflowName\": \"Employee Sync Workflow\"\n}",
         "options": {}
       },
       "name": "Send Success Notification API1",
@@ -196,31 +153,15 @@
         3120,
         660
       ],
-      "id": "239ddd89-8c45-498c-a86c-72bc856fb41c",
-      "disabled": true
+      "id": "239ddd89-8c45-498c-a86c-72bc856fb41c"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://your-nestjs-api.com/api/notifications/error",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
-            }
-          ]
-        },
+        "url": "http://192.168.100.70:3005/email/send-error",
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "message",
-              "value": "=Error occurred during Skills Matrix update: {{ $json.body }}"
-            }
-          ]
-        },
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"error\": \"An error occurred during the workflow.\",\n  \"workflowName\": \"Employee Sync Workflow\"\n}",
         "options": {}
       },
       "name": "Send Error Notification API1",
@@ -230,8 +171,7 @@
         3120,
         860
       ],
-      "id": "c589a099-b2a8-4cfd-b97c-fb659a0053ff",
-      "disabled": true
+      "id": "c589a099-b2a8-4cfd-b97c-fb659a0053ff"
     },
     {
       "parameters": {
@@ -266,7 +206,8 @@
         "rule": {
           "interval": [
             {
-              "field": "hours"
+              "field": "seconds",
+              "secondsInterval": 0
             }
           ]
         }
@@ -276,7 +217,7 @@
       "typeVersion": 1,
       "position": [
         1200,
-        560
+        760
       ],
       "id": "2c4be3aa-2fc1-40da-ba48-73cbe8f4b4e6",
       "disabled": true
@@ -338,6 +279,22 @@
         1920,
         760
       ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0d255f04-41b2-4f32-aea4-efe224bb20e8",
+        "options": {}
+      },
+      "id": "ccf09e56-1d32-48a7-af5d-9e88be96d2ac",
+      "name": "Webhook2",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        960
+      ],
+      "webhookId": "0d255f04-41b2-4f32-aea4-efe224bb20e8"
     }
   ],
   "pinData": {},
@@ -363,17 +320,6 @@
           },
           {
             "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "When clicking ‘Test workflow’": {
-      "main": [
-        [
-          {
-            "node": "Login to API1",
             "type": "main",
             "index": 0
           }
@@ -452,13 +398,24 @@
           }
         ]
       ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Login to API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "4bcfe334-d049-4c4c-aacf-d122d7f4ff8e",
+  "versionId": "ac74c4cc-9357-4e3b-84bd-75d144f156f0",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f5176b00fa2d24bacd6209668b23765657e914066e3bf11efab5df2b9a884b80"
