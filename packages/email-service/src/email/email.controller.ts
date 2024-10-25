@@ -7,21 +7,6 @@ import { EmailService } from './email.service';
 export class EmailController {
   constructor(private emailService: EmailService) {}
 
-  @Post('send')
-  async sendEmail(@Body() body: { to: string; name: string }): Promise<{ message: string }> {
-    const { to, name } = body;
-    await this.emailService.sendWelcomeEmail(to, name);
-    return { message: 'Email sent successfully' };
-  }
-
-  // @Post('send')
-  // async sendEmail(
-  //   @Body() sendEmailDto: SendEmailDto
-  // ) {
-  //   const { to, subject, template, data } = sendEmailDto;
-  //   return await this.emailService.sendEmail(to, subject, template, data);
-  // }
-
   @Post('send-success')
   async sendSuccessEmail(@Body() successEmailDto: SuccessEmailDto): Promise<{ message: string }> {
     const { workflowName } = successEmailDto;

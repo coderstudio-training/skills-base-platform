@@ -84,17 +84,6 @@ export class EmailService {
     }
   }
 
-  async sendWelcomeEmail(to: string, name: string): Promise<void> {
-    const html = await this.getEmailTemplate('welcome-email-template', { name });
-    const mailOptions = {
-      from: 'stratpoint@gmail.com',
-      to: to,
-      subject: 'Welcome!',
-      html: html,
-    };
-    await this.transporter.sendMail(mailOptions);
-  }
-
   async sendEmail(to: string, subject: string, templateName: string, data: any): Promise<void> {
     const html = await this.getEmailTemplate(templateName, data);
     const mailOptions = {
@@ -106,9 +95,16 @@ export class EmailService {
     await this.transporter.sendMail(mailOptions);
   }
 
-  // async sendWelcomeEmail(to: string, name: string): Promise<void> {
-  //   await this.sendEmail(to, 'Welcome!', 'welcome', { name });
-  // }
+  async sendWelcomeEmail(to: string, name: string): Promise<void> {
+    const html = await this.getEmailTemplate('welcome-email-template', { name });
+    const mailOptions = {
+      from: 'stratpoint@gmail.com',
+      to: to,
+      subject: 'Welcome!',
+      html: html,
+    };
+    await this.transporter.sendMail(mailOptions);
+  }
 
   getEmailTemplates(): string[] {
     const templateDir = join(__dirname, '..', 'src/templates');
