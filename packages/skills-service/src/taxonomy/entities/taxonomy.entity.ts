@@ -1,9 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { BaseEntity } from '@skills-base/shared';
 
 @Schema()
-export class Taxonomy extends Document {
-    // No attribute to index yet. Should also extend from BaseEntity from shared. 
+export class Taxonomy extends BaseEntity {
   @Prop({ required: true, unique: true, index: true})
   DOC_Id: string;
 
