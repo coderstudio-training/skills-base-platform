@@ -1,0 +1,438 @@
+{
+  "name": "Learning Service - Working Template",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        700
+      ],
+      "id": "660a2651-5728-4c8d-8ff6-8009e46ce948"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.31.99.9:3001/auth/login",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "admin@example.com"
+            },
+            {
+              "name": "password",
+              "value": "AdminPassword123!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Login to API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -1120,
+        500
+      ],
+      "id": "15877d3b-1342-403c-bc0c-8b30c54e6ee0"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Define only static headers for presence checking\nconst STATIC_HEADERS = [\n  'SkillCategory',\n  'SkillName',\n  'RequiredLevel',\n  'CareerLevel',\n  'CourseLevel'\n];\n\n// Helper to convert header to camelCase\nfunction toCamelCase(header) {\n  return header\n    .split(/[\\s_]+/)\n    .map((word, index) => {\n      if (index === 0) {\n        return word.charAt(0).toLowerCase() + word.slice(1);\n      }\n      return word.charAt(0).toUpperCase() + word.slice(1);\n    })\n    .join('');\n}\n\nfunction transformData(items) {\n  if (!items?.length) {\n    throw new Error('No data to process');\n  }\n\n  const firstItem = items[0].json;\n  const allErrors = [];\n  \n  // Check for required headers presence\n  STATIC_HEADERS.forEach(header => {\n    if (!(header in firstItem)) {\n      allErrors.push(`Missing required header: ${header}`);\n    }\n  });\n\n  if (allErrors.length > 0) {\n    throw new Error(`Header validation failed: ${allErrors.join(', ')}`);\n  }\n\n  // Transform items\n  const transformedItems = items.map((item, index) => {\n    const row = item.json;\n    const transformedItem = {};\n\n    // Add courseId first\n    transformedItem.courseId = `COURSE${String(row.row_number).padStart(3, '0')}`;\n\n    // Process all fields dynamically\n    Object.keys(row).forEach(header => {\n      if (header === 'row_number') return; \n\n      // Get the camelCase version of the header\n      const camelCaseHeader = toCamelCase(header);\n      \n      // Special handling for RequiredLevel\n      if (header === 'RequiredLevel') {\n        transformedItem[camelCaseHeader] = Number(row[header]);\n      } else {\n        transformedItem[camelCaseHeader] = row[header] || '';\n      }\n    });\n\n    return transformedItem;\n  });\n\n  // Return in API expected format\n  return {\n    data: transformedItems\n  };\n}\n\n// Add debug logging to check the output\nconst inputItems = $input.all();\nconst result = transformData(inputItems);\nconsole.log('Transformed first item:', JSON.stringify(result.data[0], null, 2));\nreturn result;"
+      },
+      "name": "Process and Validate Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        660
+      ],
+      "id": "0e659be2-306c-4c64-b725-b64d528005c6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/notifications/success",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "=Skills Matrix update completed successfully. Updated {{ $json.body.updatedCount }} records."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Send Success Notification API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        100,
+        380
+      ],
+      "id": "ffc44a7f-9ccb-4d02-9113-84a40da0a173",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/notifications/error",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "=Error occurred during Skills Matrix update: {{ $json.body }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Send Error Notification API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        100,
+        620
+      ],
+      "id": "792ac534-2179-4e1e-bfe3-771cc1788d8d",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/error-logs/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "errors",
+              "value": "={{ $json.errors }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Errors to API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        100,
+        860
+      ],
+      "id": "21d73701-4785-437a-8115-6a1f42071271",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.31.99.9:3003/api/courses/bulk-update",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "name": "Upsert Courses",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -360,
+        460
+      ],
+      "id": "40900885-3af9-4bac-99c2-c4f816fef73c",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.webViewLink }}",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 552430385,
+          "mode": "list",
+          "cachedResultName": "Master List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18bHG3rgr40zATsXVNZ6Fg1UuQO7R13H998R7Pc1a81k/edit#gid=552430385"
+        },
+        "options": {}
+      },
+      "id": "4ed5ec86-e205-42c4-b5ad-a5665c87e7ed",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -780,
+        500
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VQ9bZ0t9QY1FAkb5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ed80d057-afd9-4f62-919b-d049b17a8b78",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 400,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "id": "a429437b-4450-4199-9b79-9f5c6edf71a5",
+      "name": "Check API Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -140,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ed80d057-afd9-4f62-919b-d049b17a8b78",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": true,
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "id": "47c99a8c-33a5-4694-b062-0ec779ac4356",
+      "name": "Check for Validation",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -220,
+        840
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "Learning Resources",
+        "filter": {
+          "whatToSearch": "files"
+        },
+        "options": {
+          "fields": [
+            "webViewLink"
+          ]
+        }
+      },
+      "id": "ebaccaf7-a482-481f-ba32-d245a41e59cf",
+      "name": "Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -940,
+        680
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "CFGiVEUmj0R2AuOb",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Login to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process and Validate Data": {
+      "main": [
+        [
+          {
+            "node": "Upsert Courses",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check for Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Courses": {
+      "main": [
+        [
+          {
+            "node": "Check API Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Process and Validate Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Response": {
+      "main": [
+        [
+          {
+            "node": "Send Success Notification API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Notification API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login to API": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Validation": {
+      "main": [
+        [
+          {
+            "node": "Log Errors to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "66f3a564-c41f-415d-b291-e67bad024134",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d4f3028e653c18f18776c149105cc4db855bb5b12b65b7125b864735ba86ab75"
+  },
+  "id": "YmGAfDxuhyOOW1bj",
+  "tags": []
+}
