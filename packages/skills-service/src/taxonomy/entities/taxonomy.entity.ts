@@ -3,8 +3,8 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Taxonomy extends Document {
-    // No attribute to index yet. 
-  @Prop({ required: true, unique: true})
+    // No attribute to index yet. Should also extend from BaseEntity from shared. 
+  @Prop({ required: true, unique: true, index: true})
   doc_Id: string;
 
   @Prop({ required: true })
