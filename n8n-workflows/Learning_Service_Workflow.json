@@ -50,7 +50,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Define only static headers for presence checking\nconst STATIC_HEADERS = [\n  'SkillCategory',\n  'SkillName',\n  'RequiredLevel',\n  'CareerLevel',\n  'CourseLevel'\n];\n\n// Helper to convert header to camelCase\nfunction toCamelCase(header) {\n  return header\n    .split(/[\\s_]+/)\n    .map((word, index) => {\n      if (index === 0) {\n        return word.charAt(0).toLowerCase() + word.slice(1);\n      }\n      return word.charAt(0).toUpperCase() + word.slice(1);\n    })\n    .join('');\n}\n\nfunction transformData(items) {\n  if (!items?.length) {\n    throw new Error('No data to process');\n  }\n\n  const firstItem = items[0].json;\n  const allErrors = [];\n  \n  // Check for required headers presence\n  STATIC_HEADERS.forEach(header => {\n    if (!(header in firstItem)) {\n      allErrors.push(`Missing required header: ${header}`);\n    }\n  });\n\n  if (allErrors.length > 0) {\n    throw new Error(`Header validation failed: ${allErrors.join(', ')}`);\n  }\n\n  // Transform items\n  const transformedItems = items.map((item, index) => {\n    const row = item.json;\n    const transformedItem = {};\n\n    // Add courseId first\n    transformedItem.courseId = `COURSE${String(row.row_number).padStart(3, '0')}`;\n\n    // Process all fields dynamically\n    Object.keys(row).forEach(header => {\n      if (header === 'row_number') return; \n\n      // Get the camelCase version of the header\n      const camelCaseHeader = toCamelCase(header);\n      \n      // Special handling for RequiredLevel\n      if (header === 'RequiredLevel') {\n        transformedItem[camelCaseHeader] = Number(row[header]);\n      } else {\n        transformedItem[camelCaseHeader] = row[header] || '';\n      }\n    });\n\n    return transformedItem;\n  });\n\n  // Return in API expected format\n  return {\n    data: transformedItems\n  };\n}\n\n// Add debug logging to check the output\nconst inputItems = $input.all();\nconst result = transformData(inputItems);\nconsole.log('Transformed first item:', JSON.stringify(result.data[0], null, 2));\nreturn result;"
+        "jsCode": "// 1. Constants Definition\nconst STATIC_HEADERS = [\n  'SkillCategory',\n  'SkillName',\n  'RequiredLevel',\n  'CareerLevel',\n  'CourseLevel'\n];\n\nconst NUMERIC_FIELDS = ['RequiredLevel'];\nconst EXCLUDED_FIELDS = ['row_number'];\n\n// 2. Data Structure Validation\nconst structureValidators = {\n  isPresent: (value) => value !== null && value !== undefined && value !== '',\n  hasCorrectType: (value, type) => {\n    switch(type) {\n      case 'number': return !isNaN(Number(value));\n      case 'string': return typeof value === 'string' || value instanceof String;\n      default: return true;\n    }\n  }\n};\n\n// 3. Helper Functions\nfunction toCamelCase(header) {\n  return header\n    .replace(/([a-z])([A-Z])/g, '$1 $2')\n    .split(/[\\s_-]+/)\n    .map((word, index) => {\n      if (index === 0) {\n        return word.toLowerCase();\n      }\n      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();\n    })\n    .join('');\n}\n\nfunction transformValue(header, value) {\n  if (NUMERIC_FIELDS.includes(header)) {\n    return Number(value);\n  }\n  return value || '';\n}\n\nfunction validateStructure(header, value) {\n  const errors = [];\n  \n  if (!structureValidators.isPresent(value)) {\n    errors.push(`${header} is missing or empty`);\n    return errors;\n  }\n\n  const expectedType = NUMERIC_FIELDS.includes(header) ? 'number' : 'string';\n  if (!structureValidators.hasCorrectType(value, expectedType)) {\n    errors.push(`${header} must be a ${expectedType}`);\n  }\n\n  return errors;\n}\n\n// 4. Main Processing Function\nfunction processData(items) {\n  if (!items?.length) {\n    throw new Error('No data to process');\n  }\n\n  const firstItem = items[0].json;\n  const structureErrors = [];\n  const processedItems = [];\n  \n  // Check required headers\n  const missingHeaders = STATIC_HEADERS.filter(header => !(header in firstItem));\n  if (missingHeaders.length) {\n    throw new Error(`Missing required headers: ${missingHeaders.join(', ')}`);\n  }\n\n  // Process items\n  items.forEach((item, index) => {\n    const row = item.json;\n    const rowErrors = [];\n    const transformedItem = {\n      courseId: `COURSE${String(index + 1).padStart(3, '0')}`\n    };\n\n    Object.entries(row).forEach(([header, value]) => {\n      if (EXCLUDED_FIELDS.includes(header)) return;\n\n      const camelCaseHeader = toCamelCase(header);\n      \n      if (STATIC_HEADERS.includes(header)) {\n        const fieldErrors = validateStructure(header, value);\n        rowErrors.push(...fieldErrors);\n      }\n\n      transformedItem[camelCaseHeader] = transformValue(header, value);\n    });\n//collects validation error each rows\n    if (rowErrors.length) {\n      structureErrors.push({\n        rowIndex: index + 1,\n        courseId: transformedItem.courseId,\n        errors: rowErrors\n      });\n    }\n    \n    processedItems.push(transformedItem);\n  });\n\n  // Log validation issues\n  if (structureErrors.length > 0) {\n    console.log('Data structure issues found:', JSON.stringify(structureErrors, null, 2));\n  }\n\n  return {\n    data: processedItems,\n    structureErrors\n  };\n}\n\n// 5. Execution\ntry {\n  return processData($input.all());\n} catch (error) {\n  console.error('Processing failed:', error.message);\n  throw error; // Let n8n handle the error\n}"
       },
       "name": "Process and Validate Data",
       "type": "n8n-nodes-base.code",
@@ -169,7 +169,7 @@
         "url": "http://172.31.99.9:3003/api/courses/bulk-update",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ $json }}",
+        "jsonBody": "={{ { data: $json.data } }}",
         "options": {
           "response": {
             "response": {
@@ -238,9 +238,19 @@
                 "type": "number",
                 "operation": "notEquals"
               }
+            },
+            {
+              "id": "58828949-9335-42f4-bb9d-c6875244fb81",
+              "leftValue": "={{ $json.validationErrors }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
             }
           ],
-          "combinator": "or"
+          "combinator": "and"
         },
         "options": {
           "ignoreCase": false
@@ -259,27 +269,27 @@
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": false,
+            "caseSensitive": true,
             "leftValue": "",
             "typeValidation": "strict",
             "version": 2
           },
           "conditions": [
             {
-              "id": "ed80d057-afd9-4f62-919b-d049b17a8b78",
-              "leftValue": "={{ $json.data }}",
-              "rightValue": true,
+              "id": "8b336542-c20c-4301-a44a-9419b21e1b38",
+              "leftValue": "={{ $json.structureErrors }}",
+              "rightValue": "",
               "operator": {
                 "type": "array",
-                "operation": "empty",
+                "operation": "notEmpty",
                 "singleValue": true
               }
             }
           ],
-          "combinator": "and"
+          "combinator": "or"
         },
         "options": {
-          "ignoreCase": true
+          "ignoreCase": false
         }
       },
       "id": "47c99a8c-33a5-4694-b062-0ec779ac4356",
@@ -290,7 +300,7 @@
         -220,
         840
       ],
-      "alwaysOutputData": true
+      "alwaysOutputData": false
     },
     {
       "parameters": {
@@ -338,12 +348,12 @@
       "main": [
         [
           {
-            "node": "Upsert Courses",
+            "node": "Check for Validation",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Check for Validation",
+            "node": "Upsert Courses",
             "type": "main",
             "index": 0
           }
@@ -428,7 +438,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "66f3a564-c41f-415d-b291-e67bad024134",
+  "versionId": "174dcb49-89dc-4563-9135-b2bc131e7dd3",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "d4f3028e653c18f18776c149105cc4db855bb5b12b65b7125b864735ba86ab75"

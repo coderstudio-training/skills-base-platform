@@ -11,38 +11,43 @@ export class CoursesService {
   private readonly logger = new Logger(CoursesService.name);
   private readonly BATCH_SIZE = 1000;
 
-  // Define validation rules for dynamic fields
-  private readonly DYNAMIC_FIELD_VALIDATIONS: Record<string, { 
-    validate: (value: string) => boolean;
+  // Basic field requirements (from n8n)
+  private readonly REQUIRED_FIELDS = {
+    courseName: 'string',
+    skillCategory: 'string',
+    skillName: 'string',
+    requiredLevel: 'number',
+    careerLevel: 'string',
+    courseLevel: 'string'
+  } as const;
+
+  // Simple business rules
+  private readonly BUSINESS_RULES: Record<string, {
+    validate: (value: any) => boolean;
     message: string;
   }> = {
-    duration: {
-      validate: (value: string) => /^\d+\s+(weeks?|months?)$/i.test(value),
-      message: 'Duration must be in format: "X weeks" or "X months"'
+    requiredLevel: {
+      validate: (value: unknown) => {
+        const numValue = Number(value);
+        return !isNaN(numValue) && numValue >= 1 && numValue <= 6;
+      },
+      message: 'Required level must be between 1 and 6'
     },
-    learningObjectives: {
-      validate: (value: string) => value.includes(','),
-      message: 'Learning objectives should be comma-separated'
+    courseLevel: {
+      validate: (value: unknown) => {
+        return typeof value === 'string' && 
+          ['Foundation', 'Intermediate', 'Advanced', 'Executive'].includes(value);
+      },
+      message: 'Course level must be Foundation, Intermediate, Advanced or Executive'
     },
-    prerequisites: {
-      validate: (value: string) => value.length > 0,
-      message: 'Prerequisites should not be empty'
-    },
-    assessment: {
-      validate: (value: string) => value.length > 0,
-      message: 'Assessment should not be empty'
-    },
-    provider: {
-      validate: (value: string) => value.length > 0,
-      message: 'Provider should not be empty'
-    },
-    businessValue: {
-      validate: (value: string) => value.length > 0,
-      message: 'Business value should not be empty'
-    },
-    recommendedFor: {
-      validate: (value: string) => /^Current Level < \d+$/.test(value),
-      message: 'RecommendedFor should be in format "Current Level < X"'
+    careerLevel: {
+      validate: (value: unknown) => {
+        return typeof value === 'string' && 
+          (value.includes('Professional') || 
+           value.includes('Manager') || 
+           value.includes('Director'));
+      },
+      message: 'Career level must contain Professional, Manager, or Director'
     }
   };
 
@@ -67,50 +72,38 @@ export class CoursesService {
   private validateCourse(course: CourseDto): string[] {
     const errors: string[] = [];
 
-    // Static fields validation
-    if (!course.courseName?.trim()) {
-      errors.push('courseName is required');
-    }
-    if (!course.skillCategory?.trim()) {
-      errors.push('skillCategory is required');
-    }
-    if (!course.skillName?.trim()) {
-      errors.push('skillName is required');
-    }
-    if (!course.careerLevel?.trim()) {
-      errors.push('careerLevel is required');
-    }
-    if (!course.courseLevel?.trim()) {
-      errors.push('courseLevel is required');
-    }
+    // 1. Basic field validation (from n8n)
+    Object.entries(this.REQUIRED_FIELDS).forEach(([fieldName, expectedType]) => {
+      const value = course[fieldName as keyof CourseDto];
+      
+      if (!value && value !== 0) {
+        errors.push(`${fieldName} is required`);
+        return;
+      }
 
-    if (typeof course.requiredLevel !== 'number') {
-      errors.push('requiredLevel must be a number');
-    } else if (course.requiredLevel < 1 || course.requiredLevel > 6) {
-      errors.push('requiredLevel must be between 1 and 6');
-    }
+      if (typeof value !== expectedType) {
+        errors.push(`${fieldName} must be a ${expectedType}`);
+        return;
+      }
+    });
 
-    // Dynamic fields validation
-    Object.entries(course).forEach(([field, value]) => {
-      const validator = this.DYNAMIC_FIELD_VALIDATIONS[field.toLowerCase()];
-      if (validator && value !== undefined && value !== null && value !== '') {
-        if (!validator.validate(value)) {
-          errors.push(validator.message);
-        }
+    // 2. Business rules validation
+    Object.entries(this.BUSINESS_RULES).forEach(([fieldName, rule]) => {
+      const value = course[fieldName as keyof CourseDto];
+      if (value && !rule.validate(value)) {
+        errors.push(rule.message);
       }
     });
 
     return errors;
   }
 
-  
-  //bulkUpsert main function
   async bulkUpsert(bulkUpdateDto: BulkUpdateCoursesDto): Promise<BulkUpsertResponse> {
     let totalUpdatedCount = 0;
     const errors = [];
     const validationErrors: ValidationError[] = [];
 
-    // Validate all courses first
+    // Validate all courses
     bulkUpdateDto.data.forEach((course, index) => {
       const courseErrors = this.validateCourse(course);
       if (courseErrors.length > 0) {
@@ -119,10 +112,11 @@ export class CoursesService {
           courseId: course.courseId,
           errors: courseErrors
         });
+        this.logger.debug(`Validation errors for course ${course.courseId}:`, courseErrors);
       }
     });
 
-    // If there are validation errors, return them without processing
+    // Return early if validation fails
     if (validationErrors.length > 0) {
       return {
         updatedCount: 0,
@@ -137,28 +131,31 @@ export class CoursesService {
       try {
         const result = await this.processBatch(batch);
         totalUpdatedCount += result.modifiedCount + result.upsertedCount;
+        this.logger.debug(`Processed batch ${i / this.BATCH_SIZE + 1}: ${result.modifiedCount + result.upsertedCount} records`);
       } catch (error) {
-        this.logger.error(`Error processing batch ${i / this.BATCH_SIZE + 1}: ${error.message}`);
+        const errorMessage = `Error processing batch ${i / this.BATCH_SIZE + 1}: ${error.message}`;
+        this.logger.error(errorMessage);
         errors.push({ batchIndex: i / this.BATCH_SIZE + 1, error: error.message });
       }
     }
 
-    return {updatedCount: totalUpdatedCount, errors, validationErrors };
+    return { updatedCount: totalUpdatedCount, errors, validationErrors };
   }
 
   private async processBatch(batch: CourseDto[]): Promise<BulkWriteResult> {
     const operations = batch.map(item => ({
       updateOne: {
         filter: { courseId: item.courseId },
-        update: { $set: { ...item, lastUpdated: new Date() } },
+        update: { 
+          $set: { 
+            ...item,
+            lastUpdated: new Date()
+          }
+        },
         upsert: true
       }
     }));
 
     return this.courseModel.bulkWrite(operations, { ordered: false });
-  }
-  
-  async findAll(): Promise<Course[]> {
-    return this.courseModel.find().exec();
   }
 }

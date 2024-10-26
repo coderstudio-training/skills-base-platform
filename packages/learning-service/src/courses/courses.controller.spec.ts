@@ -1,22 +1,27 @@
-// import { Test, TestingModule } from '@nestjs/testing';
-// import { AppController } from './courses.controller';
-// import { AppService } from './courses.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { CoursesController } from './courses.controller';
+import { CoursesService } from './courses.service';
 
-// describe('AppController', () => {
-//   let appController: AppController;
+describe('AppController', () => {
+  let controller: CoursesController;
+  let service: CoursesService;
 
-//   beforeEach(async () => {
-//     const app: TestingModule = await Test.createTestingModule({
-//       controllers: [AppController],
-//       providers: [AppService],
-//     }).compile();
+  beforeEach(async () => {
+    const app: TestingModule = await Test.createTestingModule({
+      controllers: [CoursesController],
+      providers: [CoursesService],
+    }).compile();
 
-//     appController = app.get<AppController>(AppController);
-//   });
+    controller = app.get<CoursesController>(CoursesController);
+  });
 
-//   describe('root', () => {
-//     it('should return "Hello World!"', () => {
-//       expect(appController.getHello()).toBe('Hello World!');
-//     });
-//   });
-// });
+  describe('controller', () => {
+    it('should be defined', () => {
+      expect(controller).toBeDefined();
+    });
+
+    it('should have bulkUpdate method', () => {
+      expect(controller.bulkUpdate).toBeDefined();
+    });
+  });
+});
