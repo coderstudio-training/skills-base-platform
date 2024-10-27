@@ -3,14 +3,17 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule, LoggerMiddleware } from '@skills-base/shared';
-import { SelfSkillsModule } from './assessments/assessments.module';
+import { SkillsModule } from './assessments/assessments.module';
+import { RequiredSkills } from './assessments/entities/required-skills.entity';
+
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     DatabaseModule,
-    SelfSkillsModule,
+    SkillsModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -31,7 +31,7 @@ export class BaseSkillsDto {
   nameOfRespondent!: string;
 
   @IsObject()
-  skills!: Record<string, number>; // Accept skill names mapped to skill levels
+  skills!: Record<string, number>; 
 }
 
 export class BulkUpdateSkillsDto {

@@ -1,5 +1,3 @@
-// packages/user-service/src/main.ts
-
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { HttpExceptionFilter, TransformInterceptor } from '@skills-base/shared';
@@ -24,7 +22,7 @@ async function bootstrap() {
   await app.listen(port);
 
   Logger.log(
-    `User service is running on: http://localhost:${port}`,
+    `Skills service is running on: http://localhost:${port}`,
     'Bootstrap',
   );
 }

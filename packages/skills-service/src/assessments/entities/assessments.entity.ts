@@ -42,6 +42,9 @@ export const SelfSkillsSchema = SchemaFactory.createForClass(SelfSkills);
 
 // ManagerSkills entity
 @Schema()
-export class ManagerSkills extends BaseSkills {}
+export class ManagerSkills extends BaseSkills {
+  @Prop({ required: true, unique: true }) 
+  emailOfResource!: string; 
+}
 
 export const ManagerSkillsSchema = SchemaFactory.createForClass(ManagerSkills);
