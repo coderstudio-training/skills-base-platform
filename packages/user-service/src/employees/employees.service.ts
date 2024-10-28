@@ -141,7 +141,11 @@ export class EmployeesService {
       },
     }));
 
-    return this.employeeModel.bulkWrite(operations, { ordered: false });
+    // Cast the result to BulkWriteResult
+    const result = await this.employeeModel.bulkWrite(operations, {
+      ordered: false,
+    });
+    return result as unknown as BulkWriteResult;
   }
 
   async findAll(): Promise<Employee[]> {
