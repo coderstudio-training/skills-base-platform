@@ -8,6 +8,7 @@
   "scripts": {
     "prepare": "husky install",
     "build": "lerna run build",
+    "postinstall": "lerna run build",
     "test": "lerna run test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "lint": "eslint \"packages/*/src/**/*.ts\" \"packages/*/src/**/*.tsx\"",
