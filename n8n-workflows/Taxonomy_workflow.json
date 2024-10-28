@@ -22,7 +22,7 @@
       "parameters": {
         "content": "docx convert",
         "height": 222.88130080658033,
-        "width": 448.8344359941168,
+        "width": 479.3511323613318,
         "color": 2
       },
       "id": "4558f9f6-1835-4bb2-9b99-70f7b2fb7553",
@@ -30,7 +30,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        480,
+        449.483303632785,
         400
       ]
     },
@@ -108,7 +108,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        540,
+        520,
         460
       ],
       "credentials": {
@@ -272,11 +272,11 @@
           "conditions": [
             {
               "id": "5fb12013-83ad-4c24-9d29-7f197fe9ef01",
-              "leftValue": "={{ $('Get data').first() }}",
+              "leftValue": "={{ $('Get data').item }}",
               "rightValue": "",
               "operator": {
                 "type": "object",
-                "operation": "notEmpty",
+                "operation": "empty",
                 "singleValue": true
               }
             }
@@ -368,8 +368,8 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        2640,
-        1100
+        2220,
+        1220
       ],
       "credentials": {
         "mongoDb": {
@@ -565,40 +565,6 @@
       "position": [
         2660,
         640
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "a15d778c-a21a-4085-bac1-5a9851054449",
-              "leftValue": "",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "d5a8c96b-cdb6-450e-bdaa-0a3091a84bbb",
-      "name": "Check Api Response1",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        660,
-        660
       ]
     },
     {
@@ -945,7 +911,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "8ab3ed64-cd3a-4912-9f2b-9399e3a5b085",
+  "versionId": "6e62a09f-e5ca-4ebe-9b74-d0b7336685b9",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2175fb2beeee23872604eaa18d0ab71c7b17b5a998e8ae3224ce5ec4e5e3fb21"
