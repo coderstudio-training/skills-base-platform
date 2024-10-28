@@ -30,6 +30,9 @@ export class Taxonomy extends BaseEntity {
   @Prop({ type: Object, required: true })
   Knowledge!: Record<string, any>;
 
+  @Prop({ type: String, required: true})
+  BusinessUnit!: string;
+
   @Prop({ type: [String], required: false })
   RangeOfApplication?: string[];
 }

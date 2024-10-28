@@ -1,6 +1,6 @@
 import { BaseDto } from '@skills-base/shared';
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsNotEmpty, IsObject, IsOptional, isString, IsString, ValidateNested } from 'class-validator';
 
 export class TaxonomyDTO extends BaseDto{
   @IsString()
@@ -38,6 +38,10 @@ export class TaxonomyDTO extends BaseDto{
   @IsObject()
   @IsNotEmpty()
   Knowledge!: Record<string, any>;
+
+  @IsString()
+  @IsNotEmpty()
+  BusinessUnit!: string;
 
   @IsArray()
   @IsOptional()

@@ -57,7 +57,7 @@ export class TaxonomyService {
   ): Promise<BulkWriteResult> {
     const operations = batch.map((item) => ({
       updateOne: {
-        filter: { DOC_Id: item.DOC_Id }, // Using email as the unique identifier
+        filter: { DOC_Id: item.DOC_Id }, // Using gdoc id as the unique identifier
         update: {
           $set: {
             ...item,
