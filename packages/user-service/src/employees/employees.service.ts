@@ -127,4 +127,8 @@ export class EmployeesService {
   async findByEmployeeId(employeeId: number): Promise<Employee | null> {
     return this.employeeModel.findOne({ employeeId: employeeId }).exec();
   }
+
+  async findByEmail(email: string): Promise<Employee | null> {
+    return this.employeeModel.findOne({ email: email }).exec();
+  }
 }

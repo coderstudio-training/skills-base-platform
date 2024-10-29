@@ -12,5 +12,6 @@ import { Employee, EmployeeEntity } from './entities/employee.entity';
   ],
   controllers: [EmployeesController],
   providers: [EmployeesService],
+  exports: [MongooseModule, EmployeesService],
 })
 export class EmployeesModule {}

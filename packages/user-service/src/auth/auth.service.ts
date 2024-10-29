@@ -1,18 +1,19 @@
 // packages/user-service/src/auth/auth.service.ts
 import {
-  Injectable,
-  UnauthorizedException,
   ConflictException,
+  Injectable,
   InternalServerErrorException,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from '../users/users.service';
-import { RegisterDto, LoginDto } from './dto';
-import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 import { UserRole } from '@skills-base/shared';
+import * as bcrypt from 'bcrypt';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
+import { EmployeesService } from '../employees/employees.service';
+import { UsersService } from '../users/users.service';
+import { LoginDto, RegisterDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +24,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private employeeService: EmployeesService,
   ) {
     const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
     if (!clientId) {
@@ -151,6 +153,13 @@ export class AuthService {
 
     try {
       let user = await this.usersService.findByEmail(email);
+
+      const employedUser = await this.employeeService.findByEmail(email);
+      if (!employedUser) {
+        throw new UnauthorizedException(
+          'User is not employed/registered by the company',
+        );
+      }
 
       if (!user) {
         // If the user doesn't exist, create a new one
