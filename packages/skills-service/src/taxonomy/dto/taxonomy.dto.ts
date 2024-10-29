@@ -42,7 +42,7 @@ export class TaxonomyDTO extends BaseDto{
   // Reserved for the collection name.
   @IsString()
   @IsNotEmpty()
-  BusinessUnit!: string;
+  businessUnit!: string;
 
   @IsArray()
   @IsOptional()
