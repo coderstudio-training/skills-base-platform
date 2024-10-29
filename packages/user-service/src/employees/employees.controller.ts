@@ -1,13 +1,33 @@
-import { Body, Controller, Get, Logger, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  JwtAuthGuard,
+  LoggingInterceptor,
+  Roles,
+  RolesGuard,
+  TransformInterceptor,
+  UserRole,
+} from '@skills-base/shared';
 import { EmployeesService } from './employees.service';
 
 @Controller('employees')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@UseInterceptors(LoggingInterceptor, TransformInterceptor)
 export class EmployeesController {
   private readonly logger = new Logger(EmployeesController.name);
 
   constructor(private readonly employeesService: EmployeesService) {}
 
   @Post('sync')
+  @Roles(UserRole.ADMIN)
   async syncEmployees(@Body() body: Record<string, any>) {
     this.logger.log(
       `Starting bulk upsert with ${Object.keys(body).length} records`,
@@ -20,11 +40,13 @@ export class EmployeesController {
   }
 
   @Get()
+  @Roles(UserRole.ADMIN)
   async findAll() {
     return this.employeesService.findAll();
   }
 
   @Get(':employeeId')
+  @Roles(UserRole.ADMIN)
   async findOne(@Param('employeeId') employeeId: number) {
     return this.employeesService.findByEmployeeId(employeeId);
   }

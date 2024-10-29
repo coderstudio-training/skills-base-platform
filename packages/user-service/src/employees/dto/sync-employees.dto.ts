@@ -1,20 +1,10 @@
-import { BaseDto, UserRole } from '@skills-base/shared';
-import {
-  IsArray,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsObject,
-} from 'class-validator';
+import { BaseDto } from '@skills-base/shared';
+import { IsNotEmpty, IsNumber, IsObject } from 'class-validator';
 
 export class EmployeeDto extends BaseDto {
   @IsNumber()
   @IsNotEmpty()
-  employee_id!: number;
-
-  @IsArray()
-  @IsEnum(UserRole, { each: true })
-  roles: UserRole[] = [UserRole.USER];
+  employeeId!: number;
 
   @IsObject()
   additionalProperties?: Record<string, any>;

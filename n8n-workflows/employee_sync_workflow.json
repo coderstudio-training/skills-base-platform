@@ -4,64 +4,57 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://192.168.100.70:3001/employees/sync",
+        "url": "http://192.168.143.2:3001/employees/sync",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.accessToken }}"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json.validItems.toJsonString() }}",
         "options": {}
       },
-      "id": "23dc4521-9a5e-4a56-87c6-246beb5dee01",
+      "id": "1e51d390-5975-47b9-9ea9-d646b1830c48",
       "name": "HTTP Request",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2680,
-        760
-      ]
+      "position": [0, 560]
     },
     {
       "parameters": {
+        "authentication": "serviceAccount",
         "documentId": {
           "__rl": true,
-          "mode": "id",
-          "value": "1jyQRnBOd7NIxuD6OvyHclgAYZdT4fUiSG6kxVSM6nfo"
+          "value": "11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw",
+          "mode": "list",
+          "cachedResultName": "Employee_Master_List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
-          "value": 355135599,
+          "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1jyQRnBOd7NIxuD6OvyHclgAYZdT4fUiSG6kxVSM6nfo/edit#gid=355135599"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw/edit#gid=0"
         },
         "options": {}
       },
-      "id": "674b834d-82b3-40d0-837c-1be42a93598c",
+      "id": "8f5f4d23-da05-4b6f-a213-f2a5f2d36f9e",
       "name": "Google Sheets2",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [
-        2180,
-        760
-      ],
+      "position": [-480, 560],
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "Wajh95stBgF50X7Y",
-          "name": "Google Sheets account 2"
+        "googleApi": {
+          "id": "WxPVvjosN7A9UGbt",
+          "name": "Google Service Account account"
         }
       }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Extract the access token from the login response\n// const accessToken = $node['Login to API'].json.access_token;\n// if (!accessToken) {\n//   throw new Error('Failed to obtain access token');\n// }\n\nconst accessToken = \"\";\n\n// Function to normalize keys (lowercase and replace spaces with underscores)\nfunction normalizeKey(key) {\n  return key.toLowerCase().replace(/\\s+/g, '_');\n}\n\n// Function to process roles string into array\nfunction processRoles(rolesString) {\n  if (!rolesString) return [];\n  // Remove any brackets if they exist\n  const cleanString = rolesString.replace(/[\\[\\]]/g, '');\n  // Split by comma, trim whitespace, and filter out empty strings\n  return cleanString.split(',')\n    .map(role => role.trim().toLowerCase())\n    .filter(role => role.length > 0);\n}\n\n// Function to process certification details dynamically\nfunction processCertifications(row) {\n  const certifications = [];\n  const certPrefix = 'certifications_details_';\n  \n  const keys = Object.keys(row);\n  const certKeys = keys.filter(key => key.toLowerCase().startsWith(certPrefix));\n  \n  // Get unique certification numbers\n  const certNumbers = new Set(certKeys.map(key => {\n    const match = key.toLowerCase().match(new RegExp(`${certPrefix}(\\\\d+)_`));\n    return match ? parseInt(match[1]) : null;\n  }).filter(num => num !== null));\n\n  certNumbers.forEach(certNumber => {\n    const cert = {};\n    const certRegex = new RegExp(`^${certPrefix}${certNumber}_(.+)$`, 'i');\n    \n    certKeys.forEach(key => {\n      const match = key.toLowerCase().match(certRegex);\n      if (match) {\n        const fieldName = normalizeKey(match[1]);\n        if (row[key] !== null && row[key] !== undefined && row[key] !== '') {\n          cert[fieldName] = row[key];\n        }\n      }\n    });\n    if (Object.keys(cert).length > 0) {\n      certifications.push(cert);\n    }\n  });\n  return certifications;\n}\n\n// Initialize containers for valid items and errors\nconst finalOutput = {};\nconst errors = [];\nlet recordCounter = 1;\n\n// Process all input items\n$input.all().forEach((item, index) => {\n  const row = item.json;\n  \n  // Convert the row object to an array of values, creating a mapping for key indexes\n  const keyMapping = Object.keys(row);\n  const rowValues = Object.values(row);\n  \n  // Find the index of the employee ID field\n  const empIdIndex = keyMapping.findIndex(key => \n    normalizeKey(key) === 'emp_id' || \n    normalizeKey(key) === 'employee_id' || \n    normalizeKey(key) === 'employeeid'\n  );\n  \n  // Check if the employee_id is a valid number\n  const employeeId = rowValues[empIdIndex !== -1 ? empIdIndex : 1];\n  if (typeof employeeId !== 'number' || isNaN(employeeId)) {\n    errors.push({\n      index,\n      error: 'Invalid or missing employee_id',\n      data: row\n    });\n    return\n  }\n  \n  try {\n    // Process certifications\n    const certifications = processCertifications(row);\n    \n    // Create the validated document with normalized keys\n    const validatedDocument = {};\n    \n    // Copy keys from the row, normalizing them in the process\n    Object.keys(row).forEach(key => {\n      let normalizedKey = normalizeKey(key);\n      // Rename emp_id to employee_id if found\n      if (normalizedKey === 'emp_id') {\n        normalizedKey = 'employee_id';\n      }\n      \n      // Special handling for roles field\n      if (normalizedKey === 'roles') {\n        validatedDocument[normalizedKey] = processRoles(row[key]);\n      } else {\n        validatedDocument[normalizedKey] = row[key];\n      }\n    });\n    \n    // Remove the specified fields\n    ['row_number'].forEach(field => {\n      delete validatedDocument[normalizeKey(field)];\n    });\n    \n    // Always add certifications field, even if it's empty\n    validatedDocument.certifications = certifications;\n    \n    // Remove the original certification fields\n    Object.keys(validatedDocument).forEach(key => {\n      if (key.startsWith('certifications_details_')) {\n        delete validatedDocument[key];\n      }\n    });\n    \n    // Add the validated document to the final output with a numeric key\n    finalOutput[recordCounter.toString()] = validatedDocument;\n    recordCounter++;\n    \n  } catch (error) {\n    errors.push({\n      index,\n      error: error.message,\n      data: row\n    });\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    validItems: finalOutput,\n    errors\n  }\n};"
-      },
-      "id": "9707bce2-663d-424f-9b35-a91a2390019d",
-      "name": "Validate and Transform2",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2440,
-        760
-      ]
     },
     {
       "parameters": {
@@ -77,11 +70,8 @@
       "name": "Check for Validation Errors1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [
-        2680,
-        1100
-      ],
-      "id": "ab4be4be-dcca-4c44-a8f3-b32d50f9497b"
+      "position": [0, 900],
+      "id": "0ad74533-bd6a-4691-a97f-0707c232d81c"
     },
     {
       "parameters": {
@@ -110,11 +100,8 @@
       "name": "Log Errors to API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        2960,
-        1100
-      ],
-      "id": "fc0b301d-223c-4b81-a956-8f56f9e61fd4",
+      "position": [260, 900],
+      "id": "657617c5-7d65-4e28-958f-cb088a335189",
       "disabled": true
     },
     {
@@ -131,11 +118,8 @@
       "name": "Check API Response1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [
-        2920,
-        760
-      ],
-      "id": "0be703bf-f9ac-48de-a0ad-3f1de02858de"
+      "position": [260, 560],
+      "id": "fde48033-3951-4a3e-b849-a4c8a85b8ce5"
     },
     {
       "parameters": {
@@ -149,11 +133,8 @@
       "name": "Send Success Notification API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        3120,
-        660
-      ],
-      "id": "239ddd89-8c45-498c-a86c-72bc856fb41c"
+      "position": [460, 460],
+      "id": "f90a6b67-a418-49dd-8af7-85d5cc0ca368"
     },
     {
       "parameters": {
@@ -167,39 +148,8 @@
       "name": "Send Error Notification API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        3120,
-        860
-      ],
-      "id": "c589a099-b2a8-4cfd-b97c-fb659a0053ff"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://192.168.100.70:3001/auth/login",
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "email",
-              "value": "admin@example.com"
-            },
-            {
-              "name": "password",
-              "value": "AdminPassword123!"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Login to API1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        1500,
-        760
-      ],
-      "id": "980dd6ae-49d2-4ece-9020-5beec1482011"
+      "position": [460, 660],
+      "id": "a9b87640-c41c-4949-b486-d389a04f2887"
     },
     {
       "parameters": {
@@ -215,34 +165,27 @@
       "name": "Schedule Trigger1",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
-      "position": [
-        1200,
-        760
-      ],
-      "id": "2c4be3aa-2fc1-40da-ba48-73cbe8f4b4e6",
-      "disabled": true
+      "position": [-1420, 560],
+      "id": "34e58a48-b84d-407f-9e29-bf14223dc258"
     },
     {
       "parameters": {
+        "authentication": "serviceAccount",
         "resource": "fileFolder",
-        "searchMethod": "query",
-        "queryString": "'1ZAj-G_dFJKmxw6On2sn8b5PHw0G2Eti4' in parents and name = 'Employment Details for L&D'",
+        "queryString": "Employee_Master_List",
         "filter": {},
         "options": {}
       },
-      "id": "7f73379f-6fd0-4b2a-9480-4a6300b15110",
+      "id": "17576302-c633-4f1a-a865-b2f7dd6d7a7a",
       "name": "Check for Folder and File2",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [
-        1700,
-        760
-      ],
+      "position": [-960, 560],
       "alwaysOutputData": true,
       "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "FVFzfdM9q1HBBzAP",
-          "name": "Google Drive account"
+        "googleApi": {
+          "id": "WxPVvjosN7A9UGbt",
+          "name": "Google Service Account account"
         }
       }
     },
@@ -271,14 +214,11 @@
         },
         "options": {}
       },
-      "id": "bcf8bf91-81bb-4625-8194-592fee9327da",
+      "id": "ce99561d-c911-4da7-9c23-a9d404dc5752",
       "name": "If Exists2",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        1920,
-        760
-      ]
+      "position": [-740, 560]
     },
     {
       "parameters": {
@@ -286,15 +226,48 @@
         "path": "0d255f04-41b2-4f32-aea4-efe224bb20e8",
         "options": {}
       },
-      "id": "ccf09e56-1d32-48a7-af5d-9e88be96d2ac",
+      "id": "bae99f61-b115-47f0-b59e-4978193d9ece",
       "name": "Webhook2",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        1200,
-        960
-      ],
-      "webhookId": "0d255f04-41b2-4f32-aea4-efe224bb20e8"
+      "position": [-1420, 760],
+      "webhookId": "0d255f04-41b2-4f32-aea4-efe224bb20e8",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.143.2:3001/auth/login",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "admin@example.com"
+            },
+            {
+              "name": "password",
+              "value": "AdminPassword123!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Login to API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-1160, 560],
+      "id": "23c1761e-02c2-4991-addc-34cd52b7bee8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nfunction normalizeKey(key) {\n  return key.replace(/(?:^\\w|[A-Z]|\\b\\w)/g, (letter, index) => \n    index === 0 ? letter.toLowerCase() : letter.toUpperCase()\n  ).replace(/\\s+/g, '');\n}\n\nfunction processCertifications(row) {\n  const certifications = [];\n  const certificationFields = new Set();\n  \n  // Collect all certification related fields\n  Object.keys(row).forEach(key => {\n    if (key.startsWith('certifications.')) {\n      certificationFields.add(key);\n    }\n  });\n  \n  // Get unique certification indices\n  const certIndices = new Set(\n    Array.from(certificationFields).map(field => {\n      const match = field.match(/^certifications\\.(\\d+)\\./);\n      return match ? parseInt(match[1]) : null;\n    }).filter(index => index !== null)\n  );\n  \n  // Process each certification\n  Array.from(certIndices).sort((a, b) => a - b).forEach(index => {\n    const cert = {};\n    const prefix = `certifications.${index}.`;\n    \n    // Check each potential field for this certification\n    certificationFields.forEach(field => {\n      if (field.startsWith(prefix)) {\n        const fieldName = field.substring(prefix.length);\n        const value = row[field];\n        \n        // Only include non-empty values\n        if (value !== null && value !== undefined && value !== '' && value !== '[empty]') {\n          cert[fieldName] = value;\n        }\n      }\n    });\n    \n    // Only add certification if it has any non-empty fields\n    if (Object.keys(cert).length > 0) {\n      certifications.push(cert);\n    }\n  });\n  \n  return certifications;\n}\n\nconst finalOutput = {};\nconst errors = [];\nlet recordCounter = 1;\n\n$input.all().forEach((item, index) => {\n  const row = item.json;\n  \n  const keyMapping = Object.keys(row);\n  const rowValues = Object.values(row);\n  \n  const empIdIndex = keyMapping.findIndex(key => {\n    const normalizedKey = normalizeKey(key);\n    return normalizedKey === 'employeeId';\n  });\n  \n  const employeeId = rowValues[empIdIndex !== -1 ? empIdIndex : 1];\n  if (typeof employeeId !== 'number' || isNaN(employeeId)) {\n    errors.push({\n      index,\n      error: 'Invalid or missing employeeId',\n      data: row\n    });\n    return;\n  }\n  \n  try {\n    const certifications = processCertifications(row);\n    const validatedDocument = {};\n    \n    Object.keys(row).forEach(key => {\n      // Skip certification dot notation fields\n      if (key.startsWith('certifications.')) {\n        return;\n      }\n      \n      let normalizedKey = normalizeKey(key);\n      if (normalizedKey === 'empId') {\n        normalizedKey = 'employeeId';\n      }\n      \n      validatedDocument[normalizedKey] = row[key];\n    });\n    \n    ['row_number'].forEach(field => {\n      delete validatedDocument[normalizeKey(field)];\n    });\n    \n    // Add processed certifications\n    validatedDocument.certifications = certifications;\n    \n    finalOutput[recordCounter.toString()] = validatedDocument;\n    recordCounter++;\n    \n  } catch (error) {\n    errors.push({\n      index,\n      error: error.message,\n      data: row\n    });\n  }\n});\n\nreturn {\n  json: {\n    accessToken,\n    validItems: finalOutput,\n    errors\n  }\n};"
+      },
+      "id": "3ad53f54-9fb9-47de-aa49-be579eb18780",
+      "name": "Validate and Transform",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-260, 560]
     }
   ],
   "pinData": {},
@@ -303,23 +276,7 @@
       "main": [
         [
           {
-            "node": "Validate and Transform2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Validate and Transform2": {
-      "main": [
-        [
-          {
-            "node": "Check for Validation Errors1",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "HTTP Request",
+            "node": "Validate and Transform",
             "type": "main",
             "index": 0
           }
@@ -366,17 +323,6 @@
         ]
       ]
     },
-    "Login to API1": {
-      "main": [
-        [
-          {
-            "node": "Check for Folder and File2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "If Exists2": {
       "main": [
         [
@@ -403,7 +349,45 @@
       "main": [
         [
           {
-            "node": "Login to API1",
+            "node": "Login to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Login to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login to API": {
+      "main": [
+        [
+          {
+            "node": "Check for Folder and File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and Transform": {
+      "main": [
+        [
+          {
+            "node": "Check for Validation Errors1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
             "type": "main",
             "index": 0
           }
@@ -415,11 +399,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "ac74c4cc-9357-4e3b-84bd-75d144f156f0",
+  "versionId": "87b5c68e-6c8b-4d23-9b11-223f88970b55",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "f5176b00fa2d24bacd6209668b23765657e914066e3bf11efab5df2b9a884b80"
+    "instanceId": "86f5c9b55c596bbebddee8dababbdbd4d400371496a13e11367d7b42b8b1bccd"
   },
-  "id": "Uul48PCo42elinXX",
+  "id": "LKk94dwrjHcsifnH",
   "tags": []
 }
