@@ -17,19 +17,19 @@ export class TaxonomyDTO extends BaseDto{
 
   @IsString()
   @IsNotEmpty()
-  tscTitle!: string;
+  title!: string;
 
   @IsString()
   @IsNotEmpty()
-  tscCategory!: string;
+  category!: string;
 
   @IsString()
   @IsNotEmpty()
-  tscDescription!: string;
+  description!: string;
 
   @IsObject()
   @IsNotEmpty()
-  tscProficiencyDescription!: Record<string, any>;
+  proficiencyDescription!: Record<string, any>;
 
   @IsObject()
   @IsNotEmpty()

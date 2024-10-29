@@ -13,16 +13,16 @@ export class Taxonomy extends BaseEntity {
   docTitle!: string;
 
   @Prop({ required: true })
-  tscTitle!: string;
+  title!: string;
 
   @Prop({ required: true })
-  tscCategory!: string;
+  category!: string;
 
   @Prop({ required: true })
-  tscDescription!: string;
+  description!: string;
 
   @Prop({ type: Object, required: true })
-  tscProficiencyDescription!: Record<string, any>;
+  proficiencyDescription!: Record<string, any>;
 
   @Prop({ type: Object, required: true })
   abilities!: Record<string, any>;
