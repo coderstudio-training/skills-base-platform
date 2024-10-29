@@ -4,37 +4,34 @@ import { BaseEntity } from '@skills-base/shared';
 @Schema()
 export class Taxonomy extends BaseEntity {
   @Prop({ required: true, unique: true, index: true})
-  DOC_Id!: string;
+  docId!: string;
 
   @Prop({ required: true })
-  DOC_RevisionId!: string;
+  docRevisionId!: string;
 
   @Prop({ required: true })
-  DOC_Title!: string;
+  docTitle!: string;
 
   @Prop({ required: true })
-  TSC_Title!: string;
+  tscTitle!: string;
 
   @Prop({ required: true })
-  TSC_Category!: string;
+  tscCategory!: string;
 
   @Prop({ required: true })
-  TSC_Description!: string;
+  tscDescription!: string;
 
   @Prop({ type: Object, required: true })
-  TSC_ProficiencyDescription!: Record<string, any>;
+  tscProficiencyDescription!: Record<string, any>;
 
   @Prop({ type: Object, required: true })
-  Abilities!: Record<string, any>;
+  abilities!: Record<string, any>;
 
   @Prop({ type: Object, required: true })
-  Knowledge!: Record<string, any>;
-
-  @Prop({ type: String, required: true})
-  BusinessUnit!: string;
+  knowledge!: Record<string, any>;
 
   @Prop({ type: [String], required: false })
-  RangeOfApplication?: string[];
+  rangeOfApplication?: string[];
 }
 
 export const TaxonomyEntity = SchemaFactory.createForClass(Taxonomy);

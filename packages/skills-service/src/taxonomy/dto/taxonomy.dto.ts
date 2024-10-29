@@ -1,51 +1,52 @@
 import { BaseDto } from '@skills-base/shared';
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsObject, IsOptional, isString, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class TaxonomyDTO extends BaseDto{
   @IsString()
   @IsNotEmpty({ message: 'document id must not be empty!'})
-  DOC_Id!: string;
+  docId!: string;
 
   @IsString()
   @IsNotEmpty()
-  DOC_RevisionId!: string;
+  docRevisionId!: string;
 
   @IsString()
   @IsNotEmpty()
-  DOC_Title!: string;
+  docTitle!: string;
 
   @IsString()
   @IsNotEmpty()
-  TSC_Title!: string;
+  tscTitle!: string;
 
   @IsString()
   @IsNotEmpty()
-  TSC_Category!: string;
+  tscCategory!: string;
 
   @IsString()
   @IsNotEmpty()
-  TSC_Description!: string;
+  tscDescription!: string;
 
   @IsObject()
   @IsNotEmpty()
-  TSC_ProficiencyDescription!: Record<string, any>;
+  tscProficiencyDescription!: Record<string, any>;
 
   @IsObject()
   @IsNotEmpty()
-  Abilities!: Record<string, any>;
+  abilities!: Record<string, any>;
 
   @IsObject()
   @IsNotEmpty()
-  Knowledge!: Record<string, any>;
+  knowledge!: Record<string, any>;
 
+  // Reserved for the collection name.
   @IsString()
   @IsNotEmpty()
   BusinessUnit!: string;
 
   @IsArray()
   @IsOptional()
-  RangeOfApplication?: string[];
+  rangeOfApplication?: string[];
 }
 
 export class BulkUpsertTaxonomyDTO {

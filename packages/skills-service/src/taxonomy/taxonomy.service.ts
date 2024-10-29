@@ -20,7 +20,7 @@ export class TaxonomyService {
   private async ensureIndexes(): Promise<void> {
     try {
       await this.taxonomyModel.collection.createIndex(
-        { DOC_Id: 1 },
+        { docId: 1 },
         { unique: true, background: true },
       );
 
@@ -57,7 +57,7 @@ export class TaxonomyService {
   ): Promise<BulkWriteResult> {
     const operations = batch.map((item) => ({
       updateOne: {
-        filter: { DOC_Id: item.DOC_Id }, // Using gdoc id as the unique identifier
+        filter: { docId: item.docId }, // Using gdoc id as the unique identifier
         update: {
           $set: {
             ...item,
@@ -81,7 +81,7 @@ export class TaxonomyService {
     return this.taxonomyModel.find().exec();
   }
 
-  async findByGdocId(DOC_Id: string): Promise<Taxonomy | null> {
-    return this.taxonomyModel.findOne({ DOC_Id: DOC_Id}).exec();
+  async findByGdocId(docId: string): Promise<Taxonomy | null> {
+    return this.taxonomyModel.findOne({ docId: docId}).exec();
   }
 }

@@ -19,8 +19,8 @@ export class TaxonomyController {
   }
 
   @Get(':DOC_Id')
-  async findOne(@Param('DOC_Id') DOC_Id: string) {
-    return this.taxonomyService.findByGdocId(DOC_Id);
+  async findOne(@Param('docId') docId: string) {
+    return this.taxonomyService.findByGdocId(docId);
   }
 
 }

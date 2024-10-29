@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { TaxonomyModule } from './taxonomy/taxonomy.module';
 import { DatabaseModule, LoggerMiddleware } from '@skills-base/shared';
+import { TaxonomyModule } from './taxonomy/taxonomy.module';
 
 @Module({
   imports: [
