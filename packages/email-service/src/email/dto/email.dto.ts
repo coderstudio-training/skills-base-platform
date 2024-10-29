@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class SuccessEmailDto {
+export class EmailDto {
   @IsNotEmpty()
   @IsString()
   workflowName: string;
