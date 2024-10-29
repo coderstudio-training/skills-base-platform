@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection } from '@nestjs/mongoose';
 import { BulkWriteResult } from 'mongodb';
-import { Model } from 'mongoose';
+import { Connection, Model } from 'mongoose';
 import { BulkUpsertTaxonomyDTO, TaxonomyDTO } from './dto/taxonomy.dto';
-import { Taxonomy } from './entities/taxonomy.entity';
+import { Taxonomy, TaxonomyEntity } from './entities/taxonomy.entity';
 
 @Injectable()
 export class TaxonomyService {
@@ -11,27 +11,18 @@ export class TaxonomyService {
   private readonly BATCH_SIZE = 1000;
 
   constructor(
-    @InjectModel(Taxonomy.name)
-    private readonly taxonomyModel: Model<Taxonomy>,
-  ) {
-    this.ensureIndexes();
+    @InjectConnection() private readonly connection: Connection, // Inject Mongoose connection
+  ) {}
+
+  // Function to generate dynamic collection names
+  private getCollectionName(businessUnit: string): string {
+    const abbreviation = businessUnit.split('_')[0]; // Extract abbreviation
+    return `${abbreviation}_skillsInventory`;
   }
 
-  private async ensureIndexes(): Promise<void> {
-    try {
-      await this.taxonomyModel.collection.createIndex(
-        { docId: 1 },
-        { unique: true, background: true },
-      );
-
-      this.logger.log('Indexes ensured for Taxonomy collection');
-    } catch (error) {
-      if (error instanceof Error) {
-        this.logger.error(`Error ensuring indexes: ${error.message}`);
-      } else {
-        this.logger.error(`Unknown error: ${error}`);
-      }
-    }
+  private getTaxonomyModel(businessUnit: string): Model<Taxonomy> {
+    const collectionName = this.getCollectionName(businessUnit);
+    return this.connection.model<Taxonomy>(Taxonomy.name, TaxonomyEntity, collectionName);
   }
 
   async bulkUpsert(dto: BulkUpsertTaxonomyDTO): Promise<{ updatedCount: number, errors: any[] }> {
@@ -52,12 +43,14 @@ export class TaxonomyService {
     return { updatedCount: totalUpdatedCount, errors }; 
   }
 
-  private async processBatch(
-    batch: TaxonomyDTO[],
-  ): Promise<BulkWriteResult> {
+  private async processBatch(batch: TaxonomyDTO[]): Promise<BulkWriteResult> {
+    // Use the businessUnit from the first item as an example (assuming uniformity in batch)
+    const businessUnit = batch[0].businessUnit;
+    const taxonomyModel = this.getTaxonomyModel(businessUnit);
+
     const operations = batch.map((item) => ({
       updateOne: {
-        filter: { docId: item.docId }, // Using gdoc id as the unique identifier
+        filter: { docId: item.docId },
         update: {
           $set: {
             ...item,
@@ -68,20 +61,20 @@ export class TaxonomyService {
       },
     }));
 
-    const result = await this.taxonomyModel.bulkWrite(operations, {
-      ordered: false,
-    });
+    const result = await taxonomyModel.bulkWrite(operations, { ordered: false });
     this.logger.debug(
       `Batch processed: ${result.modifiedCount} updated, ${result.upsertedCount} inserted`,
     );
     return result;
   }
 
-  async findAll(): Promise<Taxonomy[]> {
-    return this.taxonomyModel.find().exec();
+  async findAll(businessUnit: string): Promise<Taxonomy[]> {
+    const taxonomyModel = this.getTaxonomyModel(businessUnit);
+    return taxonomyModel.find().exec();
   }
 
-  async findByGdocId(docId: string): Promise<Taxonomy | null> {
-    return this.taxonomyModel.findOne({ docId: docId}).exec();
+  async findByDocId(docId: string, businessUnit: string): Promise<Taxonomy | null> {
+    const taxonomyModel = this.getTaxonomyModel(businessUnit);
+    return taxonomyModel.findOne({ docId }).exec();
   }
 }
