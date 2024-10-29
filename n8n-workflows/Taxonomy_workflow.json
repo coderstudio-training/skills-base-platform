@@ -183,7 +183,7 @@
     },
     {
       "parameters": {
-        "url": "=https://www.googleapis.com/drive/v3/files/{{ folder='1PRYG7HWFQVaDt_gkXPbuI57CC4K6sCrR' }}?fields=id,createdTime,modifiedTime,name",
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ folder='1Tug7bwnPfoblpYcOhPhGR76uknh4pg0r' }}?fields=id,createdTime,modifiedTime,name",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "googleDriveOAuth2Api",
         "options": {}
@@ -512,7 +512,7 @@
     },
     {
       "parameters": {
-        "url": "http://192.168.203.84:3002/taxonomy/",
+        "url": "=http://192.168.203.84:3002/taxonomy?businessUnit={{ $('Get parent folder details').item.json.name.split('_')[0] }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -943,7 +943,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "cf141953-12cd-4458-8b0c-deb64b7e1aa8",
+  "versionId": "55d4f019-1315-4b6c-83e0-4ff40360f7a7",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2175fb2beeee23872604eaa18d0ab71c7b17b5a998e8ae3224ce5ec4e5e3fb21"
