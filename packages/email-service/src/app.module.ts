@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from '../../user-service/src/auth/auth.module';
+import { JwtStrategy } from '@skills-base/user-service';
 import { EmailModule } from './email/email.module';
 
 @Module({
@@ -9,7 +9,7 @@ import { EmailModule } from './email/email.module';
       isGlobal: true,
     }),
     EmailModule,
-    AuthModule,
   ],
+  providers: [JwtStrategy],
 })
 export class AppModule {}
