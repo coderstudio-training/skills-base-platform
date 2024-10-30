@@ -7,11 +7,6 @@ import { EmailModule } from './email/email.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [
-        () => ({
-          JWT_SECRET: process.env.JWT_SECRET,
-        }),
-      ],
     }),
     EmailModule,
     AuthModule,
