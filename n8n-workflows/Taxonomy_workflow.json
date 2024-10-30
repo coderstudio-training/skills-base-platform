@@ -16,13 +16,14 @@
       "position": [
         -660,
         700
-      ]
+      ],
+      "disabled": true
     },
     {
       "parameters": {
         "content": "docx convert",
-        "height": 222.88130080658033,
-        "width": 479.3511323613318,
+        "height": 238.73904828482378,
+        "width": 517.6740221004202,
         "color": 2
       },
       "id": "4558f9f6-1835-4bb2-9b99-70f7b2fb7553",
@@ -72,6 +73,7 @@
     },
     {
       "parameters": {
+        "authentication": "serviceAccount",
         "operation": "deleteFile",
         "fileId": {
           "__rl": true,
@@ -89,18 +91,19 @@
         460
       ],
       "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "5enrxfsckD49Whxp",
-          "name": "Google Drive account"
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
         "method": "POST",
         "url": "=https://www.googleapis.com/drive/v2/files/{{ $json.id }}/copy?convert=true&supportsAllDrives=true",
         "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleDriveOAuth2Api",
+        "nodeCredentialType": "googleApi",
         "options": {}
       },
       "id": "98efa96f-8def-461c-a130-ea714c2abf5f",
@@ -115,6 +118,10 @@
         "googleDriveOAuth2Api": {
           "id": "5enrxfsckD49Whxp",
           "name": "Google Drive account"
+        },
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
         }
       }
     },
@@ -142,7 +149,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -460,
+        -260,
         700
       ],
       "notesInFlow": true,
@@ -150,9 +157,10 @@
     },
     {
       "parameters": {
+        "authentication": "serviceAccount",
         "resource": "fileFolder",
         "searchMethod": "query",
-        "queryString": "=(mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document' OR mimeType='application/vnd.google-apps.document') AND '{{ $('Get parent folder details').item.json.id }}' in parents",
+        "queryString": "=(mimeType='application/vnd.google-apps.document') AND '{{ $('Get parent folder details').item.json.id }}' in parents",
         "returnAll": true,
         "filter": {
           "includeTrashed": "={{ false }}"
@@ -175,17 +183,17 @@
       ],
       "executeOnce": true,
       "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "5enrxfsckD49Whxp",
-          "name": "Google Drive account"
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
         }
       }
     },
     {
       "parameters": {
-        "url": "=https://www.googleapis.com/drive/v3/files/{{ folder='1Tug7bwnPfoblpYcOhPhGR76uknh4pg0r' }}?fields=id,createdTime,modifiedTime,name",
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ $json.parents[0] }}?fields=id,createdTime,modifiedTime,name",
         "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleDriveOAuth2Api",
+        "nodeCredentialType": "googleApi",
         "options": {}
       },
       "id": "5f798396-213e-47d0-a595-a5aa5ebc9052",
@@ -193,19 +201,24 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -260,
+        -440,
         700
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
           "id": "5enrxfsckD49Whxp",
           "name": "Google Drive account"
+        },
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
         }
       },
       "notes": "get folder for reference. "
     },
     {
       "parameters": {
+        "authentication": "serviceAccount",
         "operation": "get",
         "documentURL": "={{ $json.id }}",
         "simple": false
@@ -219,14 +232,15 @@
         980
       ],
       "credentials": {
-        "googleDocsOAuth2Api": {
-          "id": "DRMoPDUt8CMchFO0",
-          "name": "Google Docs account"
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
         }
       }
     },
     {
       "parameters": {
+        "authentication": "serviceAccount",
         "operation": "get",
         "documentURL": "={{ $json.id }}",
         "simple": false
@@ -240,9 +254,9 @@
         700
       ],
       "credentials": {
-        "googleDocsOAuth2Api": {
-          "id": "DRMoPDUt8CMchFO0",
-          "name": "Google Docs account"
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
         }
       }
     },
@@ -297,6 +311,7 @@
     },
     {
       "parameters": {
+        "authentication": "serviceAccount",
         "resource": "fileFolder",
         "searchMethod": "query",
         "queryString": "=(mimeType='application/vnd.google-apps.document') AND '{{ $('Get parent folder details').item.json.id }}' in parents",
@@ -322,16 +337,16 @@
       ],
       "executeOnce": true,
       "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "5enrxfsckD49Whxp",
-          "name": "Google Drive account"
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
         }
       }
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const errorsList = [];\n\n// Function to extract and concatenate text from elements\nfunction getDocText(tableRowIndex, tableCellIndex, contentIndex = 0, bodyContentIndex = 2, elementsIndex = 0) {\n  try {\n    // The proper order is body Content -> table Row -> table Cell -> content -> element.\n    const paragraphElement = $json?.body?.content?.[bodyContentIndex]?.table?.tableRows?.[tableRowIndex]?.tableCells?.[tableCellIndex]?.content?.[contentIndex]?.paragraph?.elements;\n\n    // If the paragraph or elements are missing, return null\n    if (!paragraphElement || !Array.isArray(paragraphElement) || paragraphElement.length === 0) {\n      return null;\n    }\n\n    // Check the length of elements and concatenate if more than one\n    const cellContent = paragraphElement.length > 1 \n      ? paragraphElement.map(el => el.textRun?.content.trim().replace(/\\n/g, '')).join(\" \") // Join multiple elements\n      : paragraphElement[0]?.textRun?.content.trim().replace(/\\n/g, ''); // Default to the first element\n\n    // If the content is an empty string (\"\"), return N/A\n    return cellContent === \"\" ? \"N/A\" : cellContent;\n\n  } catch (error) {\n    errorsList.push(error);\n    console.error(`Error fetching text for tableRowIndex: ${tableRowIndex}, tableCellIndex: ${tableCellIndex}, contentIndex: ${contentIndex}`, error);\n    return null;\n  }\n}\n\n// Start of data extraction\nconst data = {};\n\n// Primary keys to compare and contrast.\ndata[\"DOC_Title\"] = $json.title;\ndata[\"DOC_Id\"] = $json.documentId;\ndata[\"DOC_RevisionId\"] = $json.revisionId;\n\n// Body / Content\n// For the basic rows. (category, title, description)\nconst names = [\"TSC_Category\", \"TSC_Title\", \"TSC_Description\"];\n\ntry {\n  for (let i = 0; i < 3; i++) {\n    data[names[i]] = getDocText(i, 1);\n  }\n} catch (error) {\n  errorsList.push(error);\n}\n\n// For proficiency.\nlet level = 3;\nconst prof = {};\n\n// Assumes that the content is not by bullet. Otherwise, nested loop.\nlet na_count = 0;\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // Ignore the first index, as it's key for this entire object.\n    prof[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g, '')] = [getDocText(4, index), getDocText(5, index)];\n  \n  if (getDocText(4, index) === 'N/A' || getDocText(5, index) === 'N/A') {\n    na_count += 1;\n  }\n});\n\nif (na_count >= $json.body.content[2].table.tableRows[level].tableCells.length) {\n  errorsList.push(\"Empty fields for proficiency!\");\n}\n\n// Optimize and DNR and match if same level has N/A soon!\ndata[\"TSC_ProficiencyDescription\"] = prof;\n\n// For knowledge\nlet knowledge = 6;\nconst know = {};\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // Ignore the first index, as it's key for this entire object.\n    know[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g, '')] = $json.body.content[2].table.tableRows[knowledge].tableCells[index].content.map(cell => \n        cell.paragraph?.elements?.map(el => el.textRun?.content.trim().replace(/\\n/g, '')).join(\" \"));\n});\n\ndata[\"Knowledge\"] = know;\n\n// For ability \nlet ability = 7;\nconst abil = {};\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // Ignore the first index, as it's key for this entire object.\n    abil[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g, '')] = $json.body.content[2].table.tableRows[ability].tableCells[index].content.map(cell => \n        cell.paragraph?.elements?.map(el => el.textRun?.content.trim().replace(/\\n/g, '')).join(\" \"));\n});\n\ndata[\"Abilities\"] = abil;\n\n// For range of application\nlet rapp = 8;\nif ($json?.body?.content?.[2]?.table?.tableRows?.[rapp]?.tableCells?.[1]?.content) {\n  \n  data[\"RangeOfApplication\"] = $json.body.content[2].table.tableRows[rapp].tableCells[1].content.map(cell => \n    cell.paragraph?.elements?.map(el => el.textRun?.content.replace(/^\\s*•\\s*/, '').trim().replace(/\\n/g, '')).join(\" \")\n  );\n} else {\n  data[\"RangeOfApplication\"] = []; // Set to N/A if row doesn't exist\n}\n\ndata[\"businessUnit\"] = $('Get parent folder details').first().json.name;\n\nif (errorsList.length === 0) {\n  return data; \n} else {\n  return { \n    invalidContents: true,\n    error_log: errorsList.join() \n  };\n}\n"
+        "jsCode": "const errorsList = [];\n\n// Function to extract and concatenate text from elements\nfunction getDocText(tableRowIndex, tableCellIndex, contentIndex = 0, bodyContentIndex = 2, elementsIndex = 0) {\n  try {\n    // The proper order is body Content -> table Row -> table Cell -> content -> element.\n    const paragraphElement = $json?.body?.content?.[bodyContentIndex]?.table?.tableRows?.[tableRowIndex]?.tableCells?.[tableCellIndex]?.content?.[contentIndex]?.paragraph?.elements;\n\n    // If the paragraph or elements are missing, return null\n    if (!paragraphElement || !Array.isArray(paragraphElement) || paragraphElement.length === 0) {\n      return null;\n    }\n\n    // Check the length of elements and concatenate if more than one\n    const cellContent = paragraphElement.length > 1 \n      ? paragraphElement.map(el => el.textRun?.content.trim().replace(/\\n/g, '')).join(\" \") // Join multiple elements\n      : paragraphElement[0]?.textRun?.content.trim().replace(/\\n/g, ''); // Default to the first element\n\n    // If the content is an empty string (\"\"), return N/A\n    return cellContent === \"\" ? \"N/A\" : cellContent;\n\n  } catch (error) {\n    errorsList.push(error);\n    console.error(`Error fetching text for tableRowIndex: ${tableRowIndex}, tableCellIndex: ${tableCellIndex}, contentIndex: ${contentIndex}`, error);\n    return null;\n  }\n}\n\n// Start of data extraction\nconst data = {};\n\n// Primary keys to compare and contrast.\ndata[\"docTitle\"] = $json.title;\ndata[\"docId\"] = $json.documentId;\ndata[\"docRevisionId\"] = $json.revisionId;\n\n// Body / Content\n// For the basic rows. (category, title, description)\nconst names = [\"category\", \"title\", \"description\"];\n\ntry {\n  for (let i = 0; i < 3; i++) {\n    data[names[i]] = getDocText(i, 1);\n  }\n} catch (error) {\n  errorsList.push(error);\n}\n\n// For proficiency.\nlet level = 3;\nconst prof = {};\n\n// Assumes that the content is not by bullet. Otherwise, nested loop.\nlet na_count = 0;\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // Ignore the first index, as it's key for this entire object.\n    prof[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g, '')] = [getDocText(4, index), getDocText(5, index)];\n  \n  if (getDocText(4, index) === 'N/A' || getDocText(5, index) === 'N/A') {\n    na_count += 1;\n  }\n});\n\nif (na_count >= $json.body.content[2].table.tableRows[level].tableCells.length) {\n  errorsList.push(\"Empty fields for proficiency!\");\n}\n\n// Optimize and DNR and match if same level has N/A soon!\ndata[\"proficiencyDescription\"] = prof;\n\n// For knowledge\nlet knowledge = 6;\nconst know = {};\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // Ignore the first index, as it's key for this entire object.\n    know[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g, '')] = $json.body.content[2].table.tableRows[knowledge].tableCells[index].content.map(cell => \n        cell.paragraph?.elements?.map(el => el.textRun?.content.trim().replace(/\\n/g, '')).join(\" \"));\n});\n\ndata[\"knowledge\"] = know;\n\n// For ability \nlet ability = 7;\nconst abil = {};\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // Ignore the first index, as it's key for this entire object.\n    abil[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g, '')] = $json.body.content[2].table.tableRows[ability].tableCells[index].content.map(cell => \n        cell.paragraph?.elements?.map(el => el.textRun?.content.trim().replace(/\\n/g, '')).join(\" \"));\n});\n\ndata[\"abilities\"] = abil;\n\n// For range of application\nlet rapp = 8;\nif ($json?.body?.content?.[2]?.table?.tableRows?.[rapp]?.tableCells?.[1]?.content) {\n  \n  data[\"rangeOfApplication\"] = $json.body.content[2].table.tableRows[rapp].tableCells[1].content.map(cell => \n    cell.paragraph?.elements?.map(el => el.textRun?.content.replace(/^\\s*•\\s*/, '').trim().replace(/\\n/g, '')).join(\" \")\n  );\n} else {\n  data[\"rangeOfApplication\"] = []; // Set to N/A if row doesn't exist\n}\n\ndata[\"businessUnit\"] = $('Get parent folder details').first().json.name;\n\nif (errorsList.length === 0) {\n  return data; \n} else {\n  return { \n    invalidContents: true,\n    error_log: errorsList.join() \n  };\n}\n"
       },
       "id": "ae0d0770-915f-410d-888e-441c804a9821",
       "name": "Revalidate content",
@@ -688,6 +703,42 @@
         1440,
         1400
       ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1ZrUQwt-ezLHPTcQ9ejzjE7KarpP_a6oI",
+          "mode": "list",
+          "cachedResultName": "QA_QUALITY_ASSURANCE",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1ZrUQwt-ezLHPTcQ9ejzjE7KarpP_a6oI"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "cf5789a7-5540-4f8f-a218-b7457f27ecd4",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        500
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -732,22 +783,11 @@
         ]
       ]
     },
-    "Schedule Trigger": {
-      "main": [
-        [
-          {
-            "node": "Get token",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Get parent folder details": {
       "main": [
         [
           {
-            "node": "Get data",
+            "node": "Get token",
             "type": "main",
             "index": 0
           }
@@ -820,7 +860,7 @@
       "main": [
         [
           {
-            "node": "Get parent folder details",
+            "node": "Get data",
             "type": "main",
             "index": 0
           }
@@ -937,13 +977,24 @@
           }
         ]
       ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "55d4f019-1315-4b6c-83e0-4ff40360f7a7",
+  "versionId": "db7f2890-d00b-4f8b-8843-27cce88c34f7",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2175fb2beeee23872604eaa18d0ab71c7b17b5a998e8ae3224ce5ec4e5e3fb21"

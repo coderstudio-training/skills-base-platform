@@ -7,11 +7,6 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [
-        () => ({
-          JWT_SECRET: process.env.JWT_SECRET,
-        }),
-      ],
     }),
     DatabaseModule,
     TaxonomyModule,
