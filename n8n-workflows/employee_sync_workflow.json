@@ -166,7 +166,8 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
       "position": [-1420, 560],
-      "id": "34e58a48-b84d-407f-9e29-bf14223dc258"
+      "id": "34e58a48-b84d-407f-9e29-bf14223dc258",
+      "disabled": true
     },
     {
       "parameters": {
@@ -268,6 +269,37 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [-260, 560]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFile",
+        "fileToWatch": {
+          "__rl": true,
+          "value": "11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw",
+          "mode": "list",
+          "cachedResultName": "Employee_Master_List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw/edit?usp=drivesdk"
+        }
+      },
+      "id": "b7c5cab1-721f-4390-bdbb-cdc1797c5f1b",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1420, 360],
+      "credentials": {
+        "googleApi": {
+          "id": "WxPVvjosN7A9UGbt",
+          "name": "Google Service Account account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -393,13 +425,24 @@
           }
         ]
       ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Login to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "87b5c68e-6c8b-4d23-9b11-223f88970b55",
+  "versionId": "f176f154-8826-40b3-a0e4-d8fbece3c2bb",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "86f5c9b55c596bbebddee8dababbdbd4d400371496a13e11367d7b42b8b1bccd"

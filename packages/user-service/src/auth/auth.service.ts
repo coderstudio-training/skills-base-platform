@@ -144,7 +144,7 @@ export class AuthService {
   }
 
   private async handleGoogleUser(payload: TokenPayload) {
-    const { email, sub: googleId, given_name, family_name } = payload;
+    const { email, sub: googleId, given_name, family_name, picture } = payload;
 
     if (!email) {
       this.logger.error('Email not provided in Google token');
@@ -168,6 +168,7 @@ export class AuthService {
           googleId: googleId!,
           firstName: given_name || 'Google',
           lastName: family_name || 'User',
+          picture: picture || '',
           roles: [UserRole.USER], // Default role
         });
         this.logger.log(`Created new user with Google OAuth: ${email}`);
