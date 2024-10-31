@@ -1,18 +1,14 @@
-// self-skills.module.ts (or the appropriate module file)
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { SkillsController } from './assessments.controller';
-import { SkillsService } from './assessments.service';
-import { RequiredSkills, RequiredSkillsSchema } from './entities/required-skills.entity';
-import { ManagerSkills, ManagerSkillsSchema, SelfSkills, SelfSkillsSchema } from './entities/assessments.entity';
+import { AssessmentsController } from './assessments.controller';
+import { AssessmentsService } from './assessments.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: SelfSkills.name, schema: SelfSkillsSchema }]),
-    MongooseModule.forFeature([{ name: ManagerSkills.name, schema: ManagerSkillsSchema }]),
-    MongooseModule.forFeature([{name: RequiredSkills.name, schema: RequiredSkillsSchema}])
+    MongooseModule.forRoot('mongodb://localhost:27017/skills_base_assessments'), 
   ],
-  controllers: [SkillsController],
-  providers: [SkillsService],
+  controllers: [AssessmentsController],
+  providers: [AssessmentsService],
+  exports: [AssessmentsService],
 })
-export class SkillsModule {}
+export class AssessmentsModule {}

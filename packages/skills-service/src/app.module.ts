@@ -1,10 +1,9 @@
-// packages/user-service/src/app.module.ts
+// packages/skills-service/src/app.module.ts
 
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule, LoggerMiddleware } from '@skills-base/shared';
-import { SkillsModule } from './assessments/assessments.module';
-import { RequiredSkills } from './assessments/entities/required-skills.entity';
+import { AssessmentsModule } from './assessments/assessments.module';
 
 
 @Module({
@@ -13,7 +12,7 @@ import { RequiredSkills } from './assessments/entities/required-skills.entity';
       isGlobal: true,
     }),
     DatabaseModule,
-    SkillsModule,
+    AssessmentsModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -1,19 +1,23 @@
-// assessments.controller.ts
 import { Body, Controller, Post } from '@nestjs/common';
-import { SkillsService } from './assessments.service';
-import { BaseSkillsDto } from './dto/assessments.dto';
+import { AssessmentsService } from './assessments.service';
+import { BaseAssessmentDto, BulkUpdateAssessmentsDto } from './dto/assessments.dto';
 
 @Controller('api/skills-matrix')
-export class SkillsController {
-  constructor(private readonly skillsService: SkillsService) {}
+export class AssessmentsController {
+  constructor(private readonly assessmentService: AssessmentsService) {}
 
-  @Post('bulk-update')
-  async bulkUpdate(@Body() body: { assessmentType: string; data: BaseSkillsDto[] }) {
-    const { assessmentType, data } = body;
+  @Post('bulk-update-assessments')
+  async bulkUpdate(@Body() body: { assessmentType: string; data: BaseAssessmentDto[]; prefix: string; }) {
+    const { assessmentType, data, prefix } = body; // Make sure to include prefix here
     console.log('Incoming body:', body);
-    return this.skillsService.bulkUpsert(assessmentType, { data });
+
+    // Construct the BulkUpdateAssessmentsDto
+    const bulkUpdateDto: BulkUpdateAssessmentsDto = { data }; 
+
+    return this.assessmentService.bulkUpsert(prefix, assessmentType, bulkUpdateDto); // Call the service with the correct parameters
   }
 
+  // Uncomment and implement this method if needed
   // @Get(':assessmentType')
   // async getAll(@Param('assessmentType') assessmentType: string) {
   //   return await this.skillsService.getAllRecords(assessmentType);

@@ -1,41 +1,40 @@
 import { Type } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 
-export class BaseSkillsDto {
+export class BaseAssessmentDto {
+  @IsNotEmpty()
+  timestamp!: Date;
+
   @IsEmail()
   @IsNotEmpty()
-  email!: string;
+  emailAddress!: string;
 
   @IsString()
   @IsNotEmpty()
-  timestamp!: string;
+  nameOfResource!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  resourceName!: string;
-
-  @IsOptional() 
-  @IsString()
+  @IsOptional()
+  @IsEmail() // Validate as an email
   emailOfResource?: string;
-
+  
   @IsString()
   @IsNotEmpty()
-  capability!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  careerLevel!: string;
-
+  careerLevelOfResource!: string;
+  
   @IsString()
   @IsNotEmpty()
   nameOfRespondent!: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  capability!: string;
 
   @IsObject()
   skills!: Record<string, number>; 
 }
 
-export class BulkUpdateSkillsDto {
+export class BulkUpdateAssessmentsDto {
   @ValidateNested({ each: true })
-  @Type(() => BaseSkillsDto)
-  data!: BaseSkillsDto[];
+  @Type(() => BaseAssessmentDto)
+  data!: BaseAssessmentDto[];
 }

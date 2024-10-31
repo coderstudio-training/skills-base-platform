@@ -3,27 +3,27 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 @Schema()
-export class BaseSkills extends Document {
-  @Prop({ required: true, unique: true, index: true })
-  email!: string;
-
-  @Prop({ required: true })
+export class Assessments extends Document {
+  @Prop({ required: true }) // Keep as Date in the entity
   timestamp!: Date;
 
+  @Prop({ required: true, unique: true, index: true })
+  emailAddress!: string;
+
   @Prop({ required: true })
-  resourceName!: string;
+  nameOfResource!: string;
 
   @Prop({ required: false }) 
   emailOfResource?: string;
-
+  
   @Prop({ required: true })
-  capability!: string;
-
-  @Prop({ required: true })
-  careerLevel!: string;
-
+  careerLevelOfResource!: string;
+  
   @Prop({ required: true })
   nameOfRespondent!: string;
+  
+  @Prop({ required: true })
+  capability!: string;
 
   @Prop({ type: Map, of: Number, default: {} })
   skills!: Record<string, number>;
@@ -32,19 +32,19 @@ export class BaseSkills extends Document {
   lastUpdated!: Date;
 }
 
-export const BaseSkillsSchema = SchemaFactory.createForClass(BaseSkills);
+export const BaseSkillsSchema = SchemaFactory.createForClass(Assessments);
 
 // SelfSkills entity
 @Schema()
-export class SelfSkills extends BaseSkills {}
+export class SelfAssessments extends Assessments {}
 
-export const SelfSkillsSchema = SchemaFactory.createForClass(SelfSkills);
+export const SelfAssessmentSchema = SchemaFactory.createForClass(SelfAssessments);
 
 // ManagerSkills entity
 @Schema()
-export class ManagerSkills extends BaseSkills {
-  @Prop({ required: true, unique: true }) 
+export class ManagerAssessment extends Assessments {
+  @Prop({ required: true }) 
   emailOfResource!: string; 
 }
 
-export const ManagerSkillsSchema = SchemaFactory.createForClass(ManagerSkills);
+export const ManagerAssessmentSchema = SchemaFactory.createForClass(ManagerAssessment);
