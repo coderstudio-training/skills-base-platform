@@ -20,6 +20,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3005;
   await app.listen(port);
+
   Logger.log(
     `User service is running on: http://localhost:${port}`,
     'Bootstrap',

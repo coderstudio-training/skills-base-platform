@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { LoggerMiddleware } from '@skills-base/shared';
 import { JwtStrategy } from '@skills-base/user-service';
 import { EmailModule } from './email/email.module';
 
@@ -12,4 +13,8 @@ import { EmailModule } from './email/email.module';
   ],
   providers: [JwtStrategy],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
