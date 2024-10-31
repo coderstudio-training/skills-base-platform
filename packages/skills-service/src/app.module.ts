@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule, LoggerMiddleware } from '@skills-base/shared';
-import { AuthModule } from '../../user-service/dist/auth/auth.module';
+import { JwtStrategy } from '@skills-base/user-service';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
 @Module({
   imports: [
@@ -10,8 +10,8 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
     }),
     DatabaseModule,
     TaxonomyModule,
-    AuthModule,
   ],
+  providers: [JwtStrategy]
 })
 
 export class AppModule implements NestModule {
