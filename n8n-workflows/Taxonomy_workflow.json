@@ -3,26 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {}
-          ]
-        }
-      },
-      "id": "3d57cb23-8ded-4a8d-88f6-c4b2c6bc844c",
-      "name": "Schedule Trigger",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        -660,
-        700
-      ],
-      "disabled": true
-    },
-    {
-      "parameters": {
         "content": "docx convert",
-        "height": 238.73904828482378,
+        "height": 261.8340440009925,
         "width": 517.6740221004202,
         "color": 2
       },
@@ -31,8 +13,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        449.483303632785,
-        400
+        440,
+        396.90500428383126
       ]
     },
     {
@@ -149,7 +131,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -260,
+        -380,
         700
       ],
       "notesInFlow": true,
@@ -160,7 +142,7 @@
         "authentication": "serviceAccount",
         "resource": "fileFolder",
         "searchMethod": "query",
-        "queryString": "=(mimeType='application/vnd.google-apps.document') AND '{{ $('Get parent folder details').item.json.id }}' in parents",
+        "queryString": "=(mimeType='application/vnd.google-apps.document' OR mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document' ) AND '{{ $('Get parent folder details').item.json.id }}' in parents",
         "returnAll": true,
         "filter": {
           "includeTrashed": "={{ false }}"
@@ -178,7 +160,7 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        140,
+        40,
         700
       ],
       "executeOnce": true,
@@ -201,7 +183,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -440,
+        -600,
         700
       ],
       "credentials": {
@@ -544,7 +526,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -60,
+        -160,
         700
       ],
       "alwaysOutputData": true
@@ -730,8 +712,8 @@
       "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
       "position": [
-        -660,
-        500
+        -880,
+        600
       ],
       "credentials": {
         "googleApi": {
@@ -739,6 +721,35 @@
           "name": "Google Service Account account"
         }
       }
+    },
+    {
+      "parameters": {
+        "content": "Template",
+        "height": 627.8648683656907,
+        "width": 3518.7881697638413,
+        "color": 4
+      },
+      "id": "3f776ad0-05ee-454c-8f76-1720f6eb2780",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -674.5303505775596,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const files = $('Find docx/docs').all();\n\nconst docs = [];\nconst docxs = [];\n\nfiles.forEach((obj) => {\n  if (obj.json.mimeType === 'application/vnd.google-apps.document') {\n    docs.push(obj);\n  } else {\n    docxs.push(obj);\n  }\n})\n\nconsole.log(`Docs ${docs.length} Docx ${docxs.length}`)\nif (docs.length === 0 && docxs.length === 0) {\n  return {\n    json: {\n      error: \"Did not find any valid files!\"\n    }\n  }\n} else {\n  if (docs.length === docxs.length) {\n    return docs;\n  }\n  else if (docxs.length > 0 && docs.length === 0) {\n    return docxs;\n  }\n}"
+      },
+      "id": "a80de3ad-e253-43ba-9328-95d0ac36bc46",
+      "name": "Filter out redundant docx",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        700
+      ]
     }
   ],
   "pinData": {},
@@ -776,7 +787,7 @@
       "main": [
         [
           {
-            "node": "If type is docx",
+            "node": "Filter out redundant docx",
             "type": "main",
             "index": 0
           }
@@ -988,13 +999,24 @@
           }
         ]
       ]
+    },
+    "Filter out redundant docx": {
+      "main": [
+        [
+          {
+            "node": "If type is docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "db7f2890-d00b-4f8b-8843-27cce88c34f7",
+  "versionId": "f03dd3c7-b17c-4fdc-8e7a-65c2bcb62af2",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2175fb2beeee23872604eaa18d0ab71c7b17b5a998e8ae3224ce5ec4e5e3fb21"
