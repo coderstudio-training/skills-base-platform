@@ -1,15 +1,26 @@
-import { Type as ValidateType } from 'class-transformer';  // Changed this line
-import { IsString, IsNotEmpty, IsNumber, IsArray, IsOptional, Min, Max, ValidateNested } from 'class-validator';
+import { Type as ValidateType } from 'class-transformer';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator';
+
+// Type for field items
+export class FieldDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  value: string;
+}
 
 export class CourseDto {
-  @IsString()
-  @IsNotEmpty()
-  courseId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  courseName: string;
-
+  // The 5 static headers
   @IsString()
   @IsNotEmpty()
   skillCategory: string;
@@ -33,44 +44,22 @@ export class CourseDto {
 
   @IsString()
   @IsNotEmpty()
-  provider: string;
+  courseId: string;
 
-  @IsString()
-  @IsNotEmpty()
-  duration: string;
-
-  @IsString()
-  @IsNotEmpty()
-  format: string;
-
-  @IsString()
-  @IsOptional()
-  prerequisites?: string;
-
-  @IsString()
-  @IsOptional()
-  learningObjectives?: string;
-
-  @IsString()
-  @IsOptional()
-  assessment?: string;
-
-  @IsString()
-  @IsOptional()
-  certificationOption?: string;
-
-  @IsString()
-  @IsOptional()
-  businessValue?: string;
-
-  @IsString()
-  @IsOptional()
-  recommendedFor?: string;
+  // Dynamic fields array
+  @IsArray()
+  @ValidateNested({ each: true })
+  @ValidateType(() => FieldDto)
+  fields: FieldDto[];
 }
 
 export class BulkUpdateCoursesDto {
-    @IsArray()
-    @ValidateNested({ each: true })
-    @ValidateType(() => CourseDto)  
-    data: CourseDto[];
-  }
+  @IsArray()
+  @ValidateNested({ each: true })
+  @ValidateType(() => CourseDto)
+  data: CourseDto[];
+
+  @IsString()
+  @IsNotEmpty()
+  collection: string;
+}

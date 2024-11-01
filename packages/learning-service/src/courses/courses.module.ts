@@ -6,11 +6,19 @@ import { Course, CourseSchema } from './entity/courses.entity';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Course.name, schema: CourseSchema }
-    ])
+    //setup dynamic schema configuration
+    MongooseModule.forFeatureAsync([
+      {
+        name: Course.name,
+        useFactory: () => {
+          const schema = CourseSchema;
+          schema.index({ courseId: 1 }, { unique: true });
+          return schema;
+        },
+      },
+    ]),
   ],
   controllers: [CoursesController],
-  providers: [CoursesService]
+  providers: [CoursesService],
 })
 export class CoursesModule {}

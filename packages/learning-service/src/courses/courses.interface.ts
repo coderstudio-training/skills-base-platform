@@ -9,3 +9,8 @@ export interface BulkUpsertResponse {
   errors: any[];
   validationErrors?: ValidationError[];
 }
+
+export interface Field {
+  name: string;
+  value: string;
+}

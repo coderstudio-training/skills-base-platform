@@ -1,15 +1,18 @@
-// src/courses/course.entity.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+
+// Define field structure without Schema
+interface Field {
+  name: string;
+  value: string;
+}
 
 @Schema()
 export class Course extends Document {
   @Prop({ required: true, unique: true })
   courseId: string;
 
-  @Prop({ required: true })
-  courseName: string;
-
+  // The 5 static headers
   @Prop({ required: true })
   skillCategory: string;
 
@@ -25,32 +28,17 @@ export class Course extends Document {
   @Prop({ required: true })
   courseLevel: string;
 
-  @Prop({ required: true })
-  provider: string;
-
-  @Prop({ required: true })
-  duration: string;
-
-  @Prop({ required: true })
-  format: string;
-
-  @Prop()
-  prerequisites: string;
-
-  @Prop()
-  learningObjectives: string;
-
-  @Prop()
-  assessment: string;
-
-  @Prop()
-  certificationOption: string;
-
-  @Prop()
-  businessValue: string;
-
-  @Prop()
-  recommendedFor: string;
+  // Dynamic fields array - modified to prevent _id generation
+  @Prop({
+    type: [
+      {
+        _id: false, // This prevents _id generation
+        name: String,
+        value: String,
+      },
+    ],
+  })
+  fields: Field[];
 
   @Prop({ default: Date.now })
   lastUpdated: Date;
