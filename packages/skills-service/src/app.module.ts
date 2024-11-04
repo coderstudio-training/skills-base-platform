@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule, LoggerMiddleware } from '@skills-base/shared';
-import { JwtStrategy } from '@skills-base/user-service';
+import { DatabaseModule, JwtStrategy, LoggerMiddleware } from '@skills-base/shared';
+import { AssessmentsModule } from './assessments/assessments.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
 @Module({
   imports: [
@@ -10,6 +10,7 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
     }),
     DatabaseModule,
     TaxonomyModule,
+    AssessmentsModule,
   ],
   providers: [JwtStrategy]
 })

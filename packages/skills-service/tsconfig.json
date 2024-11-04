@@ -6,12 +6,12 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
+    "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
-    "skipLibCheck": true,
+    "strict": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
     "strictBindCallApply": true,
@@ -20,9 +20,6 @@
     "paths": {
       "@skills-base/shared": [
         "../shared/dist"
-      ],
-      "@skills-base/user-service": [
-        "../user-service/dist"
       ]
     },
     "types": [

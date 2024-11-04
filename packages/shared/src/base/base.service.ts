@@ -13,7 +13,7 @@ export abstract class BaseService<T extends BaseEntity> {
       .find()
       .skip((page - 1) * limit)
       .limit(limit)
-      .exec();
+      .exec() as Promise<T[]>;
   }
 
   async findOne(id: string): Promise<T> {
@@ -21,12 +21,12 @@ export abstract class BaseService<T extends BaseEntity> {
     if (!entity) {
       throw new NotFoundException(`Entity with id ${id} not found`);
     }
-    return entity;
+    return entity as T;
   }
 
   async create(createDto: any): Promise<T> {
     const createdEntity = new this.model(createDto);
-    return createdEntity.save();
+    return (await createdEntity.save()) as T;
   }
 
   async update(id: string, updateDto: any): Promise<T> {
@@ -36,7 +36,7 @@ export abstract class BaseService<T extends BaseEntity> {
     if (!updatedEntity) {
       throw new NotFoundException(`Entity with id ${id} not found`);
     }
-    return updatedEntity;
+    return updatedEntity as T;
   }
 
   async remove(id: string): Promise<T> {
@@ -44,6 +44,6 @@ export abstract class BaseService<T extends BaseEntity> {
     if (!deletedEntity) {
       throw new NotFoundException(`Entity with id ${id} not found`);
     }
-    return deletedEntity;
+    return deletedEntity as T;
   }
 }

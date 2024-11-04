@@ -22,6 +22,9 @@ export class User extends BaseEntity {
 
   @Prop({ required: false, unique: true, sparse: true })
   googleId?: string;
+
+  @Prop({ required: false })
+  picture?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

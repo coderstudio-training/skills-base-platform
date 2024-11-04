@@ -1,15 +1,15 @@
 // packages/user-service/src/users/dto/create-user.dto.ts
 
-import {
-  IsEmail,
-  IsString,
-  IsNotEmpty,
-  MinLength,
-  IsEnum,
-  IsArray,
-  IsOptional,
-} from 'class-validator';
 import { UserRole } from '@skills-base/shared';
+import {
+  IsArray,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsEmail()
@@ -36,4 +36,8 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   googleId?: string;
+
+  @IsString()
+  @IsOptional()
+  picture?: string;
 }

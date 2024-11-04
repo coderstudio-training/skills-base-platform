@@ -1,28 +1,28 @@
 // packages/user-service/src/users/users.controller.ts
 
 import {
-  Controller,
-  Post,
   Body,
+  Controller,
   Get,
-  UseGuards,
-  UseInterceptors,
+  Post,
   Query,
   Request,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   BaseController,
-  LoggingInterceptor,
-  TransformInterceptor,
   JwtAuthGuard,
-  RolesGuard,
-  Roles,
-  UserRole,
+  LoggingInterceptor,
   PaginationDto,
+  Roles,
+  RolesGuard,
+  TransformInterceptor,
+  UserRole,
 } from '@skills-base/shared';
+import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -41,7 +41,7 @@ export class UsersController extends BaseController<User> {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getProfile(@Request() req: { user: { userId: string } }) {
-    return this.usersService.findById(req.user.userId);
+    return this.usersService.findUserProfileById(req.user.userId);
   }
 
   @Get()
