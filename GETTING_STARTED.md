@@ -284,7 +284,7 @@ Event Processes:    3006
        ├── users.module.ts         # Module definition
        ├── entities/               # Database entities
        │   └── user.entity.ts
-       └── dto/                    # Data transfer objects
+        └── dto/                    # Data transfer objects
            └── create-user.dto.ts
    ```
 
