@@ -1,7 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { LoggerMiddleware } from '@skills-base/shared';
-import { JwtStrategy } from '@skills-base/user-service';
+import { JwtStrategy, LoggerMiddleware } from '@skills-base/shared';
 import { EmailModule } from './email/email.module';
 
 @Module({
