@@ -1,0 +1,931 @@
+{
+  "name": "Taxonomy_workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "docx convert",
+        "height": 261.8340440009925,
+        "width": 517.6740221004202,
+        "color": 2
+      },
+      "id": "4558f9f6-1835-4bb2-9b99-70f7b2fb7553",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [440, 396.90500428383126]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "825d52d6-9968-4439-bcc6-218838529b0b",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "355e6eec-98c6-409d-85e3-1e2b17ed9593",
+      "name": "If type is docx",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [360, 700],
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('If type is docx').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "1ec78da4-7d99-4091-9fd0-5b681f6561e9",
+      "name": "Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [760, 460],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/drive/v2/files/{{ $json.id }}/copy?convert=true&supportsAllDrives=true",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "options": {}
+      },
+      "id": "98efa96f-8def-461c-a130-ea714c2abf5f",
+      "name": "Convert docx to doc",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 460],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "5enrxfsckD49Whxp",
+          "name": "Google Drive account"
+        },
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.203.84:3001/auth/login",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ email='admin@example.com' }}"
+            },
+            {
+              "name": "password",
+              "value": "={{ pw='AdminPassword123!'}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "59440998-34d8-4080-925b-dfb14829bfda",
+      "name": "Get token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-380, 700],
+      "notesInFlow": true,
+      "notes": "password is exposed"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "=(mimeType='application/vnd.google-apps.document' OR mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document' ) AND '{{ $('Get parent folder details').item.json.id }}' in parents",
+        "returnAll": true,
+        "filter": {
+          "includeTrashed": "={{ false }}"
+        },
+        "options": {
+          "fields": ["mimeType", "id", "name"]
+        }
+      },
+      "id": "ced0d199-dfd0-49f0-b64d-3f5f40bdb66b",
+      "name": "Find docx/docs",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [40, 700],
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ $json.parents[0] }}?fields=id,createdTime,modifiedTime,name",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "options": {}
+      },
+      "id": "5f798396-213e-47d0-a595-a5aa5ebc9052",
+      "name": "Get parent folder details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-600, 700],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "5enrxfsckD49Whxp",
+          "name": "Google Drive account"
+        },
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      },
+      "notes": "get folder for reference. "
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "get",
+        "documentURL": "={{ $json.id }}",
+        "simple": false
+      },
+      "id": "347d160b-f7ae-4f0a-a4e0-b0c3de03d25f",
+      "name": "get document data",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [920, 980],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "get",
+        "documentURL": "={{ $json.id }}",
+        "simple": false
+      },
+      "id": "7e10853e-1b48-4abf-8e46-cb248732a31e",
+      "name": "get existing data",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [1140, 700],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const errorsList = [];\n\n// Functions \nfunction getDocText(tableRowIndex, tableCellIndex, contentIndex=0, bodyContentIndex = 2, elementsIndex = 0) {\n  try {\n    // The proper order is body Content -> table Row -> table Cell -> content -> element.\n    // Extract the paragraph and textRun elements for validation\n    const paragraphElement = $json?.body?.content?.[bodyContentIndex]?.table?.tableRows?.[tableRowIndex]?.tableCells?.[tableCellIndex]?.content?.[contentIndex]?.paragraph?.elements?.[elementsIndex]?.textRun;\n\n    // If the paragraph or textRun is missing, return null\n    if (!paragraphElement) {\n      return null;\n    }\n\n    // Extract and clean the content\n    const cellContent = paragraphElement.content.trim().replace(/\\n/g, '');\n\n    // If the content is an empty string (\"\"), return N/A\n    return cellContent === \"\" ? \"N/A\" : cellContent;\n    \n  } catch (error) {\n    errorsList.push(error);\n    console.error(`Error fetching text for tableRowIndex: ${tableRowIndex}, tableCellIndex: ${tableCellIndex}, contentIndex: ${contentIndex}`, error);\n    return null;\n  }\n}\n\n// Start of data extraction\nconst data = {};\n\n// Primary keys to compare and contrast.\ndata[\"docTitle\"] = $json.title;\ndata[\"docId\"] = $json.documentId;\ndata[\"docRevisionId\"] = $json.revisionId;\n\n// Body / Content\nconst names = [\"category\", \"title\", \"description\"];\n// For the basic rows. (category, title, description)\ntry {\n  for (let i=0; i<3; i++) {\n    data[names[i]] = getDocText(i, 1);\n    if (i===1) {\n       if (!data[\"docTitle\"].includes(data['title'])) {\n  errorsList.push(\"document title and tsc title doesn't match!\")\n    }\n}\n  }\n} catch (error) {\n  errorsList.push(error)\n}\n\n// For proficiency.\nlet level = 3;\nconst prof = {};\n\n// Assumes that the content is not by bullet. Otherwise, nested loop.\nlet na_count = 0;\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // ignore the first index, as it's key for this entire object.\n    prof[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g,'')] = [getDocText(4, index) ,getDocText(5, index)]\n  if (getDocText(4, index)==='N/A' || getDocText(5, index)==='N/A') {\n    na_count += 1;\n  }\n});\n\nif (na_count >= $json.body.content[2].table.tableRows[level].tableCells.length) {\n  errorsList.push(\"Empty fields for proficiency!\")\n}\n// optimize and DNR and match if same level has N/A soon!\n\ndata[\"proficiencyDescription\"] = prof;\n\n// For knowledge\nlet knowledge = 6;\nconst know = {};\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // ignore the first index, as it's key for this entire object.\n    know[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g,'')] = $json.body.content[2].table.tableRows[knowledge].tableCells[index].content.map(cell => \n        cell.paragraph?.elements[0]?.textRun?.content.trim().replace(/\\n/g,''));\n});\ndata[\"knowledge\"] = know;\n// For ability \nlet ability = 7;\nconst abil = {};\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // ignore the first index, as it's key for this entire object.\n    abil[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g,'')] = $json.body.content[2].table.tableRows[ability].tableCells[index].content.map(cell => \n        cell.paragraph?.elements[0]?.textRun?.content.trim().replace(/\\n/g,''));\n});\ndata[\"abilities\"] = abil;\n// For range of application\nlet rapp = 8;\n\n// Check if the table row and cells exist to avoid undefined errors\n\nif ($json?.body?.content?.[2]?.table?.tableRows?.[rapp]?.tableCells?.[1]?.content) {\n  data[\"rangeOfApplication\"] = $json.body.content[2].table.tableRows[rapp].tableCells[1].content.map(cell =>\n    cell?.paragraph?.elements?.map(el => el?.textRun?.content?.replace(/^\\s*•\\s*/, '').trim()?.replace(/\\n/g, '')).join(\" \")\n  );\n} else {\n  data[\"rangeOfApplication\"] = []; // Set to empty if row doesn't exist\n}\n\ndata[\"businessUnit\"] = $('Get parent folder details').first().json.name;\n\nif (errorsList.length===0) {\n  return data; \n}\nelse {\n  return { \n    invalidContents: true,\n    error_log: errorsList.join() }\n}\n"
+      },
+      "id": "8d50b693-6112-4bbb-9c5b-ffa7bfe38259",
+      "name": "Validate File contents",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1140, 980]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5fb12013-83ad-4c24-9d29-7f197fe9ef01",
+              "leftValue": "={{ $('Get data').first().json._id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "14220b3b-bffa-48ec-abb9-7a5dea035d33",
+      "name": "If collection exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [660, 840],
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "=(mimeType='application/vnd.google-apps.document') AND '{{ $('Get parent folder details').item.json.id }}' in parents",
+        "returnAll": true,
+        "filter": {
+          "includeTrashed": "={{ false }}"
+        },
+        "options": {
+          "fields": ["mimeType", "id", "name"]
+        }
+      },
+      "id": "da13151c-c205-49a0-8101-bc98bfdd6fcf",
+      "name": "Find doc",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [920, 700],
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const errorsList = [];\n\n// Function to extract and concatenate text from elements\nfunction getDocText(tableRowIndex, tableCellIndex, contentIndex = 0, bodyContentIndex = 2, elementsIndex = 0) {\n  try {\n    // The proper order is body Content -> table Row -> table Cell -> content -> element.\n    const paragraphElement = $json?.body?.content?.[bodyContentIndex]?.table?.tableRows?.[tableRowIndex]?.tableCells?.[tableCellIndex]?.content?.[contentIndex]?.paragraph?.elements;\n\n    // If the paragraph or elements are missing, return null\n    if (!paragraphElement || !Array.isArray(paragraphElement) || paragraphElement.length === 0) {\n      return null;\n    }\n\n    // Check the length of elements and concatenate if more than one\n    const cellContent = paragraphElement.length > 1 \n      ? paragraphElement.map(el => el.textRun?.content.trim().replace(/\\n/g, '')).join(\" \") // Join multiple elements\n      : paragraphElement[0]?.textRun?.content.trim().replace(/\\n/g, ''); // Default to the first element\n\n    // If the content is an empty string (\"\"), return N/A\n    return cellContent === \"\" ? \"N/A\" : cellContent;\n\n  } catch (error) {\n    errorsList.push(error);\n    console.error(`Error fetching text for tableRowIndex: ${tableRowIndex}, tableCellIndex: ${tableCellIndex}, contentIndex: ${contentIndex}`, error);\n    return null;\n  }\n}\n\n// Start of data extraction\nconst data = {};\n\n// Primary keys to compare and contrast.\ndata[\"docTitle\"] = $json.title;\ndata[\"docId\"] = $json.documentId;\ndata[\"docRevisionId\"] = $json.revisionId;\n\n// Body / Content\n// For the basic rows. (category, title, description)\nconst names = [\"category\", \"title\", \"description\"];\n\ntry {\n  for (let i = 0; i < 3; i++) {\n    data[names[i]] = getDocText(i, 1);\n  }\n} catch (error) {\n  errorsList.push(error);\n}\n\n// For proficiency.\nlet level = 3;\nconst prof = {};\n\n// Assumes that the content is not by bullet. Otherwise, nested loop.\nlet na_count = 0;\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // Ignore the first index, as it's key for this entire object.\n    prof[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g, '')] = [getDocText(4, index), getDocText(5, index)];\n  \n  if (getDocText(4, index) === 'N/A' || getDocText(5, index) === 'N/A') {\n    na_count += 1;\n  }\n});\n\nif (na_count >= $json.body.content[2].table.tableRows[level].tableCells.length) {\n  errorsList.push(\"Empty fields for proficiency!\");\n}\n\n// Optimize and DNR and match if same level has N/A soon!\ndata[\"proficiencyDescription\"] = prof;\n\n// For knowledge\nlet knowledge = 6;\nconst know = {};\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // Ignore the first index, as it's key for this entire object.\n    know[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g, '')] = $json.body.content[2].table.tableRows[knowledge].tableCells[index].content.map(cell => \n        cell.paragraph?.elements?.map(el => el.textRun?.content.trim().replace(/\\n/g, '')).join(\" \"));\n});\n\ndata[\"knowledge\"] = know;\n\n// For ability \nlet ability = 7;\nconst abil = {};\n\n$json.body.content[2].table.tableRows[level].tableCells.forEach((key, index) => {\n  if (index !== 0) // Ignore the first index, as it's key for this entire object.\n    abil[key.content[0].paragraph.elements[0].textRun.content.trim().replace(/\\n/g, '')] = $json.body.content[2].table.tableRows[ability].tableCells[index].content.map(cell => \n        cell.paragraph?.elements?.map(el => el.textRun?.content.trim().replace(/\\n/g, '')).join(\" \"));\n});\n\ndata[\"abilities\"] = abil;\n\n// For range of application\nlet rapp = 8;\nif ($json?.body?.content?.[2]?.table?.tableRows?.[rapp]?.tableCells?.[1]?.content) {\n  \n  data[\"rangeOfApplication\"] = $json.body.content[2].table.tableRows[rapp].tableCells[1].content.map(cell => \n    cell.paragraph?.elements?.map(el => el.textRun?.content.replace(/^\\s*•\\s*/, '').trim().replace(/\\n/g, '')).join(\" \")\n  );\n} else {\n  data[\"rangeOfApplication\"] = []; // Set to N/A if row doesn't exist\n}\n\ndata[\"businessUnit\"] = $('Get parent folder details').first().json.name;\n\nif (errorsList.length === 0) {\n  return data; \n} else {\n  return { \n    invalidContents: true,\n    error_log: errorsList.join() \n  };\n}\n"
+      },
+      "id": "ae0d0770-915f-410d-888e-441c804a9821",
+      "name": "Revalidate content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1800, 760]
+    },
+    {
+      "parameters": {
+        "jsCode": "const old_data = $('Get data').all();\nconst new_data = $('get existing data').all();\n\nconst rowsToUpdate = [];\n\n// Yet to cover if folder files are deleted (new_data.length < old_data.length)\n\nnew_data.forEach((obj, index) => {\n  const id = obj.json.documentId;\n  const idMatch = old_data.findIndex(oldItem => oldItem.json.DOC_Id === id);\n\n  if (idMatch !== -1) {\n    if (obj.json.revisionId !== old_data[idMatch].json.DOC_RevisionId) {\n      \n      rowsToUpdate.push(obj);\n    }\n    else {\n      console.log(`No changes for ${id}`);\n    }\n  } else {\n    rowsToUpdate.push(obj);\n  }\n})\n\nif (rowsToUpdate.length === 0 ) {\n  return {\n    \"error\": \"No data changes!\"\n  }\n}\nconsole.log(\"Rows to update: \"+rowsToUpdate);\nreturn rowsToUpdate;"
+      },
+      "id": "8bfd9e04-2625-48b6-ba8c-5d9a153af0e6",
+      "name": "Filter items to update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1360, 700]
+    },
+    {
+      "parameters": {
+        "operation": "findOneAndUpdate",
+        "collection": "={{ $('Get parent folder details').item.json.name }}",
+        "updateKey": "doc_Id",
+        "fields": "={{ Object.keys($json).join(\", \") }}",
+        "upsert": true,
+        "options": {}
+      },
+      "id": "03f016b6-5f77-43f4-bbc7-c30ac718a3ad",
+      "name": "Upsert ",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [1480, 1440],
+      "credentials": {
+        "mongoDb": {
+          "id": "DiFuCOB9Q0kTKL35",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a6eef944-527c-47f0-9518-e4985ddda1bd",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "a583d12b-df67-49b2-976b-f2647f9bf618",
+      "name": "If item has error",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1560, 700]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Revalidate content').all();\n\nconst validItems = [];\nconst errorItems = [];\n\ndata.forEach((obj)=> {\n  if (obj.json.invalidContents === true) {\n    errorItems.push(obj.json);\n  } else {\n    obj.json.businessUnit=$('Get parent folder details').first().json.name;\n    validItems.push(obj.json);\n  }\n})\n\n\nif (errorItems.length === 0) {\n  return { \n    json: {\n      validItems\n    }\n  }\n} else {\n  return {\n    json: {\n      errorItems\n    }\n  };\n}"
+      },
+      "id": "47cb0b86-1e43-4ed4-914e-a4594d6362b5",
+      "name": "Store into array",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2020, 760]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Validate File contents').all();\n\nconst validItems = [];\nconst errorItems = [];\n\ndata.forEach((obj)=> {\n  if (obj.json.invalidContents === true) {\n    errorItems.push(obj.json);\n  } else {\n    validItems.push(obj.json);\n  }\n})\n\n\nif (errorItems.length === 0) {\n  return { \n    json: {\n      validItems\n    }\n  }\n} else {\n  return {\n    json: {\n      errorItems\n    }\n  };\n}"
+      },
+      "id": "d79c16d4-71ab-4c5b-b3c3-93fa50e14d37",
+      "name": "Store into array1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1360, 980]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f7095e7d-f871-4f0d-a9be-71f15d7b0a66",
+              "leftValue": "={{ $json.validItems }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "844334a8-36c0-4914-9adf-ea925c079140",
+      "name": "If valid item",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2240, 760]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f7095e7d-f871-4f0d-a9be-71f15d7b0a66",
+              "leftValue": "={{ $json.validItems }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "140a2db9-3371-42a0-96c8-b8afaf4269fe",
+      "name": "If valid item1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1560, 980]
+    },
+    {
+      "parameters": {
+        "url": "=http://192.168.203.84:3002/taxonomy?businessUnit={{ $('Get parent folder details').item.json.name.split('_')[0] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get token').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e2cfe679-a0f9-4915-bf91-c558d3b5a6a1",
+      "name": "Get data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-160, 700],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a15d778c-a21a-4085-bac1-5a9851054449",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c2128b1b-6cd4-47ed-b4a4-a73000be9bce",
+      "name": "Check Api Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2660, 640]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a15d778c-a21a-4085-bac1-5a9851054449",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "7a719c87-8034-414c-a7b6-ad9a01747c92",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 300,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "2b756cb7-e66a-411a-9130-ad8e4625f9ac",
+      "name": "Check Api Response2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2020, 920]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.203.84:3002/taxonomy/bulk-upsert",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get token').first().json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": {{ $json.validItems.toJsonString() }}\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "32b3ae04-21ad-4049-a9d9-21f8e28c9f14",
+      "name": "Mongodb upsert endpoint",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1800, 920],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.203.84:3002/taxonomy/bulk-upsert",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get token').first().json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"data\": {{ $json.validItems.toJsonString() }}\n}",
+        "options": {}
+      },
+      "id": "095366db-330c-42a3-9b6e-08f22ae18e7e",
+      "name": "Mongodb upsert endpoint1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2460, 640],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "content": "DUMP\n",
+        "height": 199.97674418604652,
+        "color": 7
+      },
+      "id": "369a5a00-b085-428f-9ddd-de16493c5161",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1440, 1400]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1ZrUQwt-ezLHPTcQ9ejzjE7KarpP_a6oI",
+          "mode": "list",
+          "cachedResultName": "QA_QUALITY_ASSURANCE",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1ZrUQwt-ezLHPTcQ9ejzjE7KarpP_a6oI"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "cf5789a7-5540-4f8f-a218-b7457f27ecd4",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-880, 600],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Template",
+        "height": 627.8648683656907,
+        "width": 3518.7881697638413,
+        "color": 4
+      },
+      "id": "3f776ad0-05ee-454c-8f76-1720f6eb2780",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-674.5303505775596, 520]
+    },
+    {
+      "parameters": {
+        "jsCode": "const files = $('Find docx/docs').all();\n\nconst docs = [];\nconst docxs = [];\n\nfiles.forEach((obj) => {\n  if (obj.json.mimeType === 'application/vnd.google-apps.document') {\n    docs.push(obj);\n  } else {\n    docxs.push(obj);\n  }\n})\n\nconsole.log(`Docs ${docs.length} Docx ${docxs.length}`)\nif (docs.length === 0 && docxs.length === 0) {\n  return {\n    json: {\n      error: \"Did not find any valid files!\"\n    }\n  }\n} else {\n  if (docs.length === docxs.length) {\n    return docs;\n  }\n  else if (docxs.length > 0 && docs.length === 0) {\n    return docxs;\n  }\n}"
+      },
+      "id": "a80de3ad-e253-43ba-9328-95d0ac36bc46",
+      "name": "Filter out redundant docx",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 700]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If type is docx": {
+      "main": [
+        [
+          {
+            "node": "Convert docx to doc",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If collection exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert docx to doc": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find docx/docs": {
+      "main": [
+        [
+          {
+            "node": "Filter out redundant docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get parent folder details": {
+      "main": [
+        [
+          {
+            "node": "Get token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get document data": {
+      "main": [
+        [
+          {
+            "node": "Validate File contents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If collection exists": {
+      "main": [
+        [
+          {
+            "node": "Find doc",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "get document data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find doc": {
+      "main": [
+        [
+          {
+            "node": "get existing data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get existing data": {
+      "main": [
+        [
+          {
+            "node": "Filter items to update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter items to update": {
+      "main": [
+        [
+          {
+            "node": "If item has error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get token": {
+      "main": [
+        [
+          {
+            "node": "Get data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If item has error": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Revalidate content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Revalidate content": {
+      "main": [
+        [
+          {
+            "node": "Store into array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate File contents": {
+      "main": [
+        [
+          {
+            "node": "Store into array1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store into array": {
+      "main": [
+        [
+          {
+            "node": "If valid item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store into array1": {
+      "main": [
+        [
+          {
+            "node": "If valid item1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If valid item": {
+      "main": [
+        [
+          {
+            "node": "Mongodb upsert endpoint1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If valid item1": {
+      "main": [
+        [
+          {
+            "node": "Mongodb upsert endpoint",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get data": {
+      "main": [
+        [
+          {
+            "node": "Find docx/docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mongodb upsert endpoint": {
+      "main": [
+        [
+          {
+            "node": "Check Api Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mongodb upsert endpoint1": {
+      "main": [
+        [
+          {
+            "node": "Check Api Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter out redundant docx": {
+      "main": [
+        [
+          {
+            "node": "If type is docx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f03dd3c7-b17c-4fdc-8e7a-65c2bcb62af2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2175fb2beeee23872604eaa18d0ab71c7b17b5a998e8ae3224ce5ec4e5e3fb21"
+  },
+  "id": "BPkOt6K96ox5xWEt",
+  "tags": []
+}
