@@ -22,7 +22,7 @@ async function bootstrap() {
   await app.listen(port);
 
   Logger.log(
-    `User service is running on: http://localhost:${port}`,
+    `Email service is running on: http://localhost:${port}`,
     'Bootstrap',
   );
 }
