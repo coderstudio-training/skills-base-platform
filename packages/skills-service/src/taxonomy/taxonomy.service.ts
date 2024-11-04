@@ -7,7 +7,7 @@ import { Taxonomy, TaxonomyEntity } from './entities/taxonomy.entity';
 
 @Injectable()
 export class TaxonomyService {
-  private readonly logger = new Logger(TaxonomyService.name)
+  private readonly logger = new Logger(TaxonomyService.name);
   private readonly BATCH_SIZE = 1000;
 
   constructor(
@@ -22,10 +22,16 @@ export class TaxonomyService {
 
   private getTaxonomyModel(businessUnit: string): Model<Taxonomy> {
     const collectionName = this.getCollectionName(businessUnit);
-    return this.connection.model<Taxonomy>(Taxonomy.name, TaxonomyEntity, collectionName);
+    return this.connection.model<Taxonomy>(
+      Taxonomy.name,
+      TaxonomyEntity,
+      collectionName,
+    );
   }
 
-  async bulkUpsert(dto: BulkUpsertTaxonomyDTO): Promise<{ updatedCount: number, errors: any[] }> {
+  async bulkUpsert(
+    dto: BulkUpsertTaxonomyDTO,
+  ): Promise<{ updatedCount: number; errors: any[] }> {
     let totalUpdatedCount = 0;
     const errors = [];
 
@@ -35,12 +41,27 @@ export class TaxonomyService {
         const result = await this.processBatch(batch);
         totalUpdatedCount += result.modifiedCount + result.upsertedCount;
       } catch (error) {
-        this.logger.error(`Error processing batch ${i / this.BATCH_SIZE + 1}: ${error.message}`);
-        errors.push({ batchIndex: i / this.BATCH_SIZE + 1, error: error.message });
+        if (error instanceof Error) {
+          this.logger.error(
+            `Error processing batch ${i / this.BATCH_SIZE + 1}: ${error.message}`,
+          );
+          errors.push({
+            batchIndex: i / this.BATCH_SIZE + 1,
+            error: error.message,
+          });
+        } else {
+          this.logger.error(
+            `Error processing batch ${i / this.BATCH_SIZE + 1}: ${String(error)}`,
+          );
+          errors.push({
+            batchIndex: i / this.BATCH_SIZE + 1,
+            error: String(error),
+          });
+        }
       }
     }
 
-    return { updatedCount: totalUpdatedCount, errors }; 
+    return { updatedCount: totalUpdatedCount, errors };
   }
 
   private async processBatch(batch: TaxonomyDTO[]): Promise<BulkWriteResult> {
@@ -61,11 +82,13 @@ export class TaxonomyService {
       },
     }));
 
-    const result = await taxonomyModel.bulkWrite(operations, { ordered: false });
+    const result = await taxonomyModel.bulkWrite(operations, {
+      ordered: false,
+    });
     this.logger.debug(
       `Batch processed: ${result.modifiedCount} updated, ${result.upsertedCount} inserted`,
     );
-    return result;
+    return result as unknown as BulkWriteResult;
   }
 
   async findAll(businessUnit: string): Promise<Taxonomy[]> {
@@ -73,7 +96,10 @@ export class TaxonomyService {
     return taxonomyModel.find().exec();
   }
 
-  async findByDocId(docId: string, businessUnit: string): Promise<Taxonomy | null> {
+  async findByDocId(
+    docId: string,
+    businessUnit: string,
+  ): Promise<Taxonomy | null> {
     const taxonomyModel = this.getTaxonomyModel(businessUnit);
     return taxonomyModel.findOne({ docId }).exec();
   }
