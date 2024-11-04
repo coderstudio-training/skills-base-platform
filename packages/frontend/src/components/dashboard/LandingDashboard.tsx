@@ -2,13 +2,7 @@
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { logger } from '@/lib/utils';
@@ -60,8 +54,7 @@ const isAdminEmail = (email: string): boolean => {
 };
 
 const isAllowedDomain = (email: string): boolean => {
-  const allowedDomain =
-    process.env.NEXT_PUBLIC_ALLOWED_DOMAIN || '@stratpoint.com';
+  const allowedDomain = process.env.NEXT_PUBLIC_ALLOWED_DOMAIN || '@stratpoint.com';
   return email.toLowerCase().endsWith(allowedDomain);
 };
 
@@ -111,7 +104,7 @@ export default function LandingDashboard() {
     } else if (isAllowedDomain(email)) {
       try {
         await signIn('google', {
-          callbackUrl: '/api/auth/callback/google',
+          callbackUrl: '/',
           loginHint: email,
         });
       } catch (err) {
@@ -119,9 +112,7 @@ export default function LandingDashboard() {
         setError('An unexpected error occurred. Please try again.');
       }
     } else {
-      setError(
-        'Your email domain is not authorized to access this application.'
-      );
+      setError('Your email domain is not authorized to access this application.');
     }
 
     setIsLoading(false);
@@ -131,75 +122,53 @@ export default function LandingDashboard() {
     <div className="container mx-auto p-4">
       <header className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-2">Welcome to SkillBase</h1>
-        <p className="text-xl text-muted-foreground">
-          Empower Your Team, Elevate Your Business
-        </p>
+        <p className="text-xl text-muted-foreground">Empower Your Team, Elevate Your Business</p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Skill Tracking
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Skill Tracking</CardTitle>
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Comprehensive</div>
-            <p className="text-xs text-muted-foreground">
-              Monitor and develop skills
-            </p>
+            <p className="text-xs text-muted-foreground">Monitor and develop skills</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Learning Paths
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Learning Paths</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Personalized</div>
-            <p className="text-xs text-muted-foreground">
-              Tailored growth journeys
-            </p>
+            <p className="text-xs text-muted-foreground">Tailored growth journeys</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Team Management
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Team Management</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Efficient</div>
-            <p className="text-xs text-muted-foreground">
-              Streamlined team oversight
-            </p>
+            <p className="text-xs text-muted-foreground">Streamlined team oversight</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Performance Boost
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Performance Boost</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Measurable</div>
-            <p className="text-xs text-muted-foreground">
-              Track improvement over time
-            </p>
+            <p className="text-xs text-muted-foreground">Track improvement over time</p>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="space-y-4"
-      >
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Platform Overview</TabsTrigger>
           <TabsTrigger value="features">Key Features</TabsTrigger>
@@ -210,8 +179,7 @@ export default function LandingDashboard() {
             <CardHeader>
               <CardTitle>Why Choose SkillBase?</CardTitle>
               <CardDescription>
-                Discover how our platform can transform your team&apos;s skills
-                management
+                Discover how our platform can transform your team&apos;s skills management
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -242,9 +210,7 @@ export default function LandingDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Platform Features</CardTitle>
-              <CardDescription>
-                Explore the powerful tools SkillBase offers
-              </CardDescription>
+              <CardDescription>Explore the powerful tools SkillBase offers</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -257,15 +223,10 @@ export default function LandingDashboard() {
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
                     {featuresData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -291,11 +252,7 @@ export default function LandingDashboard() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar
-                    dataKey="increase"
-                    fill="#8884d8"
-                    name="Percentage Increase"
-                  />
+                  <Bar dataKey="increase" fill="#8884d8" name="Percentage Increase" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -304,9 +261,7 @@ export default function LandingDashboard() {
       </Tabs>
 
       <div className="mt-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">
-          Ready to Transform Your Team&apos;s Skills?
-        </h2>
+        <h2 className="text-2xl font-bold mb-4">Ready to Transform Your Team&apos;s Skills?</h2>
         <form
           onSubmit={handleSubmit}
           className="flex flex-col items-center justify-center gap-4 md:flex-row"
@@ -316,17 +271,11 @@ export default function LandingDashboard() {
               type="email"
               placeholder="Enter your work email"
               value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setEmail(e.target.value)
-              }
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               required
             />
           </div>
-          <Button
-            type="submit"
-            className="w-full md:w-auto"
-            disabled={isLoading || !email}
-          >
+          <Button type="submit" className="w-full md:w-auto" disabled={isLoading || !email}>
             {isLoading ? (
               <>
                 <span className="mr-2">Loading...</span>

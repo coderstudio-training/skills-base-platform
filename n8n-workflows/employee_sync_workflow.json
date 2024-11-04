@@ -1,0 +1,452 @@
+{
+  "name": "Employee Sync Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.143.2:3001/employees/sync",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.validItems.toJsonString() }}",
+        "options": {}
+      },
+      "id": "1e51d390-5975-47b9-9ea9-d646b1830c48",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 560]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw",
+          "mode": "list",
+          "cachedResultName": "Employee_Master_List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "8f5f4d23-da05-4b6f-a213-f2a5f2d36f9e",
+      "name": "Google Sheets2",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-480, 560],
+      "credentials": {
+        "googleApi": {
+          "id": "WxPVvjosN7A9UGbt",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.errors.length > 0 }}",
+              "value2": "={{ true }}"
+            }
+          ]
+        }
+      },
+      "name": "Check for Validation Errors1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [0, 900],
+      "id": "0ad74533-bd6a-4691-a97f-0707c232d81c"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/error-logs/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "errors",
+              "value": "={{ $json.errors }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Errors to API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [260, 900],
+      "id": "657617c5-7d65-4e28-958f-cb088a335189",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.statusCode == 201 }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Check API Response1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [260, 560],
+      "id": "fde48033-3951-4a3e-b849-a4c8a85b8ce5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.100.70:3005/email/send-success",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"workflowName\": \"Employee Sync Workflow\"\n}",
+        "options": {}
+      },
+      "name": "Send Success Notification API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [460, 460],
+      "id": "f90a6b67-a418-49dd-8af7-85d5cc0ca368"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.100.70:3005/email/send-error",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"error\": \"An error occurred during the workflow.\",\n  \"workflowName\": \"Employee Sync Workflow\"\n}",
+        "options": {}
+      },
+      "name": "Send Error Notification API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [460, 660],
+      "id": "a9b87640-c41c-4949-b486-d389a04f2887"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 0
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [-1420, 560],
+      "id": "34e58a48-b84d-407f-9e29-bf14223dc258",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "fileFolder",
+        "queryString": "Employee_Master_List",
+        "filter": {},
+        "options": {}
+      },
+      "id": "17576302-c633-4f1a-a865-b2f7dd6d7a7a",
+      "name": "Check for Folder and File2",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [-960, 560],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "WxPVvjosN7A9UGbt",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1fd6c03e-8598-49da-a2a1-bac2edfe8c21",
+              "leftValue": "={{$json.isEmpty()}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ce99561d-c911-4da7-9c23-a9d404dc5752",
+      "name": "If Exists2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-740, 560]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0d255f04-41b2-4f32-aea4-efe224bb20e8",
+        "options": {}
+      },
+      "id": "bae99f61-b115-47f0-b59e-4978193d9ece",
+      "name": "Webhook2",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-1420, 760],
+      "webhookId": "0d255f04-41b2-4f32-aea4-efe224bb20e8",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.143.2:3001/auth/login",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "admin@example.com"
+            },
+            {
+              "name": "password",
+              "value": "AdminPassword123!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Login to API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-1160, 560],
+      "id": "23c1761e-02c2-4991-addc-34cd52b7bee8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nfunction normalizeKey(key) {\n  return key.replace(/(?:^\\w|[A-Z]|\\b\\w)/g, (letter, index) => \n    index === 0 ? letter.toLowerCase() : letter.toUpperCase()\n  ).replace(/\\s+/g, '');\n}\n\nfunction processCertifications(row) {\n  const certifications = [];\n  const certificationFields = new Set();\n  \n  // Collect all certification related fields\n  Object.keys(row).forEach(key => {\n    if (key.startsWith('certifications.')) {\n      certificationFields.add(key);\n    }\n  });\n  \n  // Get unique certification indices\n  const certIndices = new Set(\n    Array.from(certificationFields).map(field => {\n      const match = field.match(/^certifications\\.(\\d+)\\./);\n      return match ? parseInt(match[1]) : null;\n    }).filter(index => index !== null)\n  );\n  \n  // Process each certification\n  Array.from(certIndices).sort((a, b) => a - b).forEach(index => {\n    const cert = {};\n    const prefix = `certifications.${index}.`;\n    \n    // Check each potential field for this certification\n    certificationFields.forEach(field => {\n      if (field.startsWith(prefix)) {\n        const fieldName = field.substring(prefix.length);\n        const value = row[field];\n        \n        // Only include non-empty values\n        if (value !== null && value !== undefined && value !== '' && value !== '[empty]') {\n          cert[fieldName] = value;\n        }\n      }\n    });\n    \n    // Only add certification if it has any non-empty fields\n    if (Object.keys(cert).length > 0) {\n      certifications.push(cert);\n    }\n  });\n  \n  return certifications;\n}\n\nconst finalOutput = {};\nconst errors = [];\nlet recordCounter = 1;\n\n$input.all().forEach((item, index) => {\n  const row = item.json;\n  \n  const keyMapping = Object.keys(row);\n  const rowValues = Object.values(row);\n  \n  const empIdIndex = keyMapping.findIndex(key => {\n    const normalizedKey = normalizeKey(key);\n    return normalizedKey === 'employeeId';\n  });\n  \n  const employeeId = rowValues[empIdIndex !== -1 ? empIdIndex : 1];\n  if (typeof employeeId !== 'number' || isNaN(employeeId)) {\n    errors.push({\n      index,\n      error: 'Invalid or missing employeeId',\n      data: row\n    });\n    return;\n  }\n  \n  try {\n    const certifications = processCertifications(row);\n    const validatedDocument = {};\n    \n    Object.keys(row).forEach(key => {\n      // Skip certification dot notation fields\n      if (key.startsWith('certifications.')) {\n        return;\n      }\n      \n      let normalizedKey = normalizeKey(key);\n      if (normalizedKey === 'empId') {\n        normalizedKey = 'employeeId';\n      }\n      \n      validatedDocument[normalizedKey] = row[key];\n    });\n    \n    ['row_number'].forEach(field => {\n      delete validatedDocument[normalizeKey(field)];\n    });\n    \n    // Add processed certifications\n    validatedDocument.certifications = certifications;\n    \n    finalOutput[recordCounter.toString()] = validatedDocument;\n    recordCounter++;\n    \n  } catch (error) {\n    errors.push({\n      index,\n      error: error.message,\n      data: row\n    });\n  }\n});\n\nreturn {\n  json: {\n    accessToken,\n    validItems: finalOutput,\n    errors\n  }\n};"
+      },
+      "id": "3ad53f54-9fb9-47de-aa49-be579eb18780",
+      "name": "Validate and Transform",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-260, 560]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFile",
+        "fileToWatch": {
+          "__rl": true,
+          "value": "11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw",
+          "mode": "list",
+          "cachedResultName": "Employee_Master_List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw/edit?usp=drivesdk"
+        }
+      },
+      "id": "b7c5cab1-721f-4390-bdbb-cdc1797c5f1b",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1420, 360],
+      "credentials": {
+        "googleApi": {
+          "id": "WxPVvjosN7A9UGbt",
+          "name": "Google Service Account account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets2": {
+      "main": [
+        [
+          {
+            "node": "Validate and Transform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Response1": {
+      "main": [
+        [
+          {
+            "node": "Send Success Notification API1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Notification API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Validation Errors1": {
+      "main": [
+        [
+          {
+            "node": "Log Errors to API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Check API Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Exists2": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Folder and File2": {
+      "main": [
+        [
+          {
+            "node": "If Exists2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Login to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Login to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login to API": {
+      "main": [
+        [
+          {
+            "node": "Check for Folder and File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and Transform": {
+      "main": [
+        [
+          {
+            "node": "Check for Validation Errors1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Login to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f176f154-8826-40b3-a0e4-d8fbece3c2bb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "86f5c9b55c596bbebddee8dababbdbd4d400371496a13e11367d7b42b8b1bccd"
+  },
+  "id": "LKk94dwrjHcsifnH",
+  "tags": []
+}
