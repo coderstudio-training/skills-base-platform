@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 import { ElasticsearchTransport } from 'winston-elasticsearch';
-import { LoggerConfig } from './interfaces/logger-config.interface';
-import { LogMetadata } from './interfaces/log-metadata.interface';
 import { customFormat } from './formats/custom.format';
+import { LogMetadata } from './interfaces/log-metadata.interface';
+import { LoggerConfig } from './interfaces/logger-config.interface';
 
 @Injectable()
 export class LoggerService {
@@ -72,6 +72,11 @@ export class LoggerService {
           indexPrefix: config.transports.elastic.index,
           clientOpts: {
             node: config.transports.elastic.node,
+          },
+          apm: {
+            enabled: true,
+            serviceName: 'my-service',
+            serviceVersion: '1.0.0',
           },
         }),
       );
