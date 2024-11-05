@@ -30,7 +30,7 @@ export class TaxonomyController {
 
   @Post('bulk-upsert')
   @Roles(UserRole.ADMIN)
-  async bulkUpsert(@Body() dto: BulkUpsertTaxonomyDTO, @Req() req: Request) {
+  async bulkUpsert(@Body() dto: BulkUpsertTaxonomyDTO) {
     return this.taxonomyService.bulkUpsert(dto);
   }
 
@@ -53,5 +53,4 @@ export class TaxonomyController {
     }
     return this.taxonomyService.findByDocId(docId, businessUnit);
   }
-
 }

@@ -12,10 +12,7 @@
       "name": "Sticky Note",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        440,
-        396.90500428383126
-      ]
+      "position": [440, 396.90500428383126]
     },
     {
       "parameters": {
@@ -47,10 +44,7 @@
       "name": "If type is docx",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        360,
-        700
-      ],
+      "position": [360, 700],
       "executeOnce": false
     },
     {
@@ -68,10 +62,7 @@
       "name": "Google Drive",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [
-        760,
-        460
-      ],
+      "position": [760, 460],
       "credentials": {
         "googleApi": {
           "id": "FDGiqL6vNqHjbN9K",
@@ -92,10 +83,7 @@
       "name": "Convert docx to doc",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        520,
-        460
-      ],
+      "position": [520, 460],
       "credentials": {
         "googleDriveOAuth2Api": {
           "id": "5enrxfsckD49Whxp",
@@ -130,10 +118,7 @@
       "name": "Get token",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        -380,
-        700
-      ],
+      "position": [-380, 700],
       "notesInFlow": true,
       "notes": "password is exposed"
     },
@@ -148,21 +133,14 @@
           "includeTrashed": "={{ false }}"
         },
         "options": {
-          "fields": [
-            "mimeType",
-            "id",
-            "name"
-          ]
+          "fields": ["mimeType", "id", "name"]
         }
       },
       "id": "ced0d199-dfd0-49f0-b64d-3f5f40bdb66b",
       "name": "Find docx/docs",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [
-        40,
-        700
-      ],
+      "position": [40, 700],
       "executeOnce": true,
       "credentials": {
         "googleApi": {
@@ -182,10 +160,7 @@
       "name": "Get parent folder details",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        -600,
-        700
-      ],
+      "position": [-600, 700],
       "credentials": {
         "googleDriveOAuth2Api": {
           "id": "5enrxfsckD49Whxp",
@@ -209,10 +184,7 @@
       "name": "get document data",
       "type": "n8n-nodes-base.googleDocs",
       "typeVersion": 2,
-      "position": [
-        920,
-        980
-      ],
+      "position": [920, 980],
       "credentials": {
         "googleApi": {
           "id": "FDGiqL6vNqHjbN9K",
@@ -231,10 +203,7 @@
       "name": "get existing data",
       "type": "n8n-nodes-base.googleDocs",
       "typeVersion": 2,
-      "position": [
-        1140,
-        700
-      ],
+      "position": [1140, 700],
       "credentials": {
         "googleApi": {
           "id": "FDGiqL6vNqHjbN9K",
@@ -251,10 +220,7 @@
       "name": "Validate File contents",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1140,
-        980
-      ]
+      "position": [1140, 980]
     },
     {
       "parameters": {
@@ -285,10 +251,7 @@
       "name": "If collection exists",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        660,
-        840
-      ],
+      "position": [660, 840],
       "executeOnce": false
     },
     {
@@ -302,21 +265,14 @@
           "includeTrashed": "={{ false }}"
         },
         "options": {
-          "fields": [
-            "mimeType",
-            "id",
-            "name"
-          ]
+          "fields": ["mimeType", "id", "name"]
         }
       },
       "id": "da13151c-c205-49a0-8101-bc98bfdd6fcf",
       "name": "Find doc",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [
-        920,
-        700
-      ],
+      "position": [920, 700],
       "executeOnce": true,
       "credentials": {
         "googleApi": {
@@ -334,10 +290,7 @@
       "name": "Revalidate content",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1800,
-        760
-      ]
+      "position": [1800, 760]
     },
     {
       "parameters": {
@@ -347,10 +300,7 @@
       "name": "Filter items to update",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1360,
-        700
-      ]
+      "position": [1360, 700]
     },
     {
       "parameters": {
@@ -365,10 +315,7 @@
       "name": "Upsert ",
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
-      "position": [
-        1480,
-        1440
-      ],
+      "position": [1480, 1440],
       "credentials": {
         "mongoDb": {
           "id": "DiFuCOB9Q0kTKL35",
@@ -406,10 +353,7 @@
       "name": "If item has error",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        1560,
-        700
-      ]
+      "position": [1560, 700]
     },
     {
       "parameters": {
@@ -419,10 +363,7 @@
       "name": "Store into array",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        2020,
-        760
-      ]
+      "position": [2020, 760]
     },
     {
       "parameters": {
@@ -432,10 +373,7 @@
       "name": "Store into array1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1360,
-        980
-      ]
+      "position": [1360, 980]
     },
     {
       "parameters": {
@@ -467,10 +405,7 @@
       "name": "If valid item",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        2240,
-        760
-      ]
+      "position": [2240, 760]
     },
     {
       "parameters": {
@@ -502,10 +437,7 @@
       "name": "If valid item1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        1560,
-        980
-      ]
+      "position": [1560, 980]
     },
     {
       "parameters": {
@@ -525,10 +457,7 @@
       "name": "Get data",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        -160,
-        700
-      ],
+      "position": [-160, 700],
       "alwaysOutputData": true
     },
     {
@@ -560,10 +489,7 @@
       "name": "Check Api Response",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        2660,
-        640
-      ]
+      "position": [2660, 640]
     },
     {
       "parameters": {
@@ -603,10 +529,7 @@
       "name": "Check Api Response2",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        2020,
-        920
-      ]
+      "position": [2020, 920]
     },
     {
       "parameters": {
@@ -637,10 +560,7 @@
       "name": "Mongodb upsert endpoint",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1800,
-        920
-      ],
+      "position": [1800, 920],
       "executeOnce": true
     },
     {
@@ -665,10 +585,7 @@
       "name": "Mongodb upsert endpoint1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2460,
-        640
-      ],
+      "position": [2460, 640],
       "executeOnce": true
     },
     {
@@ -681,10 +598,7 @@
       "name": "Sticky Note1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        1440,
-        1400
-      ]
+      "position": [1440, 1400]
     },
     {
       "parameters": {
@@ -711,10 +625,7 @@
       "name": "Google Drive Trigger",
       "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
-      "position": [
-        -880,
-        600
-      ],
+      "position": [-880, 600],
       "credentials": {
         "googleApi": {
           "id": "FDGiqL6vNqHjbN9K",
@@ -733,10 +644,7 @@
       "name": "Sticky Note2",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        -674.5303505775596,
-        520
-      ]
+      "position": [-674.5303505775596, 520]
     },
     {
       "parameters": {
@@ -746,10 +654,7 @@
       "name": "Filter out redundant docx",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        200,
-        700
-      ]
+      "position": [200, 700]
     }
   ],
   "pinData": {},

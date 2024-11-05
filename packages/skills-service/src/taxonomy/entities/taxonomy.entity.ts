@@ -3,7 +3,7 @@ import { BaseEntity } from '@skills-base/shared';
 
 @Schema()
 export class Taxonomy extends BaseEntity {
-  @Prop({ required: true, unique: true, index: true})
+  @Prop({ required: true, unique: true, index: true })
   docId!: string;
 
   @Prop({ required: true })

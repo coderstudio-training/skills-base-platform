@@ -1,10 +1,17 @@
 import { BaseDto } from '@skills-base/shared';
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
-export class TaxonomyDTO extends BaseDto{
+export class TaxonomyDTO extends BaseDto {
   @IsString()
-  @IsNotEmpty({ message: 'document id must not be empty!'})
+  @IsNotEmpty({ message: 'document id must not be empty!' })
   docId!: string;
 
   @IsString()
@@ -50,7 +57,7 @@ export class TaxonomyDTO extends BaseDto{
 }
 
 export class BulkUpsertTaxonomyDTO {
-    @ValidateNested({ each: true })
-    @Type(() => TaxonomyDTO)
-    data!: TaxonomyDTO[];
+  @ValidateNested({ each: true })
+  @Type(() => TaxonomyDTO)
+  data!: TaxonomyDTO[];
 }

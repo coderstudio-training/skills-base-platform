@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class RequiredSkills extends Document {
-  @Prop({ required: true, unique: true, index: true }) 
+  @Prop({ required: true, unique: true, index: true })
   careerLevel!: string;
 
   @Prop({ type: Map, of: Number, default: {} })
@@ -13,4 +13,5 @@ export class RequiredSkills extends Document {
   lastUpdated!: Date;
 }
 
-export const RequiredSkillsSchema = SchemaFactory.createForClass(RequiredSkills);
+export const RequiredSkillsSchema =
+  SchemaFactory.createForClass(RequiredSkills);

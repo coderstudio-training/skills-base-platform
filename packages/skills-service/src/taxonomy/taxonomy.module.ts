@@ -8,5 +8,4 @@ import { TaxonomyService } from './taxonomy.service';
   controllers: [TaxonomyController],
   providers: [TaxonomyService],
 })
-
 export class TaxonomyModule {}

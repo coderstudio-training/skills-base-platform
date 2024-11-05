@@ -2,8 +2,14 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import type { mongo } from 'mongoose';
 import { Connection, Model, Schema } from 'mongoose';
-import { BaseAssessmentDto, BulkUpdateAssessmentsDto } from './dto/assessments.dto';
-import { ManagerAssessmentSchema, SelfAssessmentSchema } from './entities/assessments.entity';
+import {
+  BaseAssessmentDto,
+  BulkUpdateAssessmentsDto,
+} from './dto/assessments.dto';
+import {
+  ManagerAssessmentSchema,
+  SelfAssessmentSchema,
+} from './entities/assessments.entity';
 // import { RequiredSkillsSchema } from './entities/required-skills.entity';
 
 @Injectable()
@@ -11,27 +17,30 @@ export class AssessmentsService {
   private readonly logger = new Logger(AssessmentsService.name);
   private readonly BATCH_SIZE = 1000;
 
-  constructor(
-    @InjectConnection() private readonly connection: Connection,
-  ) {}
+  constructor(@InjectConnection() private readonly connection: Connection) {}
 
   private getSchemaForAssessmentType(assessmentType: string): Schema<any> {
     if (assessmentType === 'self') {
-      return SelfAssessmentSchema; 
+      return SelfAssessmentSchema;
     } else if (assessmentType === 'manager') {
-      return ManagerAssessmentSchema; 
-    } 
+      return ManagerAssessmentSchema;
+    }
     // else if (assessmentType === 'required') {
-    //   return RequiredSkillsSchema; 
-    // } 
+    //   return RequiredSkillsSchema;
+    // }
     else {
-      throw new BadRequestException(`Invalid assessment type: ${assessmentType}`);
+      throw new BadRequestException(
+        `Invalid assessment type: ${assessmentType}`,
+      );
     }
   }
 
-  private getModelForAssessmentType(prefixBU: string, assessmentType: string): Model<any> {
+  private getModelForAssessmentType(
+    prefixBU: string,
+    assessmentType: string,
+  ): Model<any> {
     const collectionName = `${prefixBU}_${assessmentType}_Assessments`;
-    
+
     if (!this.connection.models[collectionName]) {
       const schema = this.getSchemaForAssessmentType(assessmentType);
       const model = this.connection.model(collectionName, schema);
@@ -43,21 +52,35 @@ export class AssessmentsService {
 
   private async ensureModelIndexes(model: Model<any>): Promise<void> {
     if (model.modelName.includes('manager')) {
-      await model.collection.createIndex({ emailOfResource: 1 }, { unique: true, background: true });
+      await model.collection.createIndex(
+        { emailOfResource: 1 },
+        { unique: true, background: true },
+      );
     } else if (model.modelName.includes('self')) {
-      await model.collection.createIndex({ emailAddress: 1 }, { unique: true, background: true });
-    } 
+      await model.collection.createIndex(
+        { emailAddress: 1 },
+        { unique: true, background: true },
+      );
+    }
     // else if (model.modelName.includes('required')) {
     //   await model.collection.createIndex({ careerLevel: 1 }, { unique: true, background: true });
     // }
   }
 
-  async bulkUpsert(prefixBU: string, assessmentType: string, bulkUpdateDto: BulkUpdateAssessmentsDto): Promise<{ updatedCount: number; errors: any[] }> {
+  async bulkUpsert(
+    prefixBU: string,
+    assessmentType: string,
+    bulkUpdateDto: BulkUpdateAssessmentsDto,
+  ): Promise<{ updatedCount: number; errors: any[] }> {
     const model = this.getModelForAssessmentType(prefixBU, assessmentType);
     let totalUpdatedCount = 0;
     const errors = [];
 
-    if (!bulkUpdateDto || !bulkUpdateDto.data || !Array.isArray(bulkUpdateDto.data)) {
+    if (
+      !bulkUpdateDto ||
+      !bulkUpdateDto.data ||
+      !Array.isArray(bulkUpdateDto.data)
+    ) {
       this.logger.error('Invalid bulk update data provided');
       throw new BadRequestException('Invalid data format for bulk update');
     }
@@ -76,7 +99,11 @@ export class AssessmentsService {
     return { updatedCount: totalUpdatedCount, errors };
   }
 
-  private async processBatch(model: Model<any>, batch: BaseAssessmentDto[], assessmentType: string): Promise<mongo.BulkWriteResult> {
+  private async processBatch(
+    model: Model<any>,
+    batch: BaseAssessmentDto[],
+    assessmentType: string,
+  ): Promise<mongo.BulkWriteResult> {
     const operations = batch.map((item) => {
       let filter: any;
 
@@ -84,8 +111,8 @@ export class AssessmentsService {
         filter = { emailOfResource: item.emailOfResource };
       } else if (assessmentType === 'self') {
         filter = { emailAddress: item.emailAddress };
-      // } else if (assessmentType === 'required') {
-      //   filter = { careerLevel: item.careerLevel };
+        // } else if (assessmentType === 'required') {
+        //   filter = { careerLevel: item.careerLevel };
       } else {
         throw new Error('Invalid assessment type');
       }

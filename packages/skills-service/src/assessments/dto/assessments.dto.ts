@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class BaseAssessmentDto {
   @IsNotEmpty()
@@ -16,21 +23,21 @@ export class BaseAssessmentDto {
   @IsOptional()
   @IsEmail() // Validate as an email
   emailOfResource?: string;
-  
+
   @IsString()
   @IsNotEmpty()
   careerLevelOfResource!: string;
-  
+
   @IsString()
   @IsNotEmpty()
   nameOfRespondent!: string;
-  
+
   @IsString()
   @IsNotEmpty()
   capability!: string;
 
   @IsObject()
-  skills!: Record<string, number>; 
+  skills!: Record<string, number>;
 }
 
 export class BulkUpdateAssessmentsDto {

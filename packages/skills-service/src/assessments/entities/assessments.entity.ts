@@ -13,15 +13,15 @@ export class Assessments extends Document {
   @Prop({ required: true })
   nameOfResource!: string;
 
-  @Prop({ required: false }) 
+  @Prop({ required: false })
   emailOfResource?: string;
-  
+
   @Prop({ required: true })
   careerLevelOfResource!: string;
-  
+
   @Prop({ required: true })
   nameOfRespondent!: string;
-  
+
   @Prop({ required: true })
   capability!: string;
 
@@ -38,13 +38,15 @@ export const BaseSkillsSchema = SchemaFactory.createForClass(Assessments);
 @Schema()
 export class SelfAssessments extends Assessments {}
 
-export const SelfAssessmentSchema = SchemaFactory.createForClass(SelfAssessments);
+export const SelfAssessmentSchema =
+  SchemaFactory.createForClass(SelfAssessments);
 
 // ManagerSkills entity
 @Schema()
 export class ManagerAssessment extends Assessments {
-  @Prop({ required: true }) 
-  emailOfResource!: string; 
+  @Prop({ required: true })
+  emailOfResource!: string;
 }
 
-export const ManagerAssessmentSchema = SchemaFactory.createForClass(ManagerAssessment);
+export const ManagerAssessmentSchema =
+  SchemaFactory.createForClass(ManagerAssessment);

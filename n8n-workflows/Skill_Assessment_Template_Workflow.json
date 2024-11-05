@@ -14,10 +14,7 @@
       "name": "Schedule Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
-      "position": [
-        -140,
-        -720
-      ],
+      "position": [-140, -720],
       "id": "26709d68-d40f-4372-9235-0a4ec9ecf400",
       "disabled": true
     },
@@ -28,10 +25,7 @@
       "name": "Google Sheets",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 2,
-      "position": [
-        -2020,
-        -653
-      ],
+      "position": [-2020, -653],
       "id": "9f8adb97-e876-43fa-ae32-cda79d8199bf",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -48,10 +42,7 @@
       "name": "Process and Validate Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
-      "position": [
-        -1880,
-        -653
-      ],
+      "position": [-1880, -653],
       "id": "35b3e59b-1f01-463e-aeb3-2fc44b470bb4",
       "disabled": true
     },
@@ -82,10 +73,7 @@
       "name": "Update Skills Matrix API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        -1680,
-        -653
-      ],
+      "position": [-1680, -653],
       "id": "148de34e-64ca-4ed1-9906-6887e567e07b",
       "disabled": true
     },
@@ -102,10 +90,7 @@
       "name": "Check API Response",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [
-        -1480,
-        -653
-      ],
+      "position": [-1480, -653],
       "id": "23b869ee-551c-4fcf-bf2a-dd67df4f7523",
       "disabled": true
     },
@@ -136,10 +121,7 @@
       "name": "Send Success Notification API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        -1280,
-        -753
-      ],
+      "position": [-1280, -753],
       "id": "52aacf51-c93f-40f1-821a-09f125aa40b6",
       "disabled": true
     },
@@ -170,10 +152,7 @@
       "name": "Send Error Notification API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        -1280,
-        -553
-      ],
+      "position": [-1280, -553],
       "id": "e00eb5d7-8192-4b74-89ac-7f60e6a38219",
       "disabled": true
     },
@@ -190,10 +169,7 @@
       "name": "Check for Validation Errors",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [
-        -1620,
-        -293
-      ],
+      "position": [-1620, -293],
       "id": "479f3835-58c9-460c-9b4a-73f29d3f08e0",
       "disabled": true
     },
@@ -224,10 +200,7 @@
       "name": "Log Errors to API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        -1280,
-        -333
-      ],
+      "position": [-1280, -333],
       "id": "dfb0bdfd-5dae-4f10-8e44-cbe58ebd480e",
       "disabled": true
     },
@@ -252,10 +225,7 @@
       "name": "Read Self Assessments",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [
-        680,
-        -760
-      ],
+      "position": [680, -760],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -284,10 +254,7 @@
       "name": "Read Manager Assessments",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [
-        640,
-        -120
-      ],
+      "position": [640, -120],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -325,10 +292,7 @@
       "name": "Check for Validation Errors1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        1240,
-        -760
-      ]
+      "position": [1240, -760]
     },
     {
       "parameters": {
@@ -360,10 +324,7 @@
       "name": "Check for Validation Errors2",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        1220,
-        -120
-      ]
+      "position": [1220, -120]
     },
     {
       "parameters": {
@@ -392,10 +353,7 @@
       "name": "Log Errors to API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        1260,
-        -460
-      ],
+      "position": [1260, -460],
       "id": "3ba792c2-6562-4d1e-9df2-2253531d43b6",
       "disabled": true
     },
@@ -434,10 +392,7 @@
       "name": "Update Skills Matrix API2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        1480,
-        -140
-      ],
+      "position": [1480, -140],
       "id": "8b0a0297-5d62-45b8-9b56-11cdd39f9638"
     },
     {
@@ -475,10 +430,7 @@
       "name": "Update Skills Matrix API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        1500,
-        -900
-      ],
+      "position": [1500, -900],
       "id": "24ab3f9d-156b-4fc4-a48b-17a62ba3a1c7"
     },
     {
@@ -492,10 +444,7 @@
       "name": "Sticky Note",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        -2080,
-        -820
-      ]
+      "position": [-2080, -820]
     },
     {
       "parameters": {
@@ -514,10 +463,7 @@
       "name": "GET Self Skills Data API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        -2020,
-        -1500
-      ],
+      "position": [-2020, -1500],
       "id": "1926b717-8183-4211-a49f-42ce7dcfa032"
     },
     {
@@ -537,10 +483,7 @@
       "name": "GET Self Skills Data API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        -2020,
-        -1140
-      ],
+      "position": [-2020, -1140],
       "id": "4aee2d24-3a26-484a-981e-51693ab97f0d"
     },
     {
@@ -570,10 +513,7 @@
       "name": "Send Success Notification API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        2080,
-        -1080
-      ],
+      "position": [2080, -1080],
       "id": "7872b583-9373-4117-980d-a479cf348626",
       "disabled": true
     },
@@ -590,10 +530,7 @@
       "name": "Check API Response1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [
-        1720,
-        -140
-      ],
+      "position": [1720, -140],
       "id": "6f495c65-7889-422d-a425-fe5bdc26bc90",
       "disabled": true
     },
@@ -610,10 +547,7 @@
       "name": "Check API Response2",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [
-        1740,
-        -900
-      ],
+      "position": [1740, -900],
       "id": "9f82f61e-a471-417d-950d-f448fd339574",
       "disabled": true
     },
@@ -644,10 +578,7 @@
       "name": "Send Success Notification API2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        2040,
-        -300
-      ],
+      "position": [2040, -300],
       "id": "1c835b39-daf5-48f0-808d-50756579ffa2",
       "disabled": true
     },
@@ -678,10 +609,7 @@
       "name": "Send Error Notification API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        2080,
-        -740
-      ],
+      "position": [2080, -740],
       "id": "2722b24b-d6e0-4c84-ad9b-284838325f6f",
       "disabled": true
     },
@@ -691,10 +619,7 @@
       "name": "Merge",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": [
-        -1900,
-        -1300
-      ]
+      "position": [-1900, -1300]
     },
     {
       "parameters": {
@@ -704,10 +629,7 @@
       "name": "Transform Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        -1680,
-        -1300
-      ],
+      "position": [-1680, -1300],
       "disabled": true
     },
     {
@@ -718,10 +640,7 @@
       "name": "Compute Average Per Employee",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        -1460,
-        -1300
-      ],
+      "position": [-1460, -1300],
       "disabled": true
     },
     {
@@ -733,10 +652,7 @@
       "name": "Update Average Skills API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        -1240,
-        -1300
-      ],
+      "position": [-1240, -1300],
       "disabled": true
     },
     {
@@ -759,10 +675,7 @@
       "name": "Google Sheets1",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [
-        660,
-        -1400
-      ],
+      "position": [660, -1400],
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "feE9JVAcVI0VzCDr",
@@ -800,10 +713,7 @@
       "name": "Check for Validation Errors3",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        1240,
-        -1400
-      ]
+      "position": [1240, -1400]
     },
     {
       "parameters": {
@@ -846,10 +756,7 @@
       "name": "Update Skills Matrix API3",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        1520,
-        -1560
-      ],
+      "position": [1520, -1560],
       "id": "0a3fca17-61d8-4550-b734-54f3ac319a40"
     },
     {
@@ -866,10 +773,7 @@
       "name": "Check API Response3",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [
-        1740,
-        -1560
-      ],
+      "position": [1740, -1560],
       "id": "ac931e05-5c8e-4b83-aba4-b6eb97e373bd",
       "disabled": true
     },
@@ -894,10 +798,7 @@
       "name": "Send Success Notification API3",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        2060,
-        -1760
-      ],
+      "position": [2060, -1760],
       "id": "b37dd203-7704-4a78-983c-5a17387b4cfc",
       "disabled": true
     },
@@ -928,10 +829,7 @@
       "name": "Log Errors to API2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        1260,
-        -1140
-      ],
+      "position": [1260, -1140],
       "id": "cd76eb5a-92b5-4367-9b76-af7015d95a2b",
       "disabled": true
     },
@@ -962,10 +860,7 @@
       "name": "Log Errors to API3",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        1300,
-        160
-      ],
+      "position": [1300, 160],
       "id": "7065446b-f63b-42ba-8416-74f7dea3a7c9",
       "disabled": true
     },
@@ -980,10 +875,7 @@
       "name": "Sticky Note1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        -2080,
-        -1580
-      ]
+      "position": [-2080, -1580]
     },
     {
       "parameters": {
@@ -1012,10 +904,7 @@
       "name": "Send Error Notification API2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        2040,
-        100
-      ],
+      "position": [2040, 100],
       "id": "9801fafb-a16e-4a19-8566-bbfb17d97d76",
       "disabled": true
     },
@@ -1046,10 +935,7 @@
       "name": "Send Error Notification API3",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        2060,
-        -1380
-      ],
+      "position": [2060, -1380],
       "id": "634238da-5170-4295-bab0-9c9437457dac",
       "disabled": true
     },
@@ -1065,10 +951,7 @@
       "name": "Search Folder",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [
-        300,
-        -760
-      ],
+      "position": [300, -760],
       "credentials": {
         "googleDriveOAuth2Api": {
           "id": "uA9Psb5vjLv1l7LZ",
@@ -1083,10 +966,7 @@
       "name": "Process and Validate Manager Assessment Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
-      "position": [
-        940,
-        -120
-      ],
+      "position": [940, -120],
       "id": "28ab3fbc-a5cd-43aa-b8b0-f0ac63b2b0d3"
     },
     {
@@ -1096,10 +976,7 @@
       "name": "Process and Validate Self Assessment Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
-      "position": [
-        980,
-        -760
-      ],
+      "position": [980, -760],
       "id": "c4900ed5-7968-43df-b797-230c8652866c",
       "disabled": true
     },
@@ -1110,10 +987,7 @@
       "name": "Process and Validate Required Skills Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
-      "position": [
-        980,
-        -1400
-      ],
+      "position": [980, -1400],
       "id": "7aa368f3-35b6-41f7-a5a9-8b9bf9764a4d"
     },
     {
@@ -1137,10 +1011,7 @@
       "name": "Assessment Trigger",
       "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
-      "position": [
-        -140,
-        -980
-      ],
+      "position": [-140, -980],
       "credentials": {
         "googleDriveOAuth2Api": {
           "id": "uA9Psb5vjLv1l7LZ",
@@ -1160,10 +1031,7 @@
       "name": "Sticky Note2",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        -240,
-        -1800
-      ]
+      "position": [-240, -1800]
     },
     {
       "parameters": {
@@ -1187,10 +1055,7 @@
       "name": "Google Drive Trigger",
       "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
-      "position": [
-        3220,
-        -1080
-      ],
+      "position": [3220, -1080],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1237,10 +1102,7 @@
       "name": "Check Assessment Type",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        4400,
-        -1240
-      ]
+      "position": [4400, -1240]
     },
     {
       "parameters": {
@@ -1272,10 +1134,7 @@
       "name": "Check File Type",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        4120,
-        -1080
-      ]
+      "position": [4120, -1080]
     },
     {
       "parameters": {
@@ -1308,10 +1167,7 @@
       "name": "Login",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        100,
-        -980
-      ],
+      "position": [100, -980],
       "id": "d6cbda86-ac20-4c8c-a51a-ab621b25d8e1"
     },
     {
@@ -1345,10 +1201,7 @@
       "name": "Login to API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        3460,
-        -1080
-      ],
+      "position": [3460, -1080],
       "id": "45858016-b430-4e82-9a4e-87dd2fc0272a"
     },
     {
@@ -1359,22 +1212,14 @@
         "queryString": "='{{ $('Google Drive Trigger').item.json.id }}' in parents",
         "filter": {},
         "options": {
-          "fields": [
-            "mimeType",
-            "name",
-            "id",
-            "version"
-          ]
+          "fields": ["mimeType", "name", "id", "version"]
         }
       },
       "id": "25cda076-e03b-488e-be4c-1bc4b3d5842d",
       "name": "Find Sheets",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [
-        3860,
-        -1080
-      ],
+      "position": [3860, -1080],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1393,10 +1238,7 @@
       "name": "GET Parent Folder",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        3660,
-        -1080
-      ],
+      "position": [3660, -1080],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1425,10 +1267,7 @@
       "name": "GET Sheets Data",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [
-        4580,
-        -1460
-      ],
+      "position": [4580, -1460],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1444,10 +1283,7 @@
       "name": "Process and Validate Data1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        4800,
-        -1460
-      ]
+      "position": [4800, -1460]
     },
     {
       "parameters": {
@@ -1479,10 +1315,7 @@
       "name": "Check for Validation Errors4",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        5020,
-        -1460
-      ]
+      "position": [5020, -1460]
     },
     {
       "parameters": {
@@ -1519,10 +1352,7 @@
       "name": "Update Skills Matrix API4",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        5240,
-        -1620
-      ],
+      "position": [5240, -1620],
       "id": "bd156873-b78f-4282-a02c-69aeb47ae946"
     },
     {
@@ -1563,10 +1393,7 @@
       "name": "Check Assessment Type1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        4880,
-        120
-      ]
+      "position": [4880, 120]
     },
     {
       "parameters": {
@@ -1598,10 +1425,7 @@
       "name": "Check File Type1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        4600,
-        280
-      ]
+      "position": [4600, 280]
     },
     {
       "parameters": {
@@ -1634,10 +1458,7 @@
       "name": "Login to API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        3720,
-        280
-      ],
+      "position": [3720, 280],
       "id": "86ae1a32-d913-4e9b-a78d-cf91b3e03277"
     },
     {
@@ -1648,22 +1469,14 @@
         "queryString": "='{{ $('GET Watched Folder').item.json.id }}' in parents",
         "filter": {},
         "options": {
-          "fields": [
-            "mimeType",
-            "name",
-            "id",
-            "version"
-          ]
+          "fields": ["mimeType", "name", "id", "version"]
         }
       },
       "id": "cf457582-1bec-4a99-b5bd-6a811524b667",
       "name": "Find Sheets1",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [
-        4340,
-        280
-      ],
+      "position": [4340, 280],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1692,10 +1505,7 @@
       "name": "GET Sheets Data1",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [
-        5060,
-        -100
-      ],
+      "position": [5060, -100],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1711,10 +1521,7 @@
       "name": "Process and Validate Data2",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        5280,
-        -100
-      ]
+      "position": [5280, -100]
     },
     {
       "parameters": {
@@ -1746,10 +1553,7 @@
       "name": "Check for Validation Errors5",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        5500,
-        -100
-      ]
+      "position": [5500, -100]
     },
     {
       "parameters": {
@@ -1786,10 +1590,7 @@
       "name": "Update Skills Matrix API5",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [
-        5720,
-        -260
-      ],
+      "position": [5720, -260],
       "id": "e46c8c01-39b0-45eb-8c24-fb942b0d9bf5"
     },
     {
@@ -1803,10 +1604,7 @@
       "name": "Sticky Note3",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        3360,
-        -1640
-      ]
+      "position": [3360, -1640]
     },
     {
       "parameters": {
@@ -1831,10 +1629,7 @@
       "name": "Self Assessment Drive Trigger",
       "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
-      "position": [
-        3260,
-        140
-      ],
+      "position": [3260, 140],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1865,10 +1660,7 @@
       "name": "Manager Assessments Drive Trigger",
       "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
-      "position": [
-        3260,
-        400
-      ],
+      "position": [3260, 400],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1887,10 +1679,7 @@
       "name": "GET Watched Folder",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        3940,
-        280
-      ],
+      "position": [3940, 280],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1906,10 +1695,7 @@
       "name": "Return Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        3540,
-        280
-      ]
+      "position": [3540, 280]
     },
     {
       "parameters": {
@@ -1922,10 +1708,7 @@
       "name": "GET Parent",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        4140,
-        280
-      ],
+      "position": [4140, 280],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1944,10 +1727,7 @@
       "name": "Sticky Note4",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        3440,
-        -320
-      ]
+      "position": [3440, -320]
     }
   ],
   "pinData": {},

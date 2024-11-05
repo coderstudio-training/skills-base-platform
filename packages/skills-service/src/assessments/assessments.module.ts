@@ -5,7 +5,7 @@ import { AssessmentsService } from './assessments.service';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/skills_base_assessments'), 
+    MongooseModule.forRoot('mongodb://localhost:27017/skills_base_assessments'),
   ],
   controllers: [AssessmentsController],
   providers: [AssessmentsService],

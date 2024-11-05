@@ -6,7 +6,7 @@ export class RequiredSkillsDto {
   careerLevel!: string;
 
   @IsObject()
-  skills!: Record<string, number>; 
+  skills!: Record<string, number>;
 }
 
 export class BulkUpdateRequiredSkillsDto {
