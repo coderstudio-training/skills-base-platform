@@ -5,7 +5,7 @@
       "parameters": {
         "content": "docx convert",
         "height": 261.8340440009925,
-        "width": 517.6740221004202,
+        "width": 521.2515498306966,
         "color": 2
       },
       "id": "4558f9f6-1835-4bb2-9b99-70f7b2fb7553",
@@ -118,7 +118,7 @@
       "name": "Get token",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-380, 700],
+      "position": [-400, 700],
       "notesInFlow": true,
       "notes": "password is exposed"
     },
@@ -140,7 +140,7 @@
       "name": "Find docx/docs",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [40, 700],
+      "position": [0, 700],
       "executeOnce": true,
       "credentials": {
         "googleApi": {
@@ -259,7 +259,7 @@
         "authentication": "serviceAccount",
         "resource": "fileFolder",
         "searchMethod": "query",
-        "queryString": "=(mimeType='application/vnd.google-apps.document') AND '{{ $('Get parent folder details').item.json.id }}' in parents",
+        "queryString": "=(mimeType='application/vnd.google-apps.document') AND '{{ $('Get parent folder details').last().json.id }}' in parents",
         "returnAll": true,
         "filter": {
           "includeTrashed": "={{ false }}"
@@ -321,7 +321,8 @@
           "id": "DiFuCOB9Q0kTKL35",
           "name": "MongoDB account"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -457,7 +458,7 @@
       "name": "Get data",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-160, 700],
+      "position": [-200, 700],
       "alwaysOutputData": true
     },
     {
@@ -591,7 +592,7 @@
     {
       "parameters": {
         "content": "DUMP\n",
-        "height": 199.97674418604652,
+        "height": 241.6702253082806,
         "color": 7
       },
       "id": "369a5a00-b085-428f-9ddd-de16493c5161",
@@ -599,6 +600,117 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [1440, 1400]
+    },
+    {
+      "parameters": {
+        "content": "Template",
+        "height": 686.7944282452692,
+        "width": 3809.624734830003,
+        "color": 4
+      },
+      "id": "3f776ad0-05ee-454c-8f76-1720f6eb2780",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-660, 463.9292707373164]
+    },
+    {
+      "parameters": {
+        "jsCode": "const files = $('Find docx/docs').all();\nconst docs = [];\nconst docxs = [];\n\n// Track doc names using a Set with normalized names\nconst docNamesSet = new Set();\n\n// Helper function to normalize filenames by removing extensions and trimming whitespace\nfunction normalizeFileName(name) {\n  return name.replace(/\\.(docx|doc)$/i, '').trim().toLowerCase();\n}\n\n// First pass: Collect all docs and track their names in the Set\nfiles.forEach((obj) => {\n  if (obj.json.mimeType === 'application/vnd.google-apps.document') {\n    docs.push({ json: obj.json });\n    const normalizedFileName = normalizeFileName(obj.json.name);\n    docNamesSet.add(normalizedFileName); // Track normalized name\n  }\n});\n\n// Second pass: Add only those docx files whose names are not in the docNamesSet\nfiles.forEach((obj) => {\n  if (obj.json.mimeType !== 'application/vnd.google-apps.document') {\n    const normalizedFileName = normalizeFileName(obj.json.name);\n    \n    // Only add to docxs if a doc with the same base name doesn't exist\n    if (!docNamesSet.has(normalizedFileName)) {\n      docxs.push({ json: obj.json });\n    } else {\n      console.log(\"Ignoring redundant docx:\", obj.json.name);\n    }\n  }\n});\n\nif (docs.length === 0 && docxs.length === 0) {\n  console.log(\"Error\");\n  return [{\n    json: {\n      error: \"Did not find any valid files!\"\n    }\n  }];\n} else if (docxs.length > 0) {\n   console.log(\"Converting new docxs\");\n  return docxs;\n} else {\n  console.log(\"Pushing updates\");\n  return docs;\n}\n"
+      },
+      "id": "a80de3ad-e253-43ba-9328-95d0ac36bc46",
+      "name": "Filter out redundant docx",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 700]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1kBc_9YLs6CvS9PMY4hgz9yh3wdWBiRsk",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "c7ab162e-f4d8-4481-8b3b-f62acba8624d",
+      "name": "CLDc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1280, -80],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Business Units Triggers (Need to be added manually)\nFile Create\n",
+        "height": 838.5124438649875,
+        "width": 595.603411011949,
+        "color": 5
+      },
+      "id": "1f0c9af9-12f3-4997-994c-b174f4f20f0a",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-1600, -160]
+    },
+    {
+      "parameters": {
+        "content": "Business Units Triggers (Need to be added manually)\nFile Update\n",
+        "height": 838.5124438649875,
+        "width": 570.9307463451838,
+        "color": 6
+      },
+      "id": "9bf2604e-266e-4a5e-a59b-4e62b9b92543",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-1580, 780]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1OsvnsVlxTJ4SWkyoZrrUhTiIt9MwgDA2",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "f7710f47-d352-441a-820d-67c49cc310da",
+      "name": "FINu1",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1540, 100],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
     },
     {
       "parameters": {
@@ -621,11 +733,11 @@
         "event": "fileUpdated",
         "options": {}
       },
-      "id": "cf5789a7-5540-4f8f-a218-b7457f27ecd4",
-      "name": "Google Drive Trigger",
+      "id": "b820a6c2-d348-4752-8ebe-9f28dbb10047",
+      "name": "QAu",
       "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
-      "position": [-880, 600],
+      "position": [-1400, 1260],
       "credentials": {
         "googleApi": {
           "id": "FDGiqL6vNqHjbN9K",
@@ -635,26 +747,818 @@
     },
     {
       "parameters": {
-        "content": "Template",
-        "height": 627.8648683656907,
-        "width": 3518.7881697638413,
-        "color": 4
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1zt8oGU2fEwvCSkUV1e-_4URqUDsGipxG",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
       },
-      "id": "3f776ad0-05ee-454c-8f76-1720f6eb2780",
-      "name": "Sticky Note2",
-      "type": "n8n-nodes-base.stickyNote",
+      "id": "18097e4d-b5ba-484b-a812-6a50bf399f03",
+      "name": "ADMc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
-      "position": [-674.5303505775596, 520]
+      "position": [-1540, -80],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
     },
     {
       "parameters": {
-        "jsCode": "const files = $('Find docx/docs').all();\n\nconst docs = [];\nconst docxs = [];\n\nfiles.forEach((obj) => {\n  if (obj.json.mimeType === 'application/vnd.google-apps.document') {\n    docs.push(obj);\n  } else {\n    docxs.push(obj);\n  }\n})\n\nconsole.log(`Docs ${docs.length} Docx ${docxs.length}`)\nif (docs.length === 0 && docxs.length === 0) {\n  return {\n    json: {\n      error: \"Did not find any valid files!\"\n    }\n  }\n} else {\n  if (docs.length === docxs.length) {\n    return docs;\n  }\n  else if (docxs.length > 0 && docs.length === 0) {\n    return docxs;\n  }\n}"
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1kBc_9YLs6CvS9PMY4hgz9yh3wdWBiRsk",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
       },
-      "id": "a80de3ad-e253-43ba-9328-95d0ac36bc46",
-      "name": "Filter out redundant docx",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [200, 700]
+      "id": "51211ab1-f53f-4f79-ac41-2d0293c5676a",
+      "name": "CLDu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1280, 900],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "19E1oFcB-5q1IAx_Ua2XxU_8eBY5G90ea",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "50e6d45c-a69a-4f3d-ba16-d227ef484aa1",
+      "name": "AIc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1400, -80],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "19E1oFcB-5q1IAx_Ua2XxU_8eBY5G90ea",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "05e3fbb0-47f2-49e5-b776-5f36d499f707",
+      "name": "AIu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1400, 900],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1v0_tTP_kuACgEnuvm7bPqhAfeNMm-yqE",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "6e72d1a7-1126-4648-8f59-c5ac6e03c9b9",
+      "name": "DATAc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1140, -80],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1zt8oGU2fEwvCSkUV1e-_4URqUDsGipxG",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "bafd3d28-68a9-4ae9-9657-f0879c5707ec",
+      "name": "ADMu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1540, 900],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "10wQEskYwsKXOKk3FusZKt0HSCDTi1rjr",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "cd6ff363-0163-46cb-adcb-63077bbffbf4",
+      "name": "HRc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1400, 100],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1v0_tTP_kuACgEnuvm7bPqhAfeNMm-yqE",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "a5b4f01a-9904-4c56-844b-51eaaec26027",
+      "name": "DATAu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1140, 900],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1qjeAvCJU6zZPC25bp1_Ub8f_oHmB5F-Z",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "39fa2af2-ac67-4918-81fe-b4d07b9dcb58",
+      "name": "ITc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1260, 100],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1OsvnsVlxTJ4SWkyoZrrUhTiIt9MwgDA2",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "83f0ee2f-093c-47e2-8ab8-9cbd16dfd045",
+      "name": "FINu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1540, 1080],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1UDEot1yr2MPmshrz4ytH4BbvqYnMd3Ax",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "865605fa-2ede-4ccc-b714-3f95f47ce6a2",
+      "name": "MKTc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1140, 100],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "10wQEskYwsKXOKk3FusZKt0HSCDTi1rjr",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "df422fb5-8d24-4944-ba04-c450827fbf53",
+      "name": "HRu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1400, 1080],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1ZrUQwt-ezLHPTcQ9ejzjE7KarpP_a6oI",
+          "mode": "list",
+          "cachedResultName": "QA_QUALITY_ASSURANCE",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1ZrUQwt-ezLHPTcQ9ejzjE7KarpP_a6oI"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "b6b15ceb-4918-415a-8c4b-01dd69a7aaba",
+      "name": "PMOc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1540, 280],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1UDEot1yr2MPmshrz4ytH4BbvqYnMd3Ax",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "15a0121c-56b2-4a4b-8db3-0c5c365d9f5a",
+      "name": "MKTu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1140, 1080],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1ZrUQwt-ezLHPTcQ9ejzjE7KarpP_a6oI",
+          "mode": "list",
+          "cachedResultName": "QA_QUALITY_ASSURANCE",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1ZrUQwt-ezLHPTcQ9ejzjE7KarpP_a6oI"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "102abfb9-edd7-412c-9a34-158274559961",
+      "name": "QAc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1400, 280],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1qjeAvCJU6zZPC25bp1_Ub8f_oHmB5F-Z",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "9e7edcb1-36a3-479f-8bc9-7f9f8ee9cfac",
+      "name": "ITu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1260, 1080],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1BF43w7iXDdu1O4CTYUetPdrqN2q0N2pz",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "648ab1cf-fd1b-41f4-9ace-aeca170091c9",
+      "name": "SLSc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1260, 280],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1ZrUQwt-ezLHPTcQ9ejzjE7KarpP_a6oI",
+          "mode": "list",
+          "cachedResultName": "QA_QUALITY_ASSURANCE",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1ZrUQwt-ezLHPTcQ9ejzjE7KarpP_a6oI"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "a21c1312-5873-4194-bb30-b8a654fea96e",
+      "name": "PMOu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1540, 1260],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "19dQeHLiGyHHzYwc7oekBTS2qQC7nxA4O",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "8210d0ff-42c0-4a70-8594-dfffc445c34d",
+      "name": "SWc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1140, 280],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1BF43w7iXDdu1O4CTYUetPdrqN2q0N2pz",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "25afe297-62b4-4a1e-b79a-55646317f2e8",
+      "name": "SLSu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1260, 1260],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1S3sCB-xidj7xdHzGmMsstf92XcUUIFgY",
+          "mode": "id"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "dfce3a79-52fa-4676-9a17-43667a80742e",
+      "name": "VSc",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1540, 460],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "19dQeHLiGyHHzYwc7oekBTS2qQC7nxA4O",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "b7db4cd4-5fc0-475f-9e9a-fd29721fea79",
+      "name": "SWu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1140, 1260],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1S3sCB-xidj7xdHzGmMsstf92XcUUIFgY",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "4b73762e-1124-46fd-b988-a67d8465e4c6",
+      "name": "VSu",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1540, 1440],
+      "credentials": {
+        "googleApi": {
+          "id": "FDGiqL6vNqHjbN9K",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.203.84:3005/email/send-success",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get token').first().json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"workflowName\": \"Taxonmy Sync Workflow success!\"\n}",
+        "options": {}
+      },
+      "name": "Send Success Notification API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2860, 580],
+      "id": "fce58421-b689-47e8-a5b7-382f8f376254"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.203.84:3005/email/send-error",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get token').first().json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"error\": \"An error occurred during the workflow.\",\n  \"workflowName\": \"Employee Sync Workflow\"\n}",
+        "options": {}
+      },
+      "name": "Send Error Notification API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2860, 760],
+      "id": "8fadc0ca-418d-4b26-809d-a94492a4da8a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.203.84:3005/email/send-success",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get token').first().json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"workflowName\": \"Taxonmy Sync Workflow success!\"\n}",
+        "options": {}
+      },
+      "name": "Send Success Notification API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2500, 840],
+      "id": "a8ac3f77-adb7-4b2e-a859-e7c8f53bcff6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.203.84:3005/email/send-error",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get token').first().json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"error\": \"An error occurred during the workflow.\",\n  \"workflowName\": \"Employee Sync Workflow\"\n}",
+        "options": {}
+      },
+      "name": "Send Error Notification API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2500, 980],
+      "id": "a6d3261f-e6a9-41fe-bf3a-e80d1154ad38"
     }
   ],
   "pinData": {},
@@ -671,17 +1575,6 @@
         [
           {
             "node": "If collection exists",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Convert docx to doc": {
-      "main": [
-        [
-          {
-            "node": "Google Drive",
             "type": "main",
             "index": 0
           }
@@ -894,17 +1787,6 @@
         ]
       ]
     },
-    "Google Drive Trigger": {
-      "main": [
-        [
-          {
-            "node": "Get parent folder details",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Filter out redundant docx": {
       "main": [
         [
@@ -915,13 +1797,335 @@
           }
         ]
       ]
+    },
+    "CLDc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FINu1": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QAu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ADMc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLDu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AIc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AIu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DATAc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ADMu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HRc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DATAu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ITc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FINu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MKTc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HRu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PMOc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MKTu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QAc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ITu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SLSc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PMOu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SWc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SLSu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VSc": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SWu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VSu": {
+      "main": [
+        [
+          {
+            "node": "Get parent folder details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Api Response": {
+      "main": [
+        [
+          {
+            "node": "Send Success Notification API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Notification API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Api Response2": {
+      "main": [
+        [
+          {
+            "node": "Send Success Notification API1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Notification API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "f03dd3c7-b17c-4fdc-8e7a-65c2bcb62af2",
+  "versionId": "7270eeb7-722a-41c9-9cc9-73c81e4f2447",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2175fb2beeee23872604eaa18d0ab71c7b17b5a998e8ae3224ce5ec4e5e3fb21"
