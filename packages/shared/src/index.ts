@@ -22,7 +22,12 @@ export * from './interfaces/config.interface';
 export * from './interfaces/jwt-strategy.interface';
 export * from './interfaces/user.interface';
 export * from './messaging/messaging.service';
-export * from './middlewares/logger.middleware';
+// export * from './middlewares/logger.middleware';
 export * from './strategy/jwt.strategy';
 export * from './utils/date.util';
 export * from './utils/validation.util';
+
+// logging and monitoring
+export * from './logging/middlewares/logger.middleware';
+export * from './logging/module';
+export * from './logging/monitor';
