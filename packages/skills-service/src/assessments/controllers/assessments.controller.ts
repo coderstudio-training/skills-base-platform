@@ -1,9 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { AssessmentsService } from './assessments.service';
 import {
   BaseAssessmentDto,
   BulkUpdateAssessmentsDto,
-} from './dto/assessments.dto';
+} from '../dto/assessments.dto';
+import { AssessmentsService } from '../services/assessments.service';
 
 @Controller('api/skills-matrix')
 export class AssessmentsController {

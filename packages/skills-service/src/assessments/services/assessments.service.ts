@@ -5,11 +5,11 @@ import { Connection, Model, Schema } from 'mongoose';
 import {
   BaseAssessmentDto,
   BulkUpdateAssessmentsDto,
-} from './dto/assessments.dto';
+} from '../dto/assessments.dto';
 import {
   ManagerAssessmentSchema,
   SelfAssessmentSchema,
-} from './entities/assessments.entity';
+} from '../entities/assessments.entity';
 // import { RequiredSkillsSchema } from './entities/required-skills.entity';
 
 @Injectable()
