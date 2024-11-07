@@ -1,6 +1,6 @@
 import { apiConfig } from './apiConfig';
 
-interface RequestConfig {
+export interface RequestConfig {
   service: keyof (typeof apiConfig)['microservices'];
   path: string;
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';

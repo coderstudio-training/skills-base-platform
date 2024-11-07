@@ -1,4 +1,4 @@
-import fetchData from './httpClient';
+import fetchData, { RequestConfig } from './httpClient';
 
 export async function fetchWithAuth<T>(config: RequestConfig, token: string): Promise<T> {
   const authHeaders = { Authorization: `Bearer ${token}` };
