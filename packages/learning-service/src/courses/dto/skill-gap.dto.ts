@@ -3,18 +3,18 @@ import { CareerLevel } from '../career-level.enum';
 
 export class SkillGapDto {
   @IsString()
-  skillName: string;
+  skillName!: string;
 
   @IsNumber()
   @Min(0)
   @Max(5)
-  currentLevel: number;
+  currentLevel!: number;
 
   @IsNumber()
   @Min(1)
   @Max(6)
-  requiredLevel: number;
+  requiredLevel!: number;
 
   @IsEnum(CareerLevel)
-  careerLevel: string;
+  careerLevel!: string;
 }

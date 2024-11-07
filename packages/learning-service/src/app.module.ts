@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CoursesModule } from './courses/courses.module';
+import { DatabaseModule } from '@skills-base/shared';
+import { CoursesModule } from './courses/modules/courses.module';
+import { RecommendationModule } from './courses/modules/recommendation.module';
 
 @Module({
   imports: [
@@ -17,7 +19,10 @@ import { CoursesModule } from './courses/courses.module';
       }),
       inject: [ConfigService],
     }),
+    DatabaseModule,
+    // LoggerMiddleware,
     CoursesModule,
+    RecommendationModule,
   ],
   // Remove controllers and providers as we're not using AppController and AppService
 })

@@ -101,7 +101,7 @@ export class CoursesService {
       this.logger.log(
         `Indexes ensured for collection: ${model.collection.collectionName}`,
       );
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error ensuring indexes: ${error.message}`);
     }
   }
@@ -182,7 +182,7 @@ export class CoursesService {
         this.logger.debug(
           `Processed batch ${i / this.BATCH_SIZE + 1}: ${result.modifiedCount + result.upsertedCount} records`,
         );
-      } catch (error) {
+      } catch (error: any) {
         const errorMessage = `Error processing batch ${i / this.BATCH_SIZE + 1}: ${error.message}`;
         this.logger.error(errorMessage);
         errors.push({

@@ -2,19 +2,19 @@ import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class CourseRecommendationDto {
   @IsString()
-  skillName: string;
+  skillName!: string;
 
   @IsString()
-  courseName: string;
+  courseName!: string;
 
   @IsString()
-  provider: string;
+  provider!: string;
 
   @IsString()
-  duration: string;
+  duration!: string;
 
   @IsString()
-  format: string;
+  format!: string;
 
   @IsString()
   @IsOptional()
@@ -22,11 +22,11 @@ export class CourseRecommendationDto {
 
   @IsArray()
   @IsString({ each: true })
-  learningObjectives: string[];
+  learningObjectives!: string[];
 }
 
 export class RecommendationResponseDto {
-  success: boolean;
-  recommendations: CourseRecommendationDto[];
+  success!: boolean;
+  recommendations!: CourseRecommendationDto[];
   message?: string;
 }

@@ -59,7 +59,7 @@ export class RecommendationService {
         success: true,
         recommendations,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error getting recommendations: ${error.message}`);
       throw error;
     }
@@ -122,7 +122,9 @@ export class RecommendationService {
       // Map the course data to recommendation format
       const recommendation: CourseRecommendationDto = {
         skillName: gap.skillName,
-        courseName: course.courseId, // Using courseId since that's what we have in the data
+        courseName:
+          course.fields.find((f) => f.name === 'courseName')?.value ||
+          `Course ${course.courseId}`, // Fallback if no courseName found
         provider: course.fields.find((f) => f.name === 'provider')?.value || '',
         duration: course.fields.find((f) => f.name === 'duration')?.value || '',
         format: course.fields.find((f) => f.name === 'format')?.value || '',
@@ -136,7 +138,7 @@ export class RecommendationService {
       };
 
       return recommendation;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `Error finding course recommendation: ${error.message}`,
       );

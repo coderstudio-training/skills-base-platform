@@ -13,53 +13,53 @@ import {
 export class FieldDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsString()
-  value: string;
+  value!: string;
 }
 
 export class CourseDto {
   // The 5 static headers
   @IsString()
   @IsNotEmpty()
-  skillCategory: string;
+  skillCategory!: string;
 
   @IsString()
   @IsNotEmpty()
-  skillName: string;
+  skillName!: string;
 
   @IsNumber()
   @Min(1)
   @Max(6)
-  requiredLevel: number;
+  requiredLevel!: number;
 
   @IsString()
   @IsNotEmpty()
-  careerLevel: string;
+  careerLevel!: string;
 
   @IsString()
   @IsNotEmpty()
-  courseLevel: string;
+  courseLevel!: string;
 
   @IsString()
   @IsNotEmpty()
-  courseId: string;
+  courseId!: string;
 
   // Dynamic fields array
   @IsArray()
   @ValidateNested({ each: true })
   @ValidateType(() => FieldDto)
-  fields: FieldDto[];
+  fields!: FieldDto[];
 }
 
 export class BulkUpdateCoursesDto {
   @IsArray()
   @ValidateNested({ each: true })
   @ValidateType(() => CourseDto)
-  data: CourseDto[];
+  data!: CourseDto[];
 
   @IsString()
   @IsNotEmpty()
-  collection: string;
+  collection!: string;
 }

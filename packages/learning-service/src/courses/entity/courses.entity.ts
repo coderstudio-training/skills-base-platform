@@ -10,23 +10,23 @@ interface Field {
 @Schema()
 export class Course extends Document {
   @Prop({ required: true, unique: true })
-  courseId: string;
+  courseId!: string;
 
   // The 5 static headers
   @Prop({ required: true })
-  skillCategory: string;
+  skillCategory!: string;
 
   @Prop({ required: true })
-  skillName: string;
+  skillName!: string;
 
   @Prop({ required: true, min: 1, max: 6 })
-  requiredLevel: number;
+  requiredLevel!: number;
 
   @Prop({ required: true })
-  careerLevel: string;
+  careerLevel!: string;
 
   @Prop({ required: true })
-  courseLevel: string;
+  courseLevel!: string;
 
   // Dynamic fields array - modified to prevent _id generation
   @Prop({
@@ -38,10 +38,10 @@ export class Course extends Document {
       },
     ],
   })
-  fields: Field[];
+  fields!: Field[];
 
   @Prop({ default: Date.now })
-  lastUpdated: Date;
+  lastUpdated!: Date;
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
