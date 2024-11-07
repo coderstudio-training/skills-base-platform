@@ -4,7 +4,6 @@ import { CoursesService } from './courses.service';
 
 describe('AppController', () => {
   let controller: CoursesController;
-  let service: CoursesService;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({

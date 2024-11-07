@@ -10,11 +10,7 @@ const DialogContext = createContext<
 
 export const Dialog = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
-  return (
-    <DialogContext.Provider value={{ isOpen, setIsOpen }}>
-      {children}
-    </DialogContext.Provider>
-  );
+  return <DialogContext.Provider value={{ isOpen, setIsOpen }}>{children}</DialogContext.Provider>;
 };
 
 export const DialogTrigger = ({ children }: { children: React.ReactNode }) => {
@@ -47,8 +43,6 @@ export const DialogTitle = ({ children }: { children: React.ReactNode }) => (
   <h2 className="text-xl font-bold">{children}</h2>
 );
 
-export const DialogDescription = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => <p className="text-gray-600">{children}</p>;
+export const DialogDescription = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-gray-600">{children}</p>
+);

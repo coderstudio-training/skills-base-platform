@@ -6,27 +6,13 @@ interface AvatarImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   alt: string;
 }
 
-export const Avatar = ({
-  children,
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={`w-10 h-10 rounded-full overflow-hidden ${className}`}
-    {...props}
-  >
+export const Avatar = ({ children, className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={`w-10 h-10 rounded-full overflow-hidden ${className}`} {...props}>
     {children}
   </div>
 );
 
-export const AvatarImage = ({
-  src,
-  alt,
-  width,
-  height,
-  className,
-  ...props
-}: AvatarImageProps) => (
+export const AvatarImage = ({ src, alt, width, height, className, ...props }: AvatarImageProps) => (
   <Image
     src={src}
     alt={alt}

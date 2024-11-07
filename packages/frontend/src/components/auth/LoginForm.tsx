@@ -3,13 +3,7 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,14 +16,15 @@ interface AuthResponse {
   status?: number;
 }
 
-export default function LoginForm() {  // Changed from AdminLoginPage to LoginForm
+export default function LoginForm() {
+  // Changed from AdminLoginPage to LoginForm
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formState, setFormState] = useState({
     email: searchParams.get('email') || '',
     password: '',
     error: '',
-    isLoading: false
+    isLoading: false,
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -43,14 +38,14 @@ export default function LoginForm() {  // Changed from AdminLoginPage to LoginFo
       } else {
         setFormState(prev => ({
           ...prev,
-          error: result.error || 'Invalid email or password'
+          error: result.error || 'Invalid email or password',
         }));
       }
     } catch (err) {
       logger.error('Login Error:', err);
       setFormState(prev => ({
         ...prev,
-        error: 'An unexpected error occurred. Please try again.'
+        error: 'An unexpected error occurred. Please try again.',
       }));
     } finally {
       setFormState(prev => ({ ...prev, isLoading: false }));
@@ -67,9 +62,7 @@ export default function LoginForm() {  // Changed from AdminLoginPage to LoginFo
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Admin Login</CardTitle>
-          <CardDescription>
-            Enter your credentials to access the admin dashboard
-          </CardDescription>
+          <CardDescription>Enter your credentials to access the admin dashboard</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -101,11 +94,7 @@ export default function LoginForm() {  // Changed from AdminLoginPage to LoginFo
                 <AlertDescription>{formState.error}</AlertDescription>
               </Alert>
             )}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={formState.isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={formState.isLoading}>
               {formState.isLoading ? 'Logging in...' : 'Log in'}
             </Button>
           </form>
@@ -117,7 +106,7 @@ export default function LoginForm() {  // Changed from AdminLoginPage to LoginFo
 
 async function authenticateUser(
   email: string,
-  password: string
+  password: string,
 ): Promise<{ success: boolean; error?: string }> {
   logger.log('Starting authentication process');
 
@@ -126,7 +115,7 @@ async function authenticateUser(
     logger.error('User service URL not configured');
     return {
       success: false,
-      error: 'Authentication service not properly configured'
+      error: 'Authentication service not properly configured',
     };
   }
 
@@ -143,11 +132,11 @@ async function authenticateUser(
     if (!apiResponse.ok || !data.access_token) {
       logger.error('Authentication failed:', {
         status: apiResponse.status,
-        message: data.message
+        message: data.message,
       });
       return {
         success: false,
-        error: data.message || 'Authentication failed'
+        error: data.message || 'Authentication failed',
       };
     }
 
@@ -164,18 +153,17 @@ async function authenticateUser(
       logger.error('NextAuth signin failed:', result?.error);
       return {
         success: false,
-        error: 'Failed to establish session'
+        error: 'Failed to establish session',
       };
     }
 
     logger.log('Authentication successful');
     return { success: true };
-
   } catch (error) {
     logger.error('Authentication error:', error);
     return {
       success: false,
-      error: 'Network error occurred. Please try again.'
+      error: 'Network error occurred. Please try again.',
     };
   }
 }

@@ -45,10 +45,7 @@ export default function ManagerDashboard() {
         </div>
         <div className="flex items-center space-x-4">
           <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={session?.user?.image || ''}
-              alt={session?.user?.name || ''}
-            />
+            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
             <AvatarFallback>{session?.user?.name?.[0] || 'M'}</AvatarFallback>
           </Avatar>
           <span className="text-sm font-medium">{session?.user?.name}</span>
@@ -70,10 +67,7 @@ export default function ManagerDashboard() {
             Export Report
           </Button>
         </div>
-        <Select
-          value={timeRange}
-          onValueChange={(value: string) => setTimeRange(value)}
-        >
+        <Select value={timeRange} onValueChange={(value: string) => setTimeRange(value)}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select time range" />
           </SelectTrigger>
@@ -96,17 +90,11 @@ export default function ManagerDashboard() {
 
         <TabsContent value="overview">{/* Overview content */}</TabsContent>
 
-        <TabsContent value="team-skills">
-          {/* Team Skills content */}
-        </TabsContent>
+        <TabsContent value="team-skills">{/* Team Skills content */}</TabsContent>
 
-        <TabsContent value="performance">
-          {/* Performance content */}
-        </TabsContent>
+        <TabsContent value="performance">{/* Performance content */}</TabsContent>
 
-        <TabsContent value="development">
-          {/* Development content */}
-        </TabsContent>
+        <TabsContent value="development">{/* Development content */}</TabsContent>
       </Tabs>
     </div>
   );

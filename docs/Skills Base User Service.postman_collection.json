@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "4f29e685-b3da-4c62-8c53-f806cdc0acb7",
+    "_postman_id": "6122125f-3c16-4aff-8129-cb54cc759035",
     "name": "Skills Base User Service",
+    "description": "Test collection for Email Service endpoints",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "1372516",
-    "_collection_link": "https://cloudy-meadow-3305.postman.co/workspace/Skills-Platform~13ccfc74-1fd2-4804-baa8-fac3462d8286/collection/1372516-4f29e685-b3da-4c62-8c53-f806cdc0acb7?action=share&source=collection_link&creator=1372516"
+    "_exporter_id": "29355650"
   },
   "item": [
     {
@@ -102,6 +102,84 @@
               "host": ["{{baseUrl}}"],
               "path": ["auth", "login"]
             }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Staff/Manager",
+          "request": {
+            "auth": {
+              "type": "oauth2",
+              "oauth2": [
+                {
+                  "key": "clientSecret",
+                  "value": "{{clientSecret}}",
+                  "type": "string"
+                },
+                {
+                  "key": "clientId",
+                  "value": "{{clientID}}",
+                  "type": "string"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "http://localhost:3000/api/auth/callback/google",
+                  "type": "string"
+                },
+                {
+                  "key": "state",
+                  "value": "any",
+                  "type": "string"
+                },
+                {
+                  "key": "scope",
+                  "value": "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+                  "type": "string"
+                },
+                {
+                  "key": "accessTokenUrl",
+                  "value": "https://oauth2.googleapis.com/token",
+                  "type": "string"
+                },
+                {
+                  "key": "useBrowser",
+                  "value": false,
+                  "type": "boolean"
+                },
+                {
+                  "key": "authUrl",
+                  "value": "https://accounts.google.com/o/oauth2/v2/auth",
+                  "type": "string"
+                },
+                {
+                  "key": "tokenName",
+                  "value": "token",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"{{idToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/google",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "google"]
+            },
+            "description": "Authenticate user with Google ID token"
           },
           "response": []
         }
@@ -301,28 +379,282 @@
           "response": []
         }
       ]
-    }
-  ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [""]
-      }
     },
     {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "exec": [""]
-      }
+      "name": "Email",
+      "item": [
+        {
+          "name": "Send Success Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test successful response",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has correct structure', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.be.an('object');",
+                  "    pm.expect(responseJson.message).to.exist;",
+                  "    pm.expect(responseJson.message).to.equal('Success email sent successfully');",
+                  "});",
+                  "",
+                  "// Test response headers",
+                  "pm.test('Response headers are correct', function () {",
+                  "    pm.response.to.have.header('Content-Type', 'application/json');",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "JWT token for authentication"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"workflowName\": \"test-workflow\"\n}"
+            },
+            "url": {
+              "raw": "{{emailBaseUrl}}/email/send-success",
+              "host": ["{{emailBaseUrl}}"],
+              "path": ["email", "send-success"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Error Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Test successful response",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has correct structure', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.be.an('object');",
+                  "    pm.expect(responseJson.message).to.exist;",
+                  "    pm.expect(responseJson.message).to.equal('Error email sent successfully');",
+                  "});",
+                  "",
+                  "// Test response headers",
+                  "pm.test('Response headers are correct', function () {",
+                  "    pm.response.to.have.header('Content-Type', 'application/json');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "description": "JWT token for authentication"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"workflowName\": \"test-workflow\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/email/send-error",
+              "host": ["{{base_url}}"],
+              "path": ["email", "send-error"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Success Email - Unauthorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"workflowName\": \"test-workflow\"\n}"
+            },
+            "url": {
+              "raw": "{{emailBaseUrl}}/email/send-success",
+              "host": ["{{emailBaseUrl}}"],
+              "path": ["email", "send-success"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Error Email - Unauthorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"workflowName\": \"test-workflow\"\n}"
+            },
+            "url": {
+              "raw": "{{emailBaseUrl}}/email/send-success",
+              "host": ["{{emailBaseUrl}}"],
+              "path": ["email", "send-success"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Error Email - Invalid Input",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"invalidField\": \"test-workflow\"\n}"
+            },
+            "url": {
+              "raw": "{{emailBaseUrl}}/email/send-error",
+              "host": ["{{emailBaseUrl}}"],
+              "path": ["email", "send-error"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Success Email - Invalid Input",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"invalidField\": \"test-workflow\"\n}"
+            },
+            "url": {
+              "raw": "{{emailBaseUrl}}/email/send-error",
+              "host": ["{{emailBaseUrl}}"],
+              "path": ["email", "send-error"]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
     {
-      "key": "authToken",
-      "value": ""
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your-jwt-token-here",
+      "type": "string"
     }
   ]
 }

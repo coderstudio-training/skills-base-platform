@@ -2,13 +2,7 @@
 
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
@@ -116,20 +110,11 @@ export default function AdminDashboard() {
               <DropdownMenuLabel>Select Data Source</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {Object.entries(syncStatus).map(([source, status]) => (
-                <DropdownMenuItem
-                  key={source}
-                  onSelect={() => handleSync(source)}
-                >
+                <DropdownMenuItem key={source} onSelect={() => handleSync(source)}>
                   <span className="flex-1">{source}</span>
-                  {status === 'idle' && (
-                    <span className="text-muted-foreground">(Not synced)</span>
-                  )}
-                  {status === 'syncing' && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  )}
-                  {status === 'success' && (
-                    <Check className="h-4 w-4 text-green-500" />
-                  )}
+                  {status === 'idle' && <span className="text-muted-foreground">(Not synced)</span>}
+                  {status === 'syncing' && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {status === 'success' && <Check className="h-4 w-4 text-green-500" />}
                   {status === 'error' && <X className="h-4 w-4 text-red-500" />}
                 </DropdownMenuItem>
               ))}
@@ -151,57 +136,39 @@ export default function AdminDashboard() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Staffs
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Total Staffs</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {adminData.totalStaffs}
-                </div>
+                <div className="text-2xl font-bold">{adminData.totalStaffs}</div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Departments
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Departments</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {adminData.totalDepartments}
-                </div>
+                <div className="text-2xl font-bold">{adminData.totalDepartments}</div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Avg. Performance
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Avg. Performance</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {adminData.averagePerformance}%
-                </div>
+                <div className="text-2xl font-bold">{adminData.averagePerformance}%</div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Skill Growth
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Skill Growth</CardTitle>
                 <Award className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  +{adminData.skillGrowth}%
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  From last quarter
-                </p>
+                <div className="text-2xl font-bold">+{adminData.skillGrowth}%</div>
+                <p className="text-xs text-muted-foreground">From last quarter</p>
               </CardContent>
             </Card>
           </div>
@@ -238,9 +205,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Department Performance</CardTitle>
-              <CardDescription>
-                Average performance scores by department
-              </CardDescription>
+              <CardDescription>Average performance scores by department</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -262,23 +227,14 @@ export default function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Top Skills</CardTitle>
-                <CardDescription>
-                  Most prevalent skills across the organization
-                </CardDescription>
+                <CardDescription>Most prevalent skills across the organization</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {adminData.topSkills.map((skill, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between"
-                    >
+                    <div key={index} className="flex items-center justify-between">
                       <span>{skill.name}</span>
-                      <Progress
-                        value={skill.prevalence}
-                        className="w-[200px]"
-                        max={100}
-                      />
+                      <Progress value={skill.prevalence} className="w-[200px]" max={100} />
                     </div>
                   ))}
                 </div>
@@ -287,9 +243,7 @@ export default function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Skill Gaps</CardTitle>
-                <CardDescription>
-                  Areas where skill improvement is needed
-                </CardDescription>
+                <CardDescription>Areas where skill improvement is needed</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -297,15 +251,9 @@ export default function AdminDashboard() {
                     <div key={index} className="space-y-2">
                       <div className="flex justify-between">
                         <span>{skill.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          Gap: {skill.gap}%
-                        </span>
+                        <span className="text-sm text-muted-foreground">Gap: {skill.gap}%</span>
                       </div>
-                      <Progress
-                        value={skill.currentLevel}
-                        className="w-full"
-                        max={100}
-                      />
+                      <Progress value={skill.currentLevel} className="w-full" max={100} />
                     </div>
                   ))}
                 </div>
@@ -318,9 +266,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Top Performers</CardTitle>
-              <CardDescription>
-                Staffs with the highest performance scores
-              </CardDescription>
+              <CardDescription>Staffs with the highest performance scores</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -328,9 +274,7 @@ export default function AdminDashboard() {
                   <div key={index} className="flex items-center space-x-4">
                     <div className="space-y-1">
                       <p className="font-medium">{staff.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {staff.department}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{staff.department}</p>
                     </div>
                     <div className="ml-auto flex items-center">
                       <Progress
@@ -338,9 +282,7 @@ export default function AdminDashboard() {
                         className="w-[100px] mr-2"
                         max={100}
                       />
-                      <span className="font-medium">
-                        {staff.performanceScore}%
-                      </span>
+                      <span className="font-medium">{staff.performanceScore}%</span>
                     </div>
                   </div>
                 ))}
@@ -353,26 +295,19 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Learning & Development</CardTitle>
-              <CardDescription>
-                Overview of training and development activities
-              </CardDescription>
+              <CardDescription>Overview of training and development activities</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span>Total Training Hours</span>
-                  <span className="font-semibold">
-                    {adminData.totalTrainingHours} hours
-                  </span>
+                  <span className="font-semibold">{adminData.totalTrainingHours} hours</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Staffs in Training Programs</span>
                   <span className="font-semibold">
                     {adminData.staffsInTraining} (
-                    {(
-                      (adminData.staffsInTraining / adminData.totalStaffs) *
-                      100
-                    ).toFixed(2)}
+                    {((adminData.staffsInTraining / adminData.totalStaffs) * 100).toFixed(2)}
                     %)
                   </span>
                 </div>

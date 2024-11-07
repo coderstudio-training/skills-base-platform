@@ -21,8 +21,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials): Promise<AuthResponse | null> {
         logger.log(
-          'Authorize function called with credentials: ' +
-            JSON.stringify(credentials, null, 2)
+          'Authorize function called with credentials: ' + JSON.stringify(credentials, null, 2),
         );
 
         logger.log('Starting authorize function');
@@ -33,17 +32,11 @@ export const authOptions: NextAuthOptions = {
 
         try {
           logger.log('Decoding token');
-          const decodedToken = jwtDecode<DecodedToken>(
-            credentials.access_token
-          );
+          const decodedToken = jwtDecode<DecodedToken>(credentials.access_token);
           logger.log('Decoded token:', JSON.stringify(decodedToken));
 
           // Validate the decoded token
-          if (
-            !decodedToken.email ||
-            !decodedToken.sub ||
-            !Array.isArray(decodedToken.roles)
-          ) {
+          if (!decodedToken.email || !decodedToken.sub || !Array.isArray(decodedToken.roles)) {
             logger.error('Invalid token structure');
             return null;
           }
@@ -84,16 +77,13 @@ export const authOptions: NextAuthOptions = {
       logger.log('Starting Google login...');
       if (account?.provider === 'google') {
         // Call your user service to check/create user and get role
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_USER_SERVICE_URL}/auth/google`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              token: account.id_token,
-            }),
-          }
-        );
+        const response = await fetch(`${process.env.NEXT_PUBLIC_USER_SERVICE_URL}/auth/google`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: account.id_token,
+          }),
+        });
         const data = await response.json();
         logger.log('Google Auth: ', JSON.stringify(data));
 
@@ -111,10 +101,7 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user }) {
       logger.log('JWT Callback - Token:', JSON.stringify(token));
-      logger.log(
-        'JWT Callback - User:',
-        user ? JSON.stringify(user) : 'No user'
-      );
+      logger.log('JWT Callback - User:', user ? JSON.stringify(user) : 'No user');
       if (user) {
         token.id = user.id;
         token.name = user.name;

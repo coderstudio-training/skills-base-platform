@@ -2,13 +2,7 @@
 
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -47,15 +41,10 @@ export default function StaffDashboard() {
         </div>
         <div className="flex items-center space-x-4">
           <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={session?.user?.image || ''}
-              alt={session?.user?.name || ''}
-            />
+            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
             <AvatarFallback>{staffData.name[0]}</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium">
-            {session?.user?.name || staffData.name}
-          </span>
+          <span className="text-sm font-medium">{session?.user?.name || staffData.name}</span>
           <Button variant="outline" size="sm" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Logout
@@ -79,31 +68,23 @@ export default function StaffDashboard() {
                 <Award className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {staffData.skills.length}
-                </div>
+                <div className="text-2xl font-bold">{staffData.skills.length}</div>
                 <p className="text-xs text-muted-foreground">Total skills</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Learning Paths
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Learning Paths</CardTitle>
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {staffData.learningPaths.length}
-                </div>
+                <div className="text-2xl font-bold">{staffData.learningPaths.length}</div>
                 <p className="text-xs text-muted-foreground">Active paths</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Performance
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Performance</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -119,9 +100,7 @@ export default function StaffDashboard() {
                 <Scroll className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {staffData.network.length}
-                </div>
+                <div className="text-2xl font-bold">{staffData.network.length}</div>
                 <p className="text-xs text-muted-foreground">Connections</p>
               </CardContent>
             </Card>
@@ -135,12 +114,7 @@ export default function StaffDashboard() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <RadarChart
-                  cx="50%"
-                  cy="50%"
-                  outerRadius="80%"
-                  data={staffData.skills}
-                >
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={staffData.skills}>
                   <PolarGrid />
                   <PolarAngleAxis dataKey="name" />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} />
@@ -210,9 +184,7 @@ export default function StaffDashboard() {
                     </Avatar>
                     <div>
                       <p className="font-medium">{connection.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {connection.role}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{connection.role}</p>
                     </div>
                   </li>
                 ))}
