@@ -10,7 +10,6 @@ export function formatLogMessage(data: any, format: 'json' | 'text'): string {
 
   return `[${timestamp}] ${level.toUpperCase()} [${service}] ${correlationId} - ${message}`;
 }
-
 // src/logging/utils/file-writer.ts
 import { promises as fs } from 'fs';
 import { LoggerOptions } from '../types';

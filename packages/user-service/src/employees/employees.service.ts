@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { BulkWriteResult } from 'mongodb';
 import { Model } from 'mongoose';
 import { Employee } from './entities/employee.entity';
+import { Logger } from '@skills-base/shared';
 
 @Injectable()
 export class EmployeesService {
@@ -22,11 +23,12 @@ export class EmployeesService {
         { employeeId: 1 },
         { unique: true, background: true },
       );
-      this.logger.log('Indexes ensured for Employees collection');
+      this.logger.info('Indexes ensured for Employees collection');
     } catch (error) {
       this.logger.error(
-        'Error ensuring indexes:',
-        error instanceof Error ? error.message : error,
+        `Error ensuring indexes: ${
+          error instanceof Error ? error.message : error
+        }`,
       );
     }
   }

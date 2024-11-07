@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { MonitorOptions } from './types';
 
 @Injectable()
@@ -55,16 +56,45 @@ export class Monitor {
     };
   }
 
-  trackRequest(req: any, res: any) {
-    const timer = this.startTimer(`http.${req.method}.${req.route.path}`);
+  trackRequest(req: Request, res: Response) {
+    // Use the actual URL path instead of route.path
+    const path = req.originalUrl || req.url;
+    const timer = this.startTimer(`http.${req.method.toLowerCase()}`);
 
     res.on('finish', () => {
       const duration = timer.end();
       this.trackMetric('http.response.status', res.statusCode, {
         method: req.method,
-        path: req.route.path,
+        path: path, // Use the captured path
         status: res.statusCode.toString(),
         duration: `${duration}ms`,
+      });
+
+      // Track response time
+      this.trackMetric('http.response.time', duration, {
+        method: req.method,
+        path: path,
+        status: res.statusCode.toString(),
+      });
+
+      // Track status code distribution
+      this.trackMetric(`http.status.${Math.floor(res.statusCode / 100)}xx`, 1, {
+        method: req.method,
+        path: path,
+      });
+    });
+
+    // Track concurrent requests
+    this.trackMetric('http.requests.active', 1, {
+      method: req.method,
+      path: path,
+    });
+
+    res.on('close', () => {
+      // Decrement active requests counter
+      this.trackMetric('http.requests.active', -1, {
+        method: req.method,
+        path: path,
       });
     });
   }
@@ -73,5 +103,29 @@ export class Monitor {
     this.trackMetric(`dependency.${dependency}.duration`, duration, {
       command,
     });
+  }
+
+  // Add method to get current metrics
+  getMetrics() {
+    const result: Record<
+      string,
+      { current: number; avg: number; count: number }
+    > = {};
+
+    for (const [key, values] of this.metrics.entries()) {
+      const sum = values.reduce((a, b) => a + b, 0);
+      result[key] = {
+        current: values[values.length - 1] || 0,
+        avg: sum / values.length,
+        count: values.length,
+      };
+    }
+
+    return result;
+  }
+
+  // Add method to reset metrics
+  resetMetrics() {
+    this.metrics.clear();
   }
 }

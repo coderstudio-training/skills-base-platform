@@ -30,3 +30,27 @@ export interface MonitorOptions {
   metricsInterval?: number;
   tags?: Record<string, string>;
 }
+
+export interface LoggerConfig {
+  level: LogLevel;
+  format: 'json' | 'text';
+  outputs: ('console' | 'file')[];
+  filename?: string;
+  maxSize?: number;
+  maxFiles?: number;
+}
+
+export interface MonitorConfig {
+  enabled: boolean;
+  sampleRate: number;
+  metricsInterval: number;
+  tags: Record<string, string>;
+}
+
+export interface ErrorTrackerConfig {
+  sampleRate: number;
+  environment: string;
+  release?: string;
+  contextLines?: number;
+  maxStackFrames?: number;
+}

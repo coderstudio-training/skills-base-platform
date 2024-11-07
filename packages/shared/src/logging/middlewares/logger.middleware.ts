@@ -12,33 +12,44 @@ export class LoggerMiddleware implements NestMiddleware {
   ) {}
 
   use(req: Request, res: Response, next: NextFunction) {
+    const startTime = Date.now();
     const correlationId =
       req.headers['x-correlation-id']?.toString() || uuidv4();
-    const startTime = Date.now();
-
-    // Add correlation ID to request headers
     req.headers['x-correlation-id'] = correlationId;
 
-    this.logger.info('Request started', {
-      correlationId,
+    // Log incoming request
+    this.logger.info(`Incoming request ${req.method} ${req.originalUrl}`, {
+      type: 'request.received',
       method: req.method,
-      path: req.url,
-      headers: req.headers,
+      path: req.originalUrl,
+      correlationId,
     });
 
+    // Start monitoring
     this.monitor.trackRequest(req, res);
 
-    res.on('finish', () => {
+    // Handle response
+    const originalEnd = res.end;
+    res.end = function (...args: any[]) {
       const duration = Date.now() - startTime;
 
-      this.logger.info('Request completed', {
-        correlationId,
-        method: req.method,
-        path: req.url,
-        statusCode: res.statusCode,
-        duration,
-      });
-    });
+      // Log outgoing response with minimal details
+      this.logger.info(
+        `Outgoing response ${req.method} ${req.originalUrl} ${res.statusCode}`,
+        {
+          type: 'response.sent',
+          method: req.method,
+          path: req.originalUrl,
+          statusCode: res.statusCode,
+          duration: `${duration}ms`,
+        },
+      );
+
+      // Track metrics
+      this.monitor.trackMetric('network.response.time', duration);
+
+      return originalEnd.apply(res, args);
+    }.bind(this);
 
     next();
   }

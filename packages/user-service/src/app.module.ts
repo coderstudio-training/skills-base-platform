@@ -1,11 +1,15 @@
 // packages/user-service/src/app.module.ts
 
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule, LoggerMiddleware } from '@skills-base/shared';
+import {
+  DatabaseModule,
+  LoggerMiddleware,
+  LoggingModule,
+} from '@skills-base/shared';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
 import { EmployeesModule } from './employees/employees.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -16,6 +20,10 @@ import { EmployeesModule } from './employees/employees.module';
     UsersModule,
     AuthModule,
     EmployeesModule,
+    LoggingModule.forRoot({
+      serviceName: 'user-service',
+      environment: process.env.NODE_ENV,
+    }),
   ],
 })
 export class AppModule implements NestModule {
