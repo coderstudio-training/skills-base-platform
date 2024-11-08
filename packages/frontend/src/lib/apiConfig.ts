@@ -1,4 +1,4 @@
-export const API_CONFIG = {
+export const ApiConfig = {
   microservices: {
     user: { baseUrl: process.env.USER_SERVICE_URL || 'http://localhost:3001' },
     skills: { baseUrl: process.env.SKILLS_SERVICE_URL || 'http://localhost:3002' },
