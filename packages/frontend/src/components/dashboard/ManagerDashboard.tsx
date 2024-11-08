@@ -1,14 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 // import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // import { Progress } from "@/components/ui/progress"
 // import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
-import { Upload, Download, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Download, LogOut, TrendingUp, Trophy, Upload, Users } from 'lucide-react';
+
 import {
   Select,
   SelectContent,
@@ -21,10 +24,55 @@ import {
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
+interface TeamMember {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  designation: string;
+  email?: string;
+  performanceScore?: number;
+  managerName?: string;
+}
+
 export default function ManagerDashboard() {
   const { data: session } = useSession();
   const [timeRange, setTimeRange] = useState<string>('6m');
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   //   const [managerData, setManagerData] = useState<ManagerData>(dummyManagerData)
+
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        setLoading(true);
+        const token = session?.user?.accessToken;
+
+        const response = await fetch(
+          `/api/employees/manager/${encodeURIComponent(session?.user?.name || '')}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await response.json();
+        setTeamMembers(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching team members:', err);
+        setError('Failed to fetch team members. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (session?.user?.name) {
+      fetchTeamMembers();
+    }
+  }, [session?.user?.name, session?.user?.accessToken]);
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
@@ -45,10 +93,7 @@ export default function ManagerDashboard() {
         </div>
         <div className="flex items-center space-x-4">
           <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={session?.user?.image || ''}
-              alt={session?.user?.name || ''}
-            />
+            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
             <AvatarFallback>{session?.user?.name?.[0] || 'M'}</AvatarFallback>
           </Avatar>
           <span className="text-sm font-medium">{session?.user?.name}</span>
@@ -70,10 +115,7 @@ export default function ManagerDashboard() {
             Export Report
           </Button>
         </div>
-        <Select
-          value={timeRange}
-          onValueChange={(value: string) => setTimeRange(value)}
-        >
+        <Select value={timeRange} onValueChange={(value: string) => setTimeRange(value)}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select time range" />
           </SelectTrigger>
@@ -89,24 +131,188 @@ export default function ManagerDashboard() {
       <Tabs defaultValue="overview">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="team-skills">Team Skills</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="team-skills">Team Skills</TabsTrigger>
           <TabsTrigger value="development">Development</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">{/* Overview content */}</TabsContent>
+        <TabsContent value="overview">
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-gray-500" />
+                  <h3 className="text-sm text-gray-500">Team Size</h3>
+                </div>
+                <p className="text-3xl font-bold mt-2">12</p>
+              </CardContent>
+            </Card>
 
-        <TabsContent value="team-skills">
-          {/* Team Skills content */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-gray-500" />
+                  <h3 className="text-sm text-gray-500">Average Performance</h3>
+                </div>
+                <p className="text-3xl font-bold mt-2">87%</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-gray-500" />
+                  <h3 className="text-sm text-gray-500">Skill Growth</h3>
+                </div>
+                <p className="text-3xl font-bold mt-2">+15%</p>
+                <p className="text-sm text-gray-500">In the last 6 months</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Bottom Grid */}
+          <div className="grid gap-4 md:grid-cols-2 mt-4">
+            {/* Team Composition */}
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="font-bold mb-1">Team Composition</h3>
+                <p className="text-sm text-gray-500 mb-4">Distribution of roles in your team</p>
+                <div className="h-48 bg--100 rounded-lg" />
+              </CardContent>
+            </Card>
+
+            {/* Top Performers */}
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="font-bold mb-1">Team Members List</h3>
+                <p className="text-sm text-gray-500 mb-4">List of your team members</p>
+                <ScrollArea className="h-[300px] w-full">
+                  {loading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <p>Loading team members...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="flex items-center justify-center h-full text-red-500">
+                      <p>{error}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 pr-4">
+                      {teamMembers.map(member => (
+                        <div
+                          key={member.employeeId}
+                          className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarFallback>PL</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">
+                                {member.firstName} {member.lastName}
+                              </p>
+                              <p className="text-sm text-gray-500">{member.designation}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            {member.performanceScore && (
+                              <span className="font-medium">{member.performanceScore}%</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {teamMembers.length === 0 && (
+                        <div className="text-center text-gray-500">No team members found</div>
+                      )}
+                    </div>
+                  )}
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="performance">
-          {/* Performance content */}
+          {/* Team Performance Trend Card */}
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold">Team Performance Trend</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Average team performance over the last 6 months
+              </p>
+              <div className="w-full">
+                {/* <BarChart
+                  width={800}
+                  height={300}
+                  data={trendData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" />
+                  <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} />
+                  <Tooltip />
+                  <Bar dataKey="performance" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                </BarChart> */}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Individual Performance Card */}
+          <Card className="mt-4">
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-semibold">Individual Performance</h3>
+              <p className="text-sm text-gray-500 mb-4">Performance scores of team members</p>
+              <ScrollArea className="h-[300px] w-full">
+                {loading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p>Loading team members...</p>
+                  </div>
+                ) : error ? (
+                  <div className="flex items-center justify-center h-full text-red-500">
+                    <p>{error}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 pr-4">
+                    {teamMembers.map(member => (
+                      <div
+                        key={member.employeeId}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback>PL</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">
+                              {member.firstName} {member.lastName}
+                            </p>
+                            <p className="text-sm text-gray-500">{member.designation}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="w-48 h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-black rounded-full"
+                              style={{ width: `90%` }}
+                            />
+                          </div>
+                          <span className="font-medium w-12 text-right">90%</span>
+                        </div>
+                      </div>
+                    ))}
+                    {teamMembers.length === 0 && (
+                      <div className="text-center text-gray-500">No team members found</div>
+                    )}
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="development">
-          {/* Development content */}
-        </TabsContent>
+        <TabsContent value="team-skills">{/* Performance content */}</TabsContent>
+
+        <TabsContent value="development">{/* Development content */}</TabsContent>
       </Tabs>
     </div>
   );
