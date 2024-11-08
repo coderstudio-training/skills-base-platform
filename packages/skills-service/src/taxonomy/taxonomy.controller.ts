@@ -35,7 +35,6 @@ export class TaxonomyController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN)
   async findAll(@Req() req: Request) {
     const businessUnit = req.query.businessUnit as string;
     if (!businessUnit) {
@@ -45,7 +44,6 @@ export class TaxonomyController {
   }
 
   @Get(':docId')
-  @Roles(UserRole.ADMIN)
   async findOne(@Param('docId') docId: string, @Req() req: Request) {
     const businessUnit = req.query.businessUnit as string;
     if (!businessUnit) {
