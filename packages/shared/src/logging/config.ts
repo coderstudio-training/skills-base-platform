@@ -32,10 +32,17 @@ export class ConfigurationManager {
       logger: {
         level: LogLevel.INFO,
         format: 'text' as 'text' | 'json',
-        outputs: ['console'] as ('console' | 'file')[],
+        outputs: ['console', 'file'] as ('console' | 'file')[],
         filename: 'app.log',
         maxSize: 10 * 1024 * 1024, // 10MB
         maxFiles: 5,
+        file: {
+          path: process.env.LOG_PATH || '/var/log/app',
+          namePattern: `${env}-%DATE%.log`,
+          rotatePattern: 'YYYY-MM-DD',
+          permissions: 0o644,
+          compress: env === 'production',
+        },
       },
       monitor: {
         enabled: true,
@@ -63,6 +70,13 @@ export class ConfigurationManager {
           format: 'json',
           outputs: ['console', 'file'],
           filename: `/var/log/app/${env}-app.log`,
+          file: {
+            path: '/var/log/app',
+            namePattern: 'app-%DATE%.log',
+            rotatePattern: 'YYYY-MM-DD-HH',
+            permissions: 0o644,
+            compress: true,
+          },
         },
         monitor: {
           ...baseConfig.monitor,

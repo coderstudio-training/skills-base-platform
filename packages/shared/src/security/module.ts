@@ -1,5 +1,6 @@
+// packages/shared/src/security/module.ts
 import { CacheModule } from '@nestjs/cache-manager';
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { ApiKeyGuard } from './guards/api-key.guard';
 import { IpWhitelistGuard } from './guards/ip.guard';
 import { RateLimitGuard } from './guards/rate-limit.guard';
@@ -12,28 +13,41 @@ import { RequestValidator } from './validators/request.validator';
 @Module({})
 export class SecurityModule {
   static forRoot(config: SecurityConfig): DynamicModule {
+    const securityConfigProvider: Provider = {
+      provide: 'SECURITY_CONFIG',
+      useValue: config,
+    };
+
     return {
       module: SecurityModule,
+      global: true,
       imports: [
         CacheModule.register({
-          ttl: Math.max(config.rateLimit.windowMs / 1000, 5), // Convert to seconds, minimum 5 seconds
-          max: 10000, // Maximum number of items in cache
+          isGlobal: true,
+          ttl: Math.max(config.rateLimit.windowMs / 1000, 5),
+          max: 10000,
         }),
       ],
       providers: [
+        securityConfigProvider,
         {
-          provide: 'SECURITY_CONFIG',
-          useValue: config,
+          provide: ApiKeyGuard,
+          useFactory: (config: SecurityConfig) => new ApiKeyGuard(config),
+          inject: ['SECURITY_CONFIG'],
+        },
+        {
+          provide: IpWhitelistGuard,
+          useFactory: (config: SecurityConfig) => new IpWhitelistGuard(config),
+          inject: ['SECURITY_CONFIG'],
         },
         RateLimiter,
         RateLimitGuard,
-        ApiKeyGuard,
-        IpWhitelistGuard,
         SecurityMiddleware,
         SecurityMonitor,
         RequestValidator,
       ],
       exports: [
+        securityConfigProvider,
         RateLimiter,
         RateLimitGuard,
         ApiKeyGuard,
@@ -41,7 +55,22 @@ export class SecurityModule {
         SecurityMiddleware,
         SecurityMonitor,
         RequestValidator,
+        CacheModule,
       ],
+    };
+  }
+
+  static forFeature(): DynamicModule {
+    return {
+      module: SecurityModule,
+      imports: [
+        CacheModule.register({
+          ttl: 5,
+          max: 10000,
+        }),
+      ],
+      providers: [RateLimiter, RateLimitGuard, SecurityMonitor],
+      exports: [RateLimiter, RateLimitGuard, SecurityMonitor],
     };
   }
 }

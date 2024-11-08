@@ -25,7 +25,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const correlationId = request.headers['x-correlation-id']?.toString();
 
     // Log business operation start
-    const { method, url, body, query, params, user } = request;
+    const { method, url, user } = request;
     this.logger.info(`Processing ${method} ${url}`, {
       correlationId,
       type: 'operation.start',
@@ -34,10 +34,7 @@ export class LoggingInterceptor implements NestInterceptor {
         url,
         controller: context.getClass().name,
         handler: context.getHandler().name,
-        params,
-        query,
         user,
-        body,
       },
     });
 

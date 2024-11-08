@@ -34,3 +34,17 @@ export * from './logging/module';
 export * from './logging/monitor';
 export * from './logging/types';
 export * from './logging/interceptors/logging.interceptor';
+
+// security
+export * from './security/decorators/rate-limit.decorator';
+export * from './security/decorators/require-api-key.decorator';
+export * from './security/exceptions/rate-limit.exception';
+export * from './security/guards/api-key.guard';
+export * from './security/guards/ip.guard';
+export * from './security/guards/rate-limit.guard';
+export * from './security/middlewares/security.middleware';
+export * from './security/module';
+export * from './security/validators/request.validator';
+export * from './security/monitoring';
+export * from './security/types';
+export * from '@nestjs/cache-manager';

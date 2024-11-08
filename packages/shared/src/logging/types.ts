@@ -38,6 +38,7 @@ export interface LoggerConfig {
   filename?: string;
   maxSize?: number;
   maxFiles?: number;
+  file?: LogFileConfig;
 }
 
 export interface MonitorConfig {
@@ -53,4 +54,64 @@ export interface ErrorTrackerConfig {
   release?: string;
   contextLines?: number;
   maxStackFrames?: number;
+}
+
+export interface LogFileConfig {
+  path: string;
+  namePattern: string;
+  rotatePattern: string;
+  permissions?: number;
+  compress?: boolean;
+}
+
+export interface ELKLogBase {
+  '@timestamp': string;
+  'log.level': LogLevel;
+  message: string;
+  'service.name': string;
+  'service.type': string;
+  'event.dataset': string;
+  'event.module': string;
+  'event.kind': string;
+  'event.duration'?: number;
+  labels: {
+    environment: string;
+    version: string;
+  };
+  trace: {
+    id: string | null;
+    correlation_id: string | null;
+  };
+  host: {
+    hostname: string;
+    architecture: string;
+    os: {
+      platform: string;
+      version: string;
+    };
+  };
+  process: {
+    pid: number;
+    memory_usage: number;
+    uptime: number;
+  };
+  http?: {
+    request: {
+      method: string;
+      url: string;
+    };
+    response: {
+      status_code?: number;
+    };
+  };
+  user?: {
+    id: string;
+  };
+  error?: {
+    type: string;
+    message: string;
+    stack_trace?: string;
+    code: string;
+  };
+  custom_fields?: Record<string, unknown>;
 }

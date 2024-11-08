@@ -6,6 +6,13 @@ import { Logger } from '../logging/logger';
 export class SecurityMonitor {
   constructor(private readonly logger: Logger) {}
 
+  logSecurityEvent(type: string, details: any) {
+    this.logger.error('Security event detected', {
+      type,
+      details,
+    });
+  }
+
   logRateLimitExceeded(req: Request) {
     this.logger.warn('Rate limit exceeded', {
       ip: req.ip,

@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { Request } from 'express';
 import { RateLimitException } from '../exceptions/rate-limit.exception';
 import { RateLimitConfig } from '../types';
@@ -10,7 +10,7 @@ export class RateLimiter {
 
   constructor(
     @Inject('SECURITY_CONFIG') private readonly securityConfig: any,
-    @Inject(CACHE_MANAGER) private cacheManager: Record<any, any>,
+    @Optional() @Inject(CACHE_MANAGER) private cacheManager: Record<any, any>,
   ) {
     this.defaultConfig = {
       windowMs: this.securityConfig.rateLimit.windowMs,

@@ -70,11 +70,15 @@ export class ErrorTracker {
       },
     };
 
-    await this.logger.error(error, enrichedContext);
+    // Return the tracking info instead of logging it directly
+    return {
+      error: enrichedContext.error,
+      context: enrichedContext,
+    };
   }
 
   async captureException(error: unknown, context: ErrorContext = {}) {
     const normalizedError = this.normalizeError(error);
-    await this.trackError(normalizedError, context);
+    return this.trackError(normalizedError, context);
   }
 }

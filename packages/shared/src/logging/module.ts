@@ -4,6 +4,8 @@ import { Logger } from './logger';
 import { Monitor } from './monitor';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ConfigurationManager } from './config';
+import { PrometheusAdapter } from './prometheus-adapter';
+import { MetricsController } from './metrics.controller';
 
 export interface LoggingModuleOptions {
   serviceName?: string;
@@ -46,8 +48,14 @@ export class LoggingModule {
 
     return {
       module: LoggingModule,
-      providers: [loggerProvider, monitorProvider, interceptorProvider],
-      exports: [Logger, Monitor],
+      providers: [
+        loggerProvider,
+        monitorProvider,
+        interceptorProvider,
+        PrometheusAdapter,
+      ],
+      controllers: [MetricsController],
+      exports: [Logger, Monitor, PrometheusAdapter],
     };
   }
 
