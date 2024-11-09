@@ -1,3 +1,4 @@
+// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -10,20 +11,26 @@ import { RecommendationModule } from './courses/modules/recommendation.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    // Primary connection - learning service
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
       }),
       inject: [ConfigService],
     }),
+    // Secondary connection - skills service
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_SKILLS_URI'),
+      }),
+      inject: [ConfigService],
+      connectionName: 'MONGODB_SKILLS_URI',
+    }),
     DatabaseModule,
-    // LoggerMiddleware,
     CoursesModule,
     RecommendationModule,
   ],
-  // Remove controllers and providers as we're not using AppController and AppService
 })
 export class AppModule {}

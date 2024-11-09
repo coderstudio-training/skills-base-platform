@@ -1,17 +1,15 @@
-// src/courses/controllers/recommendation.controller.ts
-import { Body, Controller, Post, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Param, ValidationPipe } from '@nestjs/common';
 import { RecommendationResponseDto } from '../dto/recommendation.dto';
-import { SkillGapDto } from '../dto/skill-gap.dto';
 import { RecommendationService } from '../services/recommendation.service';
 
 @Controller('api/learning')
 export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
-  @Post('recommendations')
+  @Get('recommendations/:email')
   async getRecommendations(
-    @Body(new ValidationPipe({ transform: true })) skillGaps: SkillGapDto[],
+    @Param('email', new ValidationPipe()) email: string,
   ): Promise<RecommendationResponseDto> {
-    return this.recommendationService.getRecommendations(skillGaps);
+    return this.recommendationService.getRecommendations(email);
   }
 }

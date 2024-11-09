@@ -1,11 +1,15 @@
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
-export class CourseRecommendationDto {
+export class CourseDetailsDto {
   @IsString()
-  skillName!: string;
-
-  @IsString()
-  courseName!: string;
+  name!: string;
 
   @IsString()
   provider!: string;
@@ -17,16 +21,52 @@ export class CourseRecommendationDto {
   format!: string;
 
   @IsString()
-  @IsOptional()
-  prerequisites?: string;
+  learningPath!: string;
 
   @IsArray()
   @IsString({ each: true })
   learningObjectives!: string[];
+
+  @IsString()
+  prerequisites!: string;
+
+  @IsString()
+  businessValue!: string;
+}
+
+export class RecommendationDto {
+  @IsString()
+  skillName!: string;
+
+  @IsNumber()
+  currentLevel!: number;
+
+  @IsNumber()
+  targetLevel!: number;
+
+  @IsNumber()
+  gap!: number;
+
+  course!: CourseDetailsDto;
 }
 
 export class RecommendationResponseDto {
+  @IsBoolean()
   success!: boolean;
-  recommendations!: CourseRecommendationDto[];
+
+  @IsString()
+  employeeName!: string;
+
+  @IsString()
+  careerLevel!: string;
+
+  @IsArray()
+  recommendations!: RecommendationDto[];
+
+  @IsDate()
+  generatedDate!: Date;
+
+  @IsString()
+  @IsOptional()
   message?: string;
 }
