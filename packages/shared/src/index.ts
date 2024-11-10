@@ -34,6 +34,12 @@ export * from './logging/module';
 export * from './logging/monitor';
 export * from './logging/types';
 export * from './logging/interceptors/logging.interceptor';
+export * from './logging/decorators/metrics.decorators';
+export * from './logging/middlewares/metrics.middleware';
+export * from './logging/interceptors/metrics.interceptor';
+export * from './logging/services/prometheus.service';
+export * from './logging/services/system-metrics.service';
+export * from './logging/types';
 
 // security
 export * from './security/decorators/rate-limit.decorator';

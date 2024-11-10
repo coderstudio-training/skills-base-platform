@@ -10,7 +10,6 @@ import {
 import {
   JwtAuthGuard,
   Logger,
-  LoggingInterceptor,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -20,7 +19,7 @@ import { EmployeesService } from './employees.service';
 
 @Controller('employees')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(LoggingInterceptor, TransformInterceptor)
+@UseInterceptors(TransformInterceptor)
 export class EmployeesController {
   private readonly logger = new Logger(EmployeesController.name);
 

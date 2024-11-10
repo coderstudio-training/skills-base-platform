@@ -46,6 +46,12 @@ export interface MonitorConfig {
   sampleRate: number;
   metricsInterval: number;
   tags: Record<string, string>;
+  enableMetrics?: boolean; // New field for Prometheus metrics
+  metricsPrefix?: string; // New field for metrics naming
+  customBuckets?: {
+    // New field for custom histogram buckets
+    [key: string]: number[];
+  };
 }
 
 export interface ErrorTrackerConfig {
@@ -64,54 +70,62 @@ export interface LogFileConfig {
   compress?: boolean;
 }
 
-export interface ELKLogBase {
-  '@timestamp': string;
-  'log.level': LogLevel;
-  message: string;
-  'service.name': string;
-  'service.type': string;
-  'event.dataset': string;
-  'event.module': string;
-  'event.kind': string;
-  'event.duration'?: number;
+export interface LokiLogBase {
+  ts: string; // Timestamp
+  level: LogLevel; // Log level
+  msg: string; // Log message
   labels: {
-    environment: string;
-    version: string;
+    // Loki labels for efficient querying
+    service: string;
+    env: string;
+    level: string;
+    host: string;
+    version?: string;
   };
-  trace: {
-    id: string | null;
-    correlation_id: string | null;
-  };
-  host: {
-    hostname: string;
-    architecture: string;
-    os: {
-      platform: string;
-      version: string;
-    };
-  };
-  process: {
-    pid: number;
-    memory_usage: number;
-    uptime: number;
+  // Additional fields
+  traceId?: string;
+  correlationId?: string;
+  userId?: string;
+  duration?: number;
+  error?: {
+    name: string;
+    message: string;
+    stack?: string;
+    code?: string;
   };
   http?: {
-    request: {
-      method: string;
-      url: string;
-    };
-    response: {
-      status_code?: number;
-    };
+    method: string;
+    path: string;
+    status?: number;
+    duration?: number;
   };
-  user?: {
-    id: string;
+  // Additional context
+  metadata?: Record<string, unknown>;
+}
+
+export interface WinstonLoggerConfig {
+  level: LogLevel;
+  format: 'json' | 'text';
+  outputs: ('console' | 'file')[];
+  filename?: string;
+  maxSize?: number;
+  maxFiles?: number;
+  sensitiveKeys?: string[];
+  file?: {
+    path: string;
+    namePattern: string;
+    rotatePattern: string;
+    permissions?: number;
+    compress?: boolean;
+  };
+}
+
+export interface ErrorTracking {
+  context: {
+    environment: string;
   };
   error?: {
-    type: string;
+    name: string;
     message: string;
-    stack_trace?: string;
-    code: string;
   };
-  custom_fields?: Record<string, unknown>;
 }

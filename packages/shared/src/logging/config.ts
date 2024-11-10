@@ -3,7 +3,9 @@ import {
   LoggerConfig,
   LogLevel,
   MonitorConfig,
+  WinstonLoggerConfig,
 } from './types';
+import { join } from 'path';
 
 export class ConfigurationManager {
   private static instance: ConfigurationManager;
@@ -24,9 +26,20 @@ export class ConfigurationManager {
     return ConfigurationManager.instance;
   }
 
+  private getDefaultLogPath(): string {
+    const env = process.env.NODE_ENV || 'development';
+    // Use project directory for development and testing
+    if (['development', 'test'].includes(env)) {
+      return join(process.cwd(), 'logs');
+    }
+    // Use system logs for production and staging
+    return env === 'production' ? '/var/log/app' : '/var/log/app-staging';
+  }
+
   private loadConfiguration() {
     const env = process.env.NODE_ENV || 'development';
     const appVersion = process.env.APP_VERSION || '1.0.0';
+    const defaultLogPath = this.getDefaultLogPath();
 
     const baseConfig = {
       logger: {
@@ -37,7 +50,7 @@ export class ConfigurationManager {
         maxSize: 10 * 1024 * 1024, // 10MB
         maxFiles: 5,
         file: {
-          path: process.env.LOG_PATH || '/var/log/app',
+          path: process.env.LOG_PATH || defaultLogPath,
           namePattern: `${env}-%DATE%.log`,
           rotatePattern: 'YYYY-MM-DD',
           permissions: 0o644,
@@ -47,10 +60,16 @@ export class ConfigurationManager {
       monitor: {
         enabled: true,
         sampleRate: 1,
-        metricsInterval: 60000, // 1 minute
+        metricsInterval: 60000,
         tags: {
           environment: env,
           version: appVersion,
+        },
+        enableMetrics: true, // Enable Prometheus metrics by default
+        metricsPrefix: 'test metrics prefix',
+        customBuckets: {
+          http: [0.1, 0.3, 0.5, 0.7, 1, 2, 3, 5, 7, 10], // Default HTTP latency buckets
+          operation: [0.01, 0.05, 0.1, 0.5, 1, 2.5, 5, 10], // Default operation buckets
         },
       },
       errorTracker: {
@@ -69,7 +88,7 @@ export class ConfigurationManager {
           level: LogLevel.INFO,
           format: 'json',
           outputs: ['console', 'file'],
-          filename: `/var/log/app/${env}-app.log`,
+          filename: join('/var/log/app', `${env}-app.log`),
           file: {
             path: '/var/log/app',
             namePattern: 'app-%DATE%.log',
@@ -82,6 +101,7 @@ export class ConfigurationManager {
           ...baseConfig.monitor,
           metricsInterval: 30000,
           sampleRate: 0.1,
+          enableMetrics: true,
         },
         errorTracker: {
           ...baseConfig.errorTracker,
@@ -95,12 +115,20 @@ export class ConfigurationManager {
           level: LogLevel.DEBUG,
           format: 'json',
           outputs: ['console', 'file'],
-          filename: `/var/log/app/${env}-app.log`,
+          filename: join('/var/log/app-staging', `${env}-app.log`),
+          file: {
+            path: '/var/log/app-staging',
+            namePattern: `${env}-app-%DATE%.log`,
+            rotatePattern: 'YYYY-MM-DD',
+            permissions: 0o644,
+            compress: true,
+          },
         },
         monitor: {
           ...baseConfig.monitor,
           metricsInterval: 45000,
           sampleRate: 0.5,
+          enableMetrics: true,
         },
         errorTracker: {
           ...baseConfig.errorTracker,
@@ -114,17 +142,42 @@ export class ConfigurationManager {
           level: LogLevel.DEBUG,
           format: 'text',
           outputs: ['console'],
+          file: {
+            path: join(process.cwd(), 'logs', 'test'),
+            namePattern: 'test-%DATE%.log',
+            rotatePattern: 'YYYY-MM-DD',
+            permissions: 0o644,
+            compress: false,
+          },
         },
         monitor: {
           ...baseConfig.monitor,
           enabled: false,
+          enableMetrics: false,
         },
+
         errorTracker: {
           ...baseConfig.errorTracker,
           sampleRate: 0,
         },
       },
-      development: baseConfig,
+      development: {
+        ...baseConfig,
+        logger: {
+          ...baseConfig.logger,
+          file: {
+            path: join(process.cwd(), 'logs', 'dev'),
+            namePattern: 'dev-%DATE%.log',
+            rotatePattern: 'YYYY-MM-DD',
+            permissions: 0o644,
+            compress: false,
+          },
+        },
+        monitor: {
+          ...baseConfig.monitor,
+          enableMetrics: true,
+        },
+      },
     };
 
     const envConfig = envConfigs[env] || envConfigs.development;
@@ -184,7 +237,7 @@ export class ConfigurationManager {
     return customConfig;
   }
 
-  getLoggerConfig(): LoggerConfig {
+  getLoggerConfig(): WinstonLoggerConfig {
     return this.config.logger;
   }
 

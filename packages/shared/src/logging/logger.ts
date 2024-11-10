@@ -1,331 +1,158 @@
 import { Injectable } from '@nestjs/common';
-import { ELKLogBase, LogContext, LoggerOptions, LogLevel } from './types';
-import { maskSensitiveData } from './utils/security';
-import { ConfigurationManager } from './config';
-import { ErrorTracker } from './utils/error-tracker';
-import { writeToFile } from './utils/file-writer';
 import * as os from 'os';
+import * as winston from 'winston';
+import 'winston-daily-rotate-file';
+import * as Transport from 'winston-transport';
+import { ConfigurationManager } from './config';
+import { createConsoleFormat, createJsonFormat } from './format';
+import { LokiTransport } from './transports/loki.transport';
+import { LogContext } from './types';
+import { ErrorTracker } from './utils/error-tracker';
+import { maskSensitiveData } from './utils/security';
+
 @Injectable()
 export class Logger {
-  private static readonly COLORS = {
-    reset: '\x1b[0m',
-    dim: '\x1b[2m',
-    red: '\x1b[31m',
-    green: '\x1b[32m',
-    yellow: '\x1b[33m',
-    blue: '\x1b[34m',
-    gray: '\x1b[90m',
-    magenta: '\x1b[35m',
-  } as const;
-
-  private static readonly LEVEL_COLORS: Record<
-    LogLevel,
-    keyof typeof Logger.COLORS
-  > = {
-    [LogLevel.ERROR]: 'red',
-    [LogLevel.WARN]: 'yellow',
-    [LogLevel.INFO]: 'blue',
-    [LogLevel.DEBUG]: 'gray',
-  } as const;
-
-  private readonly options: Required<LoggerOptions>;
+  private logger: winston.Logger;
+  private readonly service: string;
   private readonly errorTracker: ErrorTracker;
-  private readonly isColorEnabled: boolean;
 
   constructor(
-    private readonly service: string,
-    options: LoggerOptions = {},
+    service: string,
+    private readonly config = ConfigurationManager.getInstance().getLoggerConfig(),
   ) {
-    const config = ConfigurationManager.getInstance().getLoggerConfig();
-    this.options = {
-      level: config.level,
-      format: config.format || 'pretty',
-      outputs: config.outputs,
-      filename: config.filename || 'app.log',
-      maxSize: config.maxSize || 10 * 1024 * 1024,
-      maxFiles: config.maxFiles || 5,
-      sensitiveKeys: ['password', 'token', 'secret', 'authorization'],
-      ...options,
-    };
-
-    this.isColorEnabled = process.env.NO_COLOR !== 'true';
+    this.service = service;
     this.errorTracker = new ErrorTracker(this);
+    this.logger = this.createLogger();
   }
 
-  private color(color: keyof typeof Logger.COLORS, text: string): string {
-    return this.isColorEnabled
-      ? `${Logger.COLORS[color]}${text}${Logger.COLORS.reset}`
-      : text;
-  }
+  private createLogger(): winston.Logger {
+    const { format } = winston;
 
-  private formatTimestamp(date: Date): string {
-    return this.color('gray', date.toISOString().split('T')[1].split('.')[0]);
-  }
+    // Custom format for adding service and host information
+    const baseMetadata = format((info) => ({
+      ...info,
+      service: this.service,
+      hostname: os.hostname(),
+      pid: process.pid,
+      environment: process.env.NODE_ENV || 'development',
+      version: process.env.APP_VERSION || 'unknown',
+    }))();
 
-  private formatLevel(level: LogLevel): string {
-    return this.color(
-      Logger.LEVEL_COLORS[level],
-      level.toUpperCase().padEnd(5),
-    );
-  }
+    // Create format for masking sensitive data
+    const maskSecrets = format((info) => {
+      return maskSensitiveData(info, this.config.sensitiveKeys || []);
+    })();
 
-  private formatContextLine(
-    key: string,
-    value: any,
-    indent: number = 0,
-  ): string[] {
-    const indentation = '   '.repeat(indent);
-    const prefix = indent === 0 ? '└─ ' : '└─ ';
+    // Custom format for error handling
+    const errorFormat = format((info) => {
+      if (info.error instanceof Error) {
+        return {
+          ...info,
+          error: {
+            name: info.error.name,
+            message: info.error.message,
+            stack: info.error.stack,
+            code: (info.error as any).code,
+          },
+        };
+      }
+      return info;
+    })();
 
-    if (typeof value === 'object' && value !== null) {
-      const lines = [`${indentation}${prefix}${key}:`];
-      return lines.concat(
-        Object.entries(value).flatMap(([k, v]) =>
-          this.formatContextLine(k, v, indent + 1),
-        ),
+    // Configure transports based on config
+    const transports: Transport[] = [];
+
+    // Console transport with custom formatting
+    if (this.config.outputs.includes('console')) {
+      transports.push(
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            createConsoleFormat(),
+          ),
+          level: this.config.level,
+        }),
       );
     }
 
-    return [`${indentation}${prefix}${key}: ${value}`];
+    // File transport with rotation
+    if (this.config.outputs.includes('file') && this.config.file) {
+      const fileTransport = new winston.transports.DailyRotateFile({
+        dirname: this.config.file.path,
+        filename: this.config.file.namePattern,
+        datePattern: this.config.file.rotatePattern,
+        zippedArchive: this.config.file.compress,
+        maxSize: this.config.maxSize,
+        maxFiles: this.config.maxFiles,
+        format: createJsonFormat(baseMetadata, errorFormat, maskSecrets),
+        level: this.config.level,
+      });
+
+      transports.push(fileTransport);
+    }
+
+    if (process.env.NODE_ENV !== 'test') {
+      transports.push(
+        new LokiTransport({
+          host: process.env.LOKI_HOST || 'http://localhost:3100',
+          labels: {
+            environment: process.env.NODE_ENV || 'development',
+            service: this.service,
+            host: os.hostname(),
+          },
+        }),
+      );
+    }
+
+    return winston.createLogger({
+      level: this.config.level,
+      defaultMeta: {
+        service: this.service,
+      },
+      transports,
+    });
   }
 
-  private formatError(error: Error): string[] {
-    const lines = [`└─ type: ${error.name}`, `└─ message: ${error.message}`];
+  private formatContext(
+    context: Partial<LogContext> = {},
+  ): Record<string, any> {
+    const { correlationId, userId, traceId, ...rest } = context;
 
-    if (error.stack) {
-      lines.push('└─ stack:');
-      error.stack
-        .split('\n')
-        .slice(1)
-        .forEach((line) => {
-          lines.push(`   ${line.trim()}`);
-        });
-    }
+    const formattedContext: Record<string, any> = {
+      ...rest,
+      correlationId,
+      userId,
+      traceId,
+    };
 
-    return lines;
-  }
-
-  private formatContext(context: Record<string, any>): string[] {
-    const priorityFields = ['type', 'method', 'path', 'statusCode', 'duration'];
-    const skipFields = [
-      'service',
-      'timestamp',
-      'correlationId',
-      'isErrorTracking',
-    ];
-    const lines: string[] = [];
-
-    if (context.errorTracking?.error) {
-      delete context.errorTracking.error;
-    }
-
-    if (context.errorTracking?.context) {
-      const trackingContext = context.errorTracking.context;
-      const additionalInfo = {
-        environment: trackingContext.environment,
-      };
-      delete context.errorTracking;
-      Object.assign(context, additionalInfo);
-    }
-
-    priorityFields.forEach((field) => {
-      if (field in context) {
-        if (typeof context[field] === 'object' && context[field] !== null) {
-          lines.push(`└─ ${field}:`);
-          Object.entries(context[field]).forEach(([key, value]) => {
-            lines.push(`   └─ ${key}: ${value}`);
-          });
-        } else {
-          lines.push(`└─ ${field}: ${context[field]}`);
-        }
+    // Remove undefined values
+    Object.keys(formattedContext).forEach((key) => {
+      if (formattedContext[key] === undefined) {
+        delete formattedContext[key];
       }
     });
 
-    Object.entries(context)
-      .filter(
-        ([key]) => !priorityFields.includes(key) && !skipFields.includes(key),
-      )
-      .forEach(([key, value]) => {
-        if (typeof value === 'object' && value !== null) {
-          lines.push(`└─ ${key}:`);
-          Object.entries(value).forEach(([subKey, subValue]) => {
-            if (typeof subValue === 'object' && subValue !== null) {
-              lines.push(`   └─ ${subKey}:`);
-              Object.entries(subValue).forEach(([subSubKey, subSubValue]) => {
-                lines.push(`      └─ ${subSubKey}: ${subSubValue}`);
-              });
-            } else {
-              lines.push(`   └─ ${subKey}: ${subValue}`);
-            }
-          });
-        } else {
-          lines.push(`└─ ${key}: ${value}`);
-        }
-      });
-
-    return lines;
-  }
-
-  private formatLogForELK(
-    level: LogLevel,
-    message: string,
-    error: Error | null,
-    context: Partial<LogContext> = {},
-  ): ELKLogBase {
-    const timestamp = new Date().toISOString();
-
-    const elkLog: ELKLogBase = {
-      '@timestamp': timestamp,
-      'log.level': level,
-      message: message,
-      'service.name': this.service,
-      'service.type': 'application',
-      'event.dataset': `${this.service}.application`,
-      'event.module': context.type || 'default',
-      'event.kind': 'event',
-      labels: {
-        environment: process.env.NODE_ENV || 'development',
-        version: process.env.APP_VERSION || 'unknown',
-      },
-      trace: {
-        id: context.traceId || null,
-        correlation_id: context.correlationId || null,
-      },
-      host: {
-        hostname: os.hostname(),
-        architecture: process.arch,
-        os: {
-          platform: process.platform,
-          version: process.version,
-        },
-      },
-      process: {
-        pid: process.pid,
-        memory_usage: process.memoryUsage().heapUsed,
-        uptime: process.uptime(),
-      },
-    };
-
-    if (context.method && context.url) {
-      elkLog.http = {
-        request: {
-          method: context.method,
-          url: context.url,
-        },
-        response: {
-          status_code: context.statusCode,
-        },
-      };
-    }
-
-    if (context.userId) {
-      elkLog.user = {
-        id: context.userId,
-      };
-    }
-
-    if (error) {
-      elkLog.error = {
-        type: error.name,
-        message: error.message,
-        stack_trace: error.stack,
-        code: (error as any).code || 'UNKNOWN_ERROR',
-      };
-    }
-
-    if (context.duration) {
-      elkLog['event.duration'] = context.duration;
-    }
-
-    if (context.custom) {
-      elkLog.custom_fields = context.custom;
-    }
-
-    return elkLog;
-  }
-
-  private async log(
-    level: LogLevel,
-    message: string | Error,
-    context: Partial<LogContext> = {},
-  ) {
-    if (!this.shouldLog(level)) {
-      return;
-    }
-
-    const timestamp = new Date();
-    const formattedMessage =
-      message instanceof Error ? message.message : message;
-    const error = message instanceof Error ? message : null;
-    const correlationId = context.correlationId
-      ? this.color('dim', `(${context.correlationId.slice(0, 8)})`)
-      : '';
-
-    // Handle console output
-    if (this.options.outputs.includes('console')) {
-      if (this.options.format === 'json') {
-        const elkLog = this.formatLogForELK(
-          level,
-          formattedMessage,
-          error,
-          context,
-        );
-        const maskedLog = maskSensitiveData(elkLog, this.options.sensitiveKeys);
-        console[level](JSON.stringify(maskedLog, null, 2));
-      } else {
-        const formattedTimestamp = this.formatTimestamp(timestamp);
-        const formattedLevel = this.formatLevel(level);
-        const baseLog = `${formattedTimestamp} ${formattedLevel} ${correlationId} ${formattedMessage}`;
-        console.log(baseLog);
-
-        if (error && level === LogLevel.ERROR) {
-          console.log('Error Details:');
-          console.log(this.formatError(error).join('\n'));
-          console.log('');
-        }
-
-        const contextLines = this.formatContext(context);
-        if (contextLines.length > 0) {
-          console.log(contextLines.join('\n'));
-        }
-      }
-    }
-
-    // Handle file output (always in ELK format)
-    if (this.options.outputs.includes('file')) {
-      const elkLog = this.formatLogForELK(
-        level,
-        formattedMessage,
-        error,
-        context,
-      );
-      const maskedLog = maskSensitiveData(elkLog, this.options.sensitiveKeys);
-      await writeToFile(JSON.stringify(maskedLog) + '\n', this.options);
-    }
-  }
-
-  private shouldLog(level: LogLevel): boolean {
-    const levels = Object.values(LogLevel);
-    return levels.indexOf(level) <= levels.indexOf(this.options.level);
+    return formattedContext;
   }
 
   info(message: string, context?: Partial<LogContext>) {
-    return this.log(LogLevel.INFO, message, context);
+    this.logger.info(message, this.formatContext(context));
   }
 
   error(error: Error | string, context?: Partial<LogContext>) {
-    if (typeof error === 'string') {
-      return this.log(LogLevel.ERROR, new Error(error), context);
-    }
-    return this.log(LogLevel.ERROR, error, context);
+    const errorObj = typeof error === 'string' ? new Error(error) : error;
+    this.logger.error(errorObj.message, {
+      ...this.formatContext(context),
+      error: errorObj,
+    });
   }
 
   warn(message: string, context?: Partial<LogContext>) {
-    return this.log(LogLevel.WARN, message, context);
+    this.logger.warn(message, this.formatContext(context));
   }
 
   debug(message: string, context?: Partial<LogContext>) {
-    return this.log(LogLevel.DEBUG, message, context);
+    this.logger.debug(message, this.formatContext(context));
   }
 
   async trackException(error: unknown, context?: Partial<LogContext>) {
@@ -335,14 +162,15 @@ export class Logger {
     });
 
     if (trackingResult) {
-      await this.error(
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          ...context,
-          errorTracking: trackingResult,
-          isErrorTracking: true,
-        },
-      );
+      const normalizedError =
+        error instanceof Error ? error : new Error(String(error));
+
+      this.logger.error(normalizedError.message, {
+        ...this.formatContext(context),
+        error: normalizedError,
+        errorTracking: trackingResult,
+        isErrorTracking: true,
+      });
     }
   }
 }

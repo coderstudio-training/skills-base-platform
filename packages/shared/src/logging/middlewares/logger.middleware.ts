@@ -26,8 +26,6 @@ export class LoggerMiddleware implements NestMiddleware {
   private logRequest(req: Request, correlationId: string): void {
     this.logger.info(`Incoming request ${req.method}`, {
       correlationId,
-      type: 'request.received',
-      method: req.method,
       ip: req.ip,
     });
   }

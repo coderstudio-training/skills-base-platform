@@ -11,14 +11,13 @@ import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto';
 import {
   RateLimit,
-  LoggingInterceptor,
   TransformInterceptor,
   SecurityMonitor,
   SecurityConfig,
 } from '@skills-base/shared';
 
 @Controller('auth')
-@UseInterceptors(LoggingInterceptor, TransformInterceptor)
+@UseInterceptors(TransformInterceptor)
 export class AuthController {
   constructor(
     private authService: AuthService,
