@@ -10,7 +10,7 @@ import {
   ManagerAssessmentSchema,
   SelfAssessmentSchema,
 } from '../entities/assessments.entity';
-// import { RequiredSkillsSchema } from './entities/required-skills.entity';
+import { SkillGapsSchema } from '../entities/skill-gaps.entity';
 
 @Injectable()
 export class AssessmentsService {
@@ -20,15 +20,13 @@ export class AssessmentsService {
   constructor(@InjectConnection() private readonly connection: Connection) {}
 
   private getSchemaForAssessmentType(assessmentType: string): Schema<any> {
-    if (assessmentType === 'self') {
-      return SelfAssessmentSchema;
-    } else if (assessmentType === 'manager') {
+    if (assessmentType === 'manager') {
       return ManagerAssessmentSchema;
-    }
-    // else if (assessmentType === 'required') {
-    //   return RequiredSkillsSchema;
-    // }
-    else {
+    } else if (assessmentType === 'self') {
+      return SelfAssessmentSchema;
+    } else if (assessmentType === 'gap') {
+      return SkillGapsSchema;
+    } else {
       throw new BadRequestException(
         `Invalid assessment type: ${assessmentType}`,
       );
@@ -39,11 +37,15 @@ export class AssessmentsService {
     prefixBU: string,
     assessmentType: string,
   ): Model<any> {
-    const collectionName = `${prefixBU}_${assessmentType}_Assessments`;
+    const collectionName = `${prefixBU}_${assessmentType}Assessments`;
 
     if (!this.connection.models[collectionName]) {
       const schema = this.getSchemaForAssessmentType(assessmentType);
-      const model = this.connection.model(collectionName, schema);
+      const model = this.connection.model(
+        collectionName,
+        schema,
+        collectionName,
+      );
       this.ensureModelIndexes(model); // Create indexes after creating the model
     }
 
@@ -61,10 +63,12 @@ export class AssessmentsService {
         { emailAddress: 1 },
         { unique: true, background: true },
       );
+    } else if (model.modelName.includes('gap')) {
+      await model.collection.createIndex(
+        { emailAddress: 1 },
+        { unique: true, background: true },
+      );
     }
-    // else if (model.modelName.includes('required')) {
-    //   await model.collection.createIndex({ careerLevel: 1 }, { unique: true, background: true });
-    // }
   }
 
   async bulkUpsert(
@@ -111,8 +115,8 @@ export class AssessmentsService {
         filter = { emailOfResource: item.emailOfResource };
       } else if (assessmentType === 'self') {
         filter = { emailAddress: item.emailAddress };
-        // } else if (assessmentType === 'required') {
-        //   filter = { careerLevel: item.careerLevel };
+      } else if (assessmentType === 'gap') {
+        filter = { careerLevel: item.emailAddress };
       } else {
         throw new Error('Invalid assessment type');
       }

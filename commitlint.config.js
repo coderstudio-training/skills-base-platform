@@ -15,8 +15,8 @@ module.exports = {
         'refactor',
         'revert',
         'style',
-        'test'
-      ]
+        'test',
+      ],
     ],
     'scope-enum': [
       2,
@@ -30,8 +30,8 @@ module.exports = {
         'event-processes-service',
         'frontend',
         'shared',
-        'deps'
-      ]
-    ]
-  }
+        'deps',
+      ],
+    ],
+  },
 };

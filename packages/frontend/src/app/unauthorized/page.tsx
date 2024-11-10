@@ -1,13 +1,7 @@
 import Link from 'next/link';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function UnauthorizedPage() {
   return (
@@ -21,9 +15,8 @@ export default function UnauthorizedPage() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Sorry, you don&apos;t have permission to access this page. Please
-            log in with an authorized account or contact your administrator for
-            assistance.
+            Sorry, you don&apos;t have permission to access this page. Please log in with an
+            authorized account or contact your administrator for assistance.
           </p>
         </CardContent>
         <CardFooter>

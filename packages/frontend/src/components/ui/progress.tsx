@@ -5,10 +5,5 @@ export const Progress = ({
   className,
   ...props
 }: React.ProgressHTMLAttributes<HTMLProgressElement>) => (
-  <progress
-    value={value}
-    max="100"
-    className={`w-full ${className}`}
-    {...props}
-  />
+  <progress value={value} max="100" className={`w-full ${className}`} {...props} />
 );
