@@ -27,11 +27,13 @@ import {
 export default function StaffDashboard() {
   const { data: session } = useSession();
   const [staffData] = useState<StaffData>(dummyStaffData);
-
   const [taxonomy_data, set_taxonomy_data] = useState<Taxonomy | null>(null);
   const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchData = async () => {
+      if (!session?.user?.accessToken) return;
+
       const response: FetchApiResponse<Taxonomy> = await fetcherAuth(
         {
           service: 'skills',
@@ -39,27 +41,21 @@ export default function StaffDashboard() {
           query: '?businessUnit=QA',
           method: 'GET',
         },
-        session?.user?.accessToken,
+        session?.user.accessToken,
       );
 
       if (response.error) {
         setError(response.error.message);
       } else {
         set_taxonomy_data(response.data);
-        console.log('RESPONSE DATA TAXONOMY:', response.data);
       }
     };
 
     fetchData();
-  }, []);
+  }, [session]);
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!taxonomy_data) {
-    return <div>Loading...</div>;
-  }
+  if (error) return <div>Error: {error}</div>;
+  if (!taxonomy_data) return <div>Loading...</div>;
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
