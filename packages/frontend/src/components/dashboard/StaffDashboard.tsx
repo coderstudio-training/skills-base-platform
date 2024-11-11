@@ -1,36 +1,65 @@
 'use client';
 
-import { useState } from 'react';
-import { useSession, signOut } from 'next-auth/react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { signOut, useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 // import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 // import { ScrollArea } from "@/components/ui/scroll-area";
+import { dummyStaffData } from '@/lib/dummyData';
+import { fetcherAuth } from '@/lib/fetch-data-auth';
+import { FetchApiResponse, Taxonomy } from '@/types';
+import { StaffData } from '@/types/staff';
+import { Award, BookOpen, LogOut, Scroll, TrendingUp } from 'lucide-react';
 import {
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
   Radar,
   RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
   ResponsiveContainer,
 } from 'recharts';
-import { Award, BookOpen, TrendingUp, Scroll, LogOut } from 'lucide-react';
-import { dummyStaffData } from '@/lib/dummyData';
-import { StaffData } from '@/types/staff';
 
 export default function StaffDashboard() {
   const { data: session } = useSession();
   const [staffData] = useState<StaffData>(dummyStaffData);
+
+  const [taxonomy_data, set_taxonomy_data] = useState<Taxonomy | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      const response: FetchApiResponse<Taxonomy> = await fetcherAuth(
+        {
+          service: 'skills',
+          endpoint: '/taxonomy/1yMsFZfwyumL4W7Erc0hr1IfM8_DsErcdri0TBEJRjq0',
+          query: '?businessUnit=QA',
+          method: 'GET',
+        },
+        session?.user?.accessToken,
+      );
+
+      if (response.error) {
+        setError(response.error.message);
+      } else {
+        set_taxonomy_data(response.data);
+        console.log('RESPONSE DATA TAXONOMY:', response.data);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!taxonomy_data) {
+    return <div>Loading...</div>;
+  }
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
@@ -47,15 +76,10 @@ export default function StaffDashboard() {
         </div>
         <div className="flex items-center space-x-4">
           <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={session?.user?.image || ''}
-              alt={session?.user?.name || ''}
-            />
+            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
             <AvatarFallback>{staffData.name[0]}</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium">
-            {session?.user?.name || staffData.name}
-          </span>
+          <span className="text-sm font-medium">{session?.user?.name || staffData.name}</span>
           <Button variant="outline" size="sm" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Logout
@@ -70,6 +94,7 @@ export default function StaffDashboard() {
           <TabsTrigger value="learning">Learning Paths</TabsTrigger>
           <TabsTrigger value="network">My Network</TabsTrigger>
           <TabsTrigger value="career">Career Paths</TabsTrigger>
+          <TabsTrigger value="taxonomy">Taxonomy</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -79,31 +104,23 @@ export default function StaffDashboard() {
                 <Award className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {staffData.skills.length}
-                </div>
+                <div className="text-2xl font-bold">{staffData.skills.length}</div>
                 <p className="text-xs text-muted-foreground">Total skills</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Learning Paths
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Learning Paths</CardTitle>
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {staffData.learningPaths.length}
-                </div>
+                <div className="text-2xl font-bold">{staffData.learningPaths.length}</div>
                 <p className="text-xs text-muted-foreground">Active paths</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Performance
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Performance</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -119,9 +136,7 @@ export default function StaffDashboard() {
                 <Scroll className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {staffData.network.length}
-                </div>
+                <div className="text-2xl font-bold">{staffData.network.length}</div>
                 <p className="text-xs text-muted-foreground">Connections</p>
               </CardContent>
             </Card>
@@ -135,12 +150,7 @@ export default function StaffDashboard() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <RadarChart
-                  cx="50%"
-                  cy="50%"
-                  outerRadius="80%"
-                  data={staffData.skills}
-                >
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={staffData.skills}>
                   <PolarGrid />
                   <PolarAngleAxis dataKey="name" />
                   <PolarRadiusAxis angle={30} domain={[0, 100]} />
@@ -210,9 +220,7 @@ export default function StaffDashboard() {
                     </Avatar>
                     <div>
                       <p className="font-medium">{connection.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {connection.role}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{connection.role}</p>
                     </div>
                   </li>
                 ))}
@@ -236,6 +244,73 @@ export default function StaffDashboard() {
                     </p>
                   </li>
                 ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="taxonomy">
+          <Card>
+            <CardHeader>
+              <CardTitle>Taxonomy</CardTitle>
+              <CardDescription>List of technical skills and descriptions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-4">
+                {taxonomy_data ? (
+                  <>
+                    <li key={taxonomy_data.docId} className="border-b pb-4">
+                      <h3 className="text-lg font-semibold">{taxonomy_data.title}</h3>
+                      <p className="text-sm text-gray-600">{taxonomy_data.description}</p>
+                      <p className="text-sm font-semibold mt-2">
+                        Category: {taxonomy_data.category}
+                      </p>
+                      <div className="mt-2">
+                        <h4 className="font-semibold">Proficiency Description:</h4>
+                        <ul className="pl-4 list-disc">
+                          {Object.entries(taxonomy_data.proficiencyDescription).map(
+                            ([key, value]) => (
+                              <li key={key}>
+                                <strong>{key}:</strong> {value}
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      </div>
+                      <div className="mt-2">
+                        <h4 className="font-semibold">Abilities:</h4>
+                        <ul className="pl-4 list-disc">
+                          {Object.entries(taxonomy_data.abilities).map(([key, value]) => (
+                            <li key={key}>
+                              <strong>{key}:</strong> {value}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="mt-2">
+                        <h4 className="font-semibold">Knowledge:</h4>
+                        <ul className="pl-4 list-disc">
+                          {Object.entries(taxonomy_data.knowledge).map(([key, value]) => (
+                            <li key={key}>
+                              <strong>{key}:</strong> {value}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      {taxonomy_data.rangeOfApplication && (
+                        <div className="mt-2">
+                          <h4 className="font-semibold">Range of Application:</h4>
+                          <ul className="pl-4 list-disc">
+                            {taxonomy_data.rangeOfApplication.map((application, index) => (
+                              <li key={index}>{application}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </li>
+                  </>
+                ) : (
+                  <li>Loading...</li>
+                )}
               </ul>
             </CardContent>
           </Card>
