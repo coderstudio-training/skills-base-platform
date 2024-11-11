@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { LogEntry } from 'winston';
-import Transport from 'winston-transport';
+import * as Transport from 'winston-transport';
 
-interface LokiTransportOptions {
+interface LokiTransportOptions extends Transport.TransportStreamOptions {
   host: string;
   labels: Record<string, string>;
 }
@@ -22,28 +22,40 @@ export class LokiTransport extends Transport {
       this.emit('logged', info);
     });
 
-    const timestamp = new Date().getTime() * 1000000; // Convert to nanoseconds
+    const timestamp = (Date.now() * 1000000).toString();
+
     const labels = {
       ...this.labels,
-      level: info.level,
+      level: info.level || 'info',
       service: info.service || 'unknown',
     };
+
+    const logLine = JSON.stringify({
+      ...info,
+      labels: undefined,
+    });
 
     const lokiEntry = {
       streams: [
         {
           stream: labels,
-          values: [[`${timestamp}`, JSON.stringify(info)]],
+          values: [[timestamp, logLine]],
         },
       ],
     };
 
     try {
       await axios.post(`${this.host}/loki/api/v1/push`, lokiEntry, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 5000,
       });
     } catch (error) {
       console.error('Failed to send logs to Loki:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Response:', error.response?.data);
+      }
     }
 
     callback();
