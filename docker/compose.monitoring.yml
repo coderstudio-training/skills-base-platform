@@ -4,10 +4,10 @@ services:
     ports:
       - '9090:9090'
     volumes:
-      - ../monitoring/prometheus:/etc/prometheus # Mount the local directory to /etc/prometheus
+      - ../monitoring/prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml' # Update the path to the mounted config file
+      - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
@@ -19,9 +19,9 @@ services:
     ports:
       - '3100:3100'
     volumes:
-      - ../monitoring/loki:/etc/loki # Ensure this points to your local 'monitoring/loki' folder
+      - ../monitoring/loki:/etc/loki
       - loki_data:/loki
-    command: -config.file=/etc/loki/config.yml # Specify the config file location inside the container
+    command: -config.file=/etc/loki/config.yml
     networks:
       - monitoring
 
