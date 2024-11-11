@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@skills-base/shared'],
+  images: {
+    domains: ['lh3.googleusercontent.com'],
+  },
   //   async rewrites() {
   //     return [
   //       {
