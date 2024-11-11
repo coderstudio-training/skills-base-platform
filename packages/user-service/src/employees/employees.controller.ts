@@ -50,4 +50,10 @@ export class EmployeesController {
   async findOne(@Param('employeeId') employeeId: number) {
     return this.employeesService.findByEmployeeId(employeeId);
   }
+
+  @Get('manager/:managerName')
+  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  async findTeamMembers(@Param('managerName') managerName: string) {
+    return this.employeesService.findByManager(managerName);
+  }
 }
