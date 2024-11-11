@@ -22,6 +22,9 @@ export class SkillGapsDto {
   careerLevel!: string;
 
   @IsObject()
+  skillAverages!: Record<string, number>;
+
+  @IsObject()
   skillGaps!: Record<string, number>; // Use Record<string, number> as the Map equivalent
 }
 

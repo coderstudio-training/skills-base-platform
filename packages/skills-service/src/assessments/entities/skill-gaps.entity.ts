@@ -14,6 +14,9 @@ export class SkillGaps extends Document {
   careerLevel!: string;
 
   @Prop({ type: Map, of: Number, required: true })
+  skillAverages!: Map<string, number>;
+
+  @Prop({ type: Map, of: Number, required: true })
   skillGaps!: Map<string, number>;
 
   @Prop({ default: Date.now })
