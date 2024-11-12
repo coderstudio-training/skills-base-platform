@@ -5,12 +5,14 @@ import {
   Logger,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   JwtAuthGuard,
   LoggingInterceptor,
+  PaginationDto,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -41,8 +43,8 @@ export class EmployeesController {
 
   @Get()
   @Roles(UserRole.ADMIN)
-  async findAll() {
-    return this.employeesService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.employeesService.findAll(paginationDto);
   }
 
   @Get(':employeeId')

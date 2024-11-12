@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { PaginationDto } from '@skills-base/shared';
 import { BulkWriteResult } from 'mongodb';
 import { Model } from 'mongoose';
 import { Employee } from './entities/employee.entity';
@@ -120,8 +121,18 @@ export class EmployeesService {
     return result as unknown as BulkWriteResult;
   }
 
-  async findAll(): Promise<Employee[]> {
-    return this.employeeModel.find().exec();
+  async findAll(paginationDto: PaginationDto): Promise<Employee[]> {
+    this.logger.log(
+      `Fetching employees with pagination: page ${paginationDto.page}, limit ${paginationDto.limit}`,
+    );
+
+    const skip = ((paginationDto.page ?? 1) - 1) * (paginationDto.limit ?? 10);
+
+    return this.employeeModel
+      .find()
+      .skip(skip)
+      .limit(paginationDto.limit ?? 10)
+      .exec();
   }
 
   async findByEmployeeId(employeeId: number): Promise<Employee | null> {
