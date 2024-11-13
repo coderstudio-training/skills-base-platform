@@ -1,4 +1,3 @@
-// src/courses/modules/recommendation.module.ts
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RecommendationController } from '../controllers/recommendation.controller';
@@ -23,7 +22,7 @@ import { RecommendationService } from '../services/recommendation.service';
         {
           name: SkillGap.name,
           schema: SkillGapSchema,
-          collection: 'AI_skillGaps',
+          collection: 'Capability_gapAssessments',
         },
       ],
       'MONGODB_SKILLS_URI', // Ensure this connection name matches the one configured in AppModule

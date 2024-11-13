@@ -2,7 +2,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DatabaseModule } from '@skills-base/shared';
+import { DatabaseModule, JwtStrategy } from '@skills-base/shared';
 import { CoursesModule } from './courses/modules/courses.module';
 import { RecommendationModule } from './courses/modules/recommendation.module';
 
@@ -32,5 +32,6 @@ import { RecommendationModule } from './courses/modules/recommendation.module';
     CoursesModule,
     RecommendationModule,
   ],
+  providers: [JwtStrategy],
 })
 export class AppModule {}

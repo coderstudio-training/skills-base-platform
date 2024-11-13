@@ -1,3 +1,4 @@
+import { BaseDto } from '@skills-base/shared';
 import {
   IsArray,
   IsBoolean,
@@ -7,7 +8,7 @@ import {
   IsString,
 } from 'class-validator';
 
-export class CourseDetailsDto {
+export class CourseDetailsDto extends BaseDto {
   @IsString()
   name!: string;
 
@@ -34,7 +35,7 @@ export class CourseDetailsDto {
   businessValue!: string;
 }
 
-export class RecommendationDto {
+export class RecommendationDto extends BaseDto {
   @IsString()
   skillName!: string;
 
@@ -47,10 +48,13 @@ export class RecommendationDto {
   @IsNumber()
   gap!: number;
 
+  @IsString()
+  type!: 'skillGap' | 'promotion';
+
   course!: CourseDetailsDto;
 }
 
-export class RecommendationResponseDto {
+export class RecommendationResponseDto extends BaseDto {
   @IsBoolean()
   success!: boolean;
 

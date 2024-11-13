@@ -8,8 +8,10 @@ import {
 import {
   JwtAuthGuard,
   LoggingInterceptor,
+  Roles,
   RolesGuard,
   TransformInterceptor,
+  UserRole,
 } from '@skills-base/shared';
 import { BulkUpdateCoursesDto } from '../dto/courses.dto';
 import { BulkUpsertResponse } from '../interfaces/courses.interface';
@@ -22,6 +24,7 @@ export class CoursesController {
   @Post('bulk-update')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @UseInterceptors(LoggingInterceptor, TransformInterceptor)
+  @Roles(UserRole.ADMIN)
   async bulkUpdate(
     @Body() bulkUpdateDto: BulkUpdateCoursesDto,
   ): Promise<BulkUpsertResponse> {

@@ -1,3 +1,4 @@
+import { BaseDto } from '@skills-base/shared';
 import { Type as ValidateType } from 'class-transformer';
 import {
   IsArray,
@@ -10,7 +11,7 @@ import {
 } from 'class-validator';
 
 // Type for field items
-export class FieldDto {
+export class FieldDto extends BaseDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
@@ -19,7 +20,7 @@ export class FieldDto {
   value!: string;
 }
 
-export class CourseDto {
+export class CourseDto extends BaseDto {
   // The 5 static headers
   @IsString()
   @IsNotEmpty()
@@ -53,7 +54,7 @@ export class CourseDto {
   fields!: FieldDto[];
 }
 
-export class BulkUpdateCoursesDto {
+export class BulkUpdateCoursesDto extends BaseDto {
   @IsArray()
   @ValidateNested({ each: true })
   @ValidateType(() => CourseDto)

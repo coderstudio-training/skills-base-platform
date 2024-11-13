@@ -1,7 +1,8 @@
+import { BaseDto } from '@skills-base/shared';
 import { IsEnum, IsNumber, IsString, Max, Min } from 'class-validator';
 import { CareerLevel } from '../career-level.enum';
 
-export class SkillGapDto {
+export class SkillGapDto extends BaseDto {
   @IsString()
   skillName!: string;
 

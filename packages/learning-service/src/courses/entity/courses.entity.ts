@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { BaseEntity } from '@skills-base/shared';
 
 // Define field structure without Schema
 interface Field {
@@ -8,7 +8,7 @@ interface Field {
 }
 
 @Schema()
-export class Course extends Document {
+export class Course extends BaseEntity {
   @Prop({ required: true, unique: true })
   courseId!: string;
 

@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { CareerLevel } from '../career-level.enum';
 import {
   CourseDetailsDto,
+  RecommendationDto,
   RecommendationResponseDto,
 } from '../dto/recommendation.dto';
 import { Course } from '../entity/courses.entity';
@@ -22,7 +23,7 @@ export class RecommendationService {
   async getRecommendations(email: string): Promise<RecommendationResponseDto> {
     try {
       const skillGap = await this.skillGapsModel
-        .findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } })
+        .findOne({ emailAddress: { $regex: new RegExp(`^${email}$`, 'i') } })
         .sort({ computedDate: -1 })
         .exec();
 
@@ -38,7 +39,7 @@ export class RecommendationService {
         };
       }
 
-      const recommendations = await this.findCourseRecommendations(
+      const recommendations = await this.generateRecommendations(
         skillGap.skillGaps,
         skillGap.careerLevel,
       );
@@ -56,46 +57,53 @@ export class RecommendationService {
     }
   }
 
-  private async findCourseRecommendations(
+  private async generateRecommendations(
     skillGaps: Record<string, number>,
     careerLevel: string,
-  ) {
-    const recommendations = [];
+  ): Promise<RecommendationDto[]> {
+    const recommendations: RecommendationDto[] = [];
 
     for (const [skillName, gap] of Object.entries(skillGaps)) {
-      if (gap <= 0) {
-        continue;
-      }
-
       const formattedSkillName = this.formatSkillName(skillName);
+      this.logger.debug(`Processing ${skillName} with gap ${gap}`);
 
-      // First try with exact career level
-      let course = await this.findMatchingCourse(
+      // Find matching course
+      const course = await this.findMatchingCourse(
         formattedSkillName,
         careerLevel,
       );
 
-      // If Professional IV and no course found, try Manager I
-      if (!course && careerLevel === 'Professional IV') {
-        course = await this.findMatchingCourse(formattedSkillName, 'Manager I');
-      }
-
       if (course) {
         this.logger.debug(`Found matching course: ${course.courseId}`);
+        const absGap = Math.abs(gap);
+        const currentLevel = course.requiredLevel - absGap;
 
-        const currentLevel = course.requiredLevel - gap;
-
-        recommendations.push({
-          skillName: formattedSkillName,
-          currentLevel: Number(currentLevel.toFixed(1)),
-          targetLevel: course.requiredLevel,
-          gap,
-          course: this.formatCourseDetails(course, currentLevel),
-        });
+        if (gap < 0) {
+          // Skill gap recommendation
+          recommendations.push({
+            skillName: formattedSkillName,
+            currentLevel: Number(currentLevel.toFixed(1)),
+            targetLevel: course.requiredLevel,
+            gap: gap,
+            type: 'skillGap',
+            course: this.formatCourseDetails(course, currentLevel),
+          });
+        } else if (gap > 0) {
+          // Promotion recommendation
+          recommendations.push({
+            skillName: formattedSkillName,
+            currentLevel: Number(currentLevel.toFixed(1)),
+            targetLevel: course.requiredLevel,
+            gap: gap,
+            type: 'promotion',
+            course: this.formatCourseDetails(course, currentLevel),
+          });
+        }
       }
     }
 
-    return recommendations.sort((a, b) => b.gap - a.gap);
+    // Sort by absolute gap value
+    return recommendations.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap));
   }
 
   private getRecommendedForValue(careerLevel: string): string {
