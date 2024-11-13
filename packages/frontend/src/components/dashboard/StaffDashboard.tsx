@@ -13,14 +13,7 @@ import { useState } from 'react';
 import { dummyStaffData } from '@/lib/dummyData';
 import { StaffData } from '@/types/staff';
 import { Award, BookOpen, LogOut, Scroll, TrendingUp } from 'lucide-react';
-import {
-  PolarAngleAxis,
-  PolarGrid,
-  PolarRadiusAxis,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 export default function StaffDashboard() {
   const { data: session } = useSession();
@@ -28,6 +21,44 @@ export default function StaffDashboard() {
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
+  };
+
+  const chartData = staffData.skills.map(skill => ({
+    skill: skill.name,
+    currentLevel: (skill.level / 100) * 4,
+    requiredLevel: 3,
+    gap: (skill.level / 100) * 4 - 3,
+    category: 'Technical Skills',
+  }));
+
+  const getGapStatus = (gap: number) => {
+    const gapNum = Number(gap);
+
+    if (gapNum === 0) {
+      return {
+        text: 'Sufficient',
+        className: 'text-green-500 bg-green-100 px-2 py-1 rounded-full text-sm',
+      };
+    }
+    // For negative values (current level exceeds required level)
+    else if (gapNum > 0) {
+      return {
+        text: 'Proficient',
+        className: 'text-green-800 bg-green-400 px-2 py-1 rounded-full text-sm',
+      };
+    }
+    // For zero or small positive gaps (at or close to required level)
+    else if (gapNum < -0.5) {
+      return {
+        text: 'Developing',
+        className: 'text-orange-500 bg-orange-100 px-2 py-1 rounded-full text-sm',
+      };
+    }
+    // For larger gaps (significantly below required level)
+    return {
+      text: 'Behind',
+      className: 'text-red-500 bg-red-100 px-2 py-1 rounded-full text-sm',
+    };
   };
 
   return (
@@ -106,7 +137,7 @@ export default function StaffDashboard() {
             </Card>
           </div>
         </TabsContent>
-        <TabsContent value="skills">
+        {/* <TabsContent value="skills">
           <Card>
             <CardHeader>
               <CardTitle>My Skills</CardTitle>
@@ -129,7 +160,95 @@ export default function StaffDashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+        </TabsContent> */}
+        <TabsContent value="skills">
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Skills Gap Analysis - {staffData.name}</CardTitle>
+              <p className="text-sm text-gray-600">
+                {staffData.role} - {staffData.department}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="skill" tick={{ fill: '#666' }} tickLine={false} />
+                    <YAxis
+                      domain={[0, 6]}
+                      ticks={[0, 1.5, 3, 4.5, 6]}
+                      tick={{ fill: '#666' }}
+                      tickLine={false}
+                    />
+                    <Tooltip />
+                    <Bar
+                      dataKey="currentLevel"
+                      fill="#4285f4"
+                      name="Current Level"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="requiredLevel"
+                      fill="#666666"
+                      name="Required Level"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="mt-4 flex items-center justify-end gap-4 text-sm">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-[#4285f4] rounded mr-2"></div>
+                  <span>Current Level</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-[#666666] rounded mr-2"></div>
+                  <span>Required Level</span>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-2">Skill Details</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Breakdown of your skills, assessments, and required levels
+                </p>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="border-b">
+                      <tr className="text-left">
+                        <th className="pb-2">Skill</th>
+                        <th className="pb-2">Category</th>
+                        <th className="pb-2">Current Level</th>
+                        <th className="pb-2">Required Level</th>
+                        <th className="pb-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {chartData.map((skill, index) => {
+                        const gapStatus = getGapStatus(skill.gap);
+                        return (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="py-3">{skill.skill}</td>
+                            <td className="py-3">{skill.category}</td>
+                            <td className="py-3">{skill.currentLevel.toFixed(1)}</td>
+                            <td className="py-3">{skill.requiredLevel}</td>
+                            <td className="py-3">
+                              <span className={gapStatus.className}>{gapStatus.text}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
+
         <TabsContent value="qualifications">
           <Card>
             <CardHeader>
