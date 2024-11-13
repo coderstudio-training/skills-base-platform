@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Param,
   Post,
   UseGuards,
@@ -9,7 +10,7 @@ import {
 } from '@nestjs/common';
 import {
   JwtAuthGuard,
-  Logger,
+  LoggingInterceptor,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -19,7 +20,7 @@ import { EmployeesService } from './employees.service';
 
 @Controller('employees')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(TransformInterceptor)
+@UseInterceptors(LoggingInterceptor, TransformInterceptor)
 export class EmployeesController {
   private readonly logger = new Logger(EmployeesController.name);
 
@@ -28,11 +29,11 @@ export class EmployeesController {
   @Post('sync')
   @Roles(UserRole.ADMIN)
   async syncEmployees(@Body() body: Record<string, any>) {
-    this.logger.info(
+    this.logger.log(
       `Starting bulk upsert with ${Object.keys(body).length} records`,
     );
     const result = await this.employeesService.bulkUpsert(body);
-    this.logger.info(
+    this.logger.log(
       `Bulk upsert completed. Inserted: ${result.summary.inserted}, Updated: ${result.summary.updated}, Errors: ${result.summary.errors}, Invalids: ${result.summary.invalid}`,
     );
     return result;
