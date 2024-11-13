@@ -121,18 +121,30 @@ export class EmployeesService {
     return result as unknown as BulkWriteResult;
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<Employee[]> {
-    this.logger.log(
-      `Fetching employees with pagination: page ${paginationDto.page}, limit ${paginationDto.limit}`,
-    );
+  async findAll(paginationDto: PaginationDto) {
+    const page = paginationDto.page || 1;
+    const limit = paginationDto.limit || 10;
+    const skip = (page - 1) * limit;
 
-    const skip = ((paginationDto.page ?? 1) - 1) * (paginationDto.limit ?? 10);
+    try {
+      const [items, total] = await Promise.all([
+        this.employeeModel.find().skip(skip).limit(limit).exec(),
+        this.employeeModel.countDocuments(),
+      ]);
 
-    return this.employeeModel
-      .find()
-      .skip(skip)
-      .limit(paginationDto.limit ?? 10)
-      .exec();
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        items,
+        total,
+        page,
+        limit,
+        totalPages,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching employees:', error);
+      throw error;
+    }
   }
 
   async findByEmployeeId(employeeId: number): Promise<Employee | null> {

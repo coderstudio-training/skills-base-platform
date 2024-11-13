@@ -1,85 +1,41 @@
+// app/api/employees/route.ts
+
+import { authOptions } from '@/lib/auth';
+import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Types
-interface Employee {
-  firstName: string;
-  lastName: string;
-  department: string;
-  employmentStatus: string;
-  grade: string;
-}
-
-// Mock data - In a real application, this would come from a database
-const mockEmployees: Employee[] = [
-  {
-    firstName: 'John',
-    lastName: 'Doe',
-    department: 'Engineering',
-    employmentStatus: 'Active',
-    grade: 'Senior Engineer',
-  },
-  {
-    firstName: 'Jane',
-    lastName: 'Smith',
-    department: 'Product',
-    employmentStatus: 'Active',
-    grade: 'Product Manager',
-  },
-  {
-    firstName: 'Mike',
-    lastName: 'Johnson',
-    department: 'Sales',
-    employmentStatus: 'Inactive',
-    grade: 'Sales Executive',
-  },
-  {
-    firstName: 'Sarah',
-    lastName: 'Williams',
-    department: 'Engineering',
-    employmentStatus: 'Active',
-    grade: 'Lead Engineer',
-  },
-  {
-    firstName: 'David',
-    lastName: 'Brown',
-    department: 'Marketing',
-    employmentStatus: 'Active',
-    grade: 'Marketing Manager',
-  },
-  // Add more mock data as needed...
-];
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get pagination parameters from URL
-    const searchParams = request.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const session = await getServerSession(authOptions);
 
-    // Validate pagination parameters
-    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
-      return NextResponse.json({ error: 'Invalid pagination parameters' }, { status: 400 });
+    if (!session) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Calculate pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const total = mockEmployees.length;
-    const totalPages = Math.ceil(total / limit);
+    // Get only page and limit parameters
+    const searchParams = request.nextUrl.searchParams;
+    const page = searchParams.get('page') || '1';
+    const limit = searchParams.get('limit') || '10';
 
-    // Get paginated data
-    const paginatedEmployees = mockEmployees.slice(startIndex, endIndex);
-
-    // Return paginated response
-    return NextResponse.json({
-      data: paginatedEmployees,
-      total,
-      page,
-      limit,
-      totalPages,
+    // Call your backend API
+    const response = await fetch(`${API_BASE_URL}/employees?page=${page}&limit=${limit}`, {
+      headers: {
+        Authorization: `Bearer ${session?.user?.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch employees');
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error('Error in employees route:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error fetching employees:', error);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
