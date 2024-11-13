@@ -37,17 +37,3 @@ interface DevelopmentPlansResponse {
   total: number;
   // Other possible metadata in the response
 }
-
-// DTO from microservices
-export interface Taxonomy {
-  docId: string;
-  docRevisionId: string;
-  docTitle: string;
-  title: string;
-  category: string;
-  description: string;
-  proficiencyDescription: Record<string, any>;
-  abilities: Record<string, any>;
-  knowledge: Record<string, any>;
-  rangeOfApplication?: string[];
-}
