@@ -27,10 +27,10 @@ export class PerformanceService {
   }
 
   private getModelForAssessmentType(
-    prefixBU: string,
+    // prefixBU: string,
     assessmentType: string,
   ): Model<any> {
-    const collectionName = `${prefixBU}_${assessmentType}Assessments`;
+    const collectionName = `Capability_${assessmentType}Assessments`;
     if (!this.connection.models[collectionName]) {
       const schema = this.getSchemaForAssessmentType(assessmentType);
       const model = this.connection.model(
@@ -60,10 +60,7 @@ export class PerformanceService {
 
     try {
       // Dynamically get the models for self-assessment and manager-assessment
-      const SelfAssessmentModel = this.getModelForAssessmentType(
-        prefixBU,
-        'self',
-      );
+      const SelfAssessmentModel = this.getModelForAssessmentType('self');
 
       this.logger.log(
         'Successfully retrieved the SelfAssessments and ManagerAssessments models.',
@@ -75,11 +72,11 @@ export class PerformanceService {
       );
       const result = await SelfAssessmentModel.aggregate([
         {
-          $match: { emailAddress: email },
+          $match: { emailAddress: email, prefixBU },
         },
         {
           $lookup: {
-            from: `${prefixBU}_managerAssessments`,
+            from: `Capability_managerAssessments`,
             localField: 'emailAddress',
             foreignField: 'emailOfResource',
             as: 'managerAssessment',
@@ -196,10 +193,7 @@ export class PerformanceService {
 
     try {
       // Dynamically get the models for self-assessment and manager-assessment
-      const SelfAssessmentModel = this.getModelForAssessmentType(
-        prefixBU,
-        'self',
-      );
+      const SelfAssessmentModel = this.getModelForAssessmentType('self');
 
       this.logger.log(
         'Successfully retrieved the SelfAssessments and ManagerAssessments models.',
@@ -208,8 +202,11 @@ export class PerformanceService {
       // Step 1: Aggregate data for all employees
       const performanceResults = await SelfAssessmentModel.aggregate([
         {
+          $match: { capability: prefixBU },
+        },
+        {
           $lookup: {
-            from: `${prefixBU}_managerAssessments`,
+            from: `Capability_managerAssessments`,
             localField: 'emailAddress',
             foreignField: 'emailOfResource',
             as: 'managerAssessment',

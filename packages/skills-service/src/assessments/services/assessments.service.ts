@@ -34,10 +34,10 @@ export class AssessmentsService {
   }
 
   private getModelForAssessmentType(
-    prefixBU: string,
+    // prefixBU: string,
     assessmentType: string,
   ): Model<any> {
-    const collectionName = `${prefixBU}_${assessmentType}Assessments`;
+    const collectionName = `Capability_${assessmentType}Assessments`;
 
     if (!this.connection.models[collectionName]) {
       const schema = this.getSchemaForAssessmentType(assessmentType);
@@ -72,11 +72,11 @@ export class AssessmentsService {
   }
 
   async bulkUpsert(
-    prefixBU: string,
+    // prefixBU: string,
     assessmentType: string,
     bulkUpdateDto: BulkUpdateAssessmentsDto,
   ): Promise<{ updatedCount: number; errors: any[] }> {
-    const model = this.getModelForAssessmentType(prefixBU, assessmentType);
+    const model = this.getModelForAssessmentType(assessmentType);
     let totalUpdatedCount = 0;
     const errors = [];
 

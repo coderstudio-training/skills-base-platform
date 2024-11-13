@@ -21,6 +21,10 @@ export class SkillGapsDto {
   @IsNotEmpty()
   careerLevel!: string;
 
+  @IsString()
+  @IsNotEmpty()
+  capability!: string;
+
   @IsObject()
   skillAverages!: Record<string, number>;
 
