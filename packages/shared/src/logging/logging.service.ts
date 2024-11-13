@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import * as os from 'os';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
+import LokiTransport from 'winston-loki';
 import * as Transport from 'winston-transport';
-import { ConfigurationManager } from './config';
-import { createConsoleFormat, createJsonFormat } from './format';
-import { LokiTransport } from './transports/loki.transport';
+import { ConfigurationManager } from './logging.config';
 import { LogContext } from './types';
 import { ErrorTracker } from './utils/error-tracker';
-import { maskSensitiveData } from './utils/security';
+import { createConsoleFormat, createJsonFormat } from './utils/formatter';
+import { maskSensitiveData } from './utils/logging.security';
 
 @Injectable()
 export class Logger {
@@ -91,17 +91,28 @@ export class Logger {
       transports.push(fileTransport);
     }
 
+    // Add Loki transport if not in test environment
     if (process.env.NODE_ENV !== 'test') {
-      transports.push(
-        new LokiTransport({
-          host: process.env.LOKI_HOST || 'http://localhost:3100',
-          labels: {
-            environment: process.env.NODE_ENV || 'development',
-            service: this.service,
-            host: os.hostname(),
-          },
-        }),
-      );
+      const lokiConfig = {
+        host: process.env.LOKI_HOST || 'http://localhost:3100',
+        interval: 5,
+        json: true,
+        labels: {
+          app: this.service,
+          environment: process.env.NODE_ENV || 'development',
+          host: os.hostname(),
+        },
+        format: winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.json(),
+        ),
+        replaceTimestamp: false,
+        onConnectionError: (err: Error) => {
+          console.error('Error connecting to Loki:', err);
+        },
+      };
+
+      transports.push(new LokiTransport(lokiConfig));
     }
 
     return winston.createLogger({

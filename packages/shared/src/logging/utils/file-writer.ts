@@ -1,17 +1,29 @@
 // utils/file-writer.ts
 import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
+import { dirname, join } from 'path';
+import { Logger } from '../logging.service';
 import { LoggerOptions } from '../types';
+import { LogRetentionManager } from './log-retention';
 
 export class LogFileWriter {
   private currentFileSize: number = 0;
   private currentFile: string;
   private writePromise: Promise<void> = Promise.resolve();
   private readonly lockFile: string;
-
-  constructor(private readonly options: Required<LoggerOptions>) {
+  private retentionManager?: LogRetentionManager;
+  constructor(
+    private readonly options: Required<LoggerOptions>,
+    private readonly logger: Logger,
+  ) {
     this.currentFile = this.options.filename;
     this.lockFile = `${this.options.filename}.lock`;
+
+    if (this.options.file?.retention?.enabled) {
+      this.retentionManager = new LogRetentionManager(
+        this.options.file,
+        logger,
+      );
+    }
   }
 
   private async acquireLock(): Promise<boolean> {
@@ -27,7 +39,7 @@ export class LogFileWriter {
     try {
       await fs.unlink(this.lockFile);
     } catch {
-      // Lock file might have been deleted by another process
+      this.logger.warn('Failed to delete lock file');
     }
   }
 
@@ -62,7 +74,7 @@ export class LogFileWriter {
         try {
           await fs.rename(fromFile, toFile);
         } catch {
-          // File might not exist
+          this.logger.warn('Failed to rotate log file');
         }
       }
 
@@ -97,14 +109,14 @@ export class LogFileWriter {
         await fs.appendFile(this.currentFile, formattedMessage);
         this.currentFileSize += messageSize;
       } catch (error) {
-        console.error('Failed to write to log file:', error);
+        this.logger.error('Failed to write to log file', { error });
 
         // Try writing to a fallback location
         const fallbackPath = join(process.cwd(), 'logs-fallback.log');
         try {
           await fs.appendFile(fallbackPath, this.formatLogEntry(message));
         } catch {
-          // If fallback fails, we can't do much more
+          this.logger.warn('Failed to write to fallback log file');
         }
       }
     });
@@ -135,6 +147,10 @@ export class LogFileWriter {
       return 0;
     }
   }
+
+  async destroy(): Promise<void> {
+    this.retentionManager?.stop();
+  }
 }
 
 // Updated writeToFile function that uses the LogFileWriter
@@ -146,7 +162,7 @@ export async function writeToFile(
 ): Promise<void> {
   let writer = writers.get(options.filename);
   if (!writer) {
-    writer = new LogFileWriter(options);
+    writer = new LogFileWriter(options, new Logger('file-writer'));
     writers.set(options.filename, writer);
   }
 

@@ -22,13 +22,7 @@ export interface LoggerOptions {
   maxSize?: number;
   maxFiles?: number;
   sensitiveKeys?: string[];
-}
-
-export interface MonitorOptions {
-  enabled?: boolean;
-  sampleRate?: number;
-  metricsInterval?: number;
-  tags?: Record<string, string>;
+  file?: LogFileConfig;
 }
 
 export interface LoggerConfig {
@@ -41,33 +35,12 @@ export interface LoggerConfig {
   file?: LogFileConfig;
 }
 
-export interface MonitorConfig {
-  enabled: boolean;
-  sampleRate: number;
-  metricsInterval: number;
-  tags: Record<string, string>;
-  enableMetrics?: boolean; // New field for Prometheus metrics
-  metricsPrefix?: string; // New field for metrics naming
-  customBuckets?: {
-    // New field for custom histogram buckets
-    [key: string]: number[];
-  };
-}
-
 export interface ErrorTrackerConfig {
   sampleRate: number;
   environment: string;
   release?: string;
   contextLines?: number;
   maxStackFrames?: number;
-}
-
-export interface LogFileConfig {
-  path: string;
-  namePattern: string;
-  rotatePattern: string;
-  permissions?: number;
-  compress?: boolean;
 }
 
 export interface LokiLogBase {
@@ -128,4 +101,19 @@ export interface ErrorTracking {
     name: string;
     message: string;
   };
+}
+
+export interface LogRetentionConfig {
+  enabled: boolean;
+  days: number;
+  checkInterval: number; // milliseconds
+}
+
+export interface LogFileConfig {
+  path: string;
+  namePattern: string;
+  rotatePattern: string;
+  permissions?: number;
+  compress?: boolean;
+  retention?: LogRetentionConfig;
 }

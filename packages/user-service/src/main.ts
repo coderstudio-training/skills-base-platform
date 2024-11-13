@@ -1,11 +1,11 @@
 // packages/user-service/src/main.ts
 
-import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { AppModule } from './app.module';
+import { NestFactory } from '@nestjs/core';
 import { HttpExceptionFilter, TransformInterceptor } from '@skills-base/shared';
-import helmet from 'helmet';
 import { json } from 'express';
+import helmet from 'helmet';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

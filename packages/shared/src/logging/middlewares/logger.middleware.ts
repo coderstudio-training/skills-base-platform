@@ -1,15 +1,11 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { Logger } from '../logger';
-import { Monitor } from '../monitor';
+import { Logger } from '../logging.service';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  constructor(
-    private readonly logger: Logger,
-    private readonly monitor: Monitor,
-  ) {}
+  constructor(private readonly logger: Logger) {}
 
   use(req: Request, res: Response, next: NextFunction) {
     const startTime = Date.now();
@@ -78,7 +74,6 @@ export class LoggerMiddleware implements NestMiddleware {
       const duration = Date.now() - startTime;
 
       this.logResponse(req, res, body, duration, correlationId);
-      this.trackMetrics(req, res, body, duration);
 
       return originalEnd.apply(res, [chunk, ...args]);
     }.bind(this);
@@ -102,41 +97,6 @@ export class LoggerMiddleware implements NestMiddleware {
         duration: `${duration}ms`,
         size: Buffer.byteLength(body, 'utf8'),
       },
-    );
-  }
-
-  private trackMetrics(
-    req: Request,
-    res: Response,
-    body: string,
-    duration: number,
-  ): void {
-    this.monitor.trackMetric('http.response.time', duration, {
-      method: req.method,
-      path: req.path,
-      status: res.statusCode.toString(),
-    });
-
-    this.monitor.trackMetric(
-      'http.response.size',
-      Buffer.byteLength(body, 'utf8'),
-      {
-        method: req.method,
-        path: req.path,
-      },
-    );
-  }
-
-  private sanitizeHeaders(headers: Record<string, any>): Record<string, any> {
-    const sensitiveHeaders = ['authorization', 'cookie', 'set-cookie'];
-    return Object.entries(headers).reduce(
-      (acc, [key, value]) => {
-        acc[key] = sensitiveHeaders.includes(key.toLowerCase())
-          ? '[REDACTED]'
-          : value;
-        return acc;
-      },
-      {} as Record<string, any>,
     );
   }
 }

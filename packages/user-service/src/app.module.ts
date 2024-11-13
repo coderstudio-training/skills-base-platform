@@ -4,11 +4,11 @@ import {
   DatabaseModule,
   LoggerMiddleware,
   LoggingModule,
+  MonitoringModule,
+  SecurityConfig,
   SecurityMiddleware,
   SecurityModule,
-  SecurityConfig,
 } from '@skills-base/shared';
-import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './employees/employees.module';
 import { UsersModule } from './users/users.module';
 
@@ -41,11 +41,14 @@ const securityConfig: SecurityConfig = {
     SecurityModule.forRoot(securityConfig),
     DatabaseModule,
     UsersModule,
-    AuthModule,
     EmployeesModule,
     LoggingModule.forRoot({
       serviceName: 'user-service',
       environment: process.env.NODE_ENV,
+    }),
+    MonitoringModule.forRoot({
+      serviceName: 'user-service',
+      enableMetrics: true,
     }),
   ],
 })

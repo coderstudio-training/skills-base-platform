@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
-import { Logger } from '../logging/logger';
+import { Logger } from '../logging/logging.service';
 
 @Injectable()
 export class SecurityMonitor {

@@ -1,5 +1,5 @@
-import { Logger } from '../logger';
-import { ConfigurationManager } from '../config';
+import { ConfigurationManager } from '../logging.config';
+import { Logger } from '../logging.service';
 
 export interface ErrorContext {
   userId?: string;

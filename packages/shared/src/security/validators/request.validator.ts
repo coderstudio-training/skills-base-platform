@@ -1,6 +1,6 @@
 import { Injectable, PayloadTooLargeException } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
-import * as sanitizeHtml from 'sanitize-html';
+import sanitizeHtml from 'sanitize-html';
 
 @Injectable()
 export class RequestValidator {

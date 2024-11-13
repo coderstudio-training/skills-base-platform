@@ -1,106 +1,126 @@
 import {
+  CallHandler,
+  ExecutionContext,
+  HttpException,
   Injectable,
   NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  HttpException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
-import { Logger } from '../logger';
-import { Monitor } from '../monitor';
 import { Request, Response } from 'express';
+import { Observable } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { Logger } from '../logging.service';
+
+interface RequestContext {
+  method: string;
+  path: string;
+  correlationId?: string;
+  userId?: string;
+  userAgent?: string;
+  ip?: string;
+  query?: Record<string, any>;
+  params?: Record<string, any>;
+  body?: Record<string, any>;
+}
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  constructor(
-    private readonly logger: Logger,
-    private readonly monitor: Monitor,
-  ) {}
+  constructor(private readonly logger: Logger) {}
+
+  private getRequestContext(request: Request): RequestContext {
+    return {
+      method: request.method,
+      path: this.normalizePath(request.originalUrl || request.url),
+      correlationId: request.headers['x-correlation-id']?.toString(),
+      userId: (request.user as any)?.id,
+      userAgent: request.get('user-agent'),
+      ip: request.ip,
+      query: request.query,
+      params: request.params,
+    };
+  }
+
+  private normalizePath(path: string): string {
+    return path
+      .replace(/\/\d+/g, '/:id')
+      .replace(
+        /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+        '/:uuid',
+      )
+      .split('?')[0];
+  }
+
+  private getResponseSize(res: Response): number {
+    const contentLength = res.getHeader('content-length');
+    return contentLength ? parseInt(contentLength.toString(), 10) : 0;
+  }
+
+  private formatError(error: Error | HttpException): Record<string, any> {
+    const errorInfo: Record<string, any> = {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+
+    if (error instanceof HttpException) {
+      errorInfo.status = error.getStatus();
+      errorInfo.response = error.getResponse();
+    }
+
+    return errorInfo;
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const startTime = Date.now();
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
-    const correlationId = request.headers['x-correlation-id']?.toString();
+    const requestContext = this.getRequestContext(request);
 
-    // Log business operation start
-    const { method, url, user } = request;
-    this.logger.info(`Processing ${method} ${url}`, {
-      correlationId,
-      type: 'operation.start',
-      operation: {
-        method,
-        url,
-        controller: context.getClass().name,
-        handler: context.getHandler().name,
-        user,
+    // Log incoming request
+    this.logger.info(
+      `Incoming ${requestContext.method} ${requestContext.path}`,
+      {
+        type: 'request.incoming',
+        ...requestContext,
+        timestamp: new Date().toISOString(),
       },
-    });
-
-    // Start operation timer
-    const timer = this.monitor.startTimer(`operation.${method.toLowerCase()}`);
+    );
 
     return next.handle().pipe(
-      tap((data) => {
+      tap(() => {
         const duration = Date.now() - startTime;
+        const statusCode = response.statusCode;
+        const responseSize = this.getResponseSize(response);
 
-        // Log successful operation completion with business metrics
-        this.logger.info(`Completed ${method} ${url}`, {
-          correlationId,
-          type: 'operation.complete',
-          duration,
-          operation: {
-            method,
-            url,
-            statusCode: response.statusCode,
-            resultCount: Array.isArray(data) ? data.length : undefined,
-            affectedRecords: data?.affected || data?.modifiedCount,
+        // Log successful response
+        this.logger.info(
+          `Completed ${requestContext.method} ${requestContext.path}`,
+          {
+            type: 'request.complete',
+            ...requestContext,
+            statusCode,
+            duration,
+            responseSize,
+            timestamp: new Date().toISOString(),
           },
-        });
-
-        // Track business metrics
-        timer.end();
-        this.monitor.trackMetric('operation.duration', duration, {
-          controller: context.getClass().name,
-          handler: context.getHandler().name,
-          status: 'success',
-        });
-
-        if (Array.isArray(data)) {
-          this.monitor.trackMetric('operation.result.count', data.length, {
-            controller: context.getClass().name,
-            handler: context.getHandler().name,
-          });
-        }
+        );
       }),
       catchError((error) => {
         const duration = Date.now() - startTime;
         const statusCode =
           error instanceof HttpException ? error.getStatus() : 500;
 
-        // Log operation error with details
-        this.logger.error(error, {
-          correlationId,
-          type: 'operation.error',
-          duration,
-          operation: {
-            method,
-            url,
+        // Log error response
+        this.logger.error(
+          `Error processing ${requestContext.method} ${requestContext.path}`,
+          {
+            type: 'request.error',
+            ...requestContext,
+            error: this.formatError(error),
             statusCode,
-            controller: context.getClass().name,
-            handler: context.getHandler().name,
+            duration,
+            timestamp: new Date().toISOString(),
           },
-        });
-
-        // Track error metrics
-        timer.end();
-        this.monitor.trackMetric('operation.duration', duration, {
-          controller: context.getClass().name,
-          handler: context.getHandler().name,
-          status: 'error',
-          errorType: error.name,
-        });
+        );
 
         throw error;
       }),

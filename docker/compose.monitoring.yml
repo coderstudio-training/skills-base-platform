@@ -4,7 +4,7 @@ services:
     ports:
       - '9090:9090'
     volumes:
-      - ../monitoring/prometheus:/etc/prometheus
+      - ./prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -19,7 +19,7 @@ services:
     ports:
       - '3100:3100'
     volumes:
-      - ../monitoring/loki:/etc/loki
+      - ./loki:/etc/loki
       - loki_data:/loki
     command: -config.file=/etc/loki/config.yml
     networks:
@@ -30,7 +30,7 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/provisioning:/etc/grafana/provisioning
       - grafana_data:/var/lib/grafana
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=false

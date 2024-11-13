@@ -27,21 +27,23 @@ export * from './strategy/jwt.strategy';
 export * from './utils/date.util';
 export * from './utils/validation.util';
 
-// logging and monitoring
-export * from './logging/logger';
-export * from './logging/middlewares/logger.middleware';
-export * from './logging/module';
-export * from './logging/monitor';
-export * from './logging/types';
+// logging
 export * from './logging/interceptors/logging.interceptor';
-export * from './logging/decorators/metrics.decorators';
-export * from './logging/middlewares/metrics.middleware';
-export * from './logging/interceptors/metrics.interceptor';
-export * from './logging/services/prometheus.service';
-export * from './logging/services/system-metrics.service';
+export * from './logging/logging.module';
+export * from './logging/logging.service';
+export * from './logging/middlewares/logger.middleware';
 export * from './logging/types';
 
+// monitoring
+export * from './monitoring/controllers/metrics.controller';
+export * from './monitoring/decorators/metrics.decorators';
+export * from './monitoring/interceptors/metrics.interceptor';
+export * from './monitoring/monitoring.module';
+export * from './monitoring/services/prometheus.service';
+export * from './monitoring/services/system-metrics.service';
+
 // security
+export * from '@nestjs/cache-manager';
 export * from './security/decorators/rate-limit.decorator';
 export * from './security/decorators/require-api-key.decorator';
 export * from './security/exceptions/rate-limit.exception';
@@ -50,7 +52,6 @@ export * from './security/guards/ip.guard';
 export * from './security/guards/rate-limit.guard';
 export * from './security/middlewares/security.middleware';
 export * from './security/module';
-export * from './security/validators/request.validator';
 export * from './security/monitoring';
 export * from './security/types';
-export * from '@nestjs/cache-manager';
+export * from './security/validators/request.validator';

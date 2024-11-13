@@ -1,17 +1,15 @@
+import { join } from 'path';
 import {
   ErrorTrackerConfig,
   LoggerConfig,
   LogLevel,
-  MonitorConfig,
   WinstonLoggerConfig,
 } from './types';
-import { join } from 'path';
 
 export class ConfigurationManager {
   private static instance: ConfigurationManager;
   private config: {
     logger: LoggerConfig;
-    monitor: MonitorConfig;
     errorTracker: ErrorTrackerConfig;
   };
 
@@ -55,6 +53,11 @@ export class ConfigurationManager {
           rotatePattern: 'YYYY-MM-DD',
           permissions: 0o644,
           compress: env === 'production',
+          retention: {
+            enabled: true,
+            days: 30, // Default 30 days retention
+            checkInterval: 24 * 60 * 60 * 1000, // Check daily
+          },
         },
       },
       monitor: {
@@ -95,6 +98,11 @@ export class ConfigurationManager {
             rotatePattern: 'YYYY-MM-DD-HH',
             permissions: 0o644,
             compress: true,
+            retention: {
+              enabled: true,
+              days: 90, // Keep logs longer in production
+              checkInterval: 12 * 60 * 60 * 1000, // Check twice daily
+            },
           },
         },
         monitor: {
@@ -122,6 +130,11 @@ export class ConfigurationManager {
             rotatePattern: 'YYYY-MM-DD',
             permissions: 0o644,
             compress: true,
+            retention: {
+              enabled: true,
+              days: 90, // Keep logs longer in production
+              checkInterval: 12 * 60 * 60 * 1000, // Check twice daily
+            },
           },
         },
         monitor: {
@@ -148,6 +161,11 @@ export class ConfigurationManager {
             rotatePattern: 'YYYY-MM-DD',
             permissions: 0o644,
             compress: false,
+            retention: {
+              enabled: true,
+              days: 90, // Keep logs longer in production
+              checkInterval: 12 * 60 * 60 * 1000, // Check twice daily
+            },
           },
         },
         monitor: {
@@ -171,6 +189,11 @@ export class ConfigurationManager {
             rotatePattern: 'YYYY-MM-DD',
             permissions: 0o644,
             compress: false,
+            retention: {
+              enabled: true,
+              days: 90, // Keep logs longer in production
+              checkInterval: 12 * 60 * 60 * 1000, // Check twice daily
+            },
           },
         },
         monitor: {
@@ -192,7 +215,6 @@ export class ConfigurationManager {
       monitor: {
         ...baseConfig.monitor,
         ...envConfig.monitor,
-        ...customConfig.monitor,
       },
       errorTracker: {
         ...baseConfig.errorTracker,
@@ -205,11 +227,9 @@ export class ConfigurationManager {
   private loadCustomConfig() {
     const customConfig: Partial<{
       logger: Partial<LoggerConfig>;
-      monitor: Partial<MonitorConfig>;
       errorTracker: Partial<ErrorTrackerConfig>;
     }> = {
       logger: {},
-      monitor: {},
       errorTracker: {},
     };
 
@@ -225,24 +245,12 @@ export class ConfigurationManager {
         | 'file'
       )[];
     }
-    if (process.env.MONITOR_ENABLED) {
-      customConfig.monitor!.enabled = process.env.MONITOR_ENABLED === 'true';
-    }
-    if (process.env.MONITOR_SAMPLE_RATE) {
-      customConfig.monitor!.sampleRate = parseFloat(
-        process.env.MONITOR_SAMPLE_RATE,
-      );
-    }
 
     return customConfig;
   }
 
   getLoggerConfig(): WinstonLoggerConfig {
     return this.config.logger;
-  }
-
-  getMonitorConfig(): MonitorConfig {
-    return this.config.monitor;
   }
 
   getErrorTrackerConfig(): ErrorTrackerConfig {
@@ -252,13 +260,11 @@ export class ConfigurationManager {
   updateConfig(
     updates: Partial<{
       logger: Partial<LoggerConfig>;
-      monitor: Partial<MonitorConfig>;
       errorTracker: Partial<ErrorTrackerConfig>;
     }>,
   ) {
     this.config = {
       logger: { ...this.config.logger, ...updates.logger },
-      monitor: { ...this.config.monitor, ...updates.monitor },
       errorTracker: { ...this.config.errorTracker, ...updates.errorTracker },
     };
   }

@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['host.docker.internal:3001']
+
+  - job_name: 'skills-service'
+    static_configs:
+      - targets: ['host.docker.internal:3002']
+
+  - job_name: 'learning-service'
+    static_configs:
+      - targets: ['host.docker.internal:3003']
+
+  - job_name: 'email-service'
+    static_configs:
+      - targets: ['host.docker.internal:3005']
+
+  - job_name: 'event-proceesses-service'
+    static_configs:
+      - targets: ['host.docker.internal:3006']
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
