@@ -1,5 +1,5 @@
 // Importing necessary modules for authentication, Next.js server-side session, and fetch helper function.
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/lib/api/auth';
 import { getServerSession } from 'next-auth/next';
 import { FetchApiResponse } from '../types';
 import fetcher from './fetch-data';

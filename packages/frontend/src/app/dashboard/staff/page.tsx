@@ -1,8 +1,8 @@
+import StaffDashboard from '@/components/dashboard/StaffDashboard';
+import { authOptions } from '@/lib/api/auth';
+import { logger } from '@/lib/utils';
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
-import StaffDashboard from '@/components/dashboard/StaffDashboard';
-import { logger } from '@/lib/utils';
 
 export default async function StaffDashboardPage() {
   const session = await getServerSession(authOptions);
