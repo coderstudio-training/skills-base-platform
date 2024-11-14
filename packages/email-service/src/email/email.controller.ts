@@ -3,51 +3,56 @@ import {
   Body,
   Controller,
   Post,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  JwtAuthGuard,
-  LoggingInterceptor,
-  Roles,
-  RolesGuard,
-  TransformInterceptor,
-  UserRole,
-} from '@skills-base/shared';
-import { EmailDto } from './dto/email.dto';
+import { Logger, LoggingInterceptor } from '@skills-base/shared';
+import { GrafanaWebhookPayload } from '../interfaces/grafana-webhook.interface';
 import { EmailService } from './email.service';
 
 @Controller('email')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(LoggingInterceptor, TransformInterceptor)
+@UseInterceptors(LoggingInterceptor)
 export class EmailController {
-  constructor(private emailService: EmailService) {}
+  constructor(
+    private emailService: EmailService,
+    private readonly logger: Logger,
+  ) {}
 
-  @Post('send-success')
-  @Roles(UserRole.ADMIN)
-  async sendSuccessEmail(
-    @Body() emailDto: EmailDto,
+  @Post('grafananotif')
+  async handleGrafanaAlert(
+    @Body() webhook: GrafanaWebhookPayload,
   ): Promise<{ message: string }> {
-    const { workflowName } = emailDto;
-    try {
-      await this.emailService.sendSuccessEmail(workflowName);
-      return { message: 'Success email sent successfully' };
-    } catch {
-      throw new BadRequestException('Failed to send success email.');
-    }
-  }
+    this.logger.info('Received Grafana alert webhook', {
+      title: webhook.title,
+      status: webhook.status,
+      alertCount: webhook.alerts.length,
+    });
 
-  @Post('send-error')
-  @Roles(UserRole.ADMIN)
-  async sendErrorEmail(
-    @Body() emailDto: EmailDto,
-  ): Promise<{ message: string }> {
-    const { workflowName } = emailDto;
     try {
-      await this.emailService.sendErrorEmail(workflowName);
-      return { message: 'Error email sent successfully' };
-    } catch {
-      throw new BadRequestException('Failed to send fail email.');
+      const firstAlert = webhook.alerts[0];
+      const alertData = {
+        alert: webhook.title || firstAlert.labels.alertname,
+        value: firstAlert.valueString || webhook.state,
+        description:
+          webhook.commonAnnotations.summary ||
+          firstAlert.annotations.description ||
+          webhook.message,
+        status: webhook.status,
+        startsAt: firstAlert.startsAt,
+        instance: firstAlert.labels.instance,
+        silenceUrl: firstAlert.silenceURL,
+        viewUrl: firstAlert.dashboardURL || webhook.externalURL,
+      };
+
+      this.logger.debug('Processed alert data', { alertData });
+
+      await this.emailService.sendGrafanaAlert(alertData);
+      return { message: 'Grafana alert email sent successfully' };
+    } catch (error) {
+      this.logger.error('Failed to process Grafana webhook', {
+        error: error instanceof Error ? error.message : String(error),
+        webhookTitle: webhook.title,
+      });
+      throw new BadRequestException('Failed to process Grafana alert.');
     }
   }
 }

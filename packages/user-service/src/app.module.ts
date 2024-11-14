@@ -42,7 +42,7 @@ const SERVICE_NAME = 'user_service';
     }),
     SecurityModule.forRoot({
       rateLimit: {
-        enabled: true,
+        enabled: false,
         windowMs: 15 * 60 * 1000,
         max: 100,
         skipPaths: ['/metrics'],

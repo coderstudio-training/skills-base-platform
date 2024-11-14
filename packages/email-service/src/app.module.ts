@@ -1,4 +1,5 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+// src/app.module.ts
+import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtStrategy, LoggerMiddleware } from '@skills-base/shared';
 import { EmailModule } from './email/email.module';
@@ -10,7 +11,10 @@ import { EmailModule } from './email/email.module';
     }),
     EmailModule,
   ],
-  providers: [JwtStrategy],
+  providers: [
+    JwtStrategy,
+    Logger, // Add Logger as a global provider
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

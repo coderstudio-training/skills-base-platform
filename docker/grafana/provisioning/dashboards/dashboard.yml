@@ -1,7 +1,8 @@
+# ./grafana/provisioning/dashboards/dashboards.yml
 apiVersion: 1
 
 providers:
-  - name: 'Default'
+  - name: 'Dashboards'
     orgId: 1
     folder: ''
     folderUid: ''
@@ -9,6 +10,7 @@ providers:
     disableDeletion: false
     updateIntervalSeconds: 30
     allowUiUpdates: true
+    editable: true
     options:
-      path: /etc/grafana/provisioning/dashboards
+      path: /etc/grafana/provisioning/dashboards/definitions
       foldersFromFilesStructure: true
