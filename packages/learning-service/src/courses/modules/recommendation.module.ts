@@ -2,6 +2,10 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RecommendationController } from '../controllers/recommendation.controller';
 import { Course, CourseSchema } from '../entity/courses.entity';
+import {
+  RequiredSkills,
+  RequiredSkillsSchema,
+} from '../entity/required-skills.entity';
 import { SkillGap, SkillGapSchema } from '../entity/skill-gap.entity';
 import { RecommendationService } from '../services/recommendation.service';
 
@@ -16,7 +20,7 @@ import { RecommendationService } from '../services/recommendation.service';
       },
     ]),
 
-    // Mongoose connection for SkillGap (MONGODB_SKILLS_URI connection)
+    // Mongoose connection for SkillGap and RequiredSkills (MONGODB_SKILLS_URI connection)
     MongooseModule.forFeature(
       [
         {
@@ -24,8 +28,13 @@ import { RecommendationService } from '../services/recommendation.service';
           schema: SkillGapSchema,
           collection: 'Capability_gapAssessments',
         },
+        {
+          name: RequiredSkills.name,
+          schema: RequiredSkillsSchema,
+          collection: 'capabilityRequiredSkills',
+        },
       ],
-      'MONGODB_SKILLS_URI', // Ensure this connection name matches the one configured in AppModule
+      'MONGODB_SKILLS_URI',
     ),
   ],
   controllers: [RecommendationController],

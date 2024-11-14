@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CareerLevel } from '../career-level.enum';
 import {
   CourseDetailsDto,
   RecommendationDto,
   RecommendationResponseDto,
 } from '../dto/recommendation.dto';
 import { Course } from '../entity/courses.entity';
+import { RequiredSkills } from '../entity/required-skills.entity';
 import { SkillGap } from '../entity/skill-gap.entity';
 
 @Injectable()
@@ -18,32 +18,37 @@ export class RecommendationService {
     @InjectModel(Course.name) private readonly courseModel: Model<Course>,
     @InjectModel(SkillGap.name, 'MONGODB_SKILLS_URI')
     private readonly skillGapsModel: Model<SkillGap>,
+    @InjectModel(RequiredSkills.name, 'MONGODB_SKILLS_URI')
+    private readonly requiredSkillsModel: Model<RequiredSkills>,
   ) {}
 
   async getRecommendations(email: string): Promise<RecommendationResponseDto> {
     try {
-      const skillGap = await this.skillGapsModel
-        .findOne({ emailAddress: { $regex: new RegExp(`^${email}$`, 'i') } })
-        .sort({ computedDate: -1 })
-        .exec();
-
+      // Step 1: Get skill gap data
+      const skillGap = await this.findLatestSkillGap(email);
       if (!skillGap) {
-        this.logger.warn(`No skill gaps found for email: ${email}`);
-        return {
-          success: false,
-          employeeName: '',
-          careerLevel: '',
-          recommendations: [],
-          message: 'No skill gap data found for the employee',
-          generatedDate: new Date(),
-        };
+        return this.createEmptyResponse();
       }
 
-      const recommendations = await this.generateRecommendations(
-        skillGap.skillGaps,
+      // Step 2: Get required skills for career level
+      const requiredSkills = await this.findRequiredSkills(
         skillGap.careerLevel,
       );
+      if (!requiredSkills) {
+        this.logger.warn(
+          `No required skills found for career level: ${skillGap.careerLevel}`,
+        );
+        return this.createEmptyResponse();
+      }
 
+      // Step 3: Find matching courses for each skill gap
+      const recommendations = await this.processSkillGaps(
+        skillGap.skillGaps,
+        skillGap.careerLevel,
+        requiredSkills.requiredSkills,
+      );
+
+      // Step 4: Return combined response
       return {
         success: true,
         employeeName: skillGap.name,
@@ -57,104 +62,124 @@ export class RecommendationService {
     }
   }
 
-  private async generateRecommendations(
-    skillGaps: Record<string, number>,
+  private async findLatestSkillGap(email: string): Promise<SkillGap | null> {
+    const skillGap = await this.skillGapsModel
+      .findOne({ emailAddress: { $regex: new RegExp(`^${email}$`, 'i') } })
+      .sort({ computedDate: -1 })
+      .exec();
+
+    if (!skillGap) {
+      this.logger.warn(`No skill gaps found for email: ${email}`);
+      return null;
+    }
+
+    return skillGap;
+  }
+
+  private async findRequiredSkills(
     careerLevel: string,
+  ): Promise<RequiredSkills | null> {
+    this.logger.debug(
+      `Finding required skills for career level: ${careerLevel}`,
+    );
+    const requiredSkills = await this.requiredSkillsModel
+      .findOne({
+        careerLevel,
+        capability: 'QA', //  make this configurable
+      })
+      .exec();
+
+    if (requiredSkills) {
+      this.logger.debug(
+        `Found required skills: ${JSON.stringify(requiredSkills.requiredSkills)}`,
+      );
+    } else {
+      this.logger.warn(
+        `No required skills found for career level: ${careerLevel}`,
+      );
+    }
+
+    return requiredSkills;
+  }
+
+  private async processSkillGaps(
+    skillGaps: Record<string, number>, // Current Skills
+    careerLevel: string, // Career Level
+    requiredSkills: Record<string, number>, // Required Skills
   ): Promise<RecommendationDto[]> {
     const recommendations: RecommendationDto[] = [];
 
     for (const [skillName, gap] of Object.entries(skillGaps)) {
-      const formattedSkillName = this.formatSkillName(skillName);
-      this.logger.debug(`Processing ${skillName} with gap ${gap}`);
+      try {
+        const formattedSkillName = this.formatSkillName(skillName);
+        this.logger.debug(`Processing ${formattedSkillName} with gap ${gap}`);
 
-      // Find matching course
-      const course = await this.findMatchingCourse(
-        formattedSkillName,
-        careerLevel,
-      );
+        // Get required level for this skill
+        const requiredLevel = requiredSkills[skillName];
 
-      if (course) {
-        this.logger.debug(`Found matching course: ${course.courseId}`);
-        const absGap = Math.abs(gap);
-        const currentLevel = course.requiredLevel - absGap;
+        if (requiredLevel !== undefined) {
+          this.logger.debug(
+            `Required level for ${skillName}: ${requiredLevel}`,
+          );
 
-        if (gap < 0) {
-          // Skill gap recommendation
-          recommendations.push({
-            skillName: formattedSkillName,
-            currentLevel: Number(currentLevel.toFixed(1)),
-            targetLevel: course.requiredLevel,
-            gap: gap,
-            type: 'skillGap',
-            course: this.formatCourseDetails(course, currentLevel),
-          });
-        } else if (gap > 0) {
-          // Promotion recommendation
-          recommendations.push({
-            skillName: formattedSkillName,
-            currentLevel: Number(currentLevel.toFixed(1)),
-            targetLevel: course.requiredLevel,
-            gap: gap,
-            type: 'promotion',
-            course: this.formatCourseDetails(course, currentLevel),
-          });
+          // Find matching course
+          const course = await this.findMatchingCourse(
+            formattedSkillName,
+            careerLevel,
+            requiredLevel,
+          );
+
+          if (course) {
+            const recommendation = await this.createRecommendation(
+              formattedSkillName,
+              gap,
+              course,
+            );
+            if (recommendation) {
+              recommendations.push(recommendation);
+            }
+          } else {
+            this.logger.debug(`No matching course found for ${skillName}`);
+          }
+        } else {
+          this.logger.debug(`No required level found for skill: ${skillName}`);
         }
+      } catch (error: any) {
+        this.logger.error(
+          `Error processing skill ${skillName}: ${error.message}`,
+        );
       }
     }
 
-    // Sort by absolute gap value
     return recommendations.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap));
-  }
-
-  private getRecommendedForValue(careerLevel: string): string {
-    switch (careerLevel) {
-      case CareerLevel.PROFESSIONAL_II:
-        return 'Current Level < 3';
-      case CareerLevel.PROFESSIONAL_III:
-        return 'Current Level < 4';
-      case CareerLevel.PROFESSIONAL_IV:
-        return 'Current Level < 5';
-      case CareerLevel.MANAGER_I:
-      case CareerLevel.MANAGER_II:
-      case CareerLevel.DIRECTOR_I:
-      case CareerLevel.DIRECTOR_II:
-      case CareerLevel.DIRECTOR_III:
-      case CareerLevel.DIRECTOR_IV:
-        return 'Current Level < 6';
-      default:
-        return 'Current Level < 5';
-    }
   }
 
   private async findMatchingCourse(
     skillName: string,
     careerLevel: string,
+    requiredLevel: number,
   ): Promise<Course | null> {
-    try {
-      // First, try to find any courses matching the skill name
-      const courses = await this.courseModel
-        .find({
-          skillName: {
-            $regex: skillName
-              .replace(/([A-Z])/g, ' $1')
-              .trim()
-              .replace(/\s+/g, '\\s+'),
-            $options: 'i',
-          },
-        })
-        .exec();
+    // Step 1: Try exact match with required level
+    const exactMatch = await this.findExactMatchCourse(
+      skillName,
+      careerLevel,
+      requiredLevel,
+    );
+    if (exactMatch) {
+      return exactMatch;
+    }
 
-      if (courses.length > 0) {
-        this.logger.debug(
-          'Sample course:',
-          JSON.stringify(courses[0], null, 2),
-        );
-      }
+    // Step 2: Try loose match if exact match fails
+    return this.findLooseMatchCourse(skillName, careerLevel);
+  }
 
-      // Then filter for career level and recommendedFor
-      const recommendedFor = this.getRecommendedForValue(careerLevel);
-
-      const query = {
+  private async findExactMatchCourse(
+    skillName: string,
+    careerLevel: string,
+    requiredLevel: number,
+  ): Promise<Course | null> {
+    return this.courseModel
+      .findOne({
         $and: [
           {
             skillName: {
@@ -166,53 +191,53 @@ export class RecommendationService {
             },
           },
           { careerLevel },
+          { requiredLevel },
+        ],
+      })
+      .exec();
+  }
+  // still optional
+  private async findLooseMatchCourse(
+    skillName: string,
+    careerLevel: string,
+  ): Promise<Course | null> {
+    return this.courseModel
+      .findOne({
+        $and: [
           {
-            fields: {
-              $elemMatch: {
-                name: 'recommendedFor',
-                value: recommendedFor,
-              },
+            skillName: {
+              $regex: skillName
+                .replace(/([A-Z])/g, ' $1')
+                .trim()
+                .replace(/\s+/g, '.*'),
+              $options: 'i',
             },
           },
+          { careerLevel },
         ],
+      })
+      .exec();
+  }
+
+  private async createRecommendation(
+    skillName: string,
+    gap: number,
+    course: Course,
+  ): Promise<RecommendationDto | null> {
+    const currentLevel = course.requiredLevel - Math.abs(gap);
+
+    if (gap !== 0) {
+      return {
+        skillName,
+        currentLevel: Number(currentLevel.toFixed(1)),
+        targetLevel: course.requiredLevel,
+        gap,
+        type: gap < 0 ? 'skillGap' : 'promotion',
+        course: this.formatCourseDetails(course, currentLevel),
       };
-
-      const course = await this.courseModel.findOne(query).exec();
-
-      if (!course) {
-        // Try looser matching if exact match fails
-        const looseQuery = {
-          $and: [
-            {
-              skillName: {
-                $regex: skillName
-                  .replace(/([A-Z])/g, ' $1')
-                  .trim()
-                  .replace(/\s+/g, '.*'),
-                $options: 'i',
-              },
-            },
-            { careerLevel },
-          ],
-        };
-
-        const looseCourse = await this.courseModel.findOne(looseQuery).exec();
-        if (looseCourse) {
-          this.logger.debug(
-            'Found course with loose matching:',
-            looseCourse.courseId,
-          );
-        }
-        return looseCourse;
-      }
-
-      return course;
-    } catch (error: any) {
-      this.logger.error(
-        `Error finding course for ${skillName}: ${error.message}`,
-      );
-      return null;
     }
+
+    return null;
   }
 
   private formatCourseDetails(
@@ -224,7 +249,9 @@ export class RecommendationService {
       provider: this.getFieldValue(course, 'provider'),
       duration: this.getFieldValue(course, 'duration'),
       format: this.getFieldValue(course, 'format'),
-      learningPath: `This course will help you progress from level ${currentLevel.toFixed(1)} to level ${course.requiredLevel}, which is appropriate for your career level.`,
+      learningPath: `This course will help you progress from level ${currentLevel.toFixed(
+        1,
+      )} to level ${course.requiredLevel}, which is appropriate for your career level.`,
       learningObjectives: this.getFieldValue(course, 'learningObjectives')
         .split(',')
         .map((obj) => obj.trim()),
@@ -239,15 +266,24 @@ export class RecommendationService {
   }
 
   private formatSkillName(camelCase: string): string {
-    // Handle special cases first
     const formatted = camelCase
       .replace(/QE/g, 'Quality Engineering')
       .replace(/QA/g, 'Quality Assurance');
 
-    // Then handle normal camelCase
     return formatted
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, (str) => str.toUpperCase())
       .trim();
+  }
+
+  private createEmptyResponse(): RecommendationResponseDto {
+    return {
+      success: false,
+      employeeName: '',
+      careerLevel: '',
+      recommendations: [],
+      message: 'No skill gap data found for the employee',
+      generatedDate: new Date(),
+    };
   }
 }
