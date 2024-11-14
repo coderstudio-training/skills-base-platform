@@ -36,35 +36,22 @@ export interface ApiClientOptions {
 // Assess whether these interfaces are required | Update role if Role[]
 export interface AuthTokens {
   accessToken: string;
-  roles: Roles;
+  roles: Roles[];
 }
 
 export interface GoogleUser {
   id: string;
   name: string;
   email: string;
-  accessToken?: string;
-  image: string;
+  image?: string;
+  accessToken: string;
   role: Roles;
-}
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
 }
 
 export interface AuthState {
   user: GoogleUser | null;
-  role: Roles;
+  role: Roles[];
   isAuthenticated: boolean;
-}
-
-export interface JwtPayloadCUstom {
-  email: string;
-  sub: string;
-  role: Roles;
-  exp: number;
-  accessToken: string;
 }
 
 // Type Exports

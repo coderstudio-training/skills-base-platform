@@ -7,7 +7,8 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
-
+import { authConfig, rolePermissions } from './config';
+import { AuthState, Permission, RolePermissions, Roles } from './types';
 logger.log('Starting to load auth options in lib/auth.ts...');
 
 export const authOptions: NextAuthOptions = {
@@ -142,3 +143,41 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   debug: true,
 };
+
+export async function getAuthHeaders(): Promise<HeadersInit> {
+  const session = await getSession();
+  return session?.user?.accessToken ? { Authorization: `Bearer ${session.user.accessToken}` } : {};
+}
+
+export async function getAuthState(): Promise<AuthState> {
+  const session = await getSession();
+
+  if (!session) return { isAuthenticated: false, user: null, role: [] };
+
+  return {
+    isAuthenticated: !!session.user?.accessToken,
+    user: session.user || null,
+    role: session.user ? [session.user.role] : [],
+  };
+}
+
+export async function getRoles(): Promise<Roles[]> {
+  const session = await getSession();
+  return session?.user?.role ? [session.user.role] : [];
+}
+
+export async function hasPermission(permission: Permission): Promise<boolean> {
+  const roles = await getRoles();
+
+  if (!roles.length) return false;
+
+  return roles.some(role => (rolePermissions as RolePermissions)[role][permission]);
+}
+
+export async function canAccessRoutes(route: string): Promise<boolean> {
+  const roles = await getRoles();
+
+  if (!roles.length) return false;
+
+  return roles.some(role => authConfig.routes[role].includes(route));
+}

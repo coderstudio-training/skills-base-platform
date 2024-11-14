@@ -1,5 +1,5 @@
-import { getSession } from 'next-auth/react'; // Import getSession to fetch token
 import { cache } from 'react';
+import { getAuthHeaders } from './auth';
 import { errorMessages, serviceConfigs } from './config';
 import type { ApiClientOptions, ApiConfig, ApiError, ApiResponse, FetchOptions } from './types';
 
@@ -10,14 +10,6 @@ export class ApiClient {
   constructor(serviceName: keyof typeof serviceConfigs) {
     this.config = serviceConfigs[serviceName];
     this.baseUrl = this.config.baseUrl;
-  }
-
-  // Helper function to get auth headers
-  private async getAuthHeaders(): Promise<HeadersInit> {
-    const session = await getSession();
-    return session?.user?.accessToken
-      ? { Authorization: `Bearer ${session.user.accessToken}` }
-      : {};
   }
 
   private getErrorMessage(status: number): string {
@@ -81,7 +73,7 @@ export class ApiClient {
       const url = new URL(endpoint, this.baseUrl);
 
       // Apply headers with token if required
-      const authHeaders = requiresAuth ? await this.getAuthHeaders() : {};
+      const authHeaders = requiresAuth ? await getAuthHeaders() : {};
       const requestInit: RequestInit = {
         headers: {
           ...this.config.defaultHeaders,
@@ -133,7 +125,7 @@ export class ApiClient {
     options?: ApiClientOptions & { requiresAuth?: boolean },
   ): Promise<ApiResponse<T>> {
     const url = new URL(endpoint, this.baseUrl);
-    const authHeaders = options?.requiresAuth !== false ? await this.getAuthHeaders() : {};
+    const authHeaders = options?.requiresAuth !== false ? await getAuthHeaders() : {};
 
     const requestInit: RequestInit = {
       method: 'POST',
@@ -166,7 +158,7 @@ export class ApiClient {
     options?: ApiClientOptions & { requiresAuth?: boolean },
   ): Promise<ApiResponse<T>> {
     const url = new URL(endpoint, this.baseUrl);
-    const authHeaders = options?.requiresAuth !== false ? await this.getAuthHeaders() : {};
+    const authHeaders = options?.requiresAuth !== false ? await getAuthHeaders() : {};
 
     const requestInit: RequestInit = {
       method: 'PUT',
@@ -198,7 +190,7 @@ export class ApiClient {
     options?: ApiClientOptions & { requiresAuth?: boolean },
   ): Promise<ApiResponse<T>> {
     const url = new URL(endpoint, this.baseUrl);
-    const authHeaders = options?.requiresAuth !== false ? await this.getAuthHeaders() : {};
+    const authHeaders = options?.requiresAuth !== false ? await getAuthHeaders() : {};
 
     const requestInit: RequestInit = {
       method: 'POST',

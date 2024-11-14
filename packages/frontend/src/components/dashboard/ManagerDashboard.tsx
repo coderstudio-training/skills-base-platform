@@ -51,7 +51,7 @@ export default function ManagerDashboard() {
       try {
         setLoading(true);
         const token = session?.user?.accessToken;
-        console.log(`/api/employees/manager/${encodeURIComponent(session?.user?.name || '')}`);
+
         const response = await fetch(
           `/api/employees/manager/${encodeURIComponent(session?.user?.name || '')}`,
           {
