@@ -3,7 +3,7 @@ import { ApiConfig, RolePermissions } from './types';
 const timeout = 10000;
 const version = 'v1';
 const default_headers = {
-  'Content-Type': 'applicaiton/json',
+  'Content-Type': 'application/json',
 };
 
 export const serviceConfigs: Record<string, ApiConfig> = {
@@ -37,7 +37,8 @@ export const cacheConfig = {
     skills: 'skills',
     learning: 'learning',
     assessments: 'assessments',
-    teams: 'teams',
+    manager: 'manager',
+    admin: 'admin',
   },
 };
 
@@ -110,15 +111,11 @@ export const rolePermissions: RolePermissions = {
 
 // to be updated
 export const authConfig = {
-  tokenStorageKey: 'sb_auth_tokens',
-  userStorageKey: 'sb_user',
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   endpoints: {
     googleAuth: '/auth/google',
     login: '/auth/login',
-    register: '/auth/register',
     logout: '/auth/logout',
-    refresh: '/auth/refresh',
   },
   // Role-based routes configuration
   routes: {

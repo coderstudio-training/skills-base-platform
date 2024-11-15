@@ -76,4 +76,3 @@ export type RolePermissions = {
   };
 };
 export type Roles = 'staff' | 'manager' | 'admin';
-export type HttpMethods = 'GET' | 'POST' | 'PUT' | 'DELETE';
