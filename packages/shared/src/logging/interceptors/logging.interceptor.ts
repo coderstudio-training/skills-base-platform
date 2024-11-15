@@ -34,8 +34,6 @@ export class LoggingInterceptor implements NestInterceptor {
       userId: (request.user as any)?.id,
       userAgent: request.get('user-agent'),
       ip: request.ip,
-      query: request.query,
-      params: request.params,
     };
   }
 
@@ -74,16 +72,6 @@ export class LoggingInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
     const requestContext = this.getRequestContext(request);
-
-    // Log incoming request
-    this.logger.info(
-      `Incoming ${requestContext.method} ${requestContext.path}`,
-      {
-        type: 'request.incoming',
-        ...requestContext,
-        timestamp: new Date().toISOString(),
-      },
-    );
 
     return next.handle().pipe(
       tap(() => {

@@ -1,84 +1,794 @@
 apiVersion: 1
 groups:
-    - orgId: 1
-      name: application_metrics
-      folder: skills_base_metrics
-      interval: 10s
-      rules:
-        - uid: de3vzibfj82yoa
-          title: HTTP Error Rate High
-          condition: A
-          data:
-            - refId: A
-              relativeTimeRange:
-                from: 300
-                to: 0
-              datasourceUid: PBFA97CFB590B2093
-              model:
-                editorMode: code
-                expr: "sum(rate(user_service_http_requests_total{status=~\"4.*\"}[1m])) \n      / \n      sum(rate(user_service_http_requests_total[5m])) * 100"
-                instant: true
-                intervalMs: 1000
-                legendFormat: __auto
-                maxDataPoints: 43200
-                range: false
-                refId: A
-            - refId: B
-              datasourceUid: __expr__
-              model:
-                conditions:
-                    - evaluator:
-                        params: []
-                        type: gt
-                      operator:
-                        type: and
-                      query:
-                        params:
-                            - B
-                      reducer:
-                        params: []
-                        type: last
-                      type: query
-                datasource:
-                    type: __expr__
-                    uid: __expr__
-                expression: A
-                intervalMs: 1000
-                maxDataPoints: 43200
-                reducer: last
-                refId: B
-                type: reduce
-            - refId: C
-              datasourceUid: __expr__
-              model:
-                conditions:
-                    - evaluator:
-                        params:
-                            - 0
-                        type: gt
-                      operator:
-                        type: and
-                      query:
-                        params:
-                            - C
-                      reducer:
-                        params: []
-                        type: last
-                      type: query
-                datasource:
-                    type: __expr__
-                    uid: __expr__
-                expression: B
-                intervalMs: 1000
-                maxDataPoints: 43200
-                refId: C
-                type: threshold
-          noDataState: NoData
-          execErrState: Error
-          for: 10s
-          annotations:
-            description: High Error Rate
-            summary: High Error Rate
-          isPaused: false
-          notification_settings:
-            receiver: skills_base_email_service
+  - orgId: 1
+    name: http_error_metrics
+    folder: service_metrics
+    interval: 10s
+    rules:
+      # 400 Bad Request Rate Alert
+      - uid: bad_request_alert
+        title: High Bad Request (400) Error Rate
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                sum(rate({__name__=~".*_http_requests_total", status="400"}[1m])) by (service)
+                /
+                sum(rate({__name__=~".*_http_requests_total"}[1m])) by (service) * 100
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [5] # Alert if error rate exceeds 5%
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} has a high rate of 400 Bad Request errors (>5%)'
+          summary: High Bad Request Rate
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # 401 Unauthorized Rate Alert
+      - uid: unauthorized_alert
+        title: High Unauthorized (401) Error Rate
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                sum(rate({__name__=~".*_http_requests_total", status="401"}[1m])) by (service)
+                /
+                sum(rate({__name__=~".*_http_requests_total"}[1m])) by (service) * 100
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [10] # Alert if error rate exceeds 10%
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} has a high rate of 401 Unauthorized errors (>10%)'
+          summary: High Unauthorized Rate
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # 404 Not Found Rate Alert
+      - uid: not_found_alert
+        title: High Not Found (404) Error Rate
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                sum(rate({__name__=~".*_http_requests_total", status="404"}[1m])) by (service)
+                /
+                sum(rate({__name__=~".*_http_requests_total"}[1m])) by (service) * 100
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [15] # Alert if error rate exceeds 15%
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} has a high rate of 404 Not Found errors (>15%)'
+          summary: High Not Found Rate
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # 500 Internal Server Error Rate Alert
+      - uid: server_error_alert
+        title: High Server Error (500) Rate
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                sum(rate({__name__=~".*_http_requests_total", status="500"}[1m])) by (service)
+                /
+                sum(rate({__name__=~".*_http_requests_total"}[1m])) by (service) * 100
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [1] # Alert if error rate exceeds 1%
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} has a high rate of 500 Internal Server errors (>1%)'
+          summary: High Server Error Rate
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # HTTP Latency Alerts
+      - uid: http_latency_alert
+        title: High HTTP Request Latency
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                histogram_quantile(0.95, sum by (le, service, path) (rate({__name__=~".*_http_request_duration_seconds_bucket"}[1m]))) > 1
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}} - {{path}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [1] # Alert if 95th percentile latency > 1s
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} endpoint {{ $labels.path }} has high latency (95th percentile > 1s)'
+          summary: High Request Latency
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # CPU Usage Alert
+      - uid: high_cpu_usage
+        title: High CPU Usage
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                sum(rate({__name__=~".*_cpu_usage_seconds_total"}[1m])) by (service) * 100
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [80] # Alert if CPU usage > 80%
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} CPU usage is above 80%'
+          summary: High CPU Usage
+        isPaused: false
+
+      # Memory Usage Alert
+      - uid: high_memory_usage
+        title: High Memory Usage
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                {__name__=~".*_memory_usage_bytes",type="heapUsed"} / 
+                {__name__=~".*_memory_usage_bytes",type="heapTotal"} * 100
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [85] # Alert if heap usage > 85%
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} memory usage is above 85% of heap'
+          summary: High Memory Usage
+        isPaused: false
+
+      # Event Loop Lag Alert
+      - uid: event_loop_lag
+        title: High Event Loop Lag
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                histogram_quantile(0.95, sum by (le) (rate({__name__=~".*_event_loop_lag_seconds_bucket"}[1m])))
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [0.1] # Alert if event loop lag > 100ms
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} event loop lag is high (>100ms)'
+          summary: High Event Loop Lag
+        isPaused: false
+
+      # Garbage Collection Duration Alert
+      - uid: gc_duration
+        title: High Garbage Collection Time
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                sum(rate({__name__=~".*_nodejs_gc_duration_seconds_sum"}[1m])) by (service) /
+                sum(rate({__name__=~".*_nodejs_gc_duration_seconds_count"}[1m])) by (service)
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [0.1] # Alert if average GC duration > 100ms
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} is spending too much time in garbage collection'
+          summary: High GC Duration
+        isPaused: false
+
+      # 501 Not Implemented Alert
+      - uid: not_implemented_alert
+        title: Not Implemented (501) Errors Detected
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                # Rate of 501 errors per endpoint
+                sum(rate({__name__=~".*_http_requests_total", status="501"}[1m])) by (service, path)
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}} - {{path}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [0.1] # Alert if more than 0.1 errors per second (rare error)
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} endpoint {{ $labels.path }} is returning 501 Not Implemented errors. This indicates a requested feature is not implemented or misconfigured.'
+          summary: Not Implemented Errors Detected
+          runbook_url: 'https://your-runbook-url/501-errors'
+        labels:
+          severity: warning
+          category: implementation
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # 502 Bad Gateway Alert
+      - uid: bad_gateway_alert
+        title: Bad Gateway (502) Errors Detected
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                # Calculate error rate percentage for 502s
+                sum(rate({__name__=~".*_http_requests_total", status="502"}[2m])) by (service, path)
+                /
+                sum(rate({__name__=~".*_http_requests_total"}[2m])) by (service, path) * 100
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}} - {{path}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [5] # Alert if more than 5% of requests are 502s
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s # Shorter window as this is more critical
+        annotations:
+          description: 'Service {{ $labels.service }} endpoint {{ $labels.path }} is experiencing Bad Gateway errors (>5%). This might indicate issues with upstream services or proxy configuration.'
+          summary: Bad Gateway Errors Detected
+          runbook_url: 'https://your-runbook-url/502-errors'
+        labels:
+          severity: critical
+          category: connectivity
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # 503 Service Unavailable Alert
+      - uid: service_unavailable_alert
+        title: Service Unavailable (503) Errors Detected
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                # Calculate error rate percentage for 503s
+                sum(rate({__name__=~".*_http_requests_total", status="503"}[2m])) by (service, path)
+                /
+                sum(rate({__name__=~".*_http_requests_total"}[2m])) by (service, path) * 100
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}} - {{path}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [3] # Alert if more than 3% of requests are 503s
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s # Very short window as this is critical
+        annotations:
+          description: 'Service {{ $labels.service }} endpoint {{ $labels.path }} is returning Service Unavailable errors (>3%). This indicates the service is overloaded or temporarily unavailable.'
+          summary: Service Unavailable Errors Detected
+          runbook_url: 'https://your-runbook-url/503-errors'
+        labels:
+          severity: critical
+          category: availability
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # Combined Server Error Rate Alert
+      - uid: combined_server_error_alert
+        title: High Combined Server Error Rate
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                # Calculate total server error rate
+                sum(rate({__name__=~".*_http_requests_total", status=~"501|502|503"}[1m])) by (service)
+                /
+                sum(rate({__name__=~".*_http_requests_total"}[1m])) by (service) * 100
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{service}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [5] # Alert if combined error rate exceeds 5%
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 10s
+        annotations:
+          description: 'Service {{ $labels.service }} is experiencing a high rate of server errors (501s, 502s, 503s). This indicates severe service issues.'
+          summary: High Server Error Rate
+          runbook_url: 'https://your-runbook-url/server-errors'
+        labels:
+          severity: critical
+          category: availability
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service

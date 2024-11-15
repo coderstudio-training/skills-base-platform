@@ -1,7 +1,5 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Logger } from '.';
-import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ConfigurationManager } from './logging.config';
 
 export interface LoggingModuleOptions {
@@ -33,10 +31,10 @@ export class LoggingModule {
         },
       },
       // Logging interceptor
-      {
-        provide: APP_INTERCEPTOR,
-        useClass: LoggingInterceptor,
-      },
+      // {
+      //   provide: APP_INTERCEPTOR,
+      //   useClass: LoggingInterceptor,
+      // },
     ];
 
     return {

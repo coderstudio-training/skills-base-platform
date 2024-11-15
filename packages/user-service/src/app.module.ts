@@ -1,17 +1,11 @@
 // src/app.module.ts
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_INTERCEPTOR } from '@nestjs/core';
 import {
   DatabaseModule,
-  Logger,
-  LoggerMiddleware,
-  LoggingInterceptor,
   LoggingModule,
   MonitoringModule,
-  SecurityMiddleware,
   SecurityModule,
-  TransformInterceptor,
 } from '@skills-base/shared';
 import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './employees/employees.module';
@@ -65,29 +59,5 @@ const SERVICE_NAME = 'user_service';
     AuthModule,
     EmployeesModule,
   ],
-  providers: [
-    {
-      provide: Logger,
-      useFactory: () => {
-        return new Logger(SERVICE_NAME);
-      },
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useFactory: (logger: Logger) => {
-        return new LoggingInterceptor(logger);
-      },
-      inject: [Logger],
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,
-    },
-  ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    // Apply both security and logger middleware to all routes
-    consumer.apply(SecurityMiddleware, LoggerMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}

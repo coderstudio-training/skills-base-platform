@@ -97,7 +97,7 @@ export const createConsoleFormat = () => {
       : '';
 
     // Build the base log line with service and job info
-    let output = `${formattedTime} ${formattedLevel} ${formattedService} ${formattedJob} ${symbol} ${
+    let output = `${formattedTime} ${formattedLevel} ${formattedService} ${formattedJob} ${symbol}  ${
       style.text
     }${message}${colors.reset} ${correlationPart}\n`;
 

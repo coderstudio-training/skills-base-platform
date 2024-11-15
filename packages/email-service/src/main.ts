@@ -1,34 +1,57 @@
-// src/main.ts
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { HttpExceptionFilter, TransformInterceptor } from '@skills-base/shared';
+import {
+  ApplicationMetricsService,
+  HttpExceptionFilter,
+  Logger,
+  MetricsInterceptor,
+  TransformInterceptor,
+} from '@skills-base/shared';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const logger = new Logger('Bootstrap');
 
+  // Global pipes and filters
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
-  app.useGlobalInterceptors(new TransformInterceptor());
 
-  // Update CORS configuration to include Grafana's origin
+  // Create logger and metrics service instances
+  const logger = new Logger('email-service-main');
+  const metricsService = new ApplicationMetricsService('email_service');
+
+  // Global interceptors for monitoring and logging
+  app.useGlobalInterceptors(
+    new MetricsInterceptor(metricsService, app.get('Reflector')),
+    new TransformInterceptor(),
+  );
+
+  // CORS configuration
   app.enableCors({
     origin: [
       'http://localhost:3005',
-      'http://localhost:3000', // Assuming Grafana runs on default port
+      'http://localhost:3000',
       'https://yourdomain.com',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   });
 
+  // Security middleware
   app.use(helmet());
 
   const port = process.env.PORT || 3005;
   await app.listen(port);
 
-  logger.log(`Email service is running on: http://localhost:${port}`);
+  logger.info(`Email service is running on: http://localhost:${port}`);
+  logger.info(
+    `Metrics endpoint available at: http://localhost:${port}/metrics`,
+  );
 }
-bootstrap();
+
+bootstrap().catch((error) => {
+  const logger = new Logger('Bootstrap');
+  logger.error('Failed to start application', { error });
+  process.exit(1);
+});

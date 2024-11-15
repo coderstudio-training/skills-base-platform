@@ -5,7 +5,6 @@ import {
   ApplicationMetricsService,
   HttpExceptionFilter,
   Logger,
-  LoggingInterceptor,
   MetricsInterceptor,
   TransformInterceptor,
 } from '@skills-base/shared';
@@ -24,7 +23,7 @@ async function bootstrap() {
   app.use(json({ limit: '10mb' }));
 
   // Create logger and metrics service instances
-  const logger = new Logger('HTTP');
+  const logger = new Logger('user-service-main');
   const metricsService = new ApplicationMetricsService('user_service');
 
   // Global pipes and filters
@@ -33,7 +32,6 @@ async function bootstrap() {
 
   // Global interceptors with their required dependencies
   app.useGlobalInterceptors(
-    new LoggingInterceptor(logger),
     new MetricsInterceptor(metricsService, app.get('Reflector')),
     new TransformInterceptor(),
   );
