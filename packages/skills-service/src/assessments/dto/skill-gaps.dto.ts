@@ -32,7 +32,7 @@ export class SkillGapsDto {
   skillGaps!: Record<string, number>; // Use Record<string, number> as the Map equivalent
 }
 
-export class BulkSkillGapsDto {
+export class EmpSkillGapsDto {
   @ValidateNested({ each: true })
   @Type(() => SkillGapsDto)
   data!: SkillGapsDto[];

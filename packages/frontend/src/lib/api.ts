@@ -6,6 +6,94 @@ import * as ApiTypes from '@/types/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_USER_SERVICE_URL;
 
+export interface SkillGapsData {
+  emailAddress: string;
+  nameOfResource: string;
+  careerLevel: string;
+  capability: string;
+  skillAverages: Record<string, number>;
+  skillGaps: Record<string, number>;
+}
+
+// For the user/gap assessment data
+export interface SkillGaps {
+  emailAddress: string;
+  nameOfResource: string;
+  careerLevel: string;
+  capability: string;
+  skillAverages: Record<string, number>;
+  skillGaps: Record<string, number>;
+}
+
+// For the skills assessment data
+export interface Skills {
+  skills: Record<string, number>;
+}
+
+// For combining self and manager assessments
+export interface Assessments {
+  selfSkills?: Skills;
+  managerSkills?: Skills;
+}
+
+// Main response interface
+export interface EmployeeSkillsResponse {
+  user: SkillGaps;
+  assessments?: Assessments;
+}
+
+export class ApiError extends Error {
+  constructor(
+    public statusCode: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+export const skillGapsApi = {
+  async getEmployeeSkillGaps(email: string): Promise<SkillGapsData> {
+    const response = await fetch(`/api/skills/gaps?email=${encodeURIComponent(email)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new ApiError(404, 'Skill gaps data not found for this employee.');
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new ApiError(response.status, errorData.message || 'Failed to fetch skill gaps data');
+    }
+
+    return response.json();
+  },
+};
+
+export const userSkillsApi = {
+  async getUserSkillsData(email: string): Promise<EmployeeSkillsResponse> {
+    const response = await fetch(`/api/skills/user-data?email=${encodeURIComponent(email)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new ApiError(404, 'Skill data not found for this user.');
+      }
+      const errorData = await response.json().catch(() => ({}));
+      throw new ApiError(response.status, errorData.message || "Failed to fetch user's skill data");
+    }
+
+    return response.json();
+  },
+};
+
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const response = await fetch(url, {
     ...options,

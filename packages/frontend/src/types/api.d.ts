@@ -37,3 +37,14 @@ interface DevelopmentPlansResponse {
   total: number;
   // Other possible metadata in the response
 }
+
+// Add this to types/api.ts
+
+export interface SkillGapsDto {
+  emailAddress: string;
+  nameOfResource: string;
+  careerLevel: string;
+  capability: string;
+  skillAverages: Record<string, number>;
+  skillGaps: Record<string, number>;
+}
