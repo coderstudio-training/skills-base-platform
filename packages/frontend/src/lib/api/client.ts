@@ -193,7 +193,7 @@ export class ApiClient {
     const authHeaders = options?.requiresAuth !== false ? await getAuthHeaders() : {};
 
     const requestInit: RequestInit = {
-      method: 'POST',
+      method: 'DELETE',
       headers: {
         ...this.config.defaultHeaders,
         ...authHeaders,

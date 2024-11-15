@@ -115,6 +115,7 @@ export const authConfig = {
   endpoints: {
     googleAuth: '/auth/google',
     login: '/auth/login',
+    register: 'auth/register',
     logout: '/auth/logout',
   },
   // Role-based routes configuration

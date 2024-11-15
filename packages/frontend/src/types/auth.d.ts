@@ -1,9 +1,11 @@
+import { Roles } from '@/lib/api/types';
+
 export interface DecodedToken {
-  email: string
-  sub: string
-  roles: string[]
-  iat: number
-  exp: number
+  email: string;
+  sub: string;
+  roles: string[];
+  iat: number;
+  exp: number;
 }
 
 export interface AuthResponse {
@@ -11,5 +13,5 @@ export interface AuthResponse {
   name: string; // User's name (derived from email)
   email: string; // User email
   accessToken: string; // The access token
-  role: 'admin' | 'manager' | 'staff'; // User role
+  role: Roles; // User role
 }

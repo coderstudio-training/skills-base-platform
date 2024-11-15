@@ -7,7 +7,7 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
-import { authConfig, rolePermissions } from './config';
+import { authConfig, errorMessages, rolePermissions } from './config';
 import { AuthState, Permission, RolePermissions, Roles } from './types';
 logger.log('Starting to load auth options in lib/auth.ts...');
 
@@ -76,29 +76,34 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       logger.log('Starting Google login...');
-      if (account?.provider === 'google') {
-        // Call your user service to check/create user and get role
-        const response = await fetch(`${process.env.NEXT_PUBLIC_USER_SERVICE_URL}/auth/google`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token: account.id_token,
-          }),
-        });
-        const data = await response.json();
-        logger.log('Google Auth: ', JSON.stringify(data));
+      try {
+        if (account?.provider === 'google') {
+          // Call your user service to check/create user and get role
+          const response = await fetch(`${process.env.NEXT_PUBLIC_USER_SERVICE_URL}/auth/google`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token: account.id_token,
+            }),
+          });
+          const data = await response.json();
+          logger.log('Google Auth: ', JSON.stringify(data));
 
-        if (response.ok) {
-          user.role = data.roles[0];
-          user.accessToken = data.access_token;
-          user.image = profile?.image;
-          logger.log('Google Auth USER: ', JSON.stringify(user));
-          return true;
-        } else {
-          return '/auth/error';
+          if (response.ok) {
+            user.role = data.roles[0];
+            user.accessToken = data.access_token;
+            user.image = profile?.image;
+            logger.log('Google Auth USER: ', JSON.stringify(user));
+            return true;
+          } else {
+            return '/auth/error';
+          }
         }
+        return true;
+      } catch (error) {
+        logger.error('Sign in error:', error);
+        return false;
       }
-      return true;
     },
     async jwt({ token, user }) {
       logger.log('JWT Callback - Token:', JSON.stringify(token));
@@ -120,7 +125,7 @@ export const authOptions: NextAuthOptions = {
         email: token.email as string,
         accessToken: token.accessToken as string,
         image: token.picture as string,
-        role: token.role as 'staff' | 'manager' | 'admin',
+        role: token.role as Roles,
       };
       logger.log('Session Callback - Session:', JSON.stringify(session));
       return session;
@@ -146,7 +151,13 @@ export const authOptions: NextAuthOptions = {
 
 export async function getAuthHeaders(): Promise<HeadersInit> {
   const session = await getSession();
-  return session?.user?.accessToken ? { Authorization: `Bearer ${session.user.accessToken}` } : {};
+
+  if (!session?.user?.accessToken) {
+    logger.warn(errorMessages.UNAUTHORIZED);
+    return {};
+  }
+
+  return { Authorization: `Bearer ${session.user.accessToken}` };
 }
 
 export async function getAuthState(): Promise<AuthState> {

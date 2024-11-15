@@ -75,4 +75,5 @@ export type RolePermissions = {
     [Perm in Permission]?: boolean;
   };
 };
+
 export type Roles = 'staff' | 'manager' | 'admin';

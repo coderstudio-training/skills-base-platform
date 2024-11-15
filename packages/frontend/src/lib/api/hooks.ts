@@ -152,7 +152,7 @@ export function useMutation<T, TData = unknown>(
         message: 'Not authenticated',
       };
       setState({ data: null, error, isLoading: false });
-      return { data: null as T, error };
+      return { data: null as T, error, status: 401 };
     }
 
     setState(prev => ({ ...prev, isLoading: true }));
