@@ -17,6 +17,9 @@ export class LoggingModule {
     const config = ConfigurationManager.getInstance();
     const serviceName = this.sanitizeServiceName(options.serviceName || 'app');
 
+    // Set the global service name when initializing the root module
+    Logger.setGlobalService(serviceName);
+
     if (options.environment) {
       process.env.NODE_ENV = options.environment;
     }
@@ -26,7 +29,7 @@ export class LoggingModule {
       {
         provide: Logger,
         useFactory: () => {
-          return new Logger(serviceName, config.getLoggerConfig());
+          return new Logger('root', config.getLoggerConfig());
         },
       },
       // Logging interceptor
@@ -45,7 +48,7 @@ export class LoggingModule {
   }
 
   static forFeature(options: LoggingModuleOptions = {}): DynamicModule {
-    const serviceName = this.sanitizeServiceName(
+    const featureName = this.sanitizeServiceName(
       options.serviceName || 'feature',
     );
 
@@ -56,7 +59,7 @@ export class LoggingModule {
           provide: Logger,
           useFactory: () => {
             const config = ConfigurationManager.getInstance();
-            return new Logger(serviceName, config.getLoggerConfig());
+            return new Logger(featureName, config.getLoggerConfig());
           },
         },
       ],

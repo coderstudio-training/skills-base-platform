@@ -16,20 +16,26 @@ export class Logger {
   private readonly service: string;
   private readonly job: string;
   private readonly errorTracker: ErrorTracker;
-  private static globalService: string;
+  private static globalService: string = 'unknown-service';
 
   constructor(
     job: string,
     private readonly config = ConfigurationManager.getInstance().getLoggerConfig(),
   ) {
     this.job = job;
-    this.service = Logger.globalService || 'unknown-service';
     this.errorTracker = new ErrorTracker(this);
     this.logger = this.createLogger();
   }
 
   static setGlobalService(service: string) {
+    if (!service) {
+      throw new Error('Service name cannot be empty');
+    }
     Logger.globalService = service;
+  }
+
+  static getGlobalService(): string {
+    return Logger.globalService;
   }
 
   private createLogger(): winston.Logger {
@@ -38,7 +44,7 @@ export class Logger {
     // Custom format for adding service, job and host information
     const baseMetadata = format((info) => ({
       ...info,
-      service: this.service,
+      service: Logger.globalService,
       job: this.job,
       hostname: os.hostname(),
       pid: process.pid,
@@ -141,6 +147,7 @@ export class Logger {
 
     const formattedContext: Record<string, any> = {
       ...rest,
+      service: Logger.globalService,
       correlationId,
       userId,
       traceId,

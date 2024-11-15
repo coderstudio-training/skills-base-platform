@@ -1,5 +1,5 @@
-import * as winston from 'winston';
 import { format } from 'date-fns';
+import * as winston from 'winston';
 
 const colors = {
   reset: '\x1b[0m',
@@ -9,6 +9,7 @@ const colors = {
   gray: '\x1b[90m',
   white: '\x1b[97m',
   cyan: '\x1b[96m',
+  magenta: '\x1b[95m',
   bgRed: '\x1b[41m',
   bgYellow: '\x1b[43m',
   bgBlue: '\x1b[44m',
@@ -50,6 +51,7 @@ interface LogMetadata extends winston.Logform.TransformableInfo {
   level: string;
   message: string;
   service: string;
+  job: string;
   correlationId?: string;
   error?: Error;
   errorTracking?: any;
@@ -63,6 +65,7 @@ export const createConsoleFormat = () => {
       level,
       message,
       service,
+      job,
       correlationId,
       error,
       errorTracking,
@@ -82,8 +85,9 @@ export const createConsoleFormat = () => {
       colors.reset
     }`;
 
-    // Format service
+    // Format service and job
     const formattedService = `${colors.cyan}[${service}]${colors.reset}`;
+    const formattedJob = `${colors.magenta}(${job})${colors.reset}`;
 
     // Format correlation ID if present
     const correlationPart = correlationId
@@ -92,8 +96,8 @@ export const createConsoleFormat = () => {
         }`
       : '';
 
-    // Build the base log line with more spacing and reordered components
-    let output = `${formattedTime}  ${formattedLevel}  ${formattedService}  ${symbol}  ${
+    // Build the base log line with service and job info
+    let output = `${formattedTime} ${formattedLevel} ${formattedService} ${formattedJob} ${symbol} ${
       style.text
     }${message}${colors.reset} ${correlationPart}\n`;
 
