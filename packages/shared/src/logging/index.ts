@@ -14,24 +14,32 @@ import { maskSensitiveData } from './utils/logging.security';
 export class Logger {
   private logger: winston.Logger;
   private readonly service: string;
+  private readonly job: string;
   private readonly errorTracker: ErrorTracker;
+  private static globalService: string;
 
   constructor(
-    service: string,
+    job: string,
     private readonly config = ConfigurationManager.getInstance().getLoggerConfig(),
   ) {
-    this.service = service;
+    this.job = job;
+    this.service = Logger.globalService || 'unknown-service';
     this.errorTracker = new ErrorTracker(this);
     this.logger = this.createLogger();
+  }
+
+  static setGlobalService(service: string) {
+    Logger.globalService = service;
   }
 
   private createLogger(): winston.Logger {
     const { format } = winston;
 
-    // Custom format for adding service and host information
+    // Custom format for adding service, job and host information
     const baseMetadata = format((info) => ({
       ...info,
       service: this.service,
+      job: this.job,
       hostname: os.hostname(),
       pid: process.pid,
       environment: process.env.NODE_ENV || 'development',
@@ -99,6 +107,7 @@ export class Logger {
         json: true,
         labels: {
           app: this.service,
+          job: this.job,
           environment: process.env.NODE_ENV || 'development',
           host: os.hostname(),
         },
@@ -119,6 +128,7 @@ export class Logger {
       level: this.config.level,
       defaultMeta: {
         service: this.service,
+        job: this.job,
       },
       transports,
     });
@@ -134,6 +144,7 @@ export class Logger {
       correlationId,
       userId,
       traceId,
+      job: this.job,
     };
 
     // Remove undefined values
@@ -170,6 +181,7 @@ export class Logger {
     const trackingResult = await this.errorTracker.captureException(error, {
       ...context,
       service: this.service,
+      job: this.job,
     });
 
     if (trackingResult) {

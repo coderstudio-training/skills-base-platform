@@ -8,7 +8,7 @@ import {
 import { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { Logger } from '../logging.service';
+import { Logger } from '..';
 
 interface RequestContext {
   method: string;

@@ -1,7 +1,7 @@
 // utils/file-writer.ts
 import { promises as fs } from 'fs';
 import { dirname, join } from 'path';
-import { Logger } from '../logging.service';
+import { Logger } from '..';
 import { LoggerOptions } from '../types';
 import { LogRetentionManager } from './log-retention';
 

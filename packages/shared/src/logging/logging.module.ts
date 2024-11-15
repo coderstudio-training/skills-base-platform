@@ -1,8 +1,8 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { Logger } from '.';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { ConfigurationManager } from './logging.config';
-import { Logger } from './logging.service';
 
 export interface LoggingModuleOptions {
   serviceName?: string;

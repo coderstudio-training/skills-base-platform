@@ -1,7 +1,7 @@
 import { differenceInDays, parse } from 'date-fns';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { Logger } from '../logging.service';
+import { Logger } from '..';
 import { LogFileConfig } from '../types';
 
 export class LogRetentionManager {

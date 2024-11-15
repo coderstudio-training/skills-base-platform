@@ -28,9 +28,9 @@ export * from './utils/date.util';
 export * from './utils/validation.util';
 
 // logging
+export * from './logging';
 export * from './logging/interceptors/logging.interceptor';
 export * from './logging/logging.module';
-export * from './logging/logging.service';
 export * from './logging/middlewares/logger.middleware';
 export * from './logging/types';
 
