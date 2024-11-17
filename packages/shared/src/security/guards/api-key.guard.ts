@@ -1,23 +1,45 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Request } from 'express';
+import {
+  SecurityEventType,
+  SecurityMonitoringService,
+} from '../security-monitoring.service';
 import { SecurityConfig } from '../types';
 
 @Injectable()
-export class ApiKeyGuard implements CanActivate {
-  constructor(private config: SecurityConfig) {}
+export class ApiKeyGuard {
+  constructor(
+    private readonly securityMonitoring: SecurityMonitoringService,
+    private readonly config: SecurityConfig,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async handleRequest(req: Request): Promise<boolean> {
     if (!this.config.apiKey.enabled) {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const path = request.route.path;
+    const { headers, ip, path, method } = req;
+    const apiKey = headers['x-api-key'];
 
-    if (this.config.apiKey.excludePaths?.includes(path)) {
-      return true;
+    if (
+      typeof apiKey === 'string' &&
+      !this.config.apiKey.keys.includes(apiKey)
+    ) {
+      await this.securityMonitoring.trackThreatEvent(
+        SecurityEventType.INVALID_API_KEY,
+        {
+          ipAddress: ip ?? 'UNKNOWN IP',
+          path,
+          method,
+          metadata: {
+            providedKey: apiKey ? 'invalid' : 'missing',
+          },
+        },
+      );
+
+      return false;
     }
 
-    const apiKey = request.headers['x-api-key'];
-    return this.config.apiKey.keys.includes(apiKey);
+    return true;
   }
 }

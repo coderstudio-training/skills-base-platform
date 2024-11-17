@@ -1,18 +1,20 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import type { Cache } from 'cache-manager';
 import { Request } from 'express';
 import { RateLimitException } from '../exceptions/rate-limit.exception';
-import { RateLimitConfig } from '../types';
+import { RateLimitConfig, SecurityConfig } from '../types';
 
 @Injectable()
 export class RateLimiter {
   private readonly defaultConfig: RateLimitConfig;
 
   constructor(
-    @Inject('SECURITY_CONFIG') private readonly securityConfig: any,
-    @Optional() @Inject(CACHE_MANAGER) private cacheManager: Record<any, any>,
+    @Inject('SECURITY_CONFIG') private readonly securityConfig: SecurityConfig,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     this.defaultConfig = {
+      enabled: this.securityConfig.rateLimit.enabled,
       windowMs: this.securityConfig.rateLimit.windowMs,
       max: this.securityConfig.rateLimit.max,
       message: 'Too many requests, please try again later.',
@@ -35,7 +37,15 @@ export class RateLimiter {
     key: string,
     windowMs: number,
   ): Promise<number> {
-    const current = (await this.cacheManager.get(key)) || 0;
+    let current = 0;
+    try {
+      const stored = await this.cacheManager.get<number>(key);
+      current = stored || 0;
+    } catch (err) {
+      // Handle cache errors gracefully
+      console.error('Cache error:', err);
+    }
+
     const ttl = windowMs / 1000; // Convert to seconds
     await this.cacheManager.set(key, current + 1, ttl);
     return current + 1;

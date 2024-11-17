@@ -1,18 +1,71 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
+import {
+  SecurityEventType,
+  SecurityMonitoringService,
+} from '../security-monitoring.service';
 import { SecurityConfig } from '../types';
 
 @Injectable()
 export class IpWhitelistGuard implements CanActivate {
-  constructor(private config: SecurityConfig) {}
+  constructor(
+    private readonly config: SecurityConfig,
+    private readonly securityMonitoring: SecurityMonitoringService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Skip if IP whitelist is not enabled
     if (!this.config.ipWhitelist.enabled) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
-    const clientIp = request.ip;
+    const { ip, path, method } = request;
 
-    return this.config.ipWhitelist.allowedIps.includes(clientIp);
+    // Check if IP is in allowed list
+    const isAllowed = this.config.ipWhitelist.allowedIps.includes(ip);
+
+    if (!isAllowed) {
+      await this.securityMonitoring.trackThreatEvent(
+        SecurityEventType.UNAUTHORIZED_IP,
+        {
+          ipAddress: ip,
+          path,
+          method,
+          metadata: {
+            allowedIps: this.config.ipWhitelist.allowedIps,
+            requestHeaders: this.sanitizeHeaders(request.headers),
+            // Include additional context that might be useful for security analysis
+            timestamp: new Date().toISOString(),
+            forwardedFor: request.headers['x-forwarded-for'],
+            realIp: request.headers['x-real-ip'],
+            host: request.headers.host,
+            userAgent: request.headers['user-agent'],
+          },
+        },
+      );
+
+      throw new ForbiddenException('IP address not allowed');
+    }
+
+    return true;
+  }
+
+  private sanitizeHeaders(headers: Record<string, any>): Record<string, any> {
+    // Create a copy of headers and remove sensitive information
+    const sanitized = { ...headers };
+    const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
+
+    sensitiveHeaders.forEach((header) => {
+      if (sanitized[header]) {
+        sanitized[header] = '[REDACTED]';
+      }
+    });
+
+    return sanitized;
   }
 }

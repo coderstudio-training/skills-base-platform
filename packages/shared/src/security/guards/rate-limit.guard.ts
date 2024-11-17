@@ -1,29 +1,41 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { RATE_LIMIT_KEY } from '../decorators/rate-limit.decorator';
-import { RateLimiter } from '../rate-limit/rate-limiter';
-import { RateLimitConfig } from '../types';
+import { Injectable } from '@nestjs/common';
+import { Request } from 'express';
+import { RateLimitException } from '../exceptions/rate-limit.exception';
+import {
+  SecurityEventType,
+  SecurityMonitoringService,
+} from '../security-monitoring.service';
+import { SecurityConfig } from '../types';
 
 @Injectable()
-export class RateLimitGuard implements CanActivate {
+export class RateLimitGuard {
   constructor(
-    private reflector: Reflector,
-    private rateLimiter: RateLimiter,
+    private readonly securityMonitoring: SecurityMonitoringService,
+    private readonly config: SecurityConfig,
   ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+  async handleRequest(req: Request): Promise<boolean> {
+    const { ip, method, path } = req;
 
-    const routeConfig = this.reflector.getAllAndOverride<
-      Partial<RateLimitConfig>
-    >(RATE_LIMIT_KEY, [context.getHandler(), context.getClass()]);
+    // Your existing rate limit logic here
+    const isLimitExceeded = false; // Replace with your actual check
 
-    // Merge route-specific config with global config
-    const config = {
-      ...this.rateLimiter.getConfig(),
-      ...routeConfig,
-    };
+    if (isLimitExceeded) {
+      await this.securityMonitoring.trackThreatEvent(
+        SecurityEventType.RATE_LIMIT_EXCEEDED,
+        {
+          ipAddress: ip ?? 'UNKNOWN IP',
+          path,
+          method,
+          metadata: {
+            limit: this.config.rateLimit.max,
+            windowMs: this.config.rateLimit.windowMs,
+          },
+        },
+      );
+      throw new RateLimitException();
+    }
 
-    return this.rateLimiter.handleRequest(request, config);
+    return true;
   }
 }
