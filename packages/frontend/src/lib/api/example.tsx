@@ -6,14 +6,49 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
 import { LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { skillsApi } from './client';
 import { Taxonomy } from './domain-types';
-import { useAuth, useQuery } from './hooks';
+import { useAuth, useMutation, useQuery } from './hooks';
+
+interface ITaxonomy {
+  data: ITaxonomyUpsert[];
+}
+
+interface ITaxonomyUpsert {
+  docTitle: string;
+  docId: string;
+  docRevisionId: string;
+  category: string;
+  title: string;
+  description: string;
+  proficiencyDescription: object;
+  abilities: object;
+  knowledge: object;
+  rangeOfApplication?: string[];
+  businessUnit: string;
+}
+
+interface ITaxonomyResponse {
+  updatedCount: number;
+  errors: string[];
+}
 
 export default function ShowcaseDashboard() {
   const { hasPermission, user } = useAuth();
   const [canViewDashboard, setCanViewDashboard] = useState(false);
+
+  const [docTitle, setDocTitle] = useState('');
+  const [docId, setDocId] = useState('');
+  const [docRevisionId, setDocRevisionId] = useState('');
+  const [category, setCategory] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [proficiencyDescription, setProfiencyDescription] = useState('');
+  const [knowledge, setKnowledge] = useState('');
+  const [abilities, setAbilities] = useState('');
+  const [rangeOfApplication, setRangeOfApplication] = useState('');
+  const [businessUnit, setBusinessUnit] = useState('');
 
   useEffect(() => {
     const checkPermission = async () => {
@@ -25,8 +60,8 @@ export default function ShowcaseDashboard() {
 
   const {
     data: taxonomy_data,
-    error,
-    isLoading,
+    error: queryError,
+    isLoading: queryLoading,
   } = useQuery<Taxonomy>(
     skillsApi,
     '/taxonomy/1yMsFZfwyumL4W7Erc0hr1IfM8_DsErcdri0TBEJRjq0?businessUnit=QA',
@@ -35,8 +70,55 @@ export default function ShowcaseDashboard() {
     },
   );
 
+  const {
+    mutate,
+    error: mutateError,
+    isLoading: mutateLoading,
+  } = useMutation<ITaxonomyResponse, ITaxonomy>(skillsApi, '/taxonomy/bulk-upsert', 'POST', {
+    requiresAuth: true,
+  });
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const taxonomyData: ITaxonomy = {
+      data: [
+        {
+          docTitle,
+          docId,
+          docRevisionId,
+          category,
+          title,
+          description,
+          proficiencyDescription: {
+            'level 1': [proficiencyDescription],
+          },
+          abilities: {
+            'level 1': [abilities],
+          },
+          knowledge: {
+            'level 1': [knowledge],
+          },
+          rangeOfApplication: [rangeOfApplication],
+          businessUnit,
+        },
+      ],
+    };
+
+    const response = await mutate(taxonomyData);
+
+    if (response.error && mutateError) {
+      console.error('Error submitting taxonomy data:', response.error);
+      alert(
+        `Error: ${response.error.message} || ${mutateError.code} ${mutateError.message} ${mutateError.status}`,
+      );
+    } else if (response.data) {
+      console.log('Successfully submitted taxonomy data:', response.data);
+      alert(`Updated count: ${response.data.updatedCount}`);
+    }
   };
 
   if (!canViewDashboard) {
@@ -76,10 +158,10 @@ export default function ShowcaseDashboard() {
               </CardHeader>
               <CardContent className="pt-6">
                 <ul className="space-y-4">
-                  {isLoading ? (
+                  {queryLoading ? (
                     <li>Loading...</li>
-                  ) : error ? (
-                    <li>Error: {error.message}</li>
+                  ) : queryError ? (
+                    <li>Error: {queryError.message}</li>
                   ) : (
                     <li key={taxonomy_data?.docId} className="border-b pb-4">
                       <h3 className="text-lg font-semibold">{taxonomy_data?.title}</h3>
@@ -136,6 +218,133 @@ export default function ShowcaseDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+      </div>
+
+      <div className="flex justify-between items-center mb-6 bg-white p-8 rounded sm:shadow-md w-96 ">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="docTitle" className="block text-sm font-medium text-gray-700">
+              docTitle
+            </label>
+            <input
+              type="text"
+              id="docTitle"
+              value={docTitle}
+              onChange={e => setDocTitle(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <label htmlFor="docId" className="block text-sm font-medium text-gray-700">
+              docId
+            </label>
+            <input
+              type="text"
+              id="docId"
+              value={docId}
+              onChange={e => setDocId(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <label htmlFor="docRevisionId" className="block text-sm font-medium text-gray-700">
+              docRevisionId
+            </label>
+            <input
+              type="text"
+              id="docRevisionId"
+              value={docRevisionId}
+              onChange={e => setDocRevisionId(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+              category
+            </label>
+            <input
+              type="text"
+              id="category"
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              title
+            </label>
+            <input
+              type="text"
+              id="title"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              description
+            </label>
+            <input
+              type="text"
+              id="description"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <label htmlFor="businessUnit" className="block text-sm font-medium text-gray-700">
+              businessUnit
+            </label>
+            <input
+              type="text"
+              id="businessUnit"
+              value={businessUnit}
+              onChange={e => setBusinessUnit(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <label
+              htmlFor="proficiencyDescription"
+              className="block text-sm font-medium text-gray-700"
+            >
+              proficiencyDescription
+            </label>
+            <input
+              type="text"
+              id="proficiencyDescription"
+              value={proficiencyDescription}
+              onChange={e => setProfiencyDescription(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <label htmlFor="knowledge" className="block text-sm font-medium text-gray-700">
+              knowledge
+            </label>
+            <input
+              type="text"
+              id="knowledge"
+              value={knowledge}
+              onChange={e => setKnowledge(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <label htmlFor="abilities" className="block text-sm font-medium text-gray-700">
+              abilities
+            </label>
+            <input
+              type="text"
+              id="abilities"
+              value={abilities}
+              onChange={e => setAbilities(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <label htmlFor="rangeOfApplication" className="block text-sm font-medium text-gray-700">
+              rangeOfApplication
+            </label>
+            <input
+              type="text"
+              id="rangeOfApplication"
+              value={rangeOfApplication}
+              onChange={e => setRangeOfApplication(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-200"
+            disabled={mutateLoading}
+          >
+            Test Upsert
+          </button>
+        </form>
       </div>
     </div>
   );
