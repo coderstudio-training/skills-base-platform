@@ -22,7 +22,6 @@ export interface ApiConfig {
 
 export interface FetchOptions {
   cache?: RequestCache;
-  tags?: string[];
   revalidate?: number;
   headers?: HeadersInit;
   requiresAuth?: boolean;
@@ -35,7 +34,6 @@ export interface ExtendedFetchOptions extends FetchOptions {
 export interface ApiClientOptions {
   cache?: RequestCache;
   revalidate?: number;
-  tags?: string[];
   requiresAuth?: boolean;
 }
 

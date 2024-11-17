@@ -30,16 +30,7 @@ export const serviceConfigs: Record<string, ApiConfig> = {
 // Next.js Cache config
 export const cacheConfig = {
   defaultRevalidate: 3600, // 1 hour
-  defaultStaleWhileRevalidate: 7200, // 2 hours
-  tags: {
-    // add more if needed
-    user: 'user',
-    skills: 'skills',
-    learning: 'learning',
-    assessments: 'assessments',
-    manager: 'manager',
-    admin: 'admin',
-  },
+  defaultStaleWhileRevalidate: 7200, // 2 hours, used for Cache control header
 };
 
 // Next.js 14 Server Actions Configuration

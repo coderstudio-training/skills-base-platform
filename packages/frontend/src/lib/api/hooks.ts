@@ -65,6 +65,7 @@ export function useQuery<T>(
     revalidate?: number;
     tags?: string[];
     requiresAuth?: boolean;
+    cacheStrategy?: RequestCache;
   },
 ) {
   const [state, setState] = useState<FetchState<T>>({
@@ -87,8 +88,8 @@ export function useQuery<T>(
     try {
       const response = await apiInstance.get<T>(endpoint, {
         revalidate: options?.revalidate,
-        tags: options?.tags,
         requiresAuth: options?.requiresAuth,
+        cache: options?.cacheStrategy,
       });
 
       setState({

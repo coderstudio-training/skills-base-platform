@@ -19,7 +19,6 @@ export const logger = {
 export const buildFetchOptions = (options?: FetchOptions): FetchOptions => ({
   cache: options?.cache || 'default',
   revalidate: options?.revalidate || cacheConfig.defaultRevalidate,
-  tags: options?.tags || [],
   headers: {
     ...options?.headers,
   },

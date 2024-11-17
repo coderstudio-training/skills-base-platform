@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { buildFetchOptions } from '../utils';
 import { getAuthHeaders } from './auth';
 import { errorMessages, serviceConfigs } from './config';
 import type { ApiClientOptions, ApiConfig, ApiError, ApiResponse, FetchOptions } from './types';
@@ -73,17 +74,18 @@ export class ApiClient {
       const url = new URL(endpoint, this.baseUrl);
 
       // Apply headers with token if required
+
+      const finalOptions = buildFetchOptions(options);
       const authHeaders = requiresAuth ? await getAuthHeaders() : {};
       const requestInit: RequestInit = {
         headers: {
           ...this.config.defaultHeaders,
           ...authHeaders,
-          ...options.headers,
+          ...finalOptions.headers,
         },
-        cache: options.cache,
+        cache: finalOptions.cache,
         next: {
-          revalidate: options.revalidate,
-          tags: options.tags,
+          revalidate: finalOptions.revalidate,
         },
       };
 
@@ -113,7 +115,6 @@ export class ApiClient {
       {
         cache: options?.cache || 'force-cache',
         revalidate: options?.revalidate,
-        tags: options?.tags,
       },
       options?.requiresAuth !== false,
     );

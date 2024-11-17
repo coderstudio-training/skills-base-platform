@@ -68,6 +68,8 @@ export default function ShowcaseDashboard() {
     '/taxonomy/1yMsFZfwyumL4W7Erc0hr1IfM8_DsErcdri0TBEJRjq0?businessUnit=QA',
     {
       requiresAuth: true,
+      cacheStrategy: 'default',
+      revalidate: 60,
     },
   );
 
