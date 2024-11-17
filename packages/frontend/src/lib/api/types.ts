@@ -1,5 +1,3 @@
-import { cacheConfig } from './config';
-
 // Interface exports
 export interface ApiError {
   code: string;
@@ -27,20 +25,10 @@ export interface FetchOptions {
   requiresAuth?: boolean;
 }
 
-export interface ExtendedFetchOptions extends FetchOptions {
-  cacheConfig?: typeof cacheConfig;
-}
-
 export interface ApiClientOptions {
   cache?: RequestCache;
   revalidate?: number;
   requiresAuth?: boolean;
-}
-
-// Assess whether these interfaces are required | Update role if Role[]
-export interface AuthTokens {
-  accessToken: string;
-  roles: Roles[];
 }
 
 export interface GoogleUser {
@@ -56,6 +44,11 @@ export interface AuthState {
   user: GoogleUser | null;
   role: Roles[];
   isAuthenticated: boolean;
+}
+
+export interface RetryConfig {
+  retryDelay: number;
+  retryCount: number;
 }
 
 // Type Exports

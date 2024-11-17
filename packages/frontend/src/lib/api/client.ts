@@ -1,16 +1,25 @@
 import { cache } from 'react';
 import { buildFetchOptions } from '../utils';
 import { getAuthHeaders } from './auth';
-import { errorMessages, serviceConfigs } from './config';
-import type { ApiClientOptions, ApiConfig, ApiError, ApiResponse, FetchOptions } from './types';
+import { errorMessages, serverActionsConfig, serviceConfigs } from './config';
+import type {
+  ApiClientOptions,
+  ApiConfig,
+  ApiError,
+  ApiResponse,
+  FetchOptions,
+  RetryConfig,
+} from './types';
 
 export class ApiClient {
   private config: ApiConfig;
   private baseUrl: string;
+  private retryConfig: RetryConfig;
 
   constructor(serviceName: keyof typeof serviceConfigs) {
     this.config = serviceConfigs[serviceName];
     this.baseUrl = this.config.baseUrl;
+    this.retryConfig = serverActionsConfig.errorHandling;
   }
 
   private getErrorMessage(status: number): string {
@@ -73,8 +82,6 @@ export class ApiClient {
     ): Promise<ApiResponse<T>> => {
       const url = new URL(endpoint, this.baseUrl);
 
-      // Apply headers with token if required
-
       const finalOptions = buildFetchOptions(options);
       const authHeaders = requiresAuth ? await getAuthHeaders() : {};
       const requestInit: RequestInit = {
@@ -90,8 +97,8 @@ export class ApiClient {
       };
 
       try {
-        const response = await this.fetch(url.toString(), requestInit);
-        return this.handleResponse<T>(response, requestInit);
+        const response = await this.retryRequest<T>(url.toString(), requestInit);
+        return response;
       } catch (error) {
         return {
           data: null as T,
@@ -105,6 +112,36 @@ export class ApiClient {
     },
   );
 
+  private async retryRequest<T>(url: string, requestInit: RequestInit): Promise<ApiResponse<T>> {
+    let attempt = 0;
+
+    while (attempt <= this.retryConfig.retryCount) {
+      try {
+        // Attempt the API call using fetch
+        const response = await this.fetch(url, requestInit);
+        return this.handleResponse<T>(response, requestInit);
+      } catch (error) {
+        if (attempt < this.retryConfig.retryCount) {
+          attempt++;
+          console.log(`Retrying request... Attempt ${attempt}`);
+          await new Promise(resolve => setTimeout(resolve, this.retryConfig.retryDelay)); // Wait before retrying
+        } else {
+          console.log('Max retries reached. Returning error.');
+          return {
+            data: null as T,
+            error: {
+              status: 500,
+              code: 'FETCH_ERROR',
+              message: `Network error persists after ${this.retryConfig.retryCount} retries. Failed to fetch.`,
+            },
+          };
+        }
+      }
+    }
+
+    // This point should never be reached due to the catch block handling all errors
+    return { data: null as T, error: null, status: 500 };
+  }
   // Public API methods
   async get<T>(
     endpoint: string,

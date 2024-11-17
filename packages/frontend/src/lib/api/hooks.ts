@@ -116,6 +116,7 @@ export function useQuery<T>(
     options?.revalidate,
     options?.tags,
     options?.requiresAuth,
+    options?.cacheStrategy,
   ]);
 
   useEffect(() => {
