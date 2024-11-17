@@ -72,7 +72,6 @@ export const errorMessages = {
   NOT_EMPLOYED: 'User is not registered as an employee.',
   VALIDATION_ERROR: 'Validation error occurred.',
   STREAM_ERROR: 'Error in data stream.',
-  OPTIMISTIC_UPDATE_FAILED: 'Optimistic update failed, rolling back changes.',
 };
 
 export const rolePermissions: RolePermissions = {

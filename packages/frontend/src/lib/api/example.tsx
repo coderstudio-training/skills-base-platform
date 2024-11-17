@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
 import { LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { FormEvent, useEffect, useState } from 'react';
+import { formatError } from '../utils';
 import { skillsApi } from './client';
 import { Taxonomy } from './domain-types';
 import { useAuth, useMutation, useQuery } from './hooks';
@@ -77,6 +78,7 @@ export default function ShowcaseDashboard() {
   } = useMutation<ITaxonomyResponse, ITaxonomy>(skillsApi, '/taxonomy/bulk-upsert', 'POST', {
     requiresAuth: true,
   });
+
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
   };
@@ -112,9 +114,7 @@ export default function ShowcaseDashboard() {
 
     if (response.error && mutateError) {
       console.error('Error submitting taxonomy data:', response.error);
-      alert(
-        `Error: ${response.error.message} || ${mutateError.code} ${mutateError.message} ${mutateError.status}`,
-      );
+      alert(`Error: ${response.error.message} || ${formatError(mutateError)}`);
     } else if (response.data) {
       console.log('Successfully submitted taxonomy data:', response.data);
       alert(`Updated count: ${response.data.updatedCount}`);
