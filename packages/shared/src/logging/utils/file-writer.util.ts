@@ -2,8 +2,8 @@
 import { promises as fs } from 'fs';
 import { dirname, join } from 'path';
 import { Logger } from '..';
-import { LoggerOptions } from '../types';
-import { LogRetentionManager } from './log-retention';
+import { WinstonLoggerConfig } from '../types';
+import { LogRetentionManager } from './log-retention.util';
 
 export class LogFileWriter {
   private currentFileSize: number = 0;
@@ -12,7 +12,7 @@ export class LogFileWriter {
   private readonly lockFile: string;
   private retentionManager?: LogRetentionManager;
   constructor(
-    private readonly options: Required<LoggerOptions>,
+    private readonly options: Required<WinstonLoggerConfig>,
     private readonly logger: Logger,
   ) {
     this.currentFile = this.options.filename;
@@ -158,7 +158,7 @@ const writers = new Map<string, LogFileWriter>();
 
 export async function writeToFile(
   message: string,
-  options: Required<LoggerOptions>,
+  options: Required<WinstonLoggerConfig>,
 ): Promise<void> {
   let writer = writers.get(options.filename);
   if (!writer) {

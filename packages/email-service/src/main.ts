@@ -18,7 +18,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
 
   // Create logger and metrics service instances
-  const logger = new Logger('email-service-main');
+  const logger = new Logger('bootstrap');
   const metricsService = new ApplicationMetricsService('email_service');
 
   // Global interceptors for monitoring and logging

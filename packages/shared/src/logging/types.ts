@@ -14,27 +14,6 @@ export interface LogContext {
   [key: string]: any;
 }
 
-export interface LoggerOptions {
-  level?: LogLevel;
-  format?: 'json' | 'text';
-  outputs?: ('console' | 'file')[];
-  filename?: string;
-  maxSize?: number;
-  maxFiles?: number;
-  sensitiveKeys?: string[];
-  file?: LogFileConfig;
-}
-
-export interface LoggerConfig {
-  level: LogLevel;
-  format: 'json' | 'text';
-  outputs: ('console' | 'file')[];
-  filename?: string;
-  maxSize?: number;
-  maxFiles?: number;
-  file?: LogFileConfig;
-}
-
 export interface ErrorTrackerConfig {
   sampleRate: number;
   environment: string;
@@ -48,14 +27,12 @@ export interface LokiLogBase {
   level: LogLevel; // Log level
   msg: string; // Log message
   labels: {
-    // Loki labels for efficient querying
     service: string;
     env: string;
     level: string;
     host: string;
     version?: string;
   };
-  // Additional fields
   traceId?: string;
   correlationId?: string;
   userId?: string;
@@ -72,25 +49,18 @@ export interface LokiLogBase {
     status?: number;
     duration?: number;
   };
-  // Additional context
   metadata?: Record<string, unknown>;
 }
 
 export interface WinstonLoggerConfig {
   level: LogLevel;
   format: 'json' | 'text';
-  outputs: ('console' | 'file')[];
+  outputs: ('console' | 'file' | 'loki')[];
   filename?: string;
   maxSize?: number;
   maxFiles?: number;
   sensitiveKeys?: string[];
-  file?: {
-    path: string;
-    namePattern: string;
-    rotatePattern: string;
-    permissions?: number;
-    compress?: boolean;
-  };
+  file?: LogFileConfig;
 }
 
 export interface ErrorTracking {
@@ -106,7 +76,7 @@ export interface ErrorTracking {
 export interface LogRetentionConfig {
   enabled: boolean;
   days: number;
-  checkInterval: number; // milliseconds
+  checkInterval: number;
 }
 
 export interface LogFileConfig {
@@ -116,4 +86,49 @@ export interface LogFileConfig {
   permissions?: number;
   compress?: boolean;
   retention?: LogRetentionConfig;
+}
+
+export interface LoggingModuleOptions {
+  serviceName?: string;
+  environment?: string;
+  config?: Partial<{
+    logger?: Partial<WinstonLoggerConfig>;
+    errorTracker?: Partial<ErrorTrackerConfig>;
+  }>;
+  environmentConfigs?: Partial<{
+    production?: Partial<LoggingConfig>;
+    staging?: Partial<LoggingConfig>;
+    development?: Partial<LoggingConfig>;
+    test?: Partial<LoggingConfig>;
+  }>;
+}
+
+export interface LoggingConfig {
+  logger: WinstonLoggerConfig;
+  errorTracker: ErrorTrackerConfig;
+}
+
+export interface RequestContext {
+  method: string;
+  path: string;
+  correlationId?: string;
+  userId?: string;
+  userAgent?: string;
+  query?: Record<string, any>;
+  params?: Record<string, any>;
+  body?: Record<string, any>;
+  ip?: string;
+  timestamp: string;
+  duration?: number;
+}
+
+export interface ResponseContext extends RequestContext {
+  statusCode: number;
+  responseSize?: number;
+  error?: {
+    name: string;
+    message: string;
+    stack?: string;
+    code?: string;
+  };
 }

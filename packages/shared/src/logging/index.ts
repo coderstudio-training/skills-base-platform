@@ -1,26 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import * as os from 'os';
 import * as winston from 'winston';
-import 'winston-daily-rotate-file';
-import LokiTransport from 'winston-loki';
-import * as Transport from 'winston-transport';
-import { ConfigurationManager } from './logging.config';
-import { LogContext } from './types';
-import { ErrorTracker } from './utils/error-tracker';
-import { createConsoleFormat, createJsonFormat } from './utils/formatter';
-import { maskSensitiveData } from './utils/logging.security';
+import { ConfigurationManager } from './config/logging.config';
+import { createConsoleTransport } from './transports/console.transport';
+import { createFileTransport } from './transports/file.transport';
+import { createLokiTransport } from './transports/loki.transport';
+import { LogContext, WinstonLoggerConfig } from './types';
+import { ErrorTracker } from './utils/error-tracker.util';
+import { maskSensitiveData } from './utils/logging.security.util';
+import { StringUtils } from './utils/string.utils';
 
 @Injectable()
 export class Logger {
   private logger: winston.Logger;
-  private readonly service: string;
-  private readonly job: string;
   private readonly errorTracker: ErrorTracker;
   private static globalService: string = 'unknown-service';
 
   constructor(
-    job: string,
-    private readonly config = ConfigurationManager.getInstance().getLoggerConfig(),
+    private readonly job: string,
+    private config = ConfigurationManager.getInstance().getLoggerConfig(),
   ) {
     this.job = job;
     this.errorTracker = new ErrorTracker(this);
@@ -31,18 +29,15 @@ export class Logger {
     if (!service) {
       throw new Error('Service name cannot be empty');
     }
-    Logger.globalService = service;
+    Logger.globalService = StringUtils.validateServiceName(service);
   }
 
   static getGlobalService(): string {
     return Logger.globalService;
   }
 
-  private createLogger(): winston.Logger {
-    const { format } = winston;
-
-    // Custom format for adding service, job and host information
-    const baseMetadata = format((info) => ({
+  private createBaseMetadata(): winston.Logform.Format {
+    return winston.format((info) => ({
       ...info,
       service: Logger.globalService,
       job: this.job,
@@ -51,14 +46,10 @@ export class Logger {
       environment: process.env.NODE_ENV || 'development',
       version: process.env.APP_VERSION || 'unknown',
     }))();
+  }
 
-    // Create format for masking sensitive data
-    const maskSecrets = format((info) => {
-      return maskSensitiveData(info, this.config.sensitiveKeys || []);
-    })();
-
-    // Custom format for error handling
-    const errorFormat = format((info) => {
+  private createErrorFormat(): winston.Logform.Format {
+    return winston.format((info) => {
       if (info.error instanceof Error) {
         return {
           ...info,
@@ -72,68 +63,53 @@ export class Logger {
       }
       return info;
     })();
+  }
 
-    // Configure transports based on config
-    const transports: Transport[] = [];
+  private createMaskSecretsFormat(): winston.Logform.Format {
+    return winston.format((info) => {
+      const { sensitiveKeys = [] } = this.config;
+      return maskSensitiveData(info, sensitiveKeys);
+    })();
+  }
 
-    // Console transport with custom formatting
+  private createLogger(): winston.Logger {
+    const baseMetadata = this.createBaseMetadata();
+    const errorFormat = this.createErrorFormat();
+    const maskSecrets = this.createMaskSecretsFormat();
+
+    const transports: winston.transport[] = [];
+
+    // Add console transport if configured
     if (this.config.outputs.includes('console')) {
+      transports.push(createConsoleTransport(this.config));
+    }
+
+    // Add file transport if configured
+    if (this.config.outputs.includes('file') && this.config.file) {
       transports.push(
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            createConsoleFormat(),
-          ),
-          level: this.config.level,
-        }),
+        createFileTransport(
+          this.config,
+          baseMetadata,
+          errorFormat,
+          maskSecrets,
+        ),
       );
     }
 
-    // File transport with rotation
-    if (this.config.outputs.includes('file') && this.config.file) {
-      const fileTransport = new winston.transports.DailyRotateFile({
-        dirname: this.config.file.path,
-        filename: this.config.file.namePattern,
-        datePattern: this.config.file.rotatePattern,
-        zippedArchive: this.config.file.compress,
-        maxSize: this.config.maxSize,
-        maxFiles: this.config.maxFiles,
-        format: createJsonFormat(baseMetadata, errorFormat, maskSecrets),
-        level: this.config.level,
-      });
-
-      transports.push(fileTransport);
-    }
-
     // Add Loki transport if not in test environment
-    if (process.env.NODE_ENV !== 'test') {
-      const lokiConfig = {
-        host: process.env.LOKI_HOST || 'http://localhost:3100',
-        interval: 5,
-        json: true,
-        labels: {
-          app: this.service,
+    if (process.env.NODE_ENV !== 'test' && process.env.LOKI_HOST) {
+      transports.push(
+        createLokiTransport({
+          service: Logger.globalService,
           job: this.job,
-          environment: process.env.NODE_ENV || 'development',
-          host: os.hostname(),
-        },
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json(),
-        ),
-        replaceTimestamp: false,
-        onConnectionError: (err: Error) => {
-          console.error('Error connecting to Loki:', err);
-        },
-      };
-
-      transports.push(new LokiTransport(lokiConfig));
+        }),
+      );
     }
 
     return winston.createLogger({
       level: this.config.level,
       defaultMeta: {
-        service: this.service,
+        service: Logger.globalService,
         job: this.job,
       },
       transports,
@@ -145,6 +121,7 @@ export class Logger {
   ): Record<string, any> {
     const { correlationId, userId, traceId, ...rest } = context;
 
+    // Create formatted context with standard fields
     const formattedContext: Record<string, any> = {
       ...rest,
       service: Logger.globalService,
@@ -152,16 +129,15 @@ export class Logger {
       userId,
       traceId,
       job: this.job,
+      timestamp: new Date().toISOString(),
     };
 
     // Remove undefined values
-    Object.keys(formattedContext).forEach((key) => {
-      if (formattedContext[key] === undefined) {
-        delete formattedContext[key];
-      }
-    });
-
-    return formattedContext;
+    return Object.fromEntries(
+      Object.entries(formattedContext).filter(
+        ([, value]) => value !== undefined,
+      ),
+    );
   }
 
   info(message: string, context?: Partial<LogContext>) {
@@ -187,7 +163,7 @@ export class Logger {
   async trackException(error: unknown, context?: Partial<LogContext>) {
     const trackingResult = await this.errorTracker.captureException(error, {
       ...context,
-      service: this.service,
+      service: Logger.globalService,
       job: this.job,
     });
 
@@ -202,5 +178,16 @@ export class Logger {
         isErrorTracking: true,
       });
     }
+  }
+
+  // Method to update logger configuration at runtime
+  updateConfig(newConfig: Partial<WinstonLoggerConfig>) {
+    this.config = { ...this.config, ...newConfig };
+    this.logger = this.createLogger();
+  }
+
+  // Method to get current logger configuration
+  getConfig(): WinstonLoggerConfig {
+    return { ...this.config };
   }
 }

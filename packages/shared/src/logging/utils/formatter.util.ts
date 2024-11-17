@@ -87,7 +87,11 @@ export const createConsoleFormat = () => {
 
     // Format service and job
     const formattedService = `${colors.cyan}[${service}]${colors.reset}`;
-    const formattedJob = `${colors.magenta}(${job})${colors.reset}`;
+    // Only show job if it's not 'main'/'app'
+    const formattedJob =
+      job && !['root'].includes(job)
+        ? `${colors.magenta}(${job})${colors.reset}`
+        : '';
 
     // Format correlation ID if present
     const correlationPart = correlationId
