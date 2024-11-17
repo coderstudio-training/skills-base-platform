@@ -30,7 +30,7 @@ export interface ApiClientOptions {
   cache?: RequestCache;
   revalidate?: number;
   tags?: string[];
-  requiresAUth?: boolean;
+  requiresAuth?: boolean;
 }
 
 // Assess whether these interfaces are required | Update role if Role[]
