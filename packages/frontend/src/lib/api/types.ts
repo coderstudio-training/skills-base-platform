@@ -1,3 +1,5 @@
+import { cacheConfig } from './config';
+
 // Interface exports
 export interface ApiError {
   code: string;
@@ -24,6 +26,10 @@ export interface FetchOptions {
   revalidate?: number;
   headers?: HeadersInit;
   requiresAuth?: boolean;
+}
+
+export interface ExtendedFetchOptions extends FetchOptions {
+  cacheConfig?: typeof cacheConfig;
 }
 
 export interface ApiClientOptions {

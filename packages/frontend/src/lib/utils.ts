@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { ApiError } from '../lib/api/types';
-import { errorMessages } from './api/config';
+import { ApiError, FetchOptions } from '../lib/api/types';
+import { cacheConfig, errorMessages } from './api/config';
 
 type LogArgs = string | number | boolean | null | undefined | Error | object | unknown;
 
@@ -15,6 +15,16 @@ export const logger = {
   warn: (...args: LogArgs[]): void => console.warn('[NextAuth Warning]', ...args),
   debug: (...args: LogArgs[]): void => console.debug('[NextAuth Debug]', ...args),
 };
+
+export const buildFetchOptions = (options?: FetchOptions): FetchOptions => ({
+  cache: options?.cache || 'default',
+  revalidate: options?.revalidate || cacheConfig.defaultRevalidate,
+  tags: options?.tags || [],
+  headers: {
+    ...options?.headers,
+  },
+  requiresAuth: options?.requiresAuth ?? false,
+});
 
 export function formatError(error: ApiError): string {
   return `[${error.status}] - ${error.message} : ${error.code}`;
