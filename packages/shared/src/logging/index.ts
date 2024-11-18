@@ -97,7 +97,7 @@ export class Logger {
     }
 
     // Add Loki transport if not in test environment
-    if (process.env.NODE_ENV !== 'test' && process.env.LOKI_HOST) {
+    if (this.config.outputs.includes('loki')) {
       transports.push(
         createLokiTransport({
           service: Logger.globalService,

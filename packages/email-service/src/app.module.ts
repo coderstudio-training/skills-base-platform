@@ -14,7 +14,7 @@ import { EmailModule } from './email/email.module';
     }),
     LoggingModule.forRoot({
       serviceName: 'email_service',
-      environment: process.env.NODE_ENV || 'development',
+      environment: 'development',
     }),
     MonitoringModule.forRoot({
       serviceName: 'email_service',

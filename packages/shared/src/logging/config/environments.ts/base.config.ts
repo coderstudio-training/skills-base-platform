@@ -15,7 +15,7 @@ export const createBaseConfig = (env: string, appVersion: string) => {
     logger: {
       level: LogLevel.INFO,
       format: 'text' as 'json' | 'text',
-      outputs: ['console'] as ('console' | 'file' | 'loki')[],
+      outputs: ['console', 'file', 'loki'] as ('console' | 'file' | 'loki')[],
       filename: 'app.log',
       maxSize: 10 * 1024 * 1024, // 10MB
       maxFiles: 5,

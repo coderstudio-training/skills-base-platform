@@ -135,4 +135,60 @@ export class EmailService {
       );
     }
   }
+
+  async sendGrafanaAlert(alertData: any): Promise<void> {
+    const correlationId = Math.random().toString(36).substring(7);
+
+    this.logger.info('Preparing to send Grafana alert email', {
+      correlationId,
+      alertTitle: alertData.alert,
+      recipients: this.adminEmails.length,
+    });
+
+    try {
+      const templateData = {
+        ...alertData,
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+      };
+
+      const html = await this.getEmailTemplate(
+        'grafana-alert-template',
+        templateData,
+      );
+
+      const mailOptions = {
+        from:
+          this.configService.get<string>('EMAIL_SENDER') ||
+          'alerts@example.com',
+        to: this.adminEmails.join(','),
+        subject: `Grafana Alert: ${alertData.alert}`,
+        html: html,
+      };
+
+      this.logger.debug('Sending email', {
+        correlationId,
+        subject: mailOptions.subject,
+        recipientCount: this.adminEmails.length,
+      });
+
+      await this.transporter.sendMail(mailOptions);
+
+      this.logger.info('Grafana alert email sent successfully', {
+        correlationId,
+        alertId: alertData.alert,
+      });
+    } catch (error) {
+      this.logger.error('Failed to send Grafana alert email', {
+        correlationId,
+        error: error instanceof Error ? error.message : String(error),
+        alertData,
+        template: 'grafana-alert-template',
+      });
+
+      throw new InternalServerErrorException(
+        'Failed to send Grafana alert email',
+      );
+    }
+  }
 }
