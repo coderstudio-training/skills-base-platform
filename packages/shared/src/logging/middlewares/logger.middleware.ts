@@ -27,7 +27,9 @@ export class LoggerMiddleware implements NestMiddleware {
   private logRequest(context: RequestContext): void {
     this.logger.info(`Incoming ${context.method} ${context.path}`, {
       type: 'request.incoming',
-      ...context,
+      correlationId: context.correlationId,
+      userAgent: context.userAgent,
+      ip: context.ip,
     });
   }
 
@@ -82,7 +84,10 @@ export class LoggerMiddleware implements NestMiddleware {
       `Completed ${context.method} ${context.path} ${statusCode} ${duration}ms`,
       {
         type: 'request.complete',
-        ...context,
+        correlationId: context.correlationId,
+        statusCode: context.statusCode,
+        duration: context.duration,
+        responseSize: context.responseSize,
       },
     );
   }
