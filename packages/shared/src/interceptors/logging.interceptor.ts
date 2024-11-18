@@ -3,7 +3,6 @@ import {
   ExecutionContext,
   HttpException,
   Injectable,
-  NestInterceptor,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Observable, throwError } from 'rxjs';
@@ -16,7 +15,7 @@ import {
 import { HttpContextUtils } from '../utils/http.utils';
 
 @Injectable()
-export class LoggingInterceptor implements NestInterceptor {
+export class LoggingInterceptor {
   constructor(private readonly logger: Logger) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {

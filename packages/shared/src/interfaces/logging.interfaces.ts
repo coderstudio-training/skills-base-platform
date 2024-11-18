@@ -88,21 +88,6 @@ export interface LogFileConfig {
   retention?: LogRetentionConfig;
 }
 
-export interface LoggingModuleOptions {
-  serviceName?: string;
-  environment?: string;
-  config?: Partial<{
-    logger?: Partial<WinstonLoggerConfig>;
-    errorTracker?: Partial<ErrorTrackerConfig>;
-  }>;
-  environmentConfigs?: Partial<{
-    production?: Partial<LoggingConfig>;
-    staging?: Partial<LoggingConfig>;
-    development?: Partial<LoggingConfig>;
-    test?: Partial<LoggingConfig>;
-  }>;
-}
-
 export interface LoggingConfig {
   logger: WinstonLoggerConfig;
   errorTracker: ErrorTrackerConfig;
@@ -131,4 +116,12 @@ export interface ResponseContext extends RequestContext {
     stack?: string;
     code?: string;
   };
+}
+
+export interface LoggingModuleOptions {
+  serviceName?: string;
+  environment?: string;
+  enableRequestLogging?: boolean;
+  enableGlobalInterceptor?: boolean;
+  skipPaths?: string[];
 }

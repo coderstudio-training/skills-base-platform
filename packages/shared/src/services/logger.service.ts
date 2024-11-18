@@ -9,9 +9,9 @@ import {
 import { createConsoleTransport } from '../transports/console.transport';
 import { createFileTransport } from '../transports/file.transport';
 import { createLokiTransport } from '../transports/loki.transport';
-import { ErrorTracker } from './error-tracker.util';
-import { maskSensitiveData } from './logging.security.util';
-import { StringUtils } from './string.utils';
+import { ErrorTracker } from '../utils/error-tracker.util';
+import { maskSensitiveData } from '../utils/logging.security.util';
+import { StringUtils } from '../utils/string.utils';
 
 @Injectable()
 export class Logger {

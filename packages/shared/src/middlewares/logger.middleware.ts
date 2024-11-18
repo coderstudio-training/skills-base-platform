@@ -4,8 +4,8 @@ import {
   RequestContext,
   ResponseContext,
 } from '../interfaces/logging.interfaces';
+import { Logger } from '../services/logger.service';
 import { HttpContextUtils } from '../utils/http.utils';
-import { Logger } from '../utils/logger.util';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {

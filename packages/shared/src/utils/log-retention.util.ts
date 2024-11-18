@@ -2,7 +2,7 @@ import { differenceInDays, parse } from 'date-fns';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { LogFileConfig } from '../interfaces/logging.interfaces';
-import { Logger } from './logger.util';
+import { Logger } from '../services/logger.service';
 
 export class LogRetentionManager {
   private checkInterval: NodeJS.Timeout | null = null;

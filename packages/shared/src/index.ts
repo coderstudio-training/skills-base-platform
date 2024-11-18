@@ -32,15 +32,15 @@ export * from './interceptors/logging.interceptor';
 export * from './interfaces/logging.interfaces';
 export * from './middlewares/logger.middleware';
 export * from './modules/logging.module';
-export * from './utils/logger.util';
+export * from './services/logger.service';
 
 // monitoring
-export * from './monitoring/controllers/metrics.controller';
-export * from './monitoring/decorators/metrics.decorators';
-export * from './monitoring/interceptors/metrics.interceptor';
-export * from './monitoring/monitoring.module';
-export * from './monitoring/services/prometheus.service';
-export * from './monitoring/services/system-metrics.service';
+export * from './controllers/metrics.controller';
+export * from './decorators/metrics.decorators';
+export * from './interceptors/metrics.interceptor';
+export * from './modules/monitoring.module';
+export * from './services/prometheus.service';
+export * from './services/system-metrics.service';
 
 // security
 export * from '@nestjs/cache-manager';

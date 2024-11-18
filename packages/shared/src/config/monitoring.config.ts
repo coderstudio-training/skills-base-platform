@@ -4,8 +4,8 @@ import {
   HttpMetricsConfig,
   MonitoringConfig,
   SystemMetricsConfig,
-} from '../monitoring.types';
-import { createDevelopmentConfig } from './environments/development.config';
+} from '../interfaces/monitoring.interfaces';
+import { createDevelopmentConfig } from './monitoring.environments/development.config';
 
 export class MonitoringConfigurationManager {
   private static instance: MonitoringConfigurationManager;

@@ -1,4 +1,4 @@
-import { MonitoringConfig } from 'src/monitoring/monitoring.types';
+import { MonitoringConfig } from '../../interfaces/monitoring.interfaces';
 
 export const createBaseConfig = (
   env: string,

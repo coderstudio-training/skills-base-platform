@@ -2,8 +2,8 @@
 import { promises as fs } from 'fs';
 import { dirname, join } from 'path';
 import { WinstonLoggerConfig } from '../interfaces/logging.interfaces';
+import { Logger } from '../services/logger.service';
 import { LogRetentionManager } from './log-retention.util';
-import { Logger } from './logger.util';
 
 export class LogFileWriter {
   private currentFileSize: number = 0;

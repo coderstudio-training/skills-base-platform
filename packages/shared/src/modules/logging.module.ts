@@ -1,108 +1,68 @@
-import {
-  DynamicModule,
-  Global,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  Provider,
-  RequestMethod,
-} from '@nestjs/common';
+import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigurationManager } from '../config/logging.config';
 import { LoggingInterceptor } from '../interceptors/logging.interceptor';
 import { LoggingModuleOptions } from '../interfaces/logging.interfaces';
 import { LoggerMiddleware } from '../middlewares/logger.middleware';
-import { Logger } from '../utils/logger.util';
+import { Logger } from '../services/logger.service';
 import { StringUtils } from '../utils/string.utils';
-
-const DEFAULT_SKIP_PATHS = ['/health', '/metrics'];
-
-export interface LoggingModuleFactoryOptions extends LoggingModuleOptions {
-  enableRequestLogging?: boolean;
-  enableGlobalInterceptor?: boolean;
-  enableMiddleware?: boolean;
-  skipPaths?: string[];
-}
 
 @Global()
 @Module({})
-export class LoggingModule implements NestModule {
-  private static enableMiddleware = true;
-  private static skipPaths: string[] = [...DEFAULT_SKIP_PATHS];
-
-  configure(consumer: MiddlewareConsumer) {
-    if (LoggingModule.enableMiddleware) {
-      consumer
-        .apply(LoggerMiddleware)
-        .exclude(
-          ...LoggingModule.skipPaths.map((path) => ({
-            path,
-            method: RequestMethod.ALL,
-          })),
-        )
-        .forRoutes('*');
-    }
-  }
-
-  private static createInterceptorProvider(): Provider {
-    return {
-      provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
-    };
-  }
-
-  private static createLoggerProvider(
-    config?: LoggingModuleOptions['config'],
-  ): Provider {
+export class LoggingModule {
+  // Create Logger Provider with a specific token
+  private static createLoggerProvider(): Provider {
     return {
       provide: Logger,
       useFactory: () => {
         const configManager = ConfigurationManager.getInstance();
-
-        if (config) {
-          configManager.updateConfig(config);
-        }
-
         return new Logger('root', configManager.getLoggerConfig());
       },
     };
   }
 
-  static forRoot(options: LoggingModuleFactoryOptions = {}): DynamicModule {
+  // Create Interceptor Provider with proper injection
+  private static createInterceptorProvider(): Provider {
+    return {
+      provide: APP_INTERCEPTOR,
+      useFactory: (logger: Logger) => {
+        return new LoggingInterceptor(logger);
+      },
+      inject: [Logger], // Explicitly inject Logger
+    };
+  }
+
+  static forRoot(options: LoggingModuleOptions = {}): DynamicModule {
     const {
       serviceName,
       environment,
-      config,
-      environmentConfigs,
       enableRequestLogging = true,
       enableGlobalInterceptor = true,
-      enableMiddleware = true,
-      skipPaths = [],
     } = options;
 
-    LoggingModule.enableMiddleware = enableMiddleware;
-    // Combine default skip paths with custom skip paths
-    LoggingModule.skipPaths = [...DEFAULT_SKIP_PATHS, ...skipPaths];
-
-    const configManager = ConfigurationManager.getInstance();
-
+    // Set environment if provided
     if (environment) {
       process.env.NODE_ENV = environment;
     }
 
-    if (environmentConfigs) {
-      configManager.setEnvironmentConfigs(environmentConfigs);
+    // Set global service name
+    if (serviceName) {
+      Logger.setGlobalService(StringUtils.validateServiceName(serviceName));
     }
 
-    Logger.setGlobalService(StringUtils.validateServiceName(serviceName));
+    // Always include the Logger provider
+    const providers: Provider[] = [LoggingModule.createLoggerProvider()];
 
-    const providers: Provider[] = [
-      this.createLoggerProvider(config),
-      LoggerMiddleware,
-    ];
+    // Include the LoggerMiddleware with Logger injection
+    providers.push({
+      provide: LoggerMiddleware,
+      useFactory: (logger: Logger) => new LoggerMiddleware(logger),
+      inject: [Logger],
+    });
 
+    // Add interceptor if enabled
     if (enableRequestLogging && enableGlobalInterceptor) {
-      providers.push(this.createInterceptorProvider());
+      providers.push(LoggingModule.createInterceptorProvider());
     }
 
     return {
@@ -113,96 +73,11 @@ export class LoggingModule implements NestModule {
     };
   }
 
-  static forFeature(options: LoggingModuleOptions = {}): DynamicModule {
-    const { serviceName, config } = options;
-
+  static forFeature(): DynamicModule {
     return {
       module: LoggingModule,
-      providers: [
-        {
-          provide: Logger,
-          useFactory: () => {
-            const configManager = ConfigurationManager.getInstance();
-
-            if (config) {
-              configManager.updateConfig(config);
-            }
-
-            return new Logger(
-              StringUtils.validateServiceName(serviceName),
-              configManager.getLoggerConfig(),
-            );
-          },
-        },
-        LoggerMiddleware,
-      ],
+      providers: [LoggingModule.createLoggerProvider()],
       exports: [Logger],
-    };
-  }
-
-  static forRootAsync(
-    options: LoggingModuleFactoryOptions & {
-      imports?: any[];
-      inject?: any[];
-      useFactory: (
-        ...args: any[]
-      ) => Promise<LoggingModuleOptions> | LoggingModuleOptions;
-    },
-  ): DynamicModule {
-    const {
-      imports,
-      inject,
-      useFactory,
-      enableRequestLogging = true,
-      enableGlobalInterceptor = true,
-      enableMiddleware = true,
-      skipPaths = [],
-    } = options;
-
-    LoggingModule.enableMiddleware = enableMiddleware;
-    // Combine default skip paths with custom skip paths
-    LoggingModule.skipPaths = [...DEFAULT_SKIP_PATHS, ...skipPaths];
-
-    const asyncLoggerProvider: Provider = {
-      provide: Logger,
-      useFactory: async (...args: any[]) => {
-        const moduleOptions = await useFactory(...args);
-        const configManager = ConfigurationManager.getInstance();
-
-        if (moduleOptions.environmentConfigs) {
-          configManager.setEnvironmentConfigs(moduleOptions.environmentConfigs);
-        }
-
-        if (moduleOptions.config) {
-          configManager.updateConfig(moduleOptions.config);
-        }
-
-        if (moduleOptions.environment) {
-          process.env.NODE_ENV = moduleOptions.environment;
-        }
-
-        const validServiceName = StringUtils.validateServiceName(
-          moduleOptions.serviceName,
-        );
-        Logger.setGlobalService(validServiceName);
-
-        return new Logger('root', configManager.getLoggerConfig());
-      },
-      inject: inject || [],
-    };
-
-    const providers: Provider[] = [asyncLoggerProvider, LoggerMiddleware];
-
-    if (enableRequestLogging && enableGlobalInterceptor) {
-      providers.push(this.createInterceptorProvider());
-    }
-
-    return {
-      module: LoggingModule,
-      imports: imports || [],
-      providers,
-      exports: [Logger],
-      global: true,
     };
   }
 }

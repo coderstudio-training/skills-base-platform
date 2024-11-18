@@ -1,10 +1,10 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common';
-import { MonitoringConfigurationManager } from './config/monitoring.config';
-import { MetricsController } from './controllers/metrics.controller';
-import { MetricsInterceptor } from './interceptors/metrics.interceptor';
-import { MonitoringConfig } from './monitoring.types';
-import { ApplicationMetricsService } from './services/prometheus.service';
-import { SystemMetricsService } from './services/system-metrics.service';
+import { MonitoringConfigurationManager } from '../config/monitoring.config';
+import { MetricsController } from '../controllers/metrics.controller';
+import { MetricsInterceptor } from '../interceptors/metrics.interceptor';
+import { MonitoringConfig } from '../interfaces/monitoring.interfaces';
+import { ApplicationMetricsService } from '../services/prometheus.service';
+import { SystemMetricsService } from '../services/system-metrics.service';
 
 @Module({})
 export class MonitoringModule {

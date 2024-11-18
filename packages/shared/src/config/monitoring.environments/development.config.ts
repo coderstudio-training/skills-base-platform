@@ -1,4 +1,4 @@
-import { MonitoringConfig } from '../../monitoring.types';
+import { MonitoringConfig } from '../../interfaces/monitoring.interfaces';
 import { createBaseConfig } from './base.config';
 
 export const createDevelopmentConfig = (
