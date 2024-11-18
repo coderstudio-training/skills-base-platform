@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { RateLimitException } from '../exceptions/rate-limit.exception';
+import { SecurityConfig } from '../interfaces/security.interfaces';
 import {
   SecurityEventType,
   SecurityMonitoringService,
-} from '../security-monitoring.service';
-import { SecurityConfig } from '../security.types';
+} from '../services/security-monitoring.service';
 
 @Injectable()
 export class RateLimitGuard {

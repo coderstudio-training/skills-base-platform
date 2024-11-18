@@ -18,76 +18,62 @@ export class MetricsInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    // Get HTTP request details
+    const req = context.switchToHttp().getRequest();
+    const method = req.method;
+    const path = req.route?.path || req.path;
+
+    // Get metric configuration from decorator if present
     const metricConfig = this.reflector.get<MetricOptions>(
       METRIC_KEY,
       context.getHandler(),
     );
-    const req = context.switchToHttp().getRequest();
-    const method = req.method;
-    const path = req.route?.path || req.path;
+
     const startTime = Date.now();
 
+    // Track request start
     this.metricsService.trackHttpRequestProgress(method, path, true);
 
     return next.handle().pipe(
       tap({
-        next: () => this.handleSuccess(context, startTime, metricConfig),
-        error: (error) =>
-          this.handleError(context, startTime, error, metricConfig),
+        next: () => {
+          const duration = (Date.now() - startTime) / 1000;
+          const res = context.switchToHttp().getResponse();
+
+          // Track successful request
+          this.metricsService.trackHttpRequest(
+            method,
+            path,
+            res.statusCode,
+            duration,
+          );
+          this.metricsService.trackHttpRequestProgress(method, path, false);
+
+          // Track business metric if configured
+          if (metricConfig?.eventType) {
+            this.metricsService.trackBusinessEvent(
+              metricConfig.eventType,
+              'success',
+            );
+          }
+        },
+        error: (error) => {
+          const duration = (Date.now() - startTime) / 1000;
+          const status = error.status || 500;
+
+          // Track failed request
+          this.metricsService.trackHttpRequest(method, path, status, duration);
+          this.metricsService.trackHttpRequestProgress(method, path, false);
+
+          // Track business metric failure if configured
+          if (metricConfig?.eventType) {
+            this.metricsService.trackBusinessEvent(
+              metricConfig.eventType,
+              'error',
+            );
+          }
+        },
       }),
     );
-  }
-
-  private handleSuccess(
-    context: ExecutionContext,
-    startTime: number,
-    metricConfig?: MetricOptions,
-  ): void {
-    const req = context.switchToHttp().getRequest();
-    const res = context.switchToHttp().getResponse();
-    const duration = (Date.now() - startTime) / 1000;
-
-    this.metricsService.trackHttpRequest(
-      req.method,
-      req.route?.path || req.path,
-      res.statusCode,
-      duration,
-    );
-    this.metricsService.trackHttpRequestProgress(
-      req.method,
-      req.route?.path || req.path,
-      false,
-    );
-
-    if (metricConfig?.eventType) {
-      this.metricsService.trackBusinessEvent(metricConfig.eventType, 'success');
-    }
-  }
-
-  private handleError(
-    context: ExecutionContext,
-    startTime: number,
-    error: any,
-    metricConfig?: MetricOptions,
-  ): void {
-    const req = context.switchToHttp().getRequest();
-    const duration = (Date.now() - startTime) / 1000;
-    const status = error.status || 500;
-
-    this.metricsService.trackHttpRequest(
-      req.method,
-      req.route?.path || req.path,
-      status,
-      duration,
-    );
-    this.metricsService.trackHttpRequestProgress(
-      req.method,
-      req.route?.path || req.path,
-      false,
-    );
-
-    if (metricConfig?.eventType) {
-      this.metricsService.trackBusinessEvent(metricConfig.eventType, 'error');
-    }
   }
 }

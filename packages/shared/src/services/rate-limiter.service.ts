@@ -3,7 +3,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { Cache } from 'cache-manager';
 import { Request } from 'express';
 import { RateLimitException } from '../exceptions/rate-limit.exception';
-import { RateLimitConfig, SecurityConfig } from '../security.types';
+import {
+  RateLimitConfig,
+  SecurityConfig,
+} from '../interfaces/security.interfaces';
 
 @Injectable()
 export class RateLimiter {

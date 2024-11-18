@@ -1,5 +1,8 @@
-import { PartialSecurityConfig, SecurityConfig } from '../security.types';
-import { createDevelopmentConfig } from './environments/development.config';
+import {
+  PartialSecurityConfig,
+  SecurityConfig,
+} from '../interfaces/security.interfaces';
+import { createDevelopmentConfig } from './security.environments/development.config';
 
 // config/security.config.ts
 export class SecurityConfigurationManager {

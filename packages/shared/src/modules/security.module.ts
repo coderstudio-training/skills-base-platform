@@ -1,14 +1,14 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, Module, Provider } from '@nestjs/common';
-import { SecurityConfigurationManager } from './config/security.config';
-import { ApiKeyGuard } from './guards/api-key.guard';
-import { IpWhitelistGuard } from './guards/ip.guard';
-import { RateLimitGuard } from './guards/rate-limit.guard';
-import { SecurityMiddleware } from './middlewares/security.middleware';
-import { RateLimiter } from './rate-limit/rate-limiter';
-import { SecurityMonitoringService } from './security-monitoring.service';
-import { PartialSecurityConfig } from './security.types';
-import { RequestValidationMiddleware } from './validators/request.validator';
+import { SecurityConfigurationManager } from '../config/security.config';
+import { ApiKeyGuard } from '../guards/api-key.guard';
+import { IpWhitelistGuard } from '../guards/ip.guard';
+import { RateLimitGuard } from '../guards/rate-limit.guard';
+import { PartialSecurityConfig } from '../interfaces/security.interfaces';
+import { SecurityMiddleware } from '../middlewares/security.middleware';
+import { RateLimiter } from '../services/rate-limiter.service';
+import { SecurityMonitoringService } from '../services/security-monitoring.service';
+import { SecurityValidationMiddleware } from '../validators/security.validator';
 
 @Module({})
 export class SecurityModule {
@@ -37,7 +37,7 @@ export class SecurityModule {
       ApiKeyGuard,
       IpWhitelistGuard,
       SecurityMiddleware,
-      RequestValidationMiddleware,
+      SecurityValidationMiddleware,
     ];
 
     return {

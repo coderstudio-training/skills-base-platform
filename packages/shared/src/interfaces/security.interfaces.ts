@@ -60,3 +60,24 @@ export interface PartialSecurityConfig {
   ipWhitelist?: PartialIpWhitelistConfig;
   payload?: PartialPayloadConfig;
 }
+export interface ValidationConfig {
+  payload: {
+    maxSize: number;
+    allowedContentTypes: string[];
+  };
+  headers: {
+    required: string[];
+    forbidden: string[];
+  };
+  patterns: {
+    sql: RegExp[];
+    xss: RegExp[];
+    paths: RegExp[];
+    commands: RegExp[];
+  };
+  sanitization: {
+    enabled: boolean;
+    allowedTags: string[];
+    allowedAttributes: Record<string, string[]>;
+  };
+}

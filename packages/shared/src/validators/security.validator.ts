@@ -8,35 +8,16 @@ import {
 import { NextFunction, Request, Response } from 'express';
 import sanitizeHtml from 'sanitize-html';
 import {
+  SecurityConfig,
+  ValidationConfig,
+} from '../interfaces/security.interfaces';
+import {
   SecurityEventType,
   SecurityMonitoringService,
-} from '../security-monitoring.service';
-import { SecurityConfig } from '../security.types';
-
-export interface ValidationConfig {
-  payload: {
-    maxSize: number;
-    allowedContentTypes: string[];
-  };
-  headers: {
-    required: string[];
-    forbidden: string[];
-  };
-  patterns: {
-    sql: RegExp[];
-    xss: RegExp[];
-    paths: RegExp[];
-    commands: RegExp[];
-  };
-  sanitization: {
-    enabled: boolean;
-    allowedTags: string[];
-    allowedAttributes: Record<string, string[]>;
-  };
-}
+} from '../services/security-monitoring.service';
 
 @Injectable()
-export class RequestValidationMiddleware implements NestMiddleware {
+export class SecurityValidationMiddleware implements NestMiddleware {
   private readonly config: ValidationConfig;
 
   constructor(

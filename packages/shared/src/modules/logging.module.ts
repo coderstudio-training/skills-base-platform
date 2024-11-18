@@ -1,4 +1,12 @@
-import { DynamicModule, Global, Module, Provider } from '@nestjs/common';
+import {
+  DynamicModule,
+  Global,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  Provider,
+  RequestMethod,
+} from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigurationManager } from '../config/logging.config';
 import { LoggingInterceptor } from '../interceptors/logging.interceptor';
@@ -7,62 +15,62 @@ import { LoggerMiddleware } from '../middlewares/logger.middleware';
 import { Logger } from '../services/logger.service';
 import { StringUtils } from '../utils/string.utils';
 
+const DEFAULT_SKIP_PATHS = ['/health', '/metrics'];
+
 @Global()
 @Module({})
-export class LoggingModule {
-  // Create Logger Provider with a specific token
-  private static createLoggerProvider(): Provider {
-    return {
-      provide: Logger,
-      useFactory: () => {
-        const configManager = ConfigurationManager.getInstance();
-        return new Logger('root', configManager.getLoggerConfig());
-      },
-    };
-  }
+export class LoggingModule implements NestModule {
+  private static skipPaths: string[] = [...DEFAULT_SKIP_PATHS];
 
-  // Create Interceptor Provider with proper injection
-  private static createInterceptorProvider(): Provider {
-    return {
-      provide: APP_INTERCEPTOR,
-      useFactory: (logger: Logger) => {
-        return new LoggingInterceptor(logger);
-      },
-      inject: [Logger], // Explicitly inject Logger
-    };
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .exclude(
+        ...LoggingModule.skipPaths.map((path) => ({
+          path,
+          method: RequestMethod.ALL,
+        })),
+      )
+      .forRoutes('*');
   }
 
   static forRoot(options: LoggingModuleOptions = {}): DynamicModule {
     const {
       serviceName,
       environment,
-      enableRequestLogging = true,
       enableGlobalInterceptor = true,
+      skipPaths = [],
     } = options;
 
-    // Set environment if provided
+    // Combine default skip paths with custom skip paths
+    LoggingModule.skipPaths = [...DEFAULT_SKIP_PATHS, ...skipPaths];
+
     if (environment) {
       process.env.NODE_ENV = environment;
     }
 
     // Set global service name
-    if (serviceName) {
-      Logger.setGlobalService(StringUtils.validateServiceName(serviceName));
-    }
+    const validServiceName = StringUtils.validateServiceName(serviceName);
+    Logger.setGlobalService(validServiceName);
 
-    // Always include the Logger provider
-    const providers: Provider[] = [LoggingModule.createLoggerProvider()];
+    const providers: Provider[] = [
+      // Base Logger Provider
+      {
+        provide: Logger,
+        useFactory: () => {
+          const configManager = ConfigurationManager.getInstance();
+          return new Logger('root', configManager.getLoggerConfig());
+        },
+      },
+      LoggerMiddleware,
+    ];
 
-    // Include the LoggerMiddleware with Logger injection
-    providers.push({
-      provide: LoggerMiddleware,
-      useFactory: (logger: Logger) => new LoggerMiddleware(logger),
-      inject: [Logger],
-    });
-
-    // Add interceptor if enabled
-    if (enableRequestLogging && enableGlobalInterceptor) {
-      providers.push(LoggingModule.createInterceptorProvider());
+    // Add global interceptor if enabled
+    if (enableGlobalInterceptor) {
+      providers.push({
+        provide: APP_INTERCEPTOR,
+        useClass: LoggingInterceptor,
+      });
     }
 
     return {
@@ -73,10 +81,23 @@ export class LoggingModule {
     };
   }
 
-  static forFeature(): DynamicModule {
+  static forFeature(options: LoggingModuleOptions = {}): DynamicModule {
+    const { serviceName } = options;
+
     return {
       module: LoggingModule,
-      providers: [LoggingModule.createLoggerProvider()],
+      providers: [
+        {
+          provide: Logger,
+          useFactory: () => {
+            const configManager = ConfigurationManager.getInstance();
+            return new Logger(
+              StringUtils.validateServiceName(serviceName),
+              configManager.getLoggerConfig(),
+            );
+          },
+        },
+      ],
       exports: [Logger],
     };
   }

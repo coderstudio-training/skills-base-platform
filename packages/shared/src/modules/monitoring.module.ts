@@ -1,4 +1,5 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { MonitoringConfigurationManager } from '../config/monitoring.config';
 import { MetricsController } from '../controllers/metrics.controller';
 import { MetricsInterceptor } from '../interceptors/metrics.interceptor';
@@ -32,6 +33,10 @@ export class MonitoringModule {
         useFactory: () => new SystemMetricsService(finalConfig.serviceName),
       },
       MetricsInterceptor,
+      {
+        provide: APP_INTERCEPTOR,
+        useClass: MetricsInterceptor,
+      },
     ];
 
     const exports = [
@@ -41,7 +46,6 @@ export class MonitoringModule {
       'MONITORING_CONFIG',
     ];
 
-    // Only include controllers if metrics are enabled
     const controllers = finalConfig.enabled ? [MetricsController] : [];
 
     return {

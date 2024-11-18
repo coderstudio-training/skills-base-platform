@@ -44,14 +44,14 @@ export * from './services/system-metrics.service';
 
 // security
 export * from '@nestjs/cache-manager';
-export * from './security/decorators/rate-limit.decorator';
-export * from './security/decorators/require-api-key.decorator';
-export * from './security/exceptions/rate-limit.exception';
-export * from './security/guards/api-key.guard';
-export * from './security/guards/ip.guard';
-export * from './security/guards/rate-limit.guard';
-export * from './security/middlewares/security.middleware';
-export * from './security/security-monitoring.service';
-export * from './security/security.module';
-export * from './security/security.types';
-export * from './security/validators/request.validator';
+export * from './decorators/rate-limit.decorator';
+export * from './decorators/require-api-key.decorator';
+export * from './exceptions/rate-limit.exception';
+export * from './guards/api-key.guard';
+export * from './guards/ip.guard';
+export * from './guards/rate-limit.guard';
+export * from './interfaces/security.interfaces';
+export * from './middlewares/security.middleware';
+export * from './modules/security.module';
+export * from './services/security-monitoring.service';
+export * from './validators/security.validator';
