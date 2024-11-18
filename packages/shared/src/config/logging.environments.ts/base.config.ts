@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { LogLevel } from '../../types';
+import { LogLevel } from '../../interfaces/logging.interfaces';
 
 export const getDefaultLogPath = (env: string): string => {
   if (['development', 'test'].includes(env)) {

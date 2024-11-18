@@ -1,42 +1,97 @@
-// src/middlewares/logger.middleware.ts
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
-import { v4 as uuidv4 } from 'uuid';
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { NextFunction, Request, Response } from 'express';
+import {
+  RequestContext,
+  ResponseContext,
+} from '../interfaces/logging.interfaces';
+import { HttpContextUtils } from '../utils/http.utils';
+import { Logger } from '../utils/logger.util';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  private readonly logger = new Logger(LoggerMiddleware.name);
+  constructor(private readonly logger: Logger) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    const requestId = uuidv4();
     const startTime = Date.now();
+    const requestContext = HttpContextUtils.getRequestContext(req);
 
-    // Log request details
-    this.logger.log({
-      message: 'Incoming request',
-      requestId,
-      method: req.method,
-      url: req.originalUrl,
-      ip: req.ip,
-      userAgent: req.get('User-Agent'),
-    });
+    // Ensure correlation ID is set in request headers
+    req.headers['x-correlation-id'] = requestContext.correlationId;
 
-    // Add requestId to response headers
-    res.setHeader('X-Request-ID', requestId);
+    // Log incoming request
+    this.logRequest(requestContext);
 
-    // Log response details after the request is processed
-    res.on('finish', () => {
-      const duration = Date.now() - startTime;
-      this.logger.log({
-        message: 'Request completed',
-        requestId,
-        method: req.method,
-        url: req.originalUrl,
-        statusCode: res.statusCode,
-        duration: `${duration}ms`,
-      });
-    });
+    // Intercept response
+    this.interceptResponse(req, res, startTime, requestContext);
 
     next();
+  }
+
+  private logRequest(context: RequestContext): void {
+    this.logger.info(`Incoming ${context.method} ${context.path}`, {
+      type: 'request.incoming',
+      correlationId: context.correlationId,
+      userAgent: context.userAgent,
+      ip: context.ip,
+    });
+  }
+
+  private interceptResponse(
+    req: Request,
+    res: Response,
+    startTime: number,
+    requestContext: RequestContext,
+  ): void {
+    const chunks: Buffer[] = [];
+
+    // Intercept write operations to calculate response size
+    res.write = new Proxy(res.write, {
+      apply: (target, thisArg, args) => {
+        const chunk = args[0];
+        if (chunk) {
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+        return Reflect.apply(target, thisArg, args);
+      },
+    });
+
+    // Intercept end operation to log response
+    res.end = new Proxy(res.end, {
+      apply: (target, thisArg, args) => {
+        const chunk = args[0];
+        if (chunk) {
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+
+        const duration = Date.now() - startTime;
+        const responseSize = Buffer.concat(chunks).length;
+
+        this.logResponse({
+          ...requestContext,
+          statusCode: res.statusCode,
+          duration,
+          responseSize,
+        });
+
+        return Reflect.apply(target, thisArg, args);
+      },
+    });
+  }
+
+  private logResponse(context: ResponseContext): void {
+    const { statusCode, duration } = context;
+    const logLevel =
+      statusCode >= 500 ? 'error' : statusCode >= 400 ? 'warn' : 'info';
+
+    this.logger[logLevel](
+      `Completed ${context.method} ${context.path} ${statusCode} ${duration}ms`,
+      {
+        type: 'request.complete',
+        correlationId: context.correlationId,
+        statusCode: context.statusCode,
+        duration: context.duration,
+        responseSize: context.responseSize,
+      },
+    );
   }
 }

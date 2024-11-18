@@ -1,6 +1,6 @@
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
-import { WinstonLoggerConfig } from '../types';
+import { WinstonLoggerConfig } from '../interfaces/logging.interfaces';
 import { createJsonFormat } from '../utils/formatter.util';
 
 export const createFileTransport = (

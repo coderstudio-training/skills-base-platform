@@ -1,21 +1,21 @@
 import { join } from 'path';
-import { LogLevel } from '../../types';
+import { LogLevel } from '../../interfaces/logging.interfaces';
 import { createBaseConfig } from './base.config';
 
-export const createStagingConfig = (env: string, appVersion: string) => {
+export const createProductionConfig = (env: string, appVersion: string) => {
   const baseConfig = createBaseConfig(env, appVersion);
 
   return {
     logger: {
       ...baseConfig.logger,
-      level: LogLevel.DEBUG,
+      level: LogLevel.INFO,
       format: 'json' as 'json' | 'text',
-      outputs: ['console', 'file'] as ('console' | 'file')[],
-      filename: join('/var/log/app-staging', `${env}-app.log`),
+      outputs: ['console', 'file', 'loki'] as ('console' | 'file' | 'loki')[],
+      filename: join('/var/log/app', `${env}-app.log`),
       file: {
-        path: '/var/log/app-staging',
-        namePattern: `${env}-app-%DATE%.log`,
-        rotatePattern: 'YYYY-MM-DD',
+        path: '/var/log/app',
+        namePattern: 'app-%DATE%.log',
+        rotatePattern: 'YYYY-MM-DD-HH',
         permissions: 0o644,
         compress: true,
         retention: {
@@ -27,7 +27,8 @@ export const createStagingConfig = (env: string, appVersion: string) => {
     },
     errorTracker: {
       ...baseConfig.errorTracker,
-      contextLines: 5,
+      sampleRate: 1,
+      maxStackFrames: 20,
     },
   };
 };

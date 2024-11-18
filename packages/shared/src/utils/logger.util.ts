@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import * as os from 'os';
 import * as winston from 'winston';
-import { ConfigurationManager } from './config/logging.config';
-import { createConsoleTransport } from './transports/console.transport';
-import { createFileTransport } from './transports/file.transport';
-import { createLokiTransport } from './transports/loki.transport';
-import { LogContext, WinstonLoggerConfig } from './types';
-import { ErrorTracker } from './utils/error-tracker.util';
-import { maskSensitiveData } from './utils/logging.security.util';
-import { StringUtils } from './utils/string.utils';
+import { ConfigurationManager } from '../config/logging.config';
+import {
+  LogContext,
+  WinstonLoggerConfig,
+} from '../interfaces/logging.interfaces';
+import { createConsoleTransport } from '../transports/console.transport';
+import { createFileTransport } from '../transports/file.transport';
+import { createLokiTransport } from '../transports/loki.transport';
+import { ErrorTracker } from './error-tracker.util';
+import { maskSensitiveData } from './logging.security.util';
+import { StringUtils } from './string.utils';
 
 @Injectable()
 export class Logger {

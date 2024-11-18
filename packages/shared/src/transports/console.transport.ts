@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import { WinstonLoggerConfig } from '../types';
+import { WinstonLoggerConfig } from '../interfaces/logging.interfaces';
 import { createConsoleFormat } from '../utils/formatter.util';
 
 export const createConsoleTransport = (

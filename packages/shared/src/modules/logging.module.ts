@@ -8,12 +8,12 @@ import {
   RequestMethod,
 } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { Logger } from './';
-import { ConfigurationManager } from './config/logging.config';
-import { LoggingInterceptor } from './interceptors/logging.interceptor';
-import { LoggerMiddleware } from './middlewares/logger.middleware';
-import { LoggingModuleOptions } from './types';
-import { StringUtils } from './utils/string.utils';
+import { ConfigurationManager } from '../config/logging.config';
+import { LoggingInterceptor } from '../interceptors/logging.interceptor';
+import { LoggingModuleOptions } from '../interfaces/logging.interfaces';
+import { LoggerMiddleware } from '../middlewares/logger.middleware';
+import { Logger } from '../utils/logger.util';
+import { StringUtils } from '../utils/string.utils';
 
 const DEFAULT_SKIP_PATHS = ['/health', '/metrics'];
 

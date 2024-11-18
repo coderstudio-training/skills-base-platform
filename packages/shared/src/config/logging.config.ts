@@ -3,11 +3,11 @@ import {
   LoggingConfig,
   LogLevel,
   WinstonLoggerConfig,
-} from '../types';
-import { createDevelopmentConfig } from './environments.ts/development.config';
-import { createProductionConfig } from './environments.ts/production.config';
-import { createStagingConfig } from './environments.ts/staging.config';
-import { createTestConfig } from './environments.ts/test.config';
+} from '../interfaces/logging.interfaces';
+import { createDevelopmentConfig } from './logging.environments.ts/development.config';
+import { createProductionConfig } from './logging.environments.ts/production.config';
+import { createStagingConfig } from './logging.environments.ts/staging.config';
+import { createTestConfig } from './logging.environments.ts/test.config';
 
 export class ConfigurationManager {
   private static instance: ConfigurationManager;

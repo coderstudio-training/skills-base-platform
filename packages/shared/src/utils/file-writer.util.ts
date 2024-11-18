@@ -1,9 +1,9 @@
 // utils/file-writer.ts
 import { promises as fs } from 'fs';
 import { dirname, join } from 'path';
-import { Logger } from '..';
-import { WinstonLoggerConfig } from '../types';
+import { WinstonLoggerConfig } from '../interfaces/logging.interfaces';
 import { LogRetentionManager } from './log-retention.util';
+import { Logger } from './logger.util';
 
 export class LogFileWriter {
   private currentFileSize: number = 0;

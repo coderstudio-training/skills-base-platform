@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { LogLevel } from '../../types';
+import { LogLevel } from '../../interfaces/logging.interfaces';
 import { createBaseConfig } from './base.config';
 
 export const createTestConfig = (env: string, appVersion: string) => {

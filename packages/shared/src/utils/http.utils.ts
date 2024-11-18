@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { RequestContext } from '../types';
+import { RequestContext } from '../interfaces/logging.interfaces';
 
 export class HttpContextUtils {
   static normalizeUrl(url: string): string {

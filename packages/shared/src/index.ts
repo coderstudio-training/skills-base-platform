@@ -28,11 +28,11 @@ export * from './utils/date.util';
 export * from './utils/validation.util';
 
 // logging
-export * from './logging';
-export * from './logging/interceptors/logging.interceptor';
-export * from './logging/logging.module';
-export * from './logging/middlewares/logger.middleware';
-export * from './logging/types';
+export * from './interceptors/logging.interceptor';
+export * from './interfaces/logging.interfaces';
+export * from './middlewares/logger.middleware';
+export * from './modules/logging.module';
+export * from './utils/logger.util';
 
 // monitoring
 export * from './monitoring/controllers/metrics.controller';

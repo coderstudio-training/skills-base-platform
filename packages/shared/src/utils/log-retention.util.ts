@@ -1,8 +1,8 @@
 import { differenceInDays, parse } from 'date-fns';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { Logger } from '..';
-import { LogFileConfig } from '../types';
+import { LogFileConfig } from '../interfaces/logging.interfaces';
+import { Logger } from './logger.util';
 
 export class LogRetentionManager {
   private checkInterval: NodeJS.Timeout | null = null;
