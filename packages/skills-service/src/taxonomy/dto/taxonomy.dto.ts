@@ -85,7 +85,7 @@ export class S_TaxonomyDTO extends BaseDto {
 
   @IsObject()
   @IsNotEmptyObject()
-  profiencyDescription!: Record<string, string[]>;
+  proficiencyDescription!: Record<string, string[]>;
 
   @IsObject()
   @IsNotEmptyObject()
