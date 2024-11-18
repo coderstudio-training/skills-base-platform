@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { BulkWriteResult } from 'mongodb';
 import { Connection, Model } from 'mongoose';
-import { BulkUpsertTaxonomyDTO, TaxonomyDTO } from './dto/taxonomy.dto';
-import { Taxonomy, TaxonomyEntity } from './entities/taxonomy.entity';
+import { BulkUpsertTTaxonomyDTO, T_TaxonomyDTO } from './dto/taxonomy.dto';
+import { T_Taxonomy, T_TaxonomyEntity } from './entities/taxonomy.entity';
 
 @Injectable()
 export class TaxonomyService {
@@ -20,17 +20,17 @@ export class TaxonomyService {
     return `${abbreviation}_skillsInventory`;
   }
 
-  private getTaxonomyModel(businessUnit: string): Model<Taxonomy> {
+  private getTaxonomyModel(businessUnit: string): Model<T_Taxonomy> {
     const collectionName = this.getCollectionName(businessUnit);
-    return this.connection.model<Taxonomy>(
-      Taxonomy.name,
-      TaxonomyEntity,
+    return this.connection.model<T_Taxonomy>(
+      T_Taxonomy.name,
+      T_TaxonomyEntity,
       collectionName,
     );
   }
 
   async bulkUpsert(
-    dto: BulkUpsertTaxonomyDTO,
+    dto: BulkUpsertTTaxonomyDTO,
   ): Promise<{ updatedCount: number; errors: any[] }> {
     let totalUpdatedCount = 0;
     const errors = [];
@@ -64,7 +64,7 @@ export class TaxonomyService {
     return { updatedCount: totalUpdatedCount, errors };
   }
 
-  private async processBatch(batch: TaxonomyDTO[]): Promise<BulkWriteResult> {
+  private async processBatch(batch: T_TaxonomyDTO[]): Promise<BulkWriteResult> {
     // Use the businessUnit from the first item as an example (assuming uniformity in batch)
     const businessUnit = batch[0].businessUnit;
     const taxonomyModel = this.getTaxonomyModel(businessUnit);
@@ -91,7 +91,7 @@ export class TaxonomyService {
     return result as unknown as BulkWriteResult;
   }
 
-  async findAll(businessUnit: string): Promise<Taxonomy[]> {
+  async findAll(businessUnit: string): Promise<T_Taxonomy[]> {
     const taxonomyModel = this.getTaxonomyModel(businessUnit);
     return taxonomyModel.find().exec();
   }
@@ -99,7 +99,7 @@ export class TaxonomyService {
   async findByDocId(
     docId: string,
     businessUnit: string,
-  ): Promise<Taxonomy | null> {
+  ): Promise<T_Taxonomy | null> {
     const taxonomyModel = this.getTaxonomyModel(businessUnit);
     return taxonomyModel.findOne({ docId }).exec();
   }

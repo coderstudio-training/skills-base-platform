@@ -9,7 +9,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class TaxonomyDTO extends BaseDto {
+// technical skills
+export class T_TaxonomyDTO extends BaseDto {
   @IsString()
   @IsNotEmpty({ message: 'document id must not be empty!' })
   docId!: string;
@@ -56,8 +57,8 @@ export class TaxonomyDTO extends BaseDto {
   rangeOfApplication?: string[];
 }
 
-export class BulkUpsertTaxonomyDTO {
+export class BulkUpsertTTaxonomyDTO {
   @ValidateNested({ each: true })
-  @Type(() => TaxonomyDTO)
-  data!: TaxonomyDTO[];
+  @Type(() => T_TaxonomyDTO)
+  data!: T_TaxonomyDTO[];
 }

@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { BaseEntity } from '@skills-base/shared';
 
 @Schema()
-export class Taxonomy extends BaseEntity {
+export class T_Taxonomy extends BaseEntity {
   @Prop({ required: true, unique: true, index: true })
   docId!: string;
 
@@ -34,4 +34,4 @@ export class Taxonomy extends BaseEntity {
   rangeOfApplication?: string[];
 }
 
-export const TaxonomyEntity = SchemaFactory.createForClass(Taxonomy);
+export const T_TaxonomyEntity = SchemaFactory.createForClass(T_Taxonomy);

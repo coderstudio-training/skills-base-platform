@@ -18,7 +18,7 @@ import {
   UserRole,
 } from '@skills-base/shared';
 import { Request } from 'express';
-import { BulkUpsertTaxonomyDTO } from './dto/taxonomy.dto';
+import { BulkUpsertTTaxonomyDTO } from './dto/taxonomy.dto';
 import { TaxonomyService } from './taxonomy.service';
 @Controller('taxonomy')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -30,7 +30,7 @@ export class TaxonomyController {
 
   @Post('bulk-upsert')
   @Roles(UserRole.ADMIN)
-  async bulkUpsert(@Body() dto: BulkUpsertTaxonomyDTO) {
+  async bulkUpsert(@Body() dto: BulkUpsertTTaxonomyDTO) {
     return this.taxonomyService.bulkUpsert(dto);
   }
 
