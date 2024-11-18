@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { userApi } from '@/lib/api/client';
-import { errorMessages } from '@/lib/api/config';
+import { authConfig, errorMessages } from '@/lib/api/config';
 import { useMutation } from '@/lib/api/hooks';
 import { ApiResponse } from '@/lib/api/types';
 import { logger } from '@/lib/utils';
@@ -32,7 +32,7 @@ export default function LoginForm() {
   const { mutate, error, isLoading } = useMutation<
     AuthResponse,
     { email: string; password: string }
-  >(userApi, '/auth/login', 'POST', {
+  >(userApi, `${authConfig.endpoints.login}`, 'POST', {
     requiresAuth: false,
   });
 

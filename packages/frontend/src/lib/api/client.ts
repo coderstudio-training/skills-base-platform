@@ -36,7 +36,7 @@ export class ApiClient {
         return 'An error occurred';
     }
   }
-
+  // base class implementation alongside fetch
   private async handleResponse<T>(
     response: Response,
     requestInit?: RequestInit,
@@ -73,7 +73,7 @@ export class ApiClient {
       throw error;
     }
   }
-
+  // Used for 'GET' method, ergo useQuery
   private cachedFetch = cache(
     async <T>(
       endpoint: string,
@@ -111,7 +111,7 @@ export class ApiClient {
       }
     },
   );
-
+  // Generic retry logic available for all methods but implemented in 'GET'
   private async retryRequest<T>(url: string, requestInit: RequestInit): Promise<ApiResponse<T>> {
     let attempt = 0;
 
@@ -176,7 +176,7 @@ export class ApiClient {
     };
 
     try {
-      const response = await this.fetch(url.toString(), requestInit);
+      const response = await this.fetch(url.toString(), requestInit); // replace this block with return this.retryRequest<T>(url.toString(), requestInit) for retry logic
       return this.handleResponse<T>(response, requestInit);
     } catch (error) {
       return {

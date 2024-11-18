@@ -51,6 +51,7 @@ export default function ShowcaseDashboard() {
   const [rangeOfApplication, setRangeOfApplication] = useState('');
   const [businessUnit, setBusinessUnit] = useState('');
 
+  // not the proper implementation of RBAC.
   useEffect(() => {
     const checkPermission = async () => {
       const canView = await hasPermission('canViewDashboard');

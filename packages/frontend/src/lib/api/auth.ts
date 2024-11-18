@@ -79,13 +79,16 @@ export const authOptions: NextAuthOptions = {
       try {
         if (account?.provider === 'google') {
           // Call your user service to check/create user and get role
-          const response = await fetch(`${process.env.NEXT_PUBLIC_USER_SERVICE_URL}/auth/google`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              token: account.id_token,
-            }),
-          });
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_USER_SERVICE_URL}${authConfig.endpoints.googleAuth}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                token: account.id_token,
+              }),
+            },
+          );
           const data = await response.json();
           logger.log('Google Auth: ', JSON.stringify(data));
 
@@ -149,6 +152,7 @@ export const authOptions: NextAuthOptions = {
   debug: true,
 };
 
+// Handles the auth headers instead of manually calling getSession() all the time.
 export async function getAuthHeaders(): Promise<HeadersInit> {
   const session = await getSession();
 
@@ -160,6 +164,7 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
   return { Authorization: `Bearer ${session.user.accessToken}` };
 }
 
+// Auth management, to be used in conjunction with hasPermission or canAccessRoutes
 export async function getAuthState(): Promise<AuthState> {
   const session = await getSession();
 
@@ -172,11 +177,13 @@ export async function getAuthState(): Promise<AuthState> {
   };
 }
 
+// Helper function, gets logged in user's role
 export async function getRoles(): Promise<Roles[]> {
   const session = await getSession();
   return session?.user?.role ? [session.user.role] : [];
 }
 
+// Checks the predefined permissions list if user has permission
 export async function hasPermission(permission: Permission): Promise<boolean> {
   const roles = await getRoles();
 
@@ -185,6 +192,7 @@ export async function hasPermission(permission: Permission): Promise<boolean> {
   return roles.some(role => (rolePermissions as RolePermissions)[role][permission]);
 }
 
+// Checks the predefined routes if user has access
 export async function canAccessRoutes(route: string): Promise<boolean> {
   const roles = await getRoles();
 

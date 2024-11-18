@@ -125,7 +125,7 @@ export function useQuery<T>(
 
   return {
     ...state,
-    refetch: fetchData,
+    refetch: fetchData, // allows for more granularized control of data fetching
   };
 }
 
@@ -146,6 +146,7 @@ export function useMutation<T, TData = unknown>(
 
   const { isAuthenticated } = useAuth();
 
+  // function to initiate mutation (calling the Api)
   const mutate = async (data?: TData): Promise<ApiResponse<T>> => {
     if (options?.requiresAuth !== false && !isAuthenticated) {
       const error = {

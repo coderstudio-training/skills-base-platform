@@ -99,7 +99,6 @@ export const rolePermissions: RolePermissions = {
   },
 };
 
-// to be updated
 export const authConfig = {
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   endpoints: {
