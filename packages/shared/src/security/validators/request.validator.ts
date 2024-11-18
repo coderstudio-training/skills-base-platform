@@ -1,9 +1,9 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NestMiddleware,
   PayloadTooLargeException,
-  Inject,
 } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import sanitizeHtml from 'sanitize-html';
