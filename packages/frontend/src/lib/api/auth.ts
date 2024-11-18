@@ -200,3 +200,19 @@ export async function canAccessRoutes(route: string): Promise<boolean> {
 
   return roles.some(role => authConfig.routes[role].includes(route));
 }
+
+export async function isTokenExpired(token: string): Promise<boolean> {
+  try {
+    const [, payload] = token.split('.'); // Access the payload part of the JWT
+    if (!payload) return true;
+
+    const { exp } = JSON.parse(atob(payload)); // Decode the base64 payload
+    if (!exp) return true;
+
+    // Check if the token is expired
+    return Date.now() >= exp * 1000;
+  } catch (error) {
+    console.error('Error parsing token:', error);
+    return true; // Assume expired if parsing fails
+  }
+}

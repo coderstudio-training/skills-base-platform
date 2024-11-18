@@ -1,7 +1,8 @@
 'use client';
 
-import { getSession } from 'next-auth/react';
+import { getSession, signOut } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
+import { isTokenExpired } from './auth';
 import { learningApi, skillsApi, userApi } from './client';
 import { authConfig, rolePermissions } from './config';
 import { ApiError, ApiResponse, AuthState, Permission } from './types';
@@ -16,14 +17,23 @@ export function useAuth() {
   useEffect(() => {
     const fetchAuthState = async () => {
       const session = await getSession();
-      if (session) {
+      if (session && session.user?.accessToken) {
+        const tokenExpired = await isTokenExpired(session.user.accessToken);
+
+        if (tokenExpired) {
+          console.warn('Access token is expired. Logging out...');
+          await signOut({ callbackUrl: '/' });
+          return;
+        }
+
         setAuthState({
-          isAuthenticated: !!session.user?.accessToken,
+          isAuthenticated: true,
           user: session.user || null,
           role: session.user ? [session.user.role] : [],
         });
       }
     };
+
     fetchAuthState();
   }, []);
 
