@@ -1,260 +1,236 @@
 # Security Implementation Guide & Example
 
-# DISCLAIMER: THIS IS A WORK IN PROGRESS, MAY CAUSE ERRORS
+## Configuration Options
 
-### 1. Register the Security Module
+The module accepts a configuration object with the following structure:
+
+```typescript
+interface SecurityConfig {
+  rateLimit?: {
+    enabled?: boolean;
+    windowMs?: number;
+    max?: number;
+    skipPaths?: string[];
+  };
+  apiKey?: {
+    enabled?: boolean;
+    keys?: string[];
+    excludePaths?: string[];
+  };
+  ipWhitelist?: {
+    enabled?: boolean;
+    allowedIps?: string[];
+    allowedRanges?: string[];
+    maxFailedAttempts?: number;
+    blockDuration?: number;
+  };
+  payload?: {
+    maxSize?: number;
+    allowedContentTypes?: string[];
+  };
+}
+```
+
+## Implmentation Patterns
+
+### Minimal Implementation
+
+For basic security features with default settings:
 
 ```typescript
 // app.module.ts
 import { SecurityModule } from '@skills-base/shared';
 
 @Module({
-  imports: [
-    SecurityModule.forRoot({
-      rateLimit: {
-        enabled: true,
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100, // limit each IP to 100 requests per windowMs
-        skipPaths: ['/health', '/metrics'],
-      },
-      apiKey: {
-        enabled: true,
-        keys: ['your-api-key-1', 'your-api-key-2'],
-        excludePaths: ['/public'],
-      },
-      ipWhitelist: {
-        enabled: false,
-        allowedIps: [],
-      },
-      payloadLimit: {
-        maxSize: 5 * 1024 * 1024, // 5MB
-      },
-    }),
-    // ... other modules
-  ],
+  imports: [SecurityModule.forRoot({})],
 })
 export class AppModule {}
-```
 
-### 2. Apply Global Security Middleware
-
-```typescript
 // main.ts
-import { NestFactory } from '@nestjs/core';
-import { SecurityMiddleware } from '@skills-base/shared';
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  // Apply security middleware globally
-  app.use(app.get(SecurityMiddleware).use.bind(app.get(SecurityMiddleware)));
-
+  const securityMiddleware = app.get(SecurityMiddleware);
+  app.use(securityMiddleware);
   await app.listen(3000);
 }
-bootstrap();
 ```
 
-## Feature Usage
+### Full Implementation
 
-### Rate Limiting
-
-#### Method 1: Using Decorator (Recommended)
+For comprehensive security implementation:
 
 ```typescript
-import { RateLimit } from '@skills-base/shared';
+// security.config.ts
+import { SecurityConfig } from '@skills-base/shared';
+
+export const securityConfig: SecurityConfig = {
+  rateLimit: {
+    enabled: true,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    skipPaths: ['/health', '/metrics'],
+  },
+  apiKey: {
+    enabled: true,
+    keys: [process.env.API_KEY],
+    excludePaths: ['/public', '/health'],
+  },
+  ipWhitelist: {
+    enabled: true,
+    allowedIps: process.env.ALLOWED_IPS?.split(',') || [],
+    maxFailedAttempts: 5,
+    blockDuration: 30 * 60 * 1000, // 30 minutes
+  },
+  payload: {
+    maxSize: 10 * 1024 * 1024, // 10MB
+    allowedContentTypes: [
+      'application/json',
+      'application/x-www-form-urlencoded',
+      'multipart/form-data',
+    ],
+  },
+};
+
+// app.module.ts
+import { SecurityModule } from '@skills-base/shared';
+import { securityConfig } from './security.config';
+
+@Module({
+  imports: [SecurityModule.forRoot(securityConfig)],
+})
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(SecurityMiddleware, RequestValidationMiddleware).forRoutes('*');
+  }
+}
+
+// users.controller.ts
+import { Controller, Get, Post } from '@nestjs/common';
+import { RateLimit, RequireApiKey } from '@skills-base/shared';
 
 @Controller('users')
+@RequireApiKey()
 export class UsersController {
-  @RateLimit({ windowMs: 60000, max: 5 }) // 5 requests per minute
   @Get()
+  @RateLimit({ max: 50, windowMs: 60000 }) // 50 requests per minute
   findAll() {
     return this.usersService.findAll();
+  }
+
+  @Post()
+  @RateLimit({ max: 10, windowMs: 60000 }) // 10 requests per minute
+  create() {
+    return this.usersService.create();
   }
 }
 ```
 
-#### Method 2: Using Guard Directly
+## Feature Details
+
+### Rate Limiting
+
+Apply rate limiting using the `@RateLimit()` decorator:
 
 ```typescript
-import { RateLimitGuard } from '@skills-base/shared';
-
-@Controller('users')
-@UseGuards(RateLimitGuard)
-export class UsersController {
-  // ... controller methods
-}
+@RateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+})
 ```
 
 ### API Key Authentication
 
-```typescript
-import { RequireApiKey } from '@skills-base/shared;
+Protect routes using the `@RequireApiKey()` decorator:
 
-@Controller('admin')
-export class AdminController {
-  @RequireApiKey()
-  @Post('settings')
-  updateSettings() {
-    // Only accessible with valid API key
-  }
-}
+```typescript
+@RequireApiKey()
+@Controller('api')
+export class ApiController {}
+```
+
+### IP Whitelisting
+
+Enable IP whitelisting through configuration:
+
+```typescript
+SecurityModule.forRoot({
+  ipWhitelist: {
+    enabled: true,
+    allowedIps: ['192.168.1.1', '10.0.0.1'],
+  },
+});
 ```
 
 ### Request Validation
 
-```typescript
-import { RequestValidator } from '@skills-base/shared;
+The RequestValidationMiddleware automatically:
 
-@Controller('documents')
-export class DocumentsController {
-  @Post()
-  create(@Body() document: any) {
-    // Sanitize input
-    const sanitizedDoc = RequestValidator.sanitizeInput(document);
-    return this.documentsService.create(sanitizedDoc);
-  }
-}
-```
-
-### Security Monitoring
-
-```typescript
-import { SecurityMonitor } from '@skills-base/shared;
-
-@Injectable()
-export class AuthService {
-  constructor(private securityMonitor: SecurityMonitor) {}
-
-  async validateUser(req: Request) {
-    try {
-      // ... validation logic
-    } catch (error) {
-      this.securityMonitor.logSecurityViolation('AUTH_FAILED', {
-        ip: req.ip,
-        reason: error.message,
-      });
-      throw error;
-    }
-  }
-}
-```
-
-## Advanced Configuration
-
-### Custom Rate Limit Key Generator
-
-```typescript
-import { SecurityModule } from '@skills-base/shared;
-
-@Module({
-  imports: [
-    SecurityModule.forRoot({
-      rateLimit: {
-        enabled: true,
-        windowMs: 60000,
-        max: 100,
-        keyGenerator: (req: Request) => {
-          // Custom key based on both IP and user ID
-          return `${req.ip}-${req.headers['user-id']}`;
-        },
-      },
-      // ... other config
-    }),
-  ],
-})
-export class AppModule {}
-```
-
-### Feature Module Setup
-
-For modules that only need rate limiting:
-
-```typescript
-import { SecurityModule } from '@skills-base/shared;
-
-@Module({
-  imports: [SecurityModule.forFeature()],
-  // ... other module configuration
-})
-export class FeatureModule {}
-```
+- Validates payload size
+- Checks content types
+- Sanitizes input
+- Blocks common attack patterns
 
 ## Best Practices
 
-1. **Rate Limiting:**
-
-   - Set appropriate limits based on endpoint sensitivity
-   - Use lower limits for authentication endpoints
-   - Skip health check endpoints
-
-2. **API Keys:**
-
-   - Rotate keys regularly
-   - Use different keys for different environments
-   - Store keys securely (use environment variables)
-
-3. **Security Headers:**
-
-   - Keep the default security headers
-   - Add additional headers based on your needs
-   - Review headers regularly
-
-4. **Monitoring:**
-   - Monitor failed attempts
-   - Set up alerts for security violations
-   - Regular review of security logs
-
-## Error Handling
-
-The module provides built-in exceptions:
-
-- `RateLimitException`: Thrown when rate limit is exceeded
-- `PayloadTooLargeException`: Thrown when request payload exceeds limit
-
-Example error handling:
+1. **Environment-based Configuration**
 
 ```typescript
-import { RateLimitException } from '@skills-base/shared;
+const environment = process.env.NODE_ENV;
+const securityConfig = {
+  rateLimit: {
+    enabled: environment === 'production',
+    max: environment === 'production' ? 100 : 1000,
+  },
+};
+```
 
-@Catch(RateLimitException)
-export class RateLimitExceptionFilter implements ExceptionFilter {
-  catch(exception: RateLimitException, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
+2. **Monitoring Security Events**
 
-    response.status(429).json({
-      statusCode: 429,
-      message: 'Too Many Requests',
-      retryAfter: '60 seconds',
+```typescript
+import { SecurityMonitoringService, SecurityEventType } from '@skills-base/shared';
+
+@Injectable()
+export class CustomService {
+  constructor(private securityMonitoring: SecurityMonitoringService) {}
+
+  async handleSuspiciousActivity(req: Request) {
+    await this.securityMonitoring.trackThreatEvent(SecurityEventType.SUSPICIOUS_REQUEST_PATTERN, {
+      ipAddress: req.ip,
+      path: req.path,
+      method: req.method,
+      metadata: {
+        reason: 'Suspicious pattern detected',
+      },
     });
   }
 }
 ```
 
-## Testing
+3. **Custom Rate Limit Configuration**
 
 ```typescript
-describe('SecurityModule', () => {
-  let app: INestApplication;
+@Controller('api')
+export class ApiController {
+  @Get('high-frequency')
+  @RateLimit({
+    windowMs: 1000, // 1 second
+    max: 5,
+    message: 'Too many requests for high-frequency endpoint',
+  })
+  highFrequencyEndpoint() {}
 
-  beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        SecurityModule.forRoot({
-          rateLimit: { enabled: true, windowMs: 1000, max: 1 },
-          apiKey: { enabled: true, keys: ['test-key'] },
-          ipWhitelist: { enabled: false, allowedIps: [] },
-          payloadLimit: { maxSize: 1024 },
-        }),
-      ],
-    }).compile();
-
-    app = moduleRef.createNestApplication();
-    await app.init();
-  });
-
-  it('should block requests exceeding rate limit', () => {
-    // ... test implementation
-  });
-});
+  @Get('low-frequency')
+  @RateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10,
+  })
+  lowFrequencyEndpoint() {}
+}
 ```
+
+Remember to always:
+
+- Store API keys securely using environment variables
+- Configure different security settings for different environments
+- Monitor and log security events
+- Keep the security module updated to the latest version

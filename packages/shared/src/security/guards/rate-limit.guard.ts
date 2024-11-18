@@ -1,21 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { RateLimitException } from '../exceptions/rate-limit.exception';
 import {
   SecurityEventType,
   SecurityMonitoringService,
 } from '../security-monitoring.service';
-import { SecurityConfig } from '../types';
+import { SecurityConfig } from '../security.types';
 
 @Injectable()
 export class RateLimitGuard {
   constructor(
     private readonly securityMonitoring: SecurityMonitoringService,
-    private readonly config: SecurityConfig,
+    @Inject('SECURITY_CONFIG') private readonly config: SecurityConfig,
   ) {}
 
   async handleRequest(req: Request): Promise<boolean> {
     const { ip, method, path } = req;
+
+    if (!this.config.rateLimit.enabled) {
+      return true;
+    }
 
     // Your existing rate limit logic here
     const isLimitExceeded = false; // Replace with your actual check

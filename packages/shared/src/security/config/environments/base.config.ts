@@ -1,4 +1,4 @@
-import { SecurityConfig } from '../../types';
+import { SecurityConfig } from '../../security.types';
 
 export const createBaseConfig = (): SecurityConfig => ({
   rateLimit: {

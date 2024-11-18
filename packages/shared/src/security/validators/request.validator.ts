@@ -3,6 +3,7 @@ import {
   Injectable,
   NestMiddleware,
   PayloadTooLargeException,
+  Inject,
 } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import sanitizeHtml from 'sanitize-html';
@@ -10,10 +11,11 @@ import {
   SecurityEventType,
   SecurityMonitoringService,
 } from '../security-monitoring.service';
+import { SecurityConfig } from '../security.types';
 
-interface ValidationConfig {
+export interface ValidationConfig {
   payload: {
-    maxSize: number; // in bytes
+    maxSize: number;
     allowedContentTypes: string[];
   };
   headers: {
@@ -21,7 +23,6 @@ interface ValidationConfig {
     forbidden: string[];
   };
   patterns: {
-    // Common attack patterns to check for
     sql: RegExp[];
     xss: RegExp[];
     paths: RegExp[];
@@ -36,62 +37,51 @@ interface ValidationConfig {
 
 @Injectable()
 export class RequestValidationMiddleware implements NestMiddleware {
-  private readonly defaultConfig: ValidationConfig = {
-    payload: {
-      maxSize: 10 * 1024 * 1024, // 10MB
-      allowedContentTypes: [
-        'application/json',
-        'application/x-www-form-urlencoded',
-        'multipart/form-data',
-      ],
-    },
-    headers: {
-      required: ['content-type'],
-      forbidden: ['x-powered-by', 'server'],
-    },
-    patterns: {
-      sql: [
-        /(\%27)|(\')|(\-\-)|(\%23)|(#)/i,
-        /((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))/i,
-        /\w*((\%27)|(\'))((\%6F)|o|(\%4F))((\%72)|r|(\%52))/i,
-        /union\s+select/i,
-      ],
-      xss: [
-        /<script[^>]*>[\s\S]*?<\/script>/i,
-        /javascript:[^\n]*/i,
-        /on\w+\s*=/i,
-        /<iframe[^>]*>[\s\S]*?<\/iframe>/i,
-      ],
-      paths: [
-        /\.\./g, // Directory traversal
-        /\/etc\/passwd/i,
-        /\/etc\/shadow/i,
-        /\/proc\/self/i,
-      ],
-      commands: [
-        /\$\{.*\}/g, // Template injection
-        /\`.*\`/g, // Command injection
-        /system\(.+\)/i,
-        /eval\(.+\)/i,
-      ],
-    },
-    sanitization: {
-      enabled: true,
-      allowedTags: [],
-      allowedAttributes: {},
-    },
-  };
+  private readonly config: ValidationConfig;
 
   constructor(
     private readonly securityMonitoring: SecurityMonitoringService,
-    private readonly config: ValidationConfig = {} as ValidationConfig,
+    @Inject('SECURITY_CONFIG') private readonly securityConfig: SecurityConfig,
   ) {
     this.config = {
-      ...this.defaultConfig,
-      ...config,
+      payload: {
+        maxSize: this.securityConfig.payload.maxSize,
+        allowedContentTypes: this.securityConfig.payload.allowedContentTypes,
+      },
+      headers: {
+        required: ['content-type'],
+        forbidden: ['x-powered-by', 'server'],
+      },
       patterns: {
-        ...this.defaultConfig.patterns,
-        ...config.patterns,
+        sql: [
+          /(%27)|(')|(--)|(%23)|(#)/i,
+          /((%3D)|(=))[^\n]*((%27)|(')|(--)|(%3B)|(;))/i,
+          /\w*((%27)|(')|(%6F)|o|(%4F))((%72)|r|(%52))/i,
+          /union\s+select/i,
+        ],
+        xss: [
+          /<script[^>]*>[\s\S]*?<\/script>/i,
+          /javascript:[^\n]*/i,
+          /on\w+\s*=/i,
+          /<iframe[^>]*>[\s\S]*?<\/iframe>/i,
+        ],
+        paths: [
+          /\.\./g, // Directory traversal
+          /\/etc\/passwd/i,
+          /\/etc\/shadow/i,
+          /\/proc\/self/i,
+        ],
+        commands: [
+          /\${.*}/g, // Template injection
+          /`.*`/g, // Command injection
+          /system\(.+\)/i,
+          /eval\(.+\)/i,
+        ],
+      },
+      sanitization: {
+        enabled: true,
+        allowedTags: [],
+        allowedAttributes: {},
       },
     };
   }

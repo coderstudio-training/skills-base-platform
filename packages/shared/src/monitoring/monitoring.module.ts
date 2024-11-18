@@ -1,51 +1,55 @@
-// packages/shared/src/monitoring/monitoring.module.ts
-import { DynamicModule, Global, Module } from '@nestjs/common';
-import { APP_INTERCEPTOR, Reflector } from '@nestjs/core';
+import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { MonitoringConfigurationManager } from './config/monitoring.config';
 import { MetricsController } from './controllers/metrics.controller';
 import { MetricsInterceptor } from './interceptors/metrics.interceptor';
+import { MonitoringConfig } from './monitoring.types';
 import { ApplicationMetricsService } from './services/prometheus.service';
 import { SystemMetricsService } from './services/system-metrics.service';
-import { MonitoringOptions } from './types';
 
-@Global()
 @Module({})
 export class MonitoringModule {
-  static forRoot(options: MonitoringOptions): DynamicModule {
-    const providers = [
+  static forRoot(config?: Partial<MonitoringConfig>): DynamicModule {
+    const configManager = MonitoringConfigurationManager.getInstance();
+
+    if (config) {
+      configManager.updateConfig(config);
+    }
+
+    const finalConfig = configManager.getConfig();
+
+    const providers: Provider[] = [
       {
-        provide: 'SERVICE_NAME',
-        useValue: options.serviceName,
+        provide: 'MONITORING_CONFIG',
+        useValue: finalConfig,
       },
-      // Provide Reflector
-      Reflector,
       {
         provide: ApplicationMetricsService,
-        useFactory: () => new ApplicationMetricsService(options.serviceName),
+        useFactory: () =>
+          new ApplicationMetricsService(finalConfig.serviceName),
       },
       {
         provide: SystemMetricsService,
-        useFactory: (serviceName: string) =>
-          new SystemMetricsService(serviceName),
-        inject: ['SERVICE_NAME'],
+        useFactory: () => new SystemMetricsService(finalConfig.serviceName),
       },
-      {
-        provide: APP_INTERCEPTOR,
-        useFactory: (
-          metricsService: ApplicationMetricsService,
-          reflector: Reflector,
-        ) => {
-          return new MetricsInterceptor(metricsService, reflector);
-        },
-        inject: [ApplicationMetricsService, Reflector],
-      },
+      MetricsInterceptor,
     ];
+
+    const exports = [
+      ApplicationMetricsService,
+      SystemMetricsService,
+      MetricsInterceptor,
+      'MONITORING_CONFIG',
+    ];
+
+    // Only include controllers if metrics are enabled
+    const controllers = finalConfig.enabled ? [MetricsController] : [];
 
     return {
       module: MonitoringModule,
-      global: true,
+      controllers,
       providers,
-      controllers: [MetricsController],
-      exports: [ApplicationMetricsService, SystemMetricsService],
+      exports,
+      global: true,
     };
   }
 }

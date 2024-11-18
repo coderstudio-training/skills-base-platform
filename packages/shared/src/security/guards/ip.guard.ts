@@ -2,21 +2,21 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import {
   SecurityEventType,
   SecurityMonitoringService,
 } from '../security-monitoring.service';
-import { SecurityConfig } from '../types';
+import { SecurityConfig } from '../security.types';
 
 @Injectable()
 export class IpWhitelistGuard implements CanActivate {
   constructor(
-    private readonly config: SecurityConfig,
+    @Inject('SECURITY_CONFIG') private readonly config: SecurityConfig,
     private readonly securityMonitoring: SecurityMonitoringService,
   ) {}
-
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Skip if IP whitelist is not enabled
     if (!this.config.ipWhitelist.enabled) {

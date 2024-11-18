@@ -26,10 +26,6 @@ const SERVICE_NAME = 'user_service';
       serviceName: SERVICE_NAME,
       enabled: true,
       sampleRate: 1,
-      customBuckets: {
-        http: [0.1, 0.3, 0.5, 0.7, 1, 2, 3, 5, 7, 10],
-        operation: [0.01, 0.05, 0.1, 0.5, 1, 2.5, 5, 10],
-      },
       tags: {
         environment: process.env.NODE_ENV || 'development',
       },
@@ -50,7 +46,7 @@ const SERVICE_NAME = 'user_service';
         enabled: false,
         allowedIps: [],
       },
-      payloadLimit: {
+      payload: {
         maxSize: 10 * 1024 * 1024,
       },
     }),

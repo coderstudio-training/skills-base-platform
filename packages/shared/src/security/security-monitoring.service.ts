@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import * as client from 'prom-client';
-import { Logger } from '../logging';
-import { ApplicationMetricsService } from '../monitoring/services/prometheus.service';
 
 export enum SecurityEventType {
   // Rate Limiting Events
@@ -37,10 +35,7 @@ export class SecurityMonitoringService {
     blockedIps: client.Gauge;
   };
 
-  constructor(
-    private readonly logger: Logger,
-    private readonly metricsService: ApplicationMetricsService,
-  ) {
+  constructor() {
     // Initialize security-specific metrics
     this.securityMetrics = {
       rateLimitBreaches: new client.Counter({
@@ -80,7 +75,7 @@ export class SecurityMonitoringService {
       // Track appropriate metrics based on event type
       this.trackEventMetrics(eventType, context);
     } catch (error) {
-      this.logger.error('Failed to track security threat event', {
+      console.error('Failed to track security threat event', {
         error,
         eventType,
         context,
@@ -93,8 +88,7 @@ export class SecurityMonitoringService {
     context: SecurityEventContext,
   ): void {
     const message = `Security threat detected: ${eventType.replace(/\./g, ' ')} from ${context.ipAddress}`;
-
-    this.logger.warn(message, {
+    console.warn(message, {
       type: 'security_threat',
       eventType,
       ...context,

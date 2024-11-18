@@ -1,4 +1,4 @@
-import { PartialSecurityConfig, SecurityConfig } from '../types';
+import { PartialSecurityConfig, SecurityConfig } from '../security.types';
 import { createDevelopmentConfig } from './environments/development.config';
 
 // config/security.config.ts
