@@ -13,8 +13,7 @@ import {
   TransformInterceptor,
   UserRole,
 } from '@skills-base/shared';
-import { BulkUpdateCoursesDto } from '../dto/courses.dto';
-import { BulkUpsertResponse } from '../interfaces/courses.interface';
+import { BulkUpdateCoursesDto, BulkUpsertResponse } from '../dto/courses.dto';
 import { CoursesService } from '../services/courses.service';
 
 @Controller('api/courses')

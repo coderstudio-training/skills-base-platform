@@ -24,7 +24,7 @@ export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @Get('recommendations/:email')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.USER)
   async getRecommendations(
     @Param('email', new ValidationPipe()) email: string,
   ): Promise<RecommendationResponseDto> {

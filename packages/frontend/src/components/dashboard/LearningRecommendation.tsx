@@ -1,68 +1,39 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { learningRecommendationAPI } from '@/lib/api';
+import { Recommendation } from '@/types/staff';
+import { X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
-
-// Add all necessary interfaces at the top
-interface CourseDetails {
-  name: string;
-  provider: string;
-  duration: string;
-  format: string;
-  learningPath: string;
-  learningObjectives: string[];
-  prerequisites: string;
-  businessValue: string;
-}
-
-interface Recommendation {
-  skillName: string;
-  currentLevel: number;
-  targetLevel: number;
-  gap: number;
-  type: 'skillGap' | 'promotion';
-  course: CourseDetails;
-}
-
-// interface RecommendationResponse {
-//   success: boolean;
-//   employeeName: string;
-//   careerLevel: string;
-//   recommendations: Recommendation[];
-//   generatedDate: Date;
-//   message?: string;
-// }
 
 const LearningRecommendations: React.FC = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  const testEmail = 'kathlynelmajoy.alcoseba@stratpoint.com';
-
-  // const fetchData = async () => {
-  //   try{
-  //     setLoading(true);
-  //     setError(null);
-  //     const response = await learningRecommendationAPI.getLearningPaths(testEmail);
-  //     setRecommendations(response)
-  //   } catch (err){
-  //     console.error('Error fetching skill gaps:', err);
-  //     setError(err instanceof Error ? err.message : 'Failed to fetch Data');
-  //   } finally{
-  //     setLoading(false);
-  //   }
-  // };
+  const [selectedCourse, setSelectedCourse] = useState<Recommendation | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const { data: session } = useSession();
 
   const fetchData = async () => {
+    if (!session?.user?.email) {
+      setError('User email not found');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
-      console.log('Fetching recommendations...');
-      const response = await learningRecommendationAPI.getLearningPaths(testEmail);
-      console.log('Received response:', response);
+      // Log session and token
+      console.log('Session data:', {
+        email: session.user.email,
+        hasToken: !!session.user.accessToken,
+        tokenStart: session.user.accessToken?.substring(0, 20),
+      });
+
+      const response = await learningRecommendationAPI.getLearningPaths(session.user.email);
 
       if (response && response.recommendations) {
         setRecommendations(response.recommendations);
@@ -70,190 +41,175 @@ const LearningRecommendations: React.FC = () => {
         throw new Error('Invalid response format');
       }
     } catch (err) {
-      console.error('Error fetching recommendations:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch Data');
+      console.error('Error details:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    // Clear cached API responses and local storage data
+    localStorage.removeItem('previousUserEmail');
+    sessionStorage.clear();
 
-  // useEffect(() => {
-  //   const fetchRecommendations = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const response = await fetch('/api/learning/recommendation');
-  //       if (!response.ok) {
-  //         throw new Error('Failed to fetch recommendations');
-  //       }
-  //       const data = await response.json();
+    if (session?.user?.email) {
+      fetchData();
+    }
+  }, [session?.user?.email, fetchData]);
 
-  //       if (data.success && data.recommendations) {
-  //         const transformedRecommendations = data.recommendations.map((rec: { skillName: any; currentLevel: any; targetLevel: any; gap: number; course: { name: any; provider: any; duration: any; format: any; learningObjectives: string; prerequisites: any; businessValue: any; }; }) => ({
-  //           skill: rec.skillName,
-  //           currentLevel: rec.currentLevel,
-  //           requiredLevel: rec.targetLevel,
-  //           gap: rec.gap,
-  //           priority: rec.gap >= 2 ? "Critical" : rec.gap >= 1 ? "High" : "Medium",
-  //           course: {
-  //             name: rec.course.name,
-  //             provider: rec.course.provider,
-  //             duration: rec.course.duration,
-  //             format: rec.course.format,
-  //             certification: 'N/A',
-  //             objectives: Array.isArray(rec.course.learningObjectives)
-  //               ? rec.course.learningObjectives
-  //               : rec.course.learningObjectives.split(','),
-  //             prerequisites: rec.course.prerequisites,
-  //             businessValue: rec.course.businessValue,
-  //             targetLevel: rec.targetLevel
-  //           }
-  //         }));
+  const handleCourseClick = (course: Recommendation) => {
+    setSelectedCourse(course);
+    setIsDialogOpen(true);
+  };
 
-  //         setRecommendations(transformedRecommendations);
-  //       }
-  //     } catch (err) {
-  //       console.error('Fetch error:', err);
-  //       setError(err instanceof Error ? err.message : 'Failed to load recommendations');
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchRecommendations();
-  // }, []);
+  const getGapStyle = (gap: number) => {
+    if (gap < 0) return 'bg-red-500 text-white-10000';
+    return 'bg-blue-400 text-white-800';
+  };
 
   return (
     <>
-      <Card className="w-full">
+      <Card>
         <CardHeader>
           <CardTitle>Growth Plan</CardTitle>
-          <p className="text-sm text-gray-500">Skill gaps and recommended training courses</p>
+          <CardDescription>Skill gaps and recommended training courses</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-4">Loading recommendations...</div>
+            <div className="p-4 text-center">Loading...</div>
           ) : error ? (
-            <div className="text-center py-4 text-red-500">{error}</div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2">Skill</th>
-                  <th className="text-left py-2">Current Level</th>
-                  <th className="text-left py-2">Required Level</th>
-                  <th className="text-left py-2">Gap</th>
-                  <th className="text-left py-2">Recommended Training Course</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recommendations.map((reco, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="py-4">{reco.skillName}</td>
-                    <td className="py-4">{reco.currentLevel}</td>
-                    <td className="py-4">{reco.targetLevel}</td>
-                    <td className="py-4">{reco.gap}</td>
-                    <td className="py-4">
-                      <button
-                        onClick={() => {
-                          // setSelectedCourse(reco);
-                          // setIsDialogOpen(true);
-                        }}
-                        className="text-green-600 hover:text-green-800"
-                      >
-                        {reco.course.name}
-                      </button>
-                    </td>
+            <div className="p-4 text-center text-red-500">{error}</div>
+          ) : recommendations && recommendations.length > 0 ? (
+            <div className="w-full">
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left p-4 text-sm font-medium text-gray-500">Skill</th>
+                    <th className="text-left p-4 text-sm font-medium text-gray-500">
+                      Current Level
+                    </th>
+                    <th className="text-left p-4 text-sm font-medium text-gray-500">
+                      Required Level
+                    </th>
+                    <th className="text-left p-4 text-sm font-medium text-gray-500">Gap</th>
+                    <th className="text-left p-4 text-sm font-medium text-gray-500">
+                      Recommended Training Course
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {recommendations.map((rec, index) => (
+                    <tr key={index} className="border-t border-gray-100">
+                      <td className="p-4 text-sm font-medium">{rec.skillName}</td>
+                      <td className="p-4 text-sm">{rec.currentLevel}</td>
+                      <td className="p-4 text-sm">{rec.targetLevel}</td>
+                      <td className="p-4 text-sm">
+                        <span className={`px-3 py-1 rounded-md ${getGapStyle(rec.gap)}`}>
+                          {rec.gap}
+                        </span>
+                      </td>
+                      <td className="p-4 text-sm">
+                        <button
+                          onClick={() => handleCourseClick(rec)}
+                          className="text-sm font-medium text-emerald-500 hover:text-emerald-600"
+                        >
+                          {rec.course?.name || `${rec.skillName} Fundamentals`}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="p-4 text-center text-gray-500">No recommendations available</div>
           )}
         </CardContent>
       </Card>
 
-      {/* <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <div className="flex justify-between items-start">
-            <DialogHeader>
-              <DialogTitle>{selectedCourse?.course.name}</DialogTitle>
-              <p className="text-sm text-gray-500">
-                Training details and learning objectives
-              </p>
-            </DialogHeader>
+      {isDialogOpen && selectedCourse && (
+        <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl p-6 relative">
             <button
               onClick={() => setIsDialogOpen(false)}
-              className="text-gray-400 hover:text-gray-500"
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-500"
             >
               <X className="h-4 w-4" />
             </button>
-          </div>
 
-          {selectedCourse && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold">{selectedCourse.skill}</h3>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="mt-2">
+              <div className="space-y-4">
                 <div>
-                  <p className="text-gray-500">Current Level:</p>
-                  <p>{selectedCourse.currentLevel}</p>
+                  <h2 className="text-xl font-semibold">{selectedCourse.course?.name}</h2>
+                  <p className="text-sm text-gray-500">Training details and learning objectives</p>
                 </div>
-                <div>
-                  <p className="text-gray-500">Target Level:</p>
-                  <p>{selectedCourse.requiredLevel}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Provider:</p>
-                  <p>{selectedCourse.course.provider}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Duration:</p>
-                  <p>{selectedCourse.course.duration}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Format:</p>
-                  <p>{selectedCourse.course.format}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Certification:</p>
-                  <p>{selectedCourse.course.certification}</p>
-                </div>
-              </div>
 
-              <div>
-                <h4 className="font-medium mb-2">Learning Path:</h4>
-                <p className="text-sm text-gray-600">
-                  This course will help you progress from level {selectedCourse.currentLevel} to level {selectedCourse.requiredLevel}, 
-                  which is appropriate for your career level.
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-medium mb-2">Learning Objectives:</h4>
-                <ul className="list-disc list-inside text-sm space-y-1">
-                  {selectedCourse.course.objectives.map((objective, i) => (
-                    <li key={i}>{objective.trim()}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium mb-1">Prerequisites:</h4>
-                  <p className="text-sm">{selectedCourse.course.prerequisites}</p>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-semibold text-lg">{selectedCourse.skillName}</h3>
+                  <span className="px-2 py-1 rounded bg-orange-100 text-orange-800">
+                    Gap: {selectedCourse.gap}
+                  </span>
                 </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="mb-2">
+                      <span className="text-gray-500">Current Level:</span>{' '}
+                      {selectedCourse.currentLevel}
+                    </div>
+                    <div className="mb-2">
+                      <span className="text-gray-500">Provider:</span>{' '}
+                      {selectedCourse.course?.provider}
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Format:</span> {selectedCourse.course?.format}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2">
+                      <span className="text-gray-500">Target Level:</span>{' '}
+                      {selectedCourse.targetLevel}
+                    </div>
+                    <div className="mb-2">
+                      <span className="text-gray-500">Duration:</span>{' '}
+                      {selectedCourse.course?.duration}
+                    </div>
+                  </div>
+                </div>
+
                 <div>
-                  <h4 className="font-medium mb-1">Business Value:</h4>
-                  <p className="text-sm">{selectedCourse.course.businessValue}</p>
+                  <h4 className="font-medium mb-2">Learning Path:</h4>
+                  <div className="text-sm text-gray-600">
+                    This course will help you progress from level {selectedCourse.currentLevel} to
+                    level {selectedCourse.targetLevel}, which is appropriate for your career level.
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium mb-2">Learning Objectives:</h4>
+                  <ul className="list-disc list-inside text-sm space-y-1">
+                    {selectedCourse.course?.learningObjectives?.map((objective, i) => (
+                      <li key={i}>{objective}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <h4 className="font-medium mb-1">Prerequisites:</h4>
+                    <p>{selectedCourse.course?.prerequisites}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-1">Business Value:</h4>
+                    <p>{selectedCourse.course?.businessValue}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog> */}
+          </div>
+        </div>
+      )}
     </>
   );
 };

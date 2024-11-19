@@ -10,6 +10,26 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+// Field definitions moved from interface
+export interface Field {
+  name: string;
+  value: string;
+}
+
+// Validation error types moved from interface
+export interface ValidationError {
+  index: number;
+  courseId: string;
+  errors: string[];
+}
+
+// Bulk response type moved from interface
+export interface BulkUpsertResponse {
+  updatedCount: number;
+  errors: any[];
+  validationErrors?: ValidationError[];
+}
+
 // Type for field items
 export class FieldDto extends BaseDto {
   @IsString()

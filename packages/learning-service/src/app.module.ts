@@ -1,17 +1,16 @@
-// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DatabaseModule, JwtStrategy } from '@skills-base/shared';
-import { CoursesModule } from './courses/modules/courses.module';
-import { RecommendationModule } from './courses/modules/recommendation.module';
+import { JwtStrategy } from '@skills-base/shared';
+import { CoursesController } from './courses/controllers/courses.controller';
+import { RecommendationController } from './courses/controllers/recommendation.controller';
+import { CoursesService } from './courses/services/courses.service';
+import { RecommendationService } from './courses/services/recommendation.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    // Primary connection - learning service
+    ConfigModule.forRoot({ isGlobal: true }),
+    // Primary MongoDB connection
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -19,7 +18,7 @@ import { RecommendationModule } from './courses/modules/recommendation.module';
       }),
       inject: [ConfigService],
     }),
-    // Secondary connection - skills service
+    // Skills MongoDB connection
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -28,10 +27,8 @@ import { RecommendationModule } from './courses/modules/recommendation.module';
       inject: [ConfigService],
       connectionName: 'MONGODB_SKILLS_URI',
     }),
-    DatabaseModule,
-    CoursesModule,
-    RecommendationModule,
   ],
-  providers: [JwtStrategy],
+  controllers: [CoursesController, RecommendationController],
+  providers: [CoursesService, RecommendationService, JwtStrategy],
 })
 export class AppModule {}

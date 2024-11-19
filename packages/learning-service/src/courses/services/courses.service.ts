@@ -1,13 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { InjectConnection } from '@nestjs/mongoose';
 import type { mongo } from 'mongoose';
 import { Connection, Model } from 'mongoose';
-import { BulkUpdateCoursesDto, CourseDto } from '../dto/courses.dto';
-import { Course, CourseSchema } from '../entity/courses.entity';
 import {
+  BulkUpdateCoursesDto,
   BulkUpsertResponse,
+  CourseDto,
   ValidationError,
-} from '../interfaces/courses.interface';
+} from '../dto/courses.dto';
+import { Course, CourseSchema } from '../entity/courses.entity';
 
 @Injectable()
 export class CoursesService {
@@ -16,68 +17,14 @@ export class CoursesService {
   // This cache stores our dynamic models to avoid recreating them
   private modelCache: Map<string, Model<Course>> = new Map();
 
-  private readonly REQUIRED_FIELDS = {
-    skillCategory: 'string',
-    skillName: 'string',
-    requiredLevel: 'number',
-    careerLevel: 'string',
-    courseLevel: 'string',
-  } as const;
-
-  private readonly BUSINESS_RULES: Record<
-    string,
-    {
-      validate: (value: any) => boolean;
-      message: string;
-    }
-  > = {
-    requiredLevel: {
-      validate: (value: unknown) => {
-        const numValue = Number(value);
-        return !isNaN(numValue) && numValue >= 1 && numValue <= 6;
-      },
-      message: 'Required level must be between 1 and 6',
-    },
-    courseLevel: {
-      validate: (value: unknown) => {
-        return (
-          typeof value === 'string' &&
-          ['Foundation', 'Intermediate', 'Advanced', 'Executive'].includes(
-            value,
-          )
-        );
-      },
-      message:
-        'Course level must be Foundation, Intermediate, Advanced or Executive',
-    },
-    careerLevel: {
-      validate: (value: unknown) => {
-        return (
-          typeof value === 'string' &&
-          (value.includes('Professional') ||
-            value.includes('Manager') ||
-            value.includes('Director'))
-        );
-      },
-      message: 'Career level must contain Professional, Manager, or Director',
-    },
-  };
-
-  constructor(
-    // Inject the MongoDB connection
-    @InjectConnection() private connection: Connection,
-    // Inject the default model
-    @InjectModel(Course.name) private defaultModel: Model<Course>,
-  ) {}
+  constructor(@InjectConnection() private readonly connection: Connection) {}
 
   private async getModelForCollection(
     collection: string,
   ): Promise<Model<Course>> {
-    // check if we already have a model for this collection
     if (this.modelCache.has(collection)) {
       return this.modelCache.get(collection)!;
     }
-
     //create a new model
     const model = this.connection.model<Course>(
       `Course_${collection}`,
@@ -108,29 +55,28 @@ export class CoursesService {
 
   private validateCourse(course: CourseDto): string[] {
     const errors: string[] = [];
+    const requiredFields = [
+      'skillCategory',
+      'skillName',
+      'requiredLevel',
+      'careerLevel',
+      'courseLevel',
+      'courseId',
+    ];
 
-    Object.entries(this.REQUIRED_FIELDS).forEach(
-      ([fieldName, expectedType]) => {
-        const value = course[fieldName as keyof CourseDto];
-
-        if (!value && value !== 0) {
-          errors.push(`${fieldName} is required`);
-          return;
-        }
-
-        if (typeof value !== expectedType) {
-          errors.push(`${fieldName} must be a ${expectedType}`);
-          return;
-        }
-      },
-    );
-
-    Object.entries(this.BUSINESS_RULES).forEach(([fieldName, rule]) => {
-      const value = course[fieldName as keyof CourseDto];
-      if (value && !rule.validate(value)) {
-        errors.push(rule.message);
+    for (const field of requiredFields) {
+      if (!course[field as keyof CourseDto]) {
+        errors.push(`${field} is required`);
       }
-    });
+    }
+
+    // Keep only essential business rule
+    if (
+      course.requiredLevel &&
+      (course.requiredLevel < 1 || course.requiredLevel > 6)
+    ) {
+      errors.push('Required level must be between 1 and 6');
+    }
 
     return errors;
   }
@@ -143,7 +89,6 @@ export class CoursesService {
     }
 
     const model = await this.getModelForCollection(bulkUpdateDto.collection);
-
     let totalUpdatedCount = 0;
     const errors = [];
     const validationErrors: ValidationError[] = [];

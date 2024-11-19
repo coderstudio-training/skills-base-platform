@@ -3,6 +3,7 @@
 import { logger } from '@/lib/utils';
 import { AdminData, Course, Department, LearningPath, Skill, Staff } from '@/types/admin';
 import * as ApiTypes from '@/types/api';
+import { getSession } from 'next-auth/react';
 
 const API_BASE_URL = 'http://localhost:3003';
 
@@ -25,8 +26,6 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 }
 
 // Add this with your other API functions
-
-// interfaces/RecommendationInterfaces.ts
 
 export interface CourseDetails {
   name: string;
@@ -60,23 +59,42 @@ export interface RecommendationResponse {
 export const learningRecommendationAPI = {
   async getLearningPaths(email: string): Promise<RecommendationResponse> {
     try {
+      const session = await getSession();
+      console.log('Current session:', session);
+
+      // Extract token from session
+      const token = session?.user?.accessToken;
+      if (!token) {
+        console.error('No token found in session');
+        throw new Error('Authentication token not found');
+      }
+
+      // Make direct API call with token
       const response = await fetch(
-        `http://localhost:3003/api/learning/recommendations/${encodeURIComponent(email)}`,
+        `${API_BASE_URL}/api/learning/recommendations/${encodeURIComponent(email)}`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
           },
         },
       );
 
+      // Log the full request details
+      console.log('Request URL:', response.url);
+      console.log('Request headers:', {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token.substring(0, 20)}...`, // Log part of token for security
+      });
+
       if (!response.ok) {
-        console.error('Response Status: ', response.status);
-        throw new Error('Skill gaps data not found for this employee.');
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        throw new Error(JSON.stringify(errorData));
       }
 
-      const data = await response.json();
-      return data;
+      return await response.json();
     } catch (error) {
       console.error('API Error:', error);
       throw error;

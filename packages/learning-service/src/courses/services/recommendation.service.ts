@@ -1,26 +1,49 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection, Model } from 'mongoose';
 import {
   CourseDetailsDto,
   RecommendationDto,
   RecommendationResponseDto,
 } from '../dto/recommendation.dto';
-import { Course } from '../entity/courses.entity';
-import { RequiredSkills } from '../entity/required-skills.entity';
-import { SkillGap } from '../entity/skill-gap.entity';
+import { Course, CourseSchema } from '../entity/courses.entity';
+import {
+  RequiredSkills,
+  RequiredSkillsSchema,
+} from '../entity/required-skills.entity';
+import { SkillGap, SkillGapSchema } from '../entity/skill-gap.entity';
 
 @Injectable()
 export class RecommendationService {
   private readonly logger = new Logger(RecommendationService.name);
+  private courseModel: Model<Course>;
+  private skillGapsModel: Model<SkillGap>;
+  private requiredSkillsModel: Model<RequiredSkills>;
 
   constructor(
-    @InjectModel(Course.name) private readonly courseModel: Model<Course>,
-    @InjectModel(SkillGap.name, 'MONGODB_SKILLS_URI')
-    private readonly skillGapsModel: Model<SkillGap>,
-    @InjectModel(RequiredSkills.name, 'MONGODB_SKILLS_URI')
-    private readonly requiredSkillsModel: Model<RequiredSkills>,
-  ) {}
+    @InjectConnection() private readonly defaultConnection: Connection,
+    @InjectConnection('MONGODB_SKILLS_URI')
+    private readonly skillsConnection: Connection,
+  ) {
+    // Initialize models
+    this.courseModel = this.defaultConnection.model<Course>(
+      'Course',
+      CourseSchema,
+      'QA_LEARNING_RESOURCES',
+    );
+
+    this.skillGapsModel = this.skillsConnection.model<SkillGap>(
+      'SkillGap',
+      SkillGapSchema,
+      'Capability_gapAssessments',
+    );
+
+    this.requiredSkillsModel = this.skillsConnection.model<RequiredSkills>(
+      'RequiredSkills',
+      RequiredSkillsSchema,
+      'capabilityRequiredSkills',
+    );
+  }
 
   async getRecommendations(email: string): Promise<RecommendationResponseDto> {
     try {

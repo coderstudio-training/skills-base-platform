@@ -1,32 +1,45 @@
+import { authOptions } from '@/lib/auth';
+import { getServerSession } from 'next-auth/next';
+
 const API_BASE_URL = 'http://localhost:3003';
 
 export async function GET() {
   try {
-    // Use hardcoded email for now
-    const email = 'kathlynelmajoy.alcoseba@stratpoint.com';
+    const session = await getServerSession(authOptions);
+    console.log('Server session:', session);
 
-    console.log('Fetching from:', `${API_BASE_URL}/api/learning/recommendations/${email}`);
+    if (!session?.user?.accessToken) {
+      console.error('No access token in session');
+      return new Response('Unauthorized - No token', { status: 401 });
+    }
 
-    const response = await fetch(`${API_BASE_URL}/api/learning/recommendations/${email}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    const email = session.user.email;
+    if (!email) {
+      console.error('No email in session');
+      return new Response('Unauthorized - No email', { status: 401 });
+    }
+
+    console.log('Making backend request for email:', email);
+    const response = await fetch(
+      `${API_BASE_URL}/api/learning/recommendations/${encodeURIComponent(email)}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.user.accessToken}`,
+        },
       },
-      cache: 'no-store', // Add this to prevent caching
-    });
+    );
 
     if (!response.ok) {
-      console.error('Response status:', response.status);
       const errorText = await response.text();
-      console.error('Error response:', errorText);
-      throw new Error(`API call failed with status: ${response.status}`);
+      console.error('Backend error:', errorText);
+      return new Response(errorText, { status: response.status });
     }
 
     const data = await response.json();
-    console.log('API Response:', data);
     return Response.json(data);
   } catch (error) {
-    console.error('Error in route handler:', error);
-    return Response.json({ status: 500 });
+    console.error('Route error:', error);
+    return new Response('Internal Server Error', { status: 500 });
   }
 }
