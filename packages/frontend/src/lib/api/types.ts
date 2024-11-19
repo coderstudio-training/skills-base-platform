@@ -19,7 +19,7 @@ export interface ApiConfig {
 }
 
 export interface FetchOptions {
-  cache?: RequestCache;
+  cache?: RequestCache | null;
   revalidate?: number;
   headers?: HeadersInit;
   requiresAuth?: boolean;

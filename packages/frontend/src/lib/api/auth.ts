@@ -3,11 +3,11 @@
 import { logger } from '@/lib/utils';
 import { AuthResponse, DecodedToken } from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
-import { NextAuthOptions } from 'next-auth';
+import { getServerSession, NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
-import { authConfig, errorMessages, rolePermissions } from './config';
+import { authConfig, rolePermissions } from './config';
 import { AuthState, Permission, RolePermissions, Roles } from './types';
 logger.log('Starting to load auth options in lib/auth.ts...');
 
@@ -154,21 +154,45 @@ export const authOptions: NextAuthOptions = {
 
 // Handles the auth headers instead of manually calling getSession() all the time.
 export async function getAuthHeaders(): Promise<HeadersInit> {
-  const session = await getSession();
+  let session;
 
+  // Check if running on the server or client
+  if (typeof window === 'undefined') {
+    // On the server-side, use getServerSession
+    logger.log('getting server side session');
+    session = await getServerSession(authOptions);
+  } else {
+    // On the client-side, use getSession
+    logger.log('getting client side session');
+    session = await getSession();
+  }
+
+  // If no session or accessToken, return empty headers
   if (!session?.user?.accessToken) {
-    logger.warn(errorMessages.UNAUTHORIZED);
+    logger.warn('Unauthorized: No session or accessToken');
     return {};
   }
 
+  // Return the authorization header with the token
   return { Authorization: `Bearer ${session.user.accessToken}` };
 }
 
 // Auth management, to be used in conjunction with hasPermission or canAccessRoutes
 export async function getAuthState(): Promise<AuthState> {
-  const session = await getSession();
+  let session;
 
-  if (!session) return { isAuthenticated: false, user: null, role: [] };
+  // Check if running on the server or client
+  if (typeof window === 'undefined') {
+    // On the server-side, use getServerSession
+    session = await getServerSession(authOptions);
+  } else {
+    // On the client-side, use getSession
+    session = await getSession();
+  }
+
+  if (!session) {
+    return { isAuthenticated: false, user: null, role: [] };
+  }
 
   return {
     isAuthenticated: !!session.user?.accessToken,
@@ -179,7 +203,17 @@ export async function getAuthState(): Promise<AuthState> {
 
 // Helper function, gets logged in user's role
 export async function getRoles(): Promise<Roles[]> {
-  const session = await getSession();
+  let session;
+
+  // Check if running on the server or client
+  if (typeof window === 'undefined') {
+    // On the server-side, use getServerSession
+    session = await getServerSession(authOptions);
+  } else {
+    // On the client-side, use getSession
+    session = await getSession();
+  }
+
   return session?.user?.role ? [session.user.role] : [];
 }
 
