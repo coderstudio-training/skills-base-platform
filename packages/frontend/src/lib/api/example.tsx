@@ -9,11 +9,23 @@ import { signOut } from 'next-auth/react';
 import { FormEvent, useEffect, useState } from 'react';
 import { formatError } from '../utils';
 import { skillsApi } from './client';
-import { Taxonomy } from './domain-types';
 import { useAuth, useMutation, useQuery } from './hooks';
 
 interface ITaxonomy {
   data: ITaxonomyUpsert[];
+}
+
+interface Taxonomy {
+  docTitle: string;
+  docId: string;
+  docRevisionId: string;
+  category: string;
+  title: string;
+  description: string;
+  proficiencyDescription: object;
+  abilities: object;
+  knowledge: object;
+  rangeOfApplication?: string[];
 }
 
 interface ITaxonomyUpsert {
