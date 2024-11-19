@@ -15,6 +15,10 @@ export interface IBaseTaxonomy {
   rangeOfApplication?: string[];
 }
 
+export interface ITechnicalTaxonomy {
+  data: IBaseTaxonomy[];
+}
+
 export interface ITaxonomyDTO extends IBaseTaxonomy {
   businessUnit: string;
 }
