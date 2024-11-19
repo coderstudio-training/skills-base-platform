@@ -2,30 +2,15 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@radix-ui/react-tabs';
 import { LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { FormEvent, useEffect, useState } from 'react';
 import { formatError } from '../utils';
 import { skillsApi } from './client';
-import { useAuth, useMutation, useQuery } from './hooks';
+import { useAuth, useMutation } from './hooks';
 
 interface ITaxonomy {
   data: ITaxonomyUpsert[];
-}
-
-interface Taxonomy {
-  docTitle: string;
-  docId: string;
-  docRevisionId: string;
-  category: string;
-  title: string;
-  description: string;
-  proficiencyDescription: object;
-  abilities: object;
-  knowledge: object;
-  rangeOfApplication?: string[];
 }
 
 interface ITaxonomyUpsert {
@@ -71,20 +56,6 @@ export default function ShowcaseDashboard() {
     };
     checkPermission();
   });
-
-  const {
-    data: taxonomy_data,
-    error: queryError,
-    isLoading: queryLoading,
-  } = useQuery<Taxonomy>(
-    skillsApi,
-    '/taxonomy/1yMsFZfwyumL4W7Erc0hr1IfM8_DsErcdri0TBEJRjq0?businessUnit=QA',
-    {
-      requiresAuth: true,
-      cacheStrategy: 'default',
-      revalidate: 60,
-    },
-  );
 
   const {
     mutate,
@@ -158,81 +129,6 @@ export default function ShowcaseDashboard() {
             Logout
           </Button>
         </div>
-      </div>
-
-      <div>
-        <Tabs defaultValue="taxonomy">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="taxonomy">Taxonomy</TabsTrigger>
-          </TabsList>
-          <TabsContent value="taxonomy">
-            <Card>
-              <CardHeader>
-                <CardTitle>Taxonomy</CardTitle>
-                <CardDescription>List of technical skills and descriptions</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <ul className="space-y-4">
-                  {queryLoading ? (
-                    <li>Loading...</li>
-                  ) : queryError ? (
-                    <li>Error: {queryError.message}</li>
-                  ) : (
-                    <li key={taxonomy_data?.docId} className="border-b pb-4">
-                      <h3 className="text-lg font-semibold">{taxonomy_data?.title}</h3>
-                      <p className="text-sm text-gray-600">{taxonomy_data?.description}</p>
-                      <p className="text-sm font-semibold mt-2">
-                        Category: {taxonomy_data?.category}
-                      </p>
-                      <div className="mt-2">
-                        <h4 className="font-semibold">Proficiency Description:</h4>
-                        <ul className="pl-4 list-disc">
-                          {Object.entries(taxonomy_data?.proficiencyDescription || {}).map(
-                            ([key, value]) => (
-                              <li key={key}>
-                                <strong>{key}:</strong> {JSON.stringify(value)}
-                              </li>
-                            ),
-                          )}
-                        </ul>
-                      </div>
-                      <div className="mt-2">
-                        <h4 className="font-semibold">Abilities:</h4>
-                        <ul className="pl-4 list-disc">
-                          {Object.entries(taxonomy_data?.abilities || {}).map(([key, value]) => (
-                            <li key={key}>
-                              <strong>{key}:</strong> {JSON.stringify(value)}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="mt-2">
-                        <h4 className="font-semibold">Knowledge:</h4>
-                        <ul className="pl-4 list-disc">
-                          {Object.entries(taxonomy_data?.knowledge || {}).map(([key, value]) => (
-                            <li key={key}>
-                              <strong>{key}:</strong> {JSON.stringify(value)}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      {taxonomy_data?.rangeOfApplication && (
-                        <div className="mt-2">
-                          <h4 className="font-semibold">Range of Application:</h4>
-                          <ul className="pl-4 list-disc">
-                            {taxonomy_data.rangeOfApplication.map((application, index) => (
-                              <li key={index}>{application}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </li>
-                  )}
-                </ul>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </div>
 
       <div className="flex justify-between items-center mb-6 bg-white p-8 rounded sm:shadow-md w-96 ">

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 
 export default async function ShowcasePage() {
   const session = await getServerSession(authOptions);
-  logger.log('Servier-side session:', session);
+  logger.log('Server-side session:', session);
 
   if (!session) {
     logger.log('No session, redirecting to login');
@@ -18,6 +18,5 @@ export default async function ShowcasePage() {
     redirect('/unauthorized');
   }
 
-  logger.log('Rendering showcase');
   return <ShowcaseDashboard />;
 }
