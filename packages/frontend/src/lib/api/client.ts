@@ -84,17 +84,29 @@ export class ApiClient {
 
       const finalOptions = buildFetchOptions(options);
       const authHeaders = requiresAuth ? await getAuthHeaders() : {};
-      const requestInit: RequestInit = {
-        headers: {
-          ...this.config.defaultHeaders,
-          ...authHeaders,
-          ...finalOptions.headers,
-        },
-        cache: finalOptions.cache,
-        next: {
-          revalidate: finalOptions.revalidate,
-        },
-      };
+
+      let requestInit: RequestInit;
+      if (finalOptions.cache === null || finalOptions.cache === undefined) {
+        requestInit = {
+          headers: {
+            ...this.config.defaultHeaders,
+            ...authHeaders,
+            ...finalOptions.headers,
+          },
+          next: {
+            revalidate: finalOptions.revalidate,
+          },
+        };
+      } else {
+        requestInit = {
+          headers: {
+            ...this.config.defaultHeaders,
+            ...authHeaders,
+            ...finalOptions.headers,
+          },
+          cache: finalOptions.cache,
+        };
+      }
 
       try {
         const response = await this.retryRequest<T>(url.toString(), requestInit);
@@ -150,7 +162,7 @@ export class ApiClient {
     return this.cachedFetch<T>(
       endpoint,
       {
-        cache: options?.cache || 'force-cache',
+        cache: options?.cache,
         revalidate: options?.revalidate,
       },
       options?.requiresAuth !== false,

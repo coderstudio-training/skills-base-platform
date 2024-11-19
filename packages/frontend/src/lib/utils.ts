@@ -16,14 +16,39 @@ export const logger = {
   debug: (...args: LogArgs[]): void => console.debug('[NextAuth Debug]', ...args),
 };
 
-export const buildFetchOptions = (options?: FetchOptions): FetchOptions => ({
-  cache: options?.cache || 'default',
-  revalidate: options?.revalidate || cacheConfig.defaultRevalidate,
-  headers: {
-    ...options?.headers,
-  },
-  requiresAuth: options?.requiresAuth ?? false,
-});
+export const buildFetchOptions = (options?: FetchOptions): FetchOptions => {
+  // If both cache and revalidate are provided, we need to handle this conflict
+  if (options?.cache && options?.revalidate) {
+    throw new Error("Only one of 'cache' or 'revalidate' can be specified.");
+  }
+
+  // Default to 'default' cache policy if no cache option is provided
+  const cache = options?.cache || null;
+
+  // Default to revalidation period if not provided
+  const revalidate = options?.revalidate || cacheConfig.defaultRevalidate;
+
+  // If cache is set to force-cache, we don't need revalidation
+  if (cache === 'force-cache') {
+    return {
+      cache: 'force-cache',
+      headers: {
+        ...options?.headers,
+      },
+      requiresAuth: options?.requiresAuth ?? false,
+    };
+  }
+
+  // Otherwise, we use revalidation and no cache policy.
+  return {
+    cache, // will be 'default' or any other value passed
+    revalidate, // ensures revalidation is used when cache is not 'force-cache'
+    headers: {
+      ...options?.headers,
+    },
+    requiresAuth: options?.requiresAuth ?? false,
+  };
+};
 
 export function formatError(error: ApiError): string {
   return `[${error.status}] - ${error.message} : ${error.code}`;
