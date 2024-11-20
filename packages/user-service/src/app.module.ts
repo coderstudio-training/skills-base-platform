@@ -11,43 +11,42 @@ import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './employees/employees.module';
 import { UsersModule } from './users/users.module';
 
-const SERVICE_NAME = 'user_service';
-
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     LoggingModule.forRoot({
-      serviceName: SERVICE_NAME,
-      environment: process.env.NODE_ENV,
+      serviceName: 'user_service',
+      environment: 'development',
     }),
     MonitoringModule.forRoot({
-      serviceName: SERVICE_NAME,
+      serviceName: 'email_service',
       enabled: true,
-      sampleRate: 1,
+      metrics: {
+        http: {
+          enabled: true,
+          excludePaths: ['/health', '/metrics'],
+        },
+        system: {
+          enabled: true,
+          collectInterval: 30000,
+        },
+      },
       tags: {
         environment: process.env.NODE_ENV || 'development',
+        service: 'email_service',
       },
     }),
     SecurityModule.forRoot({
       rateLimit: {
-        enabled: false,
+        enabled: true,
         windowMs: 15 * 60 * 1000,
         max: 100,
-        skipPaths: ['/metrics'],
+        skipPaths: ['/health', '/metrics'],
       },
       apiKey: {
         enabled: false,
-        keys: [],
-        excludePaths: ['/metrics'],
-      },
-      ipWhitelist: {
-        enabled: false,
-        allowedIps: [],
-      },
-      payload: {
-        maxSize: 10 * 1024 * 1024,
       },
     }),
     DatabaseModule,

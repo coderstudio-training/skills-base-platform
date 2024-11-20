@@ -57,7 +57,7 @@ export class ApplicationMetricsService extends BaseMetricsService {
     // Enable default metrics
     client.collectDefaultMetrics({
       register: this.register,
-      prefix: `${this.serviceName}_`,
+      // prefix: `${this.serviceName}_`,
       labels: { service: this.serviceName },
     });
   }

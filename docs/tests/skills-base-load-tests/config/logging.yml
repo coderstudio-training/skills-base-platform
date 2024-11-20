@@ -1,0 +1,19 @@
+version: 1
+formatters:
+  standard:
+    format: '%(asctime)s [%(levelname)s] %(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: standard
+    stream: ext://sys.stdout
+  file:
+    class: logging.FileHandler
+    formatter: standard
+    filename: loadtest.log
+loggers:
+  loadtest:
+    level: INFO
+    handlers: [console, file]
+    propagate: no

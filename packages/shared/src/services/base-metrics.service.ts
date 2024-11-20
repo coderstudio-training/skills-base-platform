@@ -26,7 +26,8 @@ export abstract class BaseMetricsService {
     labelNames: string[] = [],
     options: Partial<client.MetricConfiguration<any>> = {},
   ): T {
-    const safeName = this.sanitizeMetricName(`${this.serviceName}_${name}`);
+    // const safeName = this.sanitizeMetricName(`${this.serviceName}_${name}`);
+    const safeName = this.sanitizeMetricName(`${name}`);
     const key = `${type}_${safeName}`;
 
     if (!this.metrics.has(key)) {

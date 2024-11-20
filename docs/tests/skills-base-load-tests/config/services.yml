@@ -1,0 +1,24 @@
+services:
+  user_service:
+    host: 'http://localhost:3001'
+    tasks:
+      - auth
+      - user_profile
+    weight: 3
+    auth:
+      endpoint: '/auth/login'
+      credentials:
+        email: 'admin@example.com'
+        password: 'AdminPassword123!'
+
+  email_service:
+    host: 'http://localhost:3005'
+    tasks:
+      - workflow
+      - notifications
+    weight: 2
+    auth:
+      endpoint: '/auth/login'
+      credentials:
+        email: 'admin@example.com'
+        password: 'AdminPassword123!'
