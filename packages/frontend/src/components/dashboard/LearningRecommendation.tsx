@@ -15,48 +15,34 @@ const LearningRecommendations: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const { data: session } = useSession();
 
-  const fetchData = async () => {
-    if (!session?.user?.email) {
-      setError('User email not found');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Log session and token
-      console.log('Session data:', {
-        email: session.user.email,
-        hasToken: !!session.user.accessToken,
-        tokenStart: session.user.accessToken?.substring(0, 20),
-      });
-
-      const response = await learningRecommendationAPI.getLearningPaths(session.user.email);
-
-      if (response && response.recommendations) {
-        setRecommendations(response.recommendations);
-      } else {
-        throw new Error('Invalid response format');
-      }
-    } catch (err) {
-      console.error('Error details:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    // Clear cached API responses and local storage data
-    localStorage.removeItem('previousUserEmail');
-    sessionStorage.clear();
+    async function fetchRecommendations() {
+      if (status === 'loading') return;
 
-    if (session?.user?.email) {
-      fetchData();
+      if (!session?.user?.email) {
+        setError('No user session found');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data = await learningRecommendationAPI(session.user.email);
+        if (data.recommendations) {
+          setRecommendations(data.recommendations);
+        }
+      } catch (err) {
+        console.error('Error fetching recommendations:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch recommendations');
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [session?.user?.email, fetchData]);
+
+    fetchRecommendations();
+  }, [session?.user?.email]);
 
   const handleCourseClick = (course: Recommendation) => {
     setSelectedCourse(course);

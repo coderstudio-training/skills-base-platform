@@ -1,8 +1,9 @@
 // lib/api.ts
-
 import { logger } from '@/lib/utils';
 import { AdminData, Course, Department, LearningPath, Skill, Staff } from '@/types/admin';
 import * as ApiTypes from '@/types/api';
+import { TeamMember } from '@/types/manager';
+import { RecommendationResponse } from '@/types/staff';
 import { getSession } from 'next-auth/react';
 
 const API_BASE_URL = 'http://localhost:3003';
@@ -27,80 +28,62 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 
 // Add this with your other API functions
 
-export interface CourseDetails {
-  name: string;
-  provider: string;
-  duration: string;
-  format: string;
-  learningPath: string;
-  learningObjectives: string[];
-  prerequisites: string;
-  businessValue: string;
-}
+export const managerAPI = {
+  async getTeamMembers(): Promise<TeamMember[]> {
+    return [
+      {
+        id: '1',
+        name: 'Pauleen Costiniano',
+        email: 'pauleenjoy.costiniano@stratpoint.com',
+        role: 'QA Engineer',
+        careerLevel: 'Professional IV',
+      },
+      {
+        id: '2',
+        name: 'Isaiah Daniel Ebora',
+        email: 'iebora@stratpoint.com',
+        role: 'QA Engineer',
+        careerLevel: 'Professional II',
+      },
+    ];
+  },
 
-export interface Recommendation {
-  skillName: string;
-  currentLevel: number;
-  targetLevel: number;
-  gap: number;
-  type: 'skillGap' | 'promotion';
-  course: CourseDetails;
-}
+  async getMemberRecommendations(email: string): Promise<RecommendationResponse> {
+    const session = await getSession();
+    const token = session?.user?.accessToken;
 
-export interface RecommendationResponse {
-  success: boolean;
-  employeeName: string;
-  careerLevel: string;
-  recommendations: Recommendation[];
-  generatedDate: Date;
-  message?: string;
-}
-
-export const learningRecommendationAPI = {
-  async getLearningPaths(email: string): Promise<RecommendationResponse> {
-    try {
-      const session = await getSession();
-      console.log('Current session:', session);
-
-      // Extract token from session
-      const token = session?.user?.accessToken;
-      if (!token) {
-        console.error('No token found in session');
-        throw new Error('Authentication token not found');
-      }
-
-      // Make direct API call with token
-      const response = await fetch(
-        `${API_BASE_URL}/api/learning/recommendations/${encodeURIComponent(email)}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: token.startsWith('Bearer ') ? token : `Bearer ${token}`,
-          },
-        },
-      );
-
-      // Log the full request details
-      console.log('Request URL:', response.url);
-      console.log('Request headers:', {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token.substring(0, 20)}...`, // Log part of token for security
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API Error Response:', errorData);
-        throw new Error(JSON.stringify(errorData));
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('API Error:', error);
-      throw error;
+    if (!token) {
+      throw new Error('No authentication token available');
     }
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/learning/recommendations/${encodeURIComponent(email)}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch recommendations');
+    }
+
+    return response.json();
   },
 };
+
+export async function learningRecommendationAPI(email: string): Promise<RecommendationResponse> {
+  const response = await fetch(`/api/learning/recommendations/${encodeURIComponent(email)}`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to fetch recommendations');
+  }
+
+  return response.json();
+}
 
 export async function getAdminData(accessToken: string): Promise<AdminData> {
   logger.log(accessToken);

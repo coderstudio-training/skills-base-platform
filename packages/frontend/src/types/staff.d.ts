@@ -62,6 +62,15 @@ interface ApiResponse {
   generatedDate: string;
 }
 
+export interface RecommendationResponse {
+  success: boolean;
+  employeeName: string;
+  careerLevel: string;
+  recommendations: Recommendation[];
+  generatedDate: Date;
+  message?: string;
+}
+
 export interface StaffData {
   name: string;
   role: string;

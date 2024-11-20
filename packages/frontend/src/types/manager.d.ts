@@ -27,3 +27,33 @@ export interface TeamMemberData {
   skillLevel: number;
   trainingsCompleted: number;
 }
+
+//New
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  careerLevel: string;
+}
+
+export interface MemberRecommendations {
+  skillName: string;
+  currentLevel: number;
+  targetLevel: number;
+  gap: number;
+  course: {
+    name: string;
+    provider: string;
+    duration: string;
+    format: string;
+    learningObjectives: string[];
+    prerequisites: string;
+    businessValue: string;
+  };
+}
+
+export interface TeamRecommendations {
+  member: TeamMember;
+  recommendations: RecommendationResponse;
+}
