@@ -31,6 +31,11 @@ export interface ApiClientOptions {
   requiresAuth?: boolean;
 }
 
+export interface ServerInterceptOptions {
+  route?: string;
+  permission: Permission;
+}
+
 export interface GoogleUser {
   id: string;
   name: string;

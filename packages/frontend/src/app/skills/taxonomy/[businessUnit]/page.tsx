@@ -1,10 +1,8 @@
 import TaxonomyTable from '@/components/skills/TaxonomyTable';
-import { authOptions, isTokenExpired } from '@/lib/api/auth';
+import { serverSideIntercept } from '@/lib/api/auth';
 import { getTechnicalTaxonomy } from '@/lib/skills/api';
 import { IBulkUpsertDTO } from '@/lib/skills/types';
 import { logger } from '@/lib/utils';
-import { getServerSession } from 'next-auth';
-import { redirect } from 'next/navigation';
 // Define the revalidation interval for ISR (if needed)
 export const revalidate = 0;
 
@@ -15,19 +13,7 @@ interface PageProps {
 }
 
 export default async function TaxonomyPage({ params }: PageProps) {
-  const session = await getServerSession(authOptions);
-  logger.log('Server-side session:', session);
-
-  if (!session) {
-    logger.log('No session, redirecting to login');
-    redirect('/');
-  } else {
-    const tokenExpired = await isTokenExpired(session?.user.accessToken);
-    if (tokenExpired) {
-      logger.log('Token expired, redirecting to login');
-      redirect('/');
-    }
-  }
+  await serverSideIntercept({ permission: 'canEditTeamSkills' });
 
   const { businessUnit } = params;
 

@@ -7,8 +7,9 @@ import { getServerSession, NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
-import { authConfig, rolePermissions } from './config';
-import { AuthState, Permission, RolePermissions, Roles } from './types';
+import { redirect } from 'next/navigation';
+import { authConfig, errorMessages, rolePermissions } from './config';
+import { AuthState, Permission, RolePermissions, Roles, ServerInterceptOptions } from './types';
 logger.log('Starting to load auth options in lib/auth.ts...');
 
 export const authOptions: NextAuthOptions = {
@@ -202,7 +203,7 @@ export async function getAuthState(): Promise<AuthState> {
 }
 
 // Helper function, gets logged in user's role
-export async function getRoles(): Promise<Roles[]> {
+async function getRoles(): Promise<Roles[]> {
   let session;
 
   // Check if running on the server or client
@@ -248,5 +249,37 @@ export async function isTokenExpired(token: string): Promise<boolean> {
   } catch (error) {
     console.error('Error parsing token:', error);
     return true; // Assume expired if parsing fails
+  }
+}
+
+export async function serverSideIntercept(option: ServerInterceptOptions) {
+  const session = await getServerSession(authOptions);
+  logger.log('Server-side session:', session);
+
+  if (!session) {
+    logger.log(errorMessages.UNAUTHORIZED);
+    redirect('/');
+  } else {
+    const tokenExpired = await isTokenExpired(session?.user.accessToken);
+    if (tokenExpired) {
+      logger.log(errorMessages.TOKEN_EXPIRED);
+      redirect('/');
+    }
+  }
+
+  if (option.permission) {
+    const isPermitted = await hasPermission(option.permission);
+    if (!isPermitted) {
+      logger.log(errorMessages.FORBIDDEN);
+      redirect('/');
+    }
+  }
+
+  if (option.route) {
+    const canAccess = await canAccessRoutes(option.route);
+    if (!canAccess) {
+      logger.log(errorMessages.FORBIDDEN);
+      redirect('/');
+    }
   }
 }
