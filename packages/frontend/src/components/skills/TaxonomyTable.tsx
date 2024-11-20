@@ -54,6 +54,12 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
   };
 
   const handleDialogClose = () => {
+    if (selectedRow) {
+      // Update tableData with changes from selectedRow
+      setTableData(prevData =>
+        prevData.map(row => (row.docId === selectedRow.docId ? { ...selectedRow } : row)),
+      );
+    }
     setDialogOpen(false); // Close the dialog
     setSelectedRow(null); // Reset the selected row when the dialog is closed
   };
@@ -188,7 +194,44 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
 
                           // If it's an object (e.g., { "Level 1": ["item1", "item2"] })
                           return (
-                            <TableCell key={level}>
+                            <TableCell
+                              key={level}
+                              contentEditable
+                              suppressContentEditableWarning
+                              onBlur={e => {
+                                const updatedValue = e.currentTarget.textContent || '';
+                                const updatedArray = updatedValue
+                                  .split(',')
+                                  .map(item => item.trim());
+
+                                setSelectedRow(prev => {
+                                  if (!prev) return null;
+
+                                  const currentValue = prev[key as keyof ITaxonomyDTO];
+
+                                  // Check if the current value is an object
+                                  if (
+                                    typeof currentValue === 'object' &&
+                                    !Array.isArray(currentValue)
+                                  ) {
+                                    return {
+                                      ...prev,
+                                      [key]: {
+                                        ...currentValue, // Safely spread the current object
+                                        [level]: updatedArray,
+                                      },
+                                    };
+                                  }
+
+                                  // Handle cases where the current value is not an object
+                                  return {
+                                    ...prev,
+                                    [key]: updatedArray,
+                                  };
+                                });
+                              }}
+                              className="border border-gray-300 p-2"
+                            >
                               <ul>
                                 {(typedRowData[level] || []).map((item, idx) => (
                                   <li key={idx}>{item}</li>
@@ -201,7 +244,27 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
                         if (Array.isArray(rowData)) {
                           // If it's an array (e.g., ["item1", "item2"])
                           return (
-                            <TableCell key={level}>
+                            <TableCell
+                              key={level}
+                              contentEditable
+                              suppressContentEditableWarning
+                              onBlur={e => {
+                                const updatedValue = e.currentTarget.textContent || '';
+                                const updatedArray = updatedValue
+                                  .split(',')
+                                  .map(item => item.trim());
+
+                                setSelectedRow(prev =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        [key]: updatedArray,
+                                      }
+                                    : null,
+                                );
+                              }}
+                              className="border border-gray-300 p-2"
+                            >
                               <ul>
                                 {rowData.map((item, idx) => (
                                   <li key={idx}>{item}</li>
