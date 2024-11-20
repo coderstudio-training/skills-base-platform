@@ -4,6 +4,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Request,
@@ -48,5 +49,12 @@ export class UsersController extends BaseController<User> {
   @Roles(UserRole.ADMIN)
   findAll(@Query() paginationDto: PaginationDto) {
     return this.usersService.findAll(paginationDto);
+  }
+
+  @Get('picture/:email')
+  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  async getUserPicture(@Param('email') email: string) {
+    const user = await this.usersService.findByEmail(email);
+    return { picture: user?.picture || null };
   }
 }

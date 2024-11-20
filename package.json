@@ -40,6 +40,6 @@
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.2",
-    "@radix-ui/react-icons": "^1.3.2"
+    "@radix-ui/react-tooltip": "^1.1.4"
   }
 }

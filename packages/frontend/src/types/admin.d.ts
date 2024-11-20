@@ -1,5 +1,45 @@
 // types/admin.d.ts
 
+export interface Employee {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  businessUnit: string;
+  employmentStatus: string;
+  grade: string;
+  skills?: EmployeeSkill[];
+}
+
+export interface EmployeeSkill {
+  name: string;
+  level: string;
+  currentLevel?: number;
+  requiredLevel?: number;
+  selfAssessment?: string;
+  managerAssessment?: string;
+  description?: string;
+}
+
+export interface BusinessUnitStats {
+  name: string;
+  count: number;
+}
+
+export interface SkillGap {
+  name: string;
+  value: number;
+}
+
+export interface DashboardStats {
+  totalEmployees: number;
+  activeEmployees: number;
+  departmentsCount: number;
+  topSkills: Array<{ name: string; level: string }>;
+  skillGaps: Array<SkillGap>;
+  businessUnitStats: Array<BusinessUnitStats>;
+}
+
 export interface AdminData {
   totalStaffs: number;
   totalDepartments: number;

@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
 
-const LearningRecommendations: React.FC = () => {
+const StaffLearningRecommendations: React.FC = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -200,4 +200,4 @@ const LearningRecommendations: React.FC = () => {
   );
 };
 
-export default LearningRecommendations;
+export default StaffLearningRecommendations;

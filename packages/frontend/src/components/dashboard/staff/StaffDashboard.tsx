@@ -1,18 +1,18 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
 // import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 // import { ScrollArea } from "@/components/ui/scroll-area";
+import StaffLearningRecommendations from '@/components/dashboard/staff/StaffLearningRecommendation';
+import StaffDashboardHeader from '@/components/shared/StaffDashboardHeader';
 import { dummyStaffData } from '@/lib/dummyData';
 import { StaffData } from '@/types/staff';
-import { Award, BookOpen, LogOut, Scroll, TrendingUp } from 'lucide-react';
+import { Award, BookOpen, Scroll, TrendingUp } from 'lucide-react';
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -21,47 +21,23 @@ import {
   RadarChart,
   ResponsiveContainer,
 } from 'recharts';
-import LearningRecommendations from './LearningRecommendation';
 
 export default function StaffDashboard() {
-  const { data: session } = useSession();
+  //const { data: session } = useSession();
   const [staffData] = useState<StaffData>(dummyStaffData);
-
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">{staffData.name}</h1>
-          <p className="text-muted-foreground">
-            {staffData.role} - {staffData.department}
-          </p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
-            <AvatarFallback>{staffData.name[0]}</AvatarFallback>
-          </Avatar>
-          <span className="text-sm font-medium">{session?.user?.name || staffData.name}</span>
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </div>
+      <StaffDashboardHeader />
+
       <Tabs defaultValue="overview">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="skills">My Skills</TabsTrigger>
           <TabsTrigger value="qualifications">Qualifications</TabsTrigger>
           <TabsTrigger value="learning">Learning Paths</TabsTrigger>
           <TabsTrigger value="network">My Network</TabsTrigger>
-          <TabsTrigger value="career">Career Paths</TabsTrigger>
-          <TabsTrigger value="recommendations">Learning Recommendations</TabsTrigger>{' '}
-          {/* New tab */}
+          <TabsTrigger value="growth-plan">Growth Plan</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -195,28 +171,8 @@ export default function StaffDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="career">
-          <Card>
-            <CardHeader>
-              <CardTitle>Career Paths</CardTitle>
-              <CardDescription>Potential career progression</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-4">
-                {staffData.careerPaths.map((path, index) => (
-                  <li key={index}>
-                    <p className="font-medium">{path.role}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Required Skills: {path.requiredSkills.join(', ')}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="recommendations">
-          <LearningRecommendations />
+        <TabsContent value="growth-plan">
+          <StaffLearningRecommendations />
         </TabsContent>
       </Tabs>
     </div>

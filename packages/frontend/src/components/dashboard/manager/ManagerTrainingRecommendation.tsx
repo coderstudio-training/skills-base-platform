@@ -1,4 +1,3 @@
-// components/dashboard/ManagerTrainingView.tsx
 'use client';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -6,14 +5,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { managerAPI } from '@/lib/api';
 import { MemberRecommendations, TeamMember } from '@/types/manager';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Progress } from '../ui/progress';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
+import { Progress } from '../../ui/progress';
 
 interface MemberData extends TeamMember {
   recommendations: MemberRecommendations[];
 }
 
-const ManagerTrainingView = () => {
+const ManagerTrainingRecommendation = () => {
   const [memberData, setMemberData] = useState<MemberData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -146,4 +145,4 @@ const ManagerTrainingView = () => {
   );
 };
 
-export default ManagerTrainingView;
+export default ManagerTrainingRecommendation;
