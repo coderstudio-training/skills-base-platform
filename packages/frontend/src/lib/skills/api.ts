@@ -9,7 +9,7 @@ export async function getTechnicalTaxonomy(
   businessUnit: string,
   options: ApiClientOptions = { requiresAuth: true },
 ) {
-  logger.log(`[BusinessUnit] ${businessUnit} `);
+  logger.log(`[TAXONOMY] Getting taxonomy for ${businessUnit} `);
   return skillsApi.get<ApiTypes.IBaseTaxonomy[]>(
     `${TAXONOMY_BASE_URL}?businessUnit=${businessUnit}`,
     options,
@@ -21,7 +21,7 @@ export async function getTaxonomyById(
   businessUnit: string,
   options: ApiClientOptions = { requiresAuth: true },
 ) {
-  logger.log(docId);
+  logger.log(`[TAXONOMY] Getting taxonomy for id: ${docId}`);
   return skillsApi.get<ApiTypes.IBaseTaxonomy>(
     `${TAXONOMY_BASE_URL}/${docId}?businessUnit=${businessUnit}`,
     options,
@@ -32,7 +32,7 @@ export async function bulkUpsert(
   data: ApiTypes.IBulkUpsertDTO,
   options: ApiClientOptions = { requiresAuth: true },
 ) {
-  logger.log(data);
+  logger.log(`[TAXONOMY] bulk upserting ${data.data.length} documents`);
   return skillsApi.post<ApiTypes.ITaxonomyResponse>(
     `${TAXONOMY_BASE_URL}/bulk-upsert`,
     data,

@@ -67,7 +67,7 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
 
   const triggerRevalidate = async () => {
     const businessUnit = 'taxonomy';
-    const response = await fetch('/skills/taxonomy/revalidate', {
+    const res = await fetch('/skills/taxonomy/revalidate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -75,20 +75,20 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
       body: JSON.stringify({ businessUnit }),
     });
 
-    if (response.ok) {
-      console.log(await response.text()); // "Revalidated taxonomy!"
+    if (res.ok) {
+      console.log(await res.text()); // "Revalidated taxonomy!"
 
       // Refetch the updated data after revalidation
-      const updatedData = await getTechnicalTaxonomy(businessUnit, {
+      const response = await getTechnicalTaxonomy(businessUnit, {
         tags: ['taxonomy'],
         revalidate: 100, // Force revalidation on client side too
       });
 
       // Assuming you update the state here
-      setTableData(updatedData.data as ITaxonomyDTO[]);
-      console.log('Updated data:', updatedData);
+      setTableData(response.data as ITaxonomyDTO[]);
+      console.log('Updated data:', response);
     } else {
-      console.error('Failed to revalidate:', response.statusText);
+      console.error('Failed to revalidate:', res.statusText);
     }
   };
 

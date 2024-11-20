@@ -2,7 +2,6 @@ import TaxonomyTable from '@/components/skills/TaxonomyTable';
 import { serverSideIntercept } from '@/lib/api/auth';
 import { getTechnicalTaxonomy } from '@/lib/skills/api';
 import { IBulkUpsertDTO } from '@/lib/skills/types';
-import { logger } from '@/lib/utils';
 // Define the revalidation interval for ISR (if needed)
 export const revalidate = 0;
 
@@ -23,7 +22,6 @@ export default async function TaxonomyPage({ params }: PageProps) {
   });
 
   if (error) {
-    logger.log(`ACCESSING DATA ${data}`);
     return (
       <div className="p-6">
         <h1 className="text-xl font-bold text-red-500">Error</h1>
