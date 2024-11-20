@@ -57,7 +57,7 @@ export default function StaffDashboard() {
       }
       setLoading(true);
       try {
-        const data = await getSkillMatrix(session.user.email);
+        const data = await getSkillMatrix();
         setSkills(data.skills);
       } catch (err: unknown) {
         const error = err instanceof Error ? err.message : 'Failed to fetch skills data';
@@ -72,6 +72,15 @@ export default function StaffDashboard() {
   }, [session]);
 
   const filteredSkills = skills.filter(skill => skill.category === selectedCategory);
+
+  const transformedChartData = filteredSkills.map(skill => ({
+    skill: skill.skill,
+    selfRating: skill.selfRating,
+    managerRating: skill.managerRating,
+    average: skill.average,
+    requiredRating: skill.requiredRating,
+    [skill.skill]: skill.average, // This is needed for the chart to work properly
+  }));
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
@@ -186,7 +195,7 @@ export default function StaffDashboard() {
                   <div className="h-[500px] w-full">
                     <ResponsiveContainer width="100%" height={500}>
                       <CustomBarChart
-                        data={filteredSkills}
+                        data={transformedChartData}
                         xAxisKey="skill"
                         series={[
                           { key: 'average', name: 'Current Level', color: '#4285f4' },

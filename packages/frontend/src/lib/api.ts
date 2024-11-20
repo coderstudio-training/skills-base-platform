@@ -25,8 +25,8 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
-export const getSkillMatrix = async (email: string): Promise<SkillsResponse> => {
-  const response = await fetch(`/api/skills/skill-matrix/${encodeURIComponent(email)}`);
+export async function getSkillMatrix(): Promise<SkillsResponse> {
+  const response = await fetch('/api/skill-matrix');
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
@@ -34,7 +34,7 @@ export const getSkillMatrix = async (email: string): Promise<SkillsResponse> => 
   }
 
   return response.json();
-};
+}
 
 export async function getAdminData(accessToken: string): Promise<AdminData> {
   logger.log(accessToken);

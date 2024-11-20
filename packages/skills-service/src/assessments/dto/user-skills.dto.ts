@@ -96,10 +96,6 @@ export class TransformedSkillDto {
 }
 
 export class TransformedSkillsResponseDto {
-  // @IsString()
-  // @IsNotEmpty()
-  // name!: string;
-
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TransformedSkillDto)
