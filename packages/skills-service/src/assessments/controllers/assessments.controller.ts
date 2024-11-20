@@ -18,18 +18,13 @@ export class AssessmentsController {
     body: {
       assessmentType: string;
       data: BaseAssessmentDto[];
-      // prefix: string;
     },
   ) {
-    const { assessmentType, data } = body; // Make sure to include prefix here
+    const { assessmentType, data } = body;
     console.log('Incoming body:', body);
 
     const bulkUpdateDto: BulkUpdateAssessmentsDto = { data };
 
-    return this.assessmentService.bulkUpsert(
-      // prefix,
-      assessmentType,
-      bulkUpdateDto,
-    );
+    return this.assessmentService.bulkUpsert(assessmentType, bulkUpdateDto);
   }
 }

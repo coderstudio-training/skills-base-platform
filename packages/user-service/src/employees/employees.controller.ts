@@ -5,17 +5,20 @@ import {
   Logger,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   JwtAuthGuard,
   LoggingInterceptor,
+  PaginationDto,
   Roles,
   RolesGuard,
   TransformInterceptor,
   UserRole,
 } from '@skills-base/shared';
+import { EmployeeSearchDto } from './dto/search-employee.dto';
 import { EmployeesService } from './employees.service';
 
 @Controller('employees')
@@ -41,8 +44,14 @@ export class EmployeesController {
 
   @Get()
   @Roles(UserRole.ADMIN)
-  async findAll() {
-    return this.employeesService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.employeesService.findAll(paginationDto);
+  }
+
+  @Get('search')
+  @Roles(UserRole.ADMIN)
+  search(@Query() searchDto: EmployeeSearchDto) {
+    return this.employeesService.search(searchDto);
   }
 
   @Get(':employeeId')

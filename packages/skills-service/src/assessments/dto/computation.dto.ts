@@ -1,3 +1,4 @@
+import { BaseDto } from '@skills-base/shared';
 import {
   IsDate,
   IsEmail,
@@ -8,7 +9,7 @@ import {
 } from 'class-validator';
 
 // src/performance/dtos/performance-average.dto.ts
-export class PerformanceAverageDto {
+export class PerformanceAverageDto extends BaseDto {
   @IsEmail()
   @IsNotEmpty()
   emailAddress!: string;

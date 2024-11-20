@@ -1,9 +1,9 @@
 // assessments.entity.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { BaseEntity } from '@skills-base/shared';
 
 @Schema()
-export class Assessments extends Document {
+export class Assessments extends BaseEntity {
   @Prop({ required: true }) // Keep as Date in the entity
   timestamp!: Date;
 

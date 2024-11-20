@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { PaginationDto } from '@skills-base/shared';
 import { BulkWriteResult } from 'mongodb';
 import { Model } from 'mongoose';
+import { EmployeeSearchDto } from './dto/search-employee.dto';
 import { Employee } from './entities/employee.entity';
 
 @Injectable()
@@ -18,10 +20,12 @@ export class EmployeesService {
 
   private async ensureIndexes(): Promise<void> {
     try {
-      await this.employeeModel.collection.createIndex(
-        { employeeId: 1 },
-        { unique: true, background: true },
-      );
+      await Promise.all([
+        this.employeeModel.collection.createIndex(
+          { employeeId: 1 },
+          { unique: true, background: true },
+        ),
+      ]);
       this.logger.log('Indexes ensured for Employees collection');
     } catch (error) {
       this.logger.error(
@@ -120,8 +124,77 @@ export class EmployeesService {
     return result as unknown as BulkWriteResult;
   }
 
-  async findAll(): Promise<Employee[]> {
-    return this.employeeModel.find().exec();
+  async findAll(paginationDto: PaginationDto) {
+    const page = paginationDto.page || 1;
+    const limit = paginationDto.limit || 10;
+    const skip = (page - 1) * limit;
+
+    try {
+      const [items, total] = await Promise.all([
+        this.employeeModel.find().skip(skip).limit(limit).exec(),
+        this.employeeModel.countDocuments(),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        items,
+        total,
+        page,
+        limit,
+        totalPages,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching employees:', error);
+      throw error;
+    }
+  }
+
+  async search(searchDto: EmployeeSearchDto) {
+    const page = searchDto.page || 1;
+    const limit = searchDto.limit || 10;
+    const skip = (page - 1) * limit;
+
+    try {
+      const searchRegex = new RegExp(searchDto.searchTerm, 'i');
+      const query = {
+        $or: [{ firstName: searchRegex }, { email: searchRegex }],
+      };
+
+      const fields = {
+        employeeId: 1,
+        firstName: 1,
+        lastName: 1,
+        email: 1,
+        businessUnit: 1,
+        employmentStatus: 1,
+        grade: 1,
+        _id: 0,
+      };
+
+      const [items, total] = await Promise.all([
+        this.employeeModel
+          .find(query)
+          .select(fields)
+          .skip(skip)
+          .limit(limit)
+          .exec(),
+        this.employeeModel.countDocuments(query),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        items,
+        total,
+        page,
+        limit,
+        totalPages,
+      };
+    } catch (error) {
+      this.logger.error('Error searching employees:', error);
+      throw error;
+    }
   }
 
   async findByEmployeeId(employeeId: number): Promise<Employee | null> {

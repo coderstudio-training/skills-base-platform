@@ -1,9 +1,9 @@
 // src/required-skills/entities/required-skills.entity.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { BaseEntity } from '@skills-base/shared';
 
 @Schema()
-export class RequiredSkills extends Document {
+export class RequiredSkills extends BaseEntity {
   @Prop({ required: true })
   capability!: string;
 

@@ -9,61 +9,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 // import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-// import { ScrollArea } from "@/components/ui/scroll-area";
-import { EmployeeSkillsResponse, userSkillsApi } from '@/lib/api';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { getSkillMatrix } from '@/lib/api';
 import { dummyStaffData } from '@/lib/dummyData';
-import { StaffData } from '@/types/staff';
+import { StaffData, StaffSkill } from '@/types/staff';
 import { Award, BookOpen, LogOut, Scroll, TrendingUp } from 'lucide-react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-
-interface ChartDataPoint {
-  skill: string;
-  currentLevel: number;
-  requiredLevel: number;
-  gap: number;
-  category: string;
-}
-
-const SOFT_SKILLS_COUNT = 10;
-
-const calculateRequiredLevel = (
-  currentLevel: number,
-  skillGaps: Record<string, number>,
-  skill: string,
-) =>
-  currentLevel > (skillGaps[skill] || 0)
-    ? currentLevel - (skillGaps[skill] || 0)
-    : currentLevel + (skillGaps[skill] || 0);
-
-const transformDataForChart = (data: EmployeeSkillsResponse | null): ChartDataPoint[] => {
-  if (!data?.user) return [];
-
-  const skillEntries = Object.entries(data.user.skillAverages);
-
-  const technicalSkills = skillEntries.slice(SOFT_SKILLS_COUNT).map(([skill, currentLevel]) => ({
-    skill,
-    currentLevel,
-    requiredLevel: calculateRequiredLevel(currentLevel, data.user.skillGaps, skill),
-    gap: data.user.skillGaps[skill] || 0,
-    category: 'Technical',
-  }));
-
-  return technicalSkills;
-};
+import { ResponsiveContainer } from 'recharts';
+import { CustomBarChart } from '../ui/barchart';
 
 const getGapStatus = (gap: number) => {
   if (gap < -2)
     return {
-      text: 'Significant Gap',
+      text: 'Critical',
       className: 'text-red-600 bg-red-100 px-2 py-1 rounded-full text-sm',
     };
   if (gap < 0)
@@ -73,7 +30,7 @@ const getGapStatus = (gap: number) => {
     };
   if (gap < 1)
     return {
-      text: 'Meeting Requirements',
+      text: 'Sufficient',
       className: 'text-green-500 bg-green-100 px-2 py-1 rounded-full text-sm',
     };
   return {
@@ -83,34 +40,38 @@ const getGapStatus = (gap: number) => {
 };
 
 export default function StaffDashboard() {
-  const [employeeSkillsResponse, setEmployeeSkillsResponse] =
-    useState<EmployeeSkillsResponse | null>(null);
   const { data: session } = useSession();
   const [staffData] = useState<StaffData>(dummyStaffData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const testEmail = 'erneljohn.burgos@stratpoint.com';
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await userSkillsApi.getUserSkillsData(testEmail);
-      setEmployeeSkillsResponse(response);
-    } catch (err) {
-      console.error('Error fetching skill gaps:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [skills, setSkills] = useState<StaffSkill[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<'Technical Skills' | 'Soft Skills'>(
+    'Technical Skills',
+  );
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    const fetchSkills = async () => {
+      if (!session?.user?.email) {
+        setError('User email not found in session');
+        return;
+      }
+      setLoading(true);
+      try {
+        const data = await getSkillMatrix(session.user.email);
+        setSkills(data.skills);
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err.message : 'Failed to fetch skills data';
+        console.error('Error fetching skills data:', err);
+        setError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const chartData = transformDataForChart(employeeSkillsResponse);
+    if (session) fetchSkills();
+  }, [session]);
+
+  const filteredSkills = skills.filter(skill => skill.category === selectedCategory);
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
@@ -120,7 +81,7 @@ export default function StaffDashboard() {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">{staffData.name}</h1>
+          <h1 className="text-3xl font-bold">{session?.user?.name}</h1>
           <p className="text-muted-foreground">
             {staffData.role} - {staffData.department}
           </p>
@@ -192,41 +153,28 @@ export default function StaffDashboard() {
             </Card>
           </div>
         </TabsContent>
-        {/* <TabsContent value="skills">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Skills</CardTitle>
-              <CardDescription>Your current skill levels</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={staffData.skills}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="name" />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                  <Radar
-                    name="Skills"
-                    dataKey="level"
-                    stroke="#8884d8"
-                    fill="#8884d8"
-                    fillOpacity={0.6}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent> */}
         <TabsContent value="skills">
           <Card className="w-full">
             <CardHeader>
-              <CardTitle>
-                Skills Gap Analysis -{' '}
-                {employeeSkillsResponse?.user.nameOfResource || staffData.name}
-              </CardTitle>
-              <p className="text-sm text-gray-600">
-                {employeeSkillsResponse?.user.careerLevel || staffData.role} -{' '}
-                {employeeSkillsResponse?.user.capability || staffData.department}
-              </p>
+              <div className="flex justify-between items-center">
+                <CardTitle>Skills Gap Analysis</CardTitle>
+                <div className="space-x-2">
+                  <Button
+                    variant={selectedCategory === 'Technical Skills' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedCategory('Technical Skills')}
+                  >
+                    Technical Skills
+                  </Button>
+                  <Button
+                    variant={selectedCategory === 'Soft Skills' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedCategory('Soft Skills')}
+                  >
+                    Soft Skills
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -235,84 +183,95 @@ export default function StaffDashboard() {
                 <div className="text-red-500">{error}</div>
               ) : (
                 <>
-                  <div className="h-[400px] w-full">
-                    <ResponsiveContainer width="100%" height={400}>
-                      <BarChart
-                        data={chartData}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="skill" tick={{ fill: '#666' }} tickLine={false} />
-                        <YAxis
-                          domain={[0, 6]}
-                          ticks={[0, 0.9, 1.8, 2.7, 3.6, 4.5, 6]}
-                          tick={{ fill: '#666' }}
-                          tickLine={false}
-                        />
-                        <Tooltip />
-                        <Bar
-                          dataKey="currentLevel"
-                          fill="#4285f4"
-                          name="Current Level"
-                          radius={[4, 4, 0, 0]}
-                        />
-                        <Bar
-                          dataKey="requiredLevel"
-                          fill="#666666"
-                          name="Required Level"
-                          radius={[4, 4, 0, 0]}
-                        />
-                        <Legend
-                          wrapperStyle={{
-                            bottom: 0,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            marginTop: '10px',
-                            fontSize: '12px',
-                          }}
-                          payload={[
-                            { value: 'Current Level', type: 'square', color: '#4285f4' },
-                            { value: 'Required Level', type: 'square', color: '#666666' },
-                          ]}
-                        />
-                      </BarChart>
+                  <div className="h-[500px] w-full">
+                    <ResponsiveContainer width="100%" height={500}>
+                      <CustomBarChart
+                        data={filteredSkills}
+                        xAxisKey="skill"
+                        series={[
+                          { key: 'average', name: 'Current Level', color: '#4285f4' },
+                          { key: 'requiredRating', name: 'Required Level', color: '#666666' },
+                        ]}
+                        title="Skills Gap Analysis"
+                      />
                     </ResponsiveContainer>
                   </div>
-
                   <div className="mt-8">
                     <h3 className="text-lg font-semibold mb-2">Skill Details</h3>
                     <p className="text-sm text-gray-600 mb-4">
-                      Breakdown of your skills, assessments, and required levels
+                      Breakdown of your {selectedCategory.toLowerCase()}
                     </p>
 
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="border-b">
-                          <tr className="text-left">
-                            <th className="pb-2">Skill</th>
-                            <th className="pb-2">Current Level</th>
-                            <th className="pb-2">Required Level</th>
-                            <th className="pb-2">Gap</th>
-                            <th className="pb-2">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                          {chartData.map((item, index) => {
-                            const gapStatus = getGapStatus(item.gap);
-                            return (
-                              <tr key={index} className="hover:bg-gray-50">
-                                <td className="py-3">{item.skill}</td>
-                                <td className="py-3">{item.currentLevel.toFixed(1)}</td>
-                                <td className="py-3">{item.requiredLevel.toFixed(1)}</td>
-                                <td className="py-3">{item.gap.toFixed(1)}</td>
-                                <td className="py-3">
-                                  <span className={gapStatus.className}>{gapStatus.text}</span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                    <div className="rounded-md border">
+                      <div className="bg-white border-b">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="text-left">
+                              <th
+                                className="py-4 px-6 font-medium w-[30%]"
+                                style={{ paddingLeft: '24px' }}
+                              >
+                                Skill
+                              </th>
+                              <th className="py-4 px-6 font-medium w-[20%]">Self Rating</th>
+                              <th className="py-4 px-6 font-medium w-[20%]">Manager Rating</th>
+                              <th className="py-4 px-6 font-medium w-[15%] text-center">
+                                Required Level
+                              </th>
+                              <th className="py-4 px-6 font-medium w-[15%]">Status</th>
+                            </tr>
+                          </thead>
+                        </table>
+                      </div>
+
+                      <ScrollArea className="h-[360px]">
+                        <div className="px-4">
+                          <table className="w-full">
+                            <tbody className="divide-y">
+                              {filteredSkills.map((skill, index) => {
+                                const status = getGapStatus(skill.gap);
+                                return (
+                                  <tr key={index} className="hover:bg-gray-50">
+                                    <td
+                                      className="py-4 px-6 w-[30%]"
+                                      style={{ paddingLeft: '24px' }}
+                                    >
+                                      {skill.skill}
+                                    </td>
+                                    <td className="py-4 px-6 w-[20%]">
+                                      <div className="flex items-center gap-4">
+                                        <Progress value={skill.selfRating * 20} className="w-32" />
+                                        <span className="text-sm font-medium w-4">
+                                          {skill.selfRating}
+                                        </span>
+                                      </div>
+                                    </td>
+                                    <td className="py-4 px-6 w-[20%]">
+                                      <div className="flex items-center gap-4">
+                                        <Progress
+                                          value={skill.managerRating * 20}
+                                          className="w-32"
+                                        />
+                                        <span className="text-sm font-medium w-4">
+                                          {skill.managerRating}
+                                        </span>
+                                      </div>
+                                    </td>
+                                    <td className="py-4 px-6 w-[15%] text-center">
+                                      <span className="text-sm font-medium">
+                                        {skill.requiredRating}
+                                      </span>
+                                    </td>
+                                    <td className="py-4 px-6 w-[15%]">
+                                      <span className={status.className}>{status.text}</span>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </ScrollArea>
                     </div>
                   </div>
                 </>

@@ -1,8 +1,9 @@
 // src/required-skills/dto/required-skills.dto.ts
+import { BaseDto } from '@skills-base/shared';
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsObject, IsString } from 'class-validator';
 
-export class RequiredSkillsDto {
+export class RequiredSkillsDto extends BaseDto {
   @IsString()
   @IsNotEmpty()
   capability!: string;
