@@ -1,6 +1,14 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogExit,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -16,11 +24,17 @@ import { useState } from 'react';
 
 export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
   const [tableData, setTableData] = useState(data); // Local state to manage table edits
+  const [selectedRow, setSelectedRow] = useState<ITaxonomyDTO | null>(null); // State for selected row (for dialog)
+  const [dialogOpen, setDialogOpen] = useState(false); // State for dialog visibility
 
   const handleEdit = (docId: string, field: keyof IBaseTaxonomy, value: string) => {
     setTableData(prevData =>
       prevData.map(row => (row.docId === docId ? { ...row, [field]: value } : row)),
     );
+  };
+
+  const handleRowClick = (row: ITaxonomyDTO) => {
+    setSelectedRow(row); // Set the selected row for the dialog
   };
 
   const validateData = (data: ITaxonomyDTO[]) => {
@@ -39,6 +53,11 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
     );
   };
 
+  const handleDialogClose = () => {
+    setDialogOpen(false); // Close the dialog
+    setSelectedRow(null); // Reset the selected row when the dialog is closed
+  };
+
   const saveChanges = async () => {
     console.log('Updated Data:', { data: tableData });
 
@@ -48,7 +67,6 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
     }
 
     try {
-      // Ensure the payload matches IBulkUpsertDTO
       const payload: IBulkUpsertDTO = { data: tableData };
 
       // Send the payload to the backend
@@ -65,6 +83,11 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
       console.error('Save changes failed:', err);
       alert('An unexpected error occurred while saving changes.');
     }
+  };
+
+  // Get dynamic column names (from proficiencyDescription or knowledge or abilities)
+  const getDynamicColumns = (key: keyof ITaxonomyDTO) => {
+    return Object.keys(selectedRow?.[key] || {}).map(level => level);
   };
 
   return (
@@ -100,7 +123,11 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
         </TableHeader>
         <TableBody>
           {tableData.map(row => (
-            <TableRow key={row.docId}>
+            <TableRow
+              key={row.docId}
+              onClick={() => handleRowClick(row)}
+              className={selectedRow?.docId === row.docId ? 'bg-gray-200' : ''} // Highlight selected row
+            >
               <TableCell>{row.category}</TableCell>
               <TableCell>{row.title}</TableCell>
               <TableCell
@@ -117,6 +144,90 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
           ))}
         </TableBody>
       </Table>
+
+      {/* Dialog for Expanded Row */}
+      <Dialog>
+        <DialogTrigger>
+          <Button disabled={!selectedRow} className="m-5">
+            Open Details
+          </Button>
+        </DialogTrigger>
+        <div
+          className={`${
+            dialogOpen ? 'block' : 'hidden'
+          } fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center`}
+        ></div>
+        <DialogContent>
+          {selectedRow && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Expanded Information for {selectedRow.title}</DialogTitle>
+              </DialogHeader>
+
+              <Table className="border border-gray-200">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-left">Type</TableHead>
+                    {getDynamicColumns('proficiencyDescription').map(level => (
+                      <TableHead key={level} className="text-left">
+                        {level}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {['proficiencyDescription', 'knowledge', 'abilities'].map(key => (
+                    <TableRow key={key}>
+                      <TableCell>{key}</TableCell>
+                      {getDynamicColumns(key as keyof ITaxonomyDTO).map(level => {
+                        const rowData = selectedRow?.[key as keyof ITaxonomyDTO]; // Safe access
+
+                        // Check if rowData is an object and has the key 'level'
+                        if (rowData && typeof rowData === 'object' && !Array.isArray(rowData)) {
+                          const typedRowData = rowData as Record<string, string[]>;
+
+                          // If it's an object (e.g., { "Level 1": ["item1", "item2"] })
+                          return (
+                            <TableCell key={level}>
+                              <ul>
+                                {(typedRowData[level] || []).map((item, idx) => (
+                                  <li key={idx}>{item}</li>
+                                ))}
+                              </ul>
+                            </TableCell>
+                          );
+                        }
+
+                        if (Array.isArray(rowData)) {
+                          // If it's an array (e.g., ["item1", "item2"])
+                          return (
+                            <TableCell key={level}>
+                              <ul>
+                                {rowData.map((item, idx) => (
+                                  <li key={idx}>{item}</li>
+                                ))}
+                              </ul>
+                            </TableCell>
+                          );
+                        }
+
+                        return <TableCell key={level}>N/A</TableCell>; // Fallback if it's neither object nor array
+                      })}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {/* Close Button for Dialog */}
+              <DialogExit>
+                <Button onClick={handleDialogClose} className="mt-4">
+                  Close
+                </Button>
+              </DialogExit>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
