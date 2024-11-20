@@ -1,5 +1,6 @@
 'use client';
 
+import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,17 +46,15 @@ import {
   Loader2,
   Network,
   Search,
-  Settings,
   SlidersHorizontal,
   Upload,
   Users,
   X,
   XCircle,
 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { Input } from '../ui/input';
-import { Progress } from '../ui/progress';
+import { Input } from '../../ui/input';
+import { Progress } from '../../ui/progress';
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
@@ -177,41 +176,10 @@ export default function AdminDashboard() {
     alert('Report exported successfully!');
   };
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
-
   return (
     <div className="container mx-auto p-4 mb-6">
       {/* Header */}
-      <header className="bg-white border-b mb-6">
-        <div className="h-16 mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
-            <Badge variant="secondary">Data synced: Today 8:00 AM</Badge>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5" />
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="secondary" className="relative h-8 w-8 rounded-full">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center">
-                    {`AD`}
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Admin User</DropdownMenuLabel>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </header>
+      <AdminDashboardHeader />
 
       <div className="flex justify-between items-center mb-6">
         <div className="flex space-x-2">

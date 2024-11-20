@@ -1,6 +1,6 @@
 'use client';
 
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 // import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from '@/components/ui/button';
@@ -11,8 +11,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Download, LogOut, TrendingUp, Trophy, Upload, Users } from 'lucide-react';
+import { Download, TrendingUp, Trophy, Upload, Users } from 'lucide-react';
 
+import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import {
   Select,
   SelectContent,
@@ -106,10 +107,6 @@ export default function ManagerDashboard() {
     fetchUserPictures();
   }, [teamMembers, session?.user?.accessToken]);
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
-
   const handleExportReport = async () => {
     // Simulate report generation
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -118,23 +115,7 @@ export default function ManagerDashboard() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Manager Dashboard</h1>
-          <p className="text-muted-foreground">Skills Base Platform Overview</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
-            <AvatarFallback>{session?.user?.name?.[0] || 'M'}</AvatarFallback>
-          </Avatar>
-          <span className="text-sm font-medium">{session?.user?.name}</span>
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </div>
+      <ManagerDashboardHeader />
 
       <div className="flex justify-between items-center mb-6">
         <div className="flex space-x-2">
