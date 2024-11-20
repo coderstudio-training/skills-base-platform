@@ -252,7 +252,7 @@ export async function isTokenExpired(token: string): Promise<boolean> {
   }
 }
 
-export async function serverSideIntercept(option: ServerInterceptOptions) {
+export async function serverSideIntercept(option?: ServerInterceptOptions) {
   const session = await getServerSession(authOptions);
   logger.log('Server-side session:', session);
 
@@ -267,19 +267,19 @@ export async function serverSideIntercept(option: ServerInterceptOptions) {
     }
   }
 
-  if (option.permission) {
+  if (option?.permission) {
     const isPermitted = await hasPermission(option.permission);
     if (!isPermitted) {
       logger.log(errorMessages.FORBIDDEN);
-      redirect('/');
+      redirect('/error/forbidden');
     }
   }
 
-  if (option.route) {
+  if (option?.route) {
     const canAccess = await canAccessRoutes(option.route);
     if (!canAccess) {
       logger.log(errorMessages.FORBIDDEN);
-      redirect('/');
+      redirect('/error/forbidden');
     }
   }
 }
