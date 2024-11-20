@@ -17,7 +17,10 @@ export default async function TaxonomyPage({ params }: PageProps) {
 
   const { businessUnit } = params;
 
-  const { data, error } = await getTechnicalTaxonomy(businessUnit);
+  const { data, error } = await getTechnicalTaxonomy(businessUnit, {
+    tags: ['taxonomy'],
+    revalidate: 100,
+  });
 
   if (error) {
     logger.log(`ACCESSING DATA ${data}`);

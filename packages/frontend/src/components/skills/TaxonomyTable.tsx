@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { bulkUpsert } from '@/lib/skills/api';
+import { bulkUpsert, getTechnicalTaxonomy } from '@/lib/skills/api';
 import { IBaseTaxonomy, IBulkUpsertDTO, ITaxonomyDTO } from '@/lib/skills/types';
 import { useState } from 'react';
 
@@ -27,6 +27,7 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
   const [selectedRow, setSelectedRow] = useState<ITaxonomyDTO | null>(null); // State for selected row (for dialog)
   const [dialogOpen, setDialogOpen] = useState(false); // State for dialog visibility
 
+  console.log(`[INFO] Fetched taxonomy data for ${data[0].businessUnit}:`, data);
   const handleEdit = (docId: string, field: keyof IBaseTaxonomy, value: string) => {
     setTableData(prevData =>
       prevData.map(row => (row.docId === docId ? { ...row, [field]: value } : row)),
@@ -62,6 +63,33 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
     }
     setDialogOpen(false); // Close the dialog
     setSelectedRow(null); // Reset the selected row when the dialog is closed
+  };
+
+  const triggerRevalidate = async () => {
+    const businessUnit = 'taxonomy';
+    const response = await fetch('/skills/taxonomy/revalidate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ businessUnit }),
+    });
+
+    if (response.ok) {
+      console.log(await response.text()); // "Revalidated taxonomy!"
+
+      // Refetch the updated data after revalidation
+      const updatedData = await getTechnicalTaxonomy(businessUnit, {
+        tags: ['taxonomy'],
+        revalidate: 100, // Force revalidation on client side too
+      });
+
+      // Assuming you update the state here
+      setTableData(updatedData.data as ITaxonomyDTO[]);
+      console.log('Updated data:', updatedData);
+    } else {
+      console.error('Failed to revalidate:', response.statusText);
+    }
   };
 
   const saveChanges = async () => {
@@ -116,6 +144,9 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
         />
         <Button onClick={saveChanges} className="ml-4">
           Save Changes
+        </Button>
+        <Button onClick={triggerRevalidate} className='"ml-4'>
+          Revalidate
         </Button>
       </div>
 

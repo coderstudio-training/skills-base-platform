@@ -95,6 +95,7 @@ export class ApiClient {
           },
           next: {
             revalidate: finalOptions.revalidate,
+            tags: options.tags || [],
           },
         };
       } else {
@@ -164,6 +165,7 @@ export class ApiClient {
       {
         cache: options?.cache,
         revalidate: options?.revalidate,
+        tags: options?.tags,
       },
       options?.requiresAuth !== false,
     );
