@@ -20,21 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-// import { ManagerData } from '@/types/manager'
-// import { dummyManagerData } from '@/lib/dummyData'
+import { getUserPicture } from '@/lib/user/api';
+import { getTeamMembers } from '@/lib/user/employees/api';
+import { TeamMember } from '@/lib/user/employees/types';
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
-
-interface TeamMember {
-  employeeId: number;
-  firstName: string;
-  lastName: string;
-  designation: string;
-  email?: string;
-  performanceScore?: number;
-  managerName?: string;
-  picture?: string;
-}
 
 export default function ManagerDashboard() {
   const { data: session } = useSession();
@@ -44,25 +34,22 @@ export default function ManagerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  //   const [managerData, setManagerData] = useState<ManagerData>(dummyManagerData)
-
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
         setLoading(true);
-        const token = session?.user?.accessToken;
+        if (!session?.user.name) {
+          setError('Name is missing!');
+          throw new Error('Name is missing!');
+        }
 
-        const response = await fetch(
-          `/api/employees/manager/${encodeURIComponent(session?.user?.name || '')}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
+        const response = await getTeamMembers(session?.user.name);
 
-        const data = await response.json();
-        setTeamMembers(data);
+        if (response.error || response.data === null) {
+          throw new Error(`Error fetching team members: ${error}`);
+        }
+
+        setTeamMembers(response.data);
         setError(null);
       } catch (err) {
         console.error('Error fetching team members:', err);
@@ -75,7 +62,7 @@ export default function ManagerDashboard() {
     if (session?.user?.name) {
       fetchTeamMembers();
     }
-  }, [session?.user?.name, session?.user?.accessToken]);
+  }, [session?.user?.name]);
 
   useEffect(() => {
     const fetchUserPictures = async () => {
@@ -84,15 +71,13 @@ export default function ManagerDashboard() {
       const updatedMembers = await Promise.all(
         teamMembers.map(async member => {
           if (!member.email) return member;
-
+          console.log(`picture b4 ${member.picture}`);
           try {
-            const response = await fetch(`/api/users/picture/${encodeURIComponent(member.email)}`, {
-              headers: {
-                Authorization: `Bearer ${session?.user?.accessToken}`,
-              },
-            });
-            const data = await response.json();
-            return { ...member, picture: data.picture };
+            const response = await getUserPicture(member.email);
+            if (response.error || response.data === null) {
+              throw new Error(`Error fetching team members' photos: ${error}`);
+            }
+            return { ...member, picture: response.data.picture };
           } catch (error) {
             console.error(`Error fetching picture for ${member.email}:`, error);
             return member;
@@ -104,7 +89,7 @@ export default function ManagerDashboard() {
     };
 
     fetchUserPictures();
-  }, [teamMembers, session?.user?.accessToken]);
+  }, [teamMembers]);
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
