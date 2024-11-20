@@ -28,8 +28,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { BusinessUnitStats, Employee, SkillGap } from '@/types/admin';
-import { PaginatedEmployeeResponse } from '@/types/api';
+import { Employee } from '@/types/admin';
 import {
   AlertTriangle,
   Award,
@@ -53,7 +52,7 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
-import { signOut, useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Input } from '../ui/input';
 import { Progress } from '../ui/progress';
@@ -61,7 +60,7 @@ import { Progress } from '../ui/progress';
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
 export default function AdminDashboard() {
-  const { data: session } = useSession();
+  //const { data: session } = useSession();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,10 +70,11 @@ export default function AdminDashboard() {
   const [limit, setLimit] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [topSkills, setTopSkills] = useState<{ name: string; level: string }[]>([]);
-  const [skillGaps, setSkillGaps] = useState<SkillGap[]>([]);
-  const [businessUnitStats, setBusinessUnitStats] = useState<BusinessUnitStats[]>([]);
+  //const [topSkills, setTopSkills] = useState<{ name: string; level: string }[]>([]);
+  //const [skillGaps, setSkillGaps] = useState<SkillGap[]>([]);
+  //const [businessUnitStats, setBusinessUnitStats] = useState<BusinessUnitStats[]>([]);
   const [goToPage, setGoToPage] = useState<string>('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [syncStatus, setSyncStatus] = useState<
     Record<string, 'idle' | 'syncing' | 'success' | 'error'>
   >({
@@ -87,103 +87,47 @@ export default function AdminDashboard() {
     'Skills Taxonomy': 'idle',
   });
 
-  const calculateMetrics = (employees: Employee[]) => {
-    // Calculate business unit statistics, excluding empty business units
-    const deptCounts = new Map<string, number>();
-    employees.forEach(emp => {
-      // Only count business units that aren't empty strings
-      if (emp.businessUnit && emp.businessUnit.trim() !== '') {
-        const count = deptCounts.get(emp.businessUnit) || 0;
-        deptCounts.set(emp.businessUnit, count + 1);
-      }
-    });
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
 
-    setBusinessUnitStats(
-      Array.from(deptCounts.entries()).map(([name, count]) => ({
-        name,
-        count,
-      })),
-    );
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-    // Mock data for top skills
-    setTopSkills([
-      { name: 'JavaScript', level: 'Advanced' },
-      { name: 'Python', level: 'Advanced' },
-      { name: 'React', level: 'Advanced' },
-      { name: 'SQL', level: 'Advanced' },
-      { name: 'AWS', level: 'Intermediate' },
-    ]);
-
-    // Mock data for skills gap
-    setSkillGaps([
-      { name: 'Machine Learning', value: 1.7 },
-      { name: 'DevOps', value: 1.5 },
-      { name: 'Kubernetes', value: 1.4 },
-    ]);
-  };
-
+  // Fetch employees when search, page, or limit changes
   useEffect(() => {
     const fetchEmployees = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        // Fetch all employees
-        const response = await fetch(`/api/employees?limit=${Number.MAX_SAFE_INTEGER}`);
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+          ...(debouncedSearchQuery && { searchTerm: debouncedSearchQuery }),
+        });
+
+        const endpoint = debouncedSearchQuery ? '/api/employees/search' : '/api/employees';
+        const response = await fetch(`${endpoint}?${searchParams}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch employees');
         }
 
-        const data: PaginatedEmployeeResponse = await response.json();
+        const data = await response.json();
         setEmployees(data.items);
         setTotalItems(data.total);
-
-        // Calculate metrics with all employees
-        calculateMetrics(data.items);
+        setTotalPages(data.totalPages);
+        setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : `An error occurred ${error}`);
-        console.error('Error fetching employees:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (session) {
-      fetchEmployees();
-    }
-  }, [session]);
-
-  const filteredEmployees = employees.filter(employee => {
-    const fullName = `${employee.firstName} ${employee.lastName}`.toLowerCase();
-    const matchesSearch =
-      searchQuery === '' ||
-      fullName.includes(searchQuery.toLowerCase()) ||
-      employee.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      employee.businessUnit.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesBusinessUnit =
-      selectedBusinessUnit === 'All Business Units' ||
-      employee.businessUnit === selectedBusinessUnit;
-
-    return matchesSearch && matchesBusinessUnit;
-  });
-
-  // Update total pages based on filtered results
-  useEffect(() => {
-    const newTotalPages = Math.ceil(filteredEmployees.length / limit);
-    setTotalPages(newTotalPages);
-
-    // Reset to page 1 if current page is out of bounds
-    if (page > newTotalPages && newTotalPages > 0) {
-      setPage(1);
-    }
-  }, [filteredEmployees.length, limit]);
-
-  const businessUnits = [
-    'All Business Units',
-    ...Array.from(
-      new Set(employees.map(emp => emp.businessUnit).filter(unit => unit && unit.trim() !== '')),
-    ),
-  ];
+    fetchEmployees();
+  }, [debouncedSearchQuery, page, limit]);
 
   const handleGoToPage = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -199,10 +143,12 @@ export default function AdminDashboard() {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+    setPage(1);
   };
 
   const handleBusinessUnitChange = (unit: string) => {
     setSelectedBusinessUnit(unit);
+    setPage(1);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -312,19 +258,16 @@ export default function AdminDashboard() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[200px]">
-              {businessUnits.map(unit => (
-                <DropdownMenuItem
-                  key={unit}
-                  onClick={() => handleBusinessUnitChange(unit)}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4" />
-                    <span>{unit}</span>
-                  </div>
-                  {unit === selectedBusinessUnit && <Check className="h-4 w-4" />}
-                </DropdownMenuItem>
-              ))}
+              <DropdownMenuItem onClick={() => handleBusinessUnitChange('All Business Units')}>
+                All Business Units
+              </DropdownMenuItem>
+              {Array.from(new Set(employees.map(emp => emp.businessUnit)))
+                .filter(Boolean)
+                .map(unit => (
+                  <DropdownMenuItem key={unit} onClick={() => handleBusinessUnitChange(unit!)}>
+                    {unit}
+                  </DropdownMenuItem>
+                ))}
             </DropdownMenuContent>
           </DropdownMenu>
           <div className="relative w-[300px]">
@@ -351,7 +294,7 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{totalItems}</p>
+            <p className="text-3xl font-bold">{'632'}</p>
           </CardContent>
         </Card>
         <Card>
@@ -359,13 +302,7 @@ export default function AdminDashboard() {
             <CardTitle className="font-semibold leading-none tracking-tight">Departments</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">
-              {
-                new Set(
-                  employees.map(emp => emp.businessUnit).filter(unit => unit && unit.trim() !== ''),
-                ).size
-              }
-            </p>
+            <p className="text-3xl font-bold">{'16'}</p>
           </CardContent>
         </Card>
         <Card>
@@ -375,9 +312,7 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">
-              {employees.filter(emp => emp.employmentStatus === 'Active').length}
-            </p>
+            <p className="text-3xl font-bold">{'399'}</p>
           </CardContent>
         </Card>
       </div>
@@ -391,12 +326,12 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {topSkills.map(skill => (
+              {/* {topSkills.map(skill => (
                 <div key={skill.name} className="flex justify-between items-center">
                   <span>{skill.name}</span>
                   <Badge>{skill.level}</Badge>
                 </div>
-              ))}
+              ))} */}
             </div>
           </CardContent>
         </Card>
@@ -410,7 +345,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {skillGaps.map(skill => (
+              {/* {skillGaps.map(skill => (
                 <div key={skill.name} className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span>{skill.name}</span>
@@ -418,7 +353,7 @@ export default function AdminDashboard() {
                   </div>
                   <Progress value={skill.value * 20} />
                 </div>
-              ))}
+              ))} */}
             </div>
           </CardContent>
         </Card>
@@ -432,12 +367,12 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {businessUnitStats.map(bu => (
+              {/* {businessUnitStats.map(bu => (
                 <div key={bu.name} className="flex justify-between items-center">
                   <span>{bu.name}</span>
                   <Badge>{bu.count}</Badge>
                 </div>
-              ))}
+              ))} */}
             </div>
           </CardContent>
         </Card>
@@ -490,140 +425,136 @@ export default function AdminDashboard() {
                     <Loader2 className="h-8 w-8 animate-spin" />
                   </div>
                 ) : (
-                  filteredEmployees
-                    .slice((page - 1) * limit, page * limit)
-                    .map((employee, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                            {`${employee.firstName[0]}${employee.lastName[0]}`}
-                          </div>
-                          <div>
-                            <p className="font-medium">{`${employee.firstName} ${employee.lastName}`}</p>
-                            <p className="text-sm text-gray-500">{employee.email}</p>
-                          </div>
+                  employees.map(employee => (
+                    <div
+                      key={employee.employeeId}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                          {`${employee.firstName[0]}${employee.lastName[0]}`}
                         </div>
-                        <div className="flex items-center gap-4">
-                          <Badge variant="outline">{employee.grade}</Badge>
-                          <Badge variant="secondary">{employee.businessUnit}</Badge>
-                          <Badge
-                            className={
-                              employee.employmentStatus === 'Active'
-                                ? 'bg-green-500 text-white'
-                                : 'bg-gray-500 text-white'
-                            }
-                          >
-                            {employee.employmentStatus}
-                          </Badge>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                View Skills
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-3xl">
-                              <DialogHeader>
-                                <DialogTitle>{`${employee.firstName} ${employee.lastName}'s Skills`}</DialogTitle>
-                                <DialogDescription>
-                                  Skill levels and proficiencies
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                {/* JavaScript Skill */}
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-medium">JavaScript</span>
-                                    <div className="flex items-center space-x-2">
-                                      <Progress value={80} className="w-[100px]" />
-                                      <span className="text-sm text-gray-500">Advanced</span>
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger>
-                                            <CheckCircle2 className="h-5 w-5 text-green-500" />
-                                          </TooltipTrigger>
-                                          <TooltipContent>Required Level: Expert</TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                    </div>
-                                  </div>
-                                  <p className="text-sm text-gray-600">
-                                    Proficiency in JavaScript programming.
-                                  </p>
-                                  <p className="text-sm font-medium">
-                                    Current Level: Creates advanced frameworks
-                                  </p>
-                                  <div className="flex justify-between text-sm">
-                                    <span>Self Assessment: Advanced</span>
-                                    <span>Manager Assessment: Advanced</span>
-                                  </div>
-                                </div>
-
-                                {/* React Skill */}
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-medium">React</span>
-                                    <div className="flex items-center space-x-2">
-                                      <Progress value={60} className="w-[100px]" />
-                                      <span className="text-sm text-gray-500">Intermediate</span>
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger>
-                                            <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                                          </TooltipTrigger>
-                                          <TooltipContent>Required Level: Advanced</TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                    </div>
-                                  </div>
-                                  <p className="text-sm text-gray-600">
-                                    Proficiency in React library for building user interfaces.
-                                  </p>
-                                  <p className="text-sm font-medium">
-                                    Current Level: Develops moderate complexity React applications
-                                  </p>
-                                  <div className="flex justify-between text-sm">
-                                    <span>Self Assessment: Advanced</span>
-                                    <span>Manager Assessment: Intermediate</span>
-                                  </div>
-                                </div>
-
-                                {/* Python Skill */}
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-medium">Python</span>
-                                    <div className="flex items-center space-x-2">
-                                      <Progress value={40} className="w-[100px]" />
-                                      <span className="text-sm text-gray-500">Basic</span>
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger>
-                                            <XCircle className="h-5 w-5 text-red-500" />
-                                          </TooltipTrigger>
-                                          <TooltipContent>Required Level: Advanced</TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                    </div>
-                                  </div>
-                                  <p className="text-sm text-gray-600">
-                                    Proficiency in Python programming language.
-                                  </p>
-                                  <p className="text-sm font-medium">
-                                    Current Level: Can perform simple scripting tasks
-                                  </p>
-                                  <div className="flex justify-between text-sm">
-                                    <span>Self Assessment: Basic</span>
-                                    <span>Manager Assessment: Basic</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
+                        <div>
+                          <p className="font-medium">{`${employee.firstName} ${employee.lastName}`}</p>
+                          <p className="text-sm text-gray-500">{employee.email}</p>
                         </div>
                       </div>
-                    ))
+                      <div className="flex items-center gap-4">
+                        <Badge variant="outline">{employee.grade}</Badge>
+                        <Badge variant="secondary">{employee.businessUnit}</Badge>
+                        <Badge
+                          className={
+                            employee.employmentStatus === 'Active'
+                              ? 'bg-green-500 text-white'
+                              : 'bg-gray-500 text-white'
+                          }
+                        >
+                          {employee.employmentStatus}
+                        </Badge>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              View Skills
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-3xl">
+                            <DialogHeader>
+                              <DialogTitle>{`${employee.firstName} ${employee.lastName}'s Skills`}</DialogTitle>
+                              <DialogDescription>Skill levels and proficiencies</DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              {/* JavaScript Skill */}
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium">JavaScript</span>
+                                  <div className="flex items-center space-x-2">
+                                    <Progress value={80} className="w-[100px]" />
+                                    <span className="text-sm text-gray-500">Advanced</span>
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger>
+                                          <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>Required Level: Expert</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  </div>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                  Proficiency in JavaScript programming.
+                                </p>
+                                <p className="text-sm font-medium">
+                                  Current Level: Creates advanced frameworks
+                                </p>
+                                <div className="flex justify-between text-sm">
+                                  <span>Self Assessment: Advanced</span>
+                                  <span>Manager Assessment: Advanced</span>
+                                </div>
+                              </div>
+
+                              {/* React Skill */}
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium">React</span>
+                                  <div className="flex items-center space-x-2">
+                                    <Progress value={60} className="w-[100px]" />
+                                    <span className="text-sm text-gray-500">Intermediate</span>
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger>
+                                          <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>Required Level: Advanced</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  </div>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                  Proficiency in React library for building user interfaces.
+                                </p>
+                                <p className="text-sm font-medium">
+                                  Current Level: Develops moderate complexity React applications
+                                </p>
+                                <div className="flex justify-between text-sm">
+                                  <span>Self Assessment: Advanced</span>
+                                  <span>Manager Assessment: Intermediate</span>
+                                </div>
+                              </div>
+
+                              {/* Python Skill */}
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium">Python</span>
+                                  <div className="flex items-center space-x-2">
+                                    <Progress value={40} className="w-[100px]" />
+                                    <span className="text-sm text-gray-500">Basic</span>
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger>
+                                          <XCircle className="h-5 w-5 text-red-500" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>Required Level: Advanced</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  </div>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                  Proficiency in Python programming language.
+                                </p>
+                                <p className="text-sm font-medium">
+                                  Current Level: Can perform simple scripting tasks
+                                </p>
+                                <div className="flex justify-between text-sm">
+                                  <span>Self Assessment: Basic</span>
+                                  <span>Manager Assessment: Basic</span>
+                                </div>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
 
@@ -646,12 +577,8 @@ export default function AdminDashboard() {
                     </SelectContent>
                   </Select>
                   <span className="text-sm text-gray-500">
-                    Showing{' '}
-                    {filteredEmployees.length === 0
-                      ? 0
-                      : Math.min((page - 1) * limit + 1, filteredEmployees.length)}{' '}
-                    - {Math.min(page * limit, filteredEmployees.length)} of{' '}
-                    {filteredEmployees.length} items
+                    Showing {Math.min((page - 1) * limit + 1, totalItems)} -{' '}
+                    {Math.min(page * limit, totalItems)} of {totalItems} items
                   </span>
                 </div>
 
