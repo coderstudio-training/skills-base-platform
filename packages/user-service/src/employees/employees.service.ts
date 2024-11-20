@@ -25,14 +25,6 @@ export class EmployeesService {
           { employeeId: 1 },
           { unique: true, background: true },
         ),
-        this.employeeModel.collection.createIndex(
-          { firstName: 'text', email: 'text' },
-          { background: true },
-        ),
-        this.employeeModel.collection.createIndex(
-          { firstName: 1, email: 1 },
-          { background: true },
-        ),
       ]);
       this.logger.log('Indexes ensured for Employees collection');
     } catch (error) {
