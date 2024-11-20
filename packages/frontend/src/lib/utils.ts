@@ -54,31 +54,43 @@ export function formatError(error: ApiError): string {
   return `[${error.status}] - ${error.message} : ${error.code}`;
 }
 
-export const handleApiError = (error: ApiError): string => {
+export const handleApiError = (error: ApiError): { statusCode: number; message: string } => {
+  let message = 'An unexpected error occurred.';
   switch (error.code) {
     case 'NETWORK_ERROR':
-      return errorMessages.NETWORK_ERROR;
+      message = errorMessages.NETWORK_ERROR;
+      break;
     case 'TIMEOUT_ERROR':
-      return errorMessages.TIMEOUT_ERROR;
+      message = errorMessages.TIMEOUT_ERROR;
+      break;
     case 'UNAUTHORIZED':
-      return errorMessages.UNAUTHORIZED;
+      message = errorMessages.UNAUTHORIZED;
+      break;
     case 'FORBIDDEN':
-      return errorMessages.FORBIDDEN;
+      message = errorMessages.FORBIDDEN;
+      break;
     case 'NOT_FOUND':
-      return errorMessages.NOT_FOUND;
+      message = errorMessages.NOT_FOUND;
+      break;
     case 'SERVER_ERROR':
-      return errorMessages.SERVER_ERROR;
+      message = errorMessages.SERVER_ERROR;
+      break;
     case 'INVALID_CREDENTIALS':
-      return errorMessages.INVALID_CREDENTIALS;
+      message = errorMessages.INVALID_CREDENTIALS;
+      break;
     case 'GOOGLE_AUTH_ERROR':
-      return errorMessages.GOOGLE_AUTH_ERROR;
+      message = errorMessages.GOOGLE_AUTH_ERROR;
+      break;
     case 'NOT_EMPLOYED':
-      return errorMessages.NOT_EMPLOYED;
+      message = errorMessages.NOT_EMPLOYED;
+      break;
     case 'VALIDATION_ERROR':
-      return errorMessages.VALIDATION_ERROR;
+      message = errorMessages.VALIDATION_ERROR;
+      break;
     case 'STREAM_ERROR':
-      return errorMessages.STREAM_ERROR;
-    default:
-      return 'An unexpected error occurred.';
+      message = errorMessages.STREAM_ERROR;
+      break;
   }
+
+  return { statusCode: error.status, message };
 };
