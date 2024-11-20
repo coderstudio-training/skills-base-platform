@@ -29,8 +29,9 @@ export class TaxonomyController {
   constructor(private readonly taxonomyService: TaxonomyService) {}
 
   @Post('bulk-upsert')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async bulkUpsert(@Body() dto: BulkUpsertTaxonomyDTO) {
+    this.logger.log('[DTO RECEIVED] ', JSON.stringify(dto, null, 2));
     return this.taxonomyService.bulkUpsert(dto);
   }
 

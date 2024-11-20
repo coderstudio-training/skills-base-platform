@@ -29,7 +29,6 @@ export async function getTaxonomyById(
 }
 
 export async function bulkUpsert(
-  url: string,
   data: ApiTypes.IBulkUpsertDTO,
   options: ApiClientOptions = { requiresAuth: true },
 ) {

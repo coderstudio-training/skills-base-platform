@@ -73,7 +73,6 @@ export function useQuery<T>(
   options?: {
     enabled?: boolean;
     revalidate?: number;
-    tags?: string[];
     requiresAuth?: boolean;
     cacheStrategy?: RequestCache;
   },
@@ -124,7 +123,6 @@ export function useQuery<T>(
     enabled,
     isAuthenticated,
     options?.revalidate,
-    options?.tags,
     options?.requiresAuth,
     options?.cacheStrategy,
   ]);
@@ -227,7 +225,6 @@ export async function fetchServerData<T>(
   endpoint: string,
   options?: {
     revalidate?: number;
-    tags?: string[];
     requiresAuth?: boolean;
   },
 ): Promise<ApiResponse<T>> {
