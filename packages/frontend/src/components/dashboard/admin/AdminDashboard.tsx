@@ -71,9 +71,15 @@ export default function AdminDashboard() {
   const [totalPages, setTotalPages] = useState(0);
   //const [topSkills, setTopSkills] = useState<{ name: string; level: string }[]>([]);
   //const [skillGaps, setSkillGaps] = useState<SkillGap[]>([]);
-  //const [businessUnitStats, setBusinessUnitStats] = useState<BusinessUnitStats[]>([]);
+  const [businessUnitStats, setBusinessUnitStats] = useState<{ name: string; count: number }[]>([]);
   const [goToPage, setGoToPage] = useState<string>('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [businessUnits, setBusinessUnits] = useState<string[]>([]);
+  const [employeeStats, setEmployeeStats] = useState({
+    totalEmployeesCount: 0,
+    businessUnitsCount: 0,
+    activeEmployeesCount: 0,
+  });
   const [syncStatus, setSyncStatus] = useState<
     Record<string, 'idle' | 'syncing' | 'success' | 'error'>
   >({
@@ -90,12 +96,29 @@ export default function AdminDashboard() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
-    }, 300);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch employees when search, page, or limit changes
+  useEffect(() => {
+    const fetchBusinessUnits = async () => {
+      try {
+        const response = await fetch('/api/employees/business-units');
+        if (!response.ok) {
+          throw new Error('Failed to fetch business units');
+        }
+        const data = await response.json();
+        setBusinessUnits(['All Business Units', ...data.businessUnits]);
+        setBusinessUnitStats(data.distribution);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch business units');
+      }
+    };
+
+    fetchBusinessUnits();
+  }, []);
+
   useEffect(() => {
     const fetchEmployees = async () => {
       setLoading(true);
@@ -104,9 +127,16 @@ export default function AdminDashboard() {
           page: page.toString(),
           limit: limit.toString(),
           ...(debouncedSearchQuery && { searchTerm: debouncedSearchQuery }),
+          ...(selectedBusinessUnit !== 'All Business Units' && {
+            businessUnit: selectedBusinessUnit,
+          }),
         });
 
-        const endpoint = debouncedSearchQuery ? '/api/employees/search' : '/api/employees';
+        const endpoint =
+          debouncedSearchQuery || selectedBusinessUnit !== 'All Business Units'
+            ? '/api/employees/search'
+            : '/api/employees';
+
         const response = await fetch(`${endpoint}?${searchParams}`);
 
         if (!response.ok) {
@@ -126,7 +156,20 @@ export default function AdminDashboard() {
     };
 
     fetchEmployees();
-  }, [debouncedSearchQuery, page, limit]);
+  }, [debouncedSearchQuery, page, limit, selectedBusinessUnit]);
+
+  useEffect(() => {
+    const fetchEmployeeStats = async () => {
+      try {
+        const stats = await fetch('/api/employees/stats').then(res => res.json());
+        setEmployeeStats(stats);
+      } catch (err) {
+        console.error('Error fetching employee statistics:', err);
+      }
+    };
+
+    fetchEmployeeStats();
+  }, []);
 
   const handleGoToPage = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -226,22 +269,17 @@ export default function AdminDashboard() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[200px]">
-              <DropdownMenuItem onClick={() => handleBusinessUnitChange('All Business Units')}>
-                All Business Units
-              </DropdownMenuItem>
-              {Array.from(new Set(employees.map(emp => emp.businessUnit)))
-                .filter(Boolean)
-                .map(unit => (
-                  <DropdownMenuItem key={unit} onClick={() => handleBusinessUnitChange(unit!)}>
-                    {unit}
-                  </DropdownMenuItem>
-                ))}
+              {businessUnits.map(unit => (
+                <DropdownMenuItem key={unit} onClick={() => handleBusinessUnitChange(unit)}>
+                  {unit}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
           <div className="relative w-[300px]">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
-              placeholder="Search by name, email, or BU..."
+              placeholder="Search by name or email..."
               className="pl-8"
               value={searchQuery}
               onChange={handleSearch}
@@ -262,7 +300,7 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{'632'}</p>
+            <p className="text-3xl font-bold">{employeeStats.totalEmployeesCount}</p>
           </CardContent>
         </Card>
         <Card>
@@ -270,7 +308,7 @@ export default function AdminDashboard() {
             <CardTitle className="font-semibold leading-none tracking-tight">Departments</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{'16'}</p>
+            <p className="text-3xl font-bold">{employeeStats.businessUnitsCount}</p>
           </CardContent>
         </Card>
         <Card>
@@ -280,7 +318,7 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{'399'}</p>
+            <p className="text-3xl font-bold">{employeeStats.activeEmployeesCount}</p>
           </CardContent>
         </Card>
       </div>
@@ -335,12 +373,17 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {/* {businessUnitStats.map(bu => (
+              {businessUnitStats.map(bu => (
                 <div key={bu.name} className="flex justify-between items-center">
                   <span>{bu.name}</span>
                   <Badge>{bu.count}</Badge>
                 </div>
-              ))} */}
+              ))}
+              {businessUnitStats.length === 0 && (
+                <div className="text-center text-gray-500 py-4">
+                  No business unit data available
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
