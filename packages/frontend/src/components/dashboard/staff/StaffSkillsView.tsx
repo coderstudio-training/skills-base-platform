@@ -7,7 +7,7 @@ import { StaffSkill } from '@/types/staff';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { ResponsiveContainer } from 'recharts';
-import { CustomBarChart } from '../ui/barchart';
+import { CustomBarChart } from '../../ui/barchart';
 
 `use client`;
 

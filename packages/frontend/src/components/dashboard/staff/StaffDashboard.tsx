@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { dummyStaffData } from '@/lib/dummyData';
 import { StaffData } from '@/types/staff';
 import { Award, BookOpen, Scroll, TrendingUp } from 'lucide-react';
-import StaffSkillsView from '../StaffSkillsView';
+import StaffSkillsView from './StaffSkillsView';
 // import { ScrollArea } from "@/components/ui/scroll-area";
 import StaffDashboardHeader from '@/components/shared/StaffDashboardHeader';
 

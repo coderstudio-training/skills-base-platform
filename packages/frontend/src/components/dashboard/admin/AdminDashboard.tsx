@@ -55,12 +55,11 @@ import {
 import { useEffect, useState } from 'react';
 import { Input } from '../../ui/input';
 import { Progress } from '../../ui/progress';
-import AnalysisView from '../AnalysisView';
+import AnalysisView from './AnalysisView';
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
 export default function AdminDashboard() {
-  //const { data: session } = useSession();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,8 +69,6 @@ export default function AdminDashboard() {
   const [limit, setLimit] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  //const [topSkills, setTopSkills] = useState<{ name: string; level: string }[]>([]);
-  //const [skillGaps, setSkillGaps] = useState<SkillGap[]>([]);
   const [businessUnitStats, setBusinessUnitStats] = useState<{ name: string; count: number }[]>([]);
   const [goToPage, setGoToPage] = useState<string>('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');

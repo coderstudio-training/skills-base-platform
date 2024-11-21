@@ -46,6 +46,17 @@ export const getSkillAnalytics = async (): Promise<ApiTypes.SkillAnalyticsRespon
   return response.json();
 };
 
+export async function getDistributions(): Promise<ApiTypes.DistributionResponse> {
+  const response = await fetch('/api/skills/distributions');
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to fetch distribution data');
+  }
+
+  return response.json();
+}
+
 export async function getAdminData(accessToken: string): Promise<AdminData> {
   logger.log(accessToken);
   return fetchWithAuth(`${API_BASE_URL}/admin/dashboard`);

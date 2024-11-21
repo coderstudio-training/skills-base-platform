@@ -70,3 +70,8 @@ export interface SkillAnalyticsResponse {
 export interface SkillsResponse {
   skills: StaffSkill[];
 }
+
+export interface DistributionResponse {
+  skillDistribution: BusinessUnitSkillDistribution[];
+  gradeDistribution: GradeDistributionItem[];
+}
