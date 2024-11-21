@@ -91,20 +91,29 @@ if (canAccessRoute('/admin/settings')) {
 
 ### 1. Server Components with Auth
 
+serverSideIntercept function checks existing session and token expiry,
+as well as optional checks for permission and routes.
+
 ```typescript
 // In your Server Component
-import { userApi, fetchServerData } from '@/lib/api';
+import { serverSideIntercept } from '@/lib/api/auth';
 
 export default async function ProfilePage() {
-  const { data, error } = await fetchServerData<User>(
-    userApi,
-    '/users/profile',
-    {
-      revalidate: 3600,
-    }
-  );
+  await serverSideIntercept({ permission: 'canAccessOwnSkills', route: 'profile'})
 
-  if (error) return <div>Error: {error.message}</div>;
+  const { data, error } = await getUserProfile(
+    {
+      tags: ['users'],
+      revalidate: 100
+    });
+
+  if (error) {
+    return (
+      <div>
+        formatErorr(error);
+      </div>
+    )
+  }
 
   return <h1>Welcome, {data.name}</h1>;
 }
@@ -295,4 +304,10 @@ try {
   console.error(handleApiError(error.code));
   return formatError(error: ApiError)
 }
+```
+
+Custom error routing in app/error/[error]/page.tsx
+
+```typescript
+if (error.status === 401) redirect('/error/unauthorized');
 ```
