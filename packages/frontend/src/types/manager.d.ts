@@ -30,27 +30,19 @@ export interface TeamMemberData {
 
 //New
 export interface TeamMember {
-  id: string;
-  name: string;
+  employeeId: number;
+  firstName: string;
+  lastName: string;
   email: string;
-  role: string;
-  careerLevel: string;
+  designation: string;
+  picture?: string;
 }
 
-export interface MemberRecommendations {
-  skillName: string;
-  currentLevel: number;
-  targetLevel: number;
-  gap: number;
-  course: {
-    name: string;
-    provider: string;
-    duration: string;
-    format: string;
-    learningObjectives: string[];
-    prerequisites: string;
-    businessValue: string;
-  };
+interface MemberRecommendations {
+  success: boolean;
+  recommendations: Recommendation[];
+  employeeName: string;
+  careerLevel: string;
 }
 
 export interface TeamRecommendations {

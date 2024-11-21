@@ -2,9 +2,7 @@
 import { logger } from '@/lib/utils';
 import { AdminData, Course, Department, LearningPath, Skill, Staff } from '@/types/admin';
 import * as ApiTypes from '@/types/api';
-import { TeamMember } from '@/types/manager';
 import { RecommendationResponse } from '@/types/staff';
-import { getSession } from 'next-auth/react';
 
 const API_BASE_URL = 'http://localhost:3003';
 
@@ -26,54 +24,7 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
-// Add this with your other API functions
-
-export const managerAPI = {
-  async getTeamMembers(): Promise<TeamMember[]> {
-    return [
-      {
-        id: '1',
-        name: 'Pauleen Costiniano',
-        email: 'pauleenjoy.costiniano@stratpoint.com',
-        role: 'QA Engineer',
-        careerLevel: 'Professional IV',
-      },
-      {
-        id: '2',
-        name: 'Isaiah Daniel Ebora',
-        email: 'iebora@stratpoint.com',
-        role: 'QA Engineer',
-        careerLevel: 'Professional II',
-      },
-    ];
-  },
-
-  async getMemberRecommendations(email: string): Promise<RecommendationResponse> {
-    const session = await getSession();
-    const token = session?.user?.accessToken;
-
-    if (!token) {
-      throw new Error('No authentication token available');
-    }
-
-    const response = await fetch(
-      `${API_BASE_URL}/api/learning/recommendations/${encodeURIComponent(email)}`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch recommendations');
-    }
-
-    return response.json();
-  },
-};
-
+//Learning Recommendation API
 export async function learningRecommendationAPI(email: string): Promise<RecommendationResponse> {
   const response = await fetch(`/api/learning/recommendations/${encodeURIComponent(email)}`);
 

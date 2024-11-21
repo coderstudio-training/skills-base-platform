@@ -1,59 +1,95 @@
-'use client';
-
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { managerAPI } from '@/lib/api';
 import { MemberRecommendations, TeamMember } from '@/types/manager';
+import { Loader2 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
-import { Progress } from '../../ui/progress';
-
-interface MemberData extends TeamMember {
-  recommendations: MemberRecommendations[];
-}
 
 const ManagerTrainingRecommendation = () => {
-  const [memberData, setMemberData] = useState<MemberData[]>([]);
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [teamData, setTeamData] = useState<
+    Array<TeamMember & { recommendations?: MemberRecommendations }>
+  >([]);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!session?.user?.name) return;
+
       try {
-        const members = await managerAPI.getTeamMembers();
-        const results = await Promise.all(
-          members.map(async member => {
+        setLoading(true);
+        // Fetch team members
+        const teamResponse = await fetch(
+          `/api/employees/manager/${encodeURIComponent(session.user.name)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.user.accessToken}`,
+            },
+          },
+        );
+
+        if (!teamResponse.ok) {
+          throw new Error('Failed to fetch team members');
+        }
+
+        const teamMembers = await teamResponse.json();
+
+        // Fetch recommendations for each team member
+        const membersWithRecommendations = await Promise.all(
+          teamMembers.map(async (member: TeamMember) => {
             try {
-              const response = await managerAPI.getMemberRecommendations(member.email);
+              const recResponse = await fetch(
+                `/api/learning/recommendations/${encodeURIComponent(member.email)}`,
+              );
+              const recommendations = await recResponse.json();
               return {
                 ...member,
-                recommendations: response.recommendations || [],
+                recommendations,
               };
-            } catch (error) {
-              return {
-                ...member,
-                recommendations: [],
-              };
+            } catch (err) {
+              console.error(`Error fetching recommendations for ${member.email}:`, err);
+              return member;
             }
           }),
         );
-        setMemberData(results);
+
+        setTeamData(membersWithRecommendations);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [session?.user?.name, session?.user?.accessToken]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </CardContent>
+      </Card>
+    );
   }
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('');
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center h-64 text-red-500">
+          {error}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const getTrainingTypeDisplay = (type: 'skillGap' | 'promotion') => {
+    return type === 'skillGap' ? 'Required Skills' : 'For Promotion';
   };
 
   return (
@@ -65,26 +101,28 @@ const ManagerTrainingRecommendation = () => {
       <CardContent>
         <ScrollArea className="h-[600px]">
           <div className="space-y-8">
-            {memberData.map((data: MemberData) => (
-              <div key={data.id} className="space-y-4 pb-6 border-b last:border-b-0">
+            {teamData.map(member => (
+              <div key={member.employeeId} className="space-y-4 pb-6 border-b last:border-b-0">
                 <div className="flex items-center space-x-4">
                   <Avatar>
-                    <AvatarFallback>{getInitials(data.name)}</AvatarFallback>
+                    {member.picture ? (
+                      <AvatarImage
+                        src={member.picture}
+                        alt={`${member.firstName} ${member.lastName}`}
+                      />
+                    ) : (
+                      <AvatarFallback>{`${member.firstName[0]}${member.lastName[0]}`}</AvatarFallback>
+                    )}
                   </Avatar>
-                  {/* <Avatar className="h-9 w-9">
-                  <AvatarFallback className="bg-gray-100">
-                    {member.name.split(' ').map((n: any[]) => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar> */}
                   <div>
-                    <p className="font-semibold">{data.name}</p>
-                    <p className="text-sm text-muted-foreground">{data.role}</p>
+                    <p className="font-semibold">{`${member.firstName} ${member.lastName}`}</p>
+                    <p className="text-sm text-muted-foreground">{member.designation}</p>
                   </div>
                 </div>
 
-                {data.recommendations.length > 0 ? (
+                {member.recommendations?.recommendations.length ? (
                   <div className="space-y-4">
-                    {data.recommendations.map((rec: MemberRecommendations, index: number) => (
+                    {member.recommendations.recommendations.map((rec, index) => (
                       <Card key={index} className="p-4">
                         <CardTitle className="text-lg mb-2">{rec.course.name}</CardTitle>
 
@@ -106,6 +144,10 @@ const ManagerTrainingRecommendation = () => {
                             {rec.course.prerequisites}
                           </div>
                           <div>
+                            <span className="font-semibold">Training Focus:</span>{' '}
+                            {getTrainingTypeDisplay(rec.type)}
+                          </div>
+                          <div>
                             <span className="font-semibold">Current Level:</span>
                             <Progress
                               value={rec.currentLevel * 20}
@@ -122,12 +164,6 @@ const ManagerTrainingRecommendation = () => {
                             {rec.targetLevel}
                           </div>
                         </div>
-
-                        {/* {rec.course. && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          {rec.course.description}
-                        </p>
-                      )} */}
                       </Card>
                     ))}
                   </div>
