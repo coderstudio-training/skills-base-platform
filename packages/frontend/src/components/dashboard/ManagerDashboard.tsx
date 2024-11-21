@@ -71,7 +71,6 @@ export default function ManagerDashboard() {
       const updatedMembers = await Promise.all(
         teamMembers.map(async member => {
           if (!member.email) return member;
-          console.log(`picture b4 ${member.picture}`);
           try {
             const response = await getUserPicture(member.email);
             if (response.error || response.data === null) {

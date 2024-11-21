@@ -258,12 +258,12 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
 
   if (!session) {
     logger.log(errorMessages.UNAUTHORIZED);
-    redirect('/');
+    redirect('/error/unauthorized');
   } else {
     const tokenExpired = await isTokenExpired(session?.user.accessToken);
     if (tokenExpired) {
       logger.log(errorMessages.TOKEN_EXPIRED);
-      redirect('/');
+      redirect('error/unauthorized');
     }
   }
 
