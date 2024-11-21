@@ -45,7 +45,7 @@ export default function ManagerDashboard() {
           throw new Error('Name is missing!');
         }
 
-        const response = await getTeamMembers(user?.name);
+        const response = await getTeamMembers(user?.name, { cache: 'force-cache' });
 
         if (response.error || response.data === null) {
           throw new Error(`Error fetching team members: ${error}`);
@@ -74,7 +74,7 @@ export default function ManagerDashboard() {
         teamMembers.map(async member => {
           if (!member.email) return member;
           try {
-            const response = await getUserPicture(member.email);
+            const response = await getUserPicture(member.email, { cache: 'force-cache' });
             if (response.error || response.data === null) {
               throw new Error(`Error fetching team members' photos: ${error}`);
             }
