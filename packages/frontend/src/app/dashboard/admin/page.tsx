@@ -1,9 +1,9 @@
 // app/dashboard/admin/page.tsx
+import AdminDashboard from '@/components/dashboard/admin/AdminDashboard';
+import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/utils';
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
-import AdminDashboard from '@/components/dashboard/AdminDashboard';
-import { logger } from '@/lib/utils';
 
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions);

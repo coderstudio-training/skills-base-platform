@@ -35,11 +35,11 @@
           }
         },
         "url": {
-          "raw": "http://localhost:3002/api/skills-assessments/performance",
+          "raw": "http://localhost:3002/required-skills/employee-skill-gaps",
           "protocol": "http",
           "host": ["localhost"],
           "port": "3002",
-          "path": ["api", "skills-assessments", "performance"]
+          "path": ["required-skills", "employee-skill-gaps"]
         }
       },
       "response": []
@@ -84,15 +84,77 @@
     },
     {
       "name": "Get Required Skills",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"prefixBU\": \"AI\" \r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3002/api/skills/required-skills",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["api", "skills", "required-skills"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Employee Skill Matrix",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:3002/required-skills/AI",
+          "raw": "http://localhost:3002/api/skills/skill-matrix/?email=augustcristopher.tela@stratpoint.com",
           "protocol": "http",
           "host": ["localhost"],
           "port": "3002",
-          "path": ["required-skills", "AI"]
+          "path": ["api", "skills", "skill-matrix", ""],
+          "query": [
+            {
+              "key": "email",
+              "value": "augustcristopher.tela@stratpoint.com"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Organization Skill Matrix",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Get Organization Skill Analytics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3002/api/skill-metrics/analytics",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["api", "skill-metrics", "analytics"]
         }
       },
       "response": []

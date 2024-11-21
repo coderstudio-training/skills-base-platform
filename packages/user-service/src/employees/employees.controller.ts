@@ -54,6 +54,18 @@ export class EmployeesController {
     return this.employeesService.search(searchDto);
   }
 
+  @Get('business-units')
+  @Roles(UserRole.ADMIN)
+  async getBusinessUnits() {
+    return this.employeesService.getBusinessUnits();
+  }
+
+  @Get('stats')
+  @Roles(UserRole.ADMIN)
+  async getEmployeeStats() {
+    return this.employeesService.getEmployeeStats();
+  }
+
   @Get(':employeeId')
   @Roles(UserRole.ADMIN)
   async findOne(@Param('employeeId') employeeId: number) {
