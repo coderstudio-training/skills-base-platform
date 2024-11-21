@@ -22,6 +22,48 @@ export class ApiClient {
     this.retryConfig = serverActionsConfig.errorHandling;
   }
 
+  private sanitizeUrl(url: string): string {
+    try {
+      const sanitizedUrl = new URL(url);
+      return sanitizedUrl.toString();
+    } catch {
+      throw new Error(`Invalid URL: ${url}`);
+    }
+  }
+
+  private sanitizeHeaders(headers: HeadersInit): Record<string, string> {
+    const sanitizedHeaders: Record<string, string> = {};
+
+    if (headers instanceof Headers) {
+      // Convert Headers instance to Record<string, string>
+      headers.forEach((value, key) => {
+        sanitizedHeaders[key.trim()] = value.trim();
+      });
+    } else if (Array.isArray(headers)) {
+      // Handle array of tuples [string, string][]
+      headers.forEach(([key, value]) => {
+        sanitizedHeaders[key.trim()] = value.trim();
+      });
+    } else if (typeof headers === 'object' && headers !== null) {
+      // Handle plain object
+      Object.entries(headers).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          sanitizedHeaders[key.trim()] = value.trim();
+        }
+      });
+    }
+
+    return sanitizedHeaders;
+  }
+
+  // Might be useful for the bulk-upserts, as you retrieve __v and _id metadata.
+  // private sanitizeResponse<T>(data: T): T {
+  //   if (typeof data === 'object' && data !== null) {
+  //     delete (data as any).data.metadata;
+  //   }
+  //   return data;
+  // }
+
   private getErrorMessage(status: number): string {
     switch (status) {
       case 401:
@@ -61,11 +103,18 @@ export class ApiClient {
   }
 
   private async fetch(url: string, init?: RequestInit): Promise<Response> {
+    const sanitizedUrl = this.sanitizeUrl(url);
+    const sanitizedHeaders = this.sanitizeHeaders(init?.headers || {});
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
     try {
-      const response = await fetch(url, { ...init, signal: controller.signal });
+      const response = await fetch(sanitizedUrl, {
+        ...init,
+        headers: sanitizedHeaders,
+        signal: controller.signal,
+      });
       clearTimeout(timeoutId);
       return response;
     } catch (error) {
