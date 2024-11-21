@@ -1,34 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useSession, signOut } from 'next-auth/react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-} from 'recharts';
-import {
-  Upload,
-  Download,
-  Loader2,
-  Check,
-  X,
-  Award,
-  Users,
-  TrendingUp,
-  LogOut,
-} from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +10,35 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { dummyAdminData } from '@/lib/dummyData';
+import {
+  Award,
+  Check,
+  Download,
+  Loader2,
+  LogOut,
+  TrendingUp,
+  Upload,
+  Users,
+  X,
+} from 'lucide-react';
+import { signOut, useSession } from 'next-auth/react';
+import { useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import AnalysisView from './AnalysisView';
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
@@ -223,43 +224,7 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="skills">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Skills</CardTitle>
-                <CardDescription>Most prevalent skills across the organization</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {adminData.topSkills.map((skill, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <span>{skill.name}</span>
-                      <Progress value={skill.prevalence} className="w-[200px]" max={100} />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Skill Gaps</CardTitle>
-                <CardDescription>Areas where skill improvement is needed</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {adminData.skillGaps.map((skill, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>{skill.name}</span>
-                        <span className="text-sm text-muted-foreground">Gap: {skill.gap}%</span>
-                      </div>
-                      <Progress value={skill.currentLevel} className="w-full" max={100} />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <AnalysisView />
         </TabsContent>
 
         <TabsContent value="performance">

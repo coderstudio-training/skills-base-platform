@@ -8,10 +8,6 @@ export interface StaffSkill {
   average: number;
 }
 
-export interface SkillsResponse {
-  skills: StaffSkill[];
-}
-
 export interface Qualification {
   name: string;
   date: string;

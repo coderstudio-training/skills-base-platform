@@ -3,7 +3,6 @@
 import { logger } from '@/lib/utils';
 import { AdminData, Course, Department, LearningPath, Skill, Staff } from '@/types/admin';
 import * as ApiTypes from '@/types/api';
-import { SkillsResponse } from '@/types/staff';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_USER_SERVICE_URL;
 
@@ -25,8 +24,8 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
-export async function getSkillMatrix(): Promise<SkillsResponse> {
-  const response = await fetch('/api/skill-matrix');
+export async function getSkillMatrix(): Promise<ApiTypes.SkillsResponse> {
+  const response = await fetch('/api/skills/skills-matrix');
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
@@ -35,6 +34,17 @@ export async function getSkillMatrix(): Promise<SkillsResponse> {
 
   return response.json();
 }
+
+export const getSkillAnalytics = async (): Promise<ApiTypes.SkillAnalyticsResponse> => {
+  const response = await fetch('/api/skills/analytics');
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to fetch skill analytics data');
+  }
+
+  return response.json();
+};
 
 export async function getAdminData(accessToken: string): Promise<AdminData> {
   logger.log(accessToken);

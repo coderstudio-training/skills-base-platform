@@ -1,6 +1,6 @@
 // packages/frontend/src/app/api/skills/skill-matrix/route.ts
 import { authOptions } from '@/lib/auth';
-import { SkillsResponse } from '@/types/staff';
+import { SkillsResponse } from '@/types/api';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
@@ -47,7 +47,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/skill-metrics`, {
+    const response = await fetch(`${API_BASE_URL}/api/skills/skills-matrix`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${session.user.accessToken}`,
