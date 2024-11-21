@@ -21,9 +21,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/lib/api/hooks';
-import { getUserPicture } from '@/lib/user/api';
-import { getTeamMembers } from '@/lib/user/employees/api';
-import { TeamMember } from '@/lib/user/employees/types';
+import { getUserPicture } from '@/lib/users/api';
+import { getTeamMembers } from '@/lib/users/employees/api';
+import { TeamMember } from '@/lib/users/employees/types';
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
