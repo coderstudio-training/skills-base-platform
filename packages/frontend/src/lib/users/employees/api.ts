@@ -1,6 +1,6 @@
 import { userApi } from '@/lib/api/client';
 import { ApiClientOptions } from '@/lib/api/types';
-import { TeamMember } from '@/lib/user/employees/types';
+import { TeamMember } from '@/lib/users/employees/types';
 import { logger } from '@/lib/utils';
 
 const EMPLOYEES_BASE_URL = '/employees';
