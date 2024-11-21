@@ -2,6 +2,7 @@ import { Controller, Get, HttpStatus, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
 import { AdminSkillAnalyticsDto } from '../dto/computation.dto';
+import { DistributionsResponseDto } from '../dto/distributions.dto';
 import { SkillsMatrixService } from '../services/skills-matrix.service';
 
 @ApiTags('Skill Matrix')
@@ -34,5 +35,11 @@ export class SkillMatrixController {
   })
   async getOrganizationAnalytics(): Promise<AdminSkillAnalyticsDto> {
     return this.skillMatrixService.getAdminSkillsAnalytics();
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Get('distributions')
+  async getDistributions(): Promise<DistributionsResponseDto> {
+    return this.skillMatrixService.getDistributions();
   }
 }
