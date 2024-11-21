@@ -3,29 +3,12 @@
   "nodes": [
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "hours"
-            }
-          ]
-        }
-      },
-      "name": "Schedule Trigger",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1,
-      "position": [-140, -720],
-      "id": "26709d68-d40f-4372-9235-0a4ec9ecf400",
-      "disabled": true
-    },
-    {
-      "parameters": {
         "options": {}
       },
       "name": "Google Sheets",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 2,
-      "position": [-2020, -653],
+      "position": [580, -213],
       "id": "9f8adb97-e876-43fa-ae32-cda79d8199bf",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -42,7 +25,7 @@
       "name": "Process and Validate Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
-      "position": [-1880, -653],
+      "position": [720, -213],
       "id": "35b3e59b-1f01-463e-aeb3-2fc44b470bb4",
       "disabled": true
     },
@@ -73,7 +56,7 @@
       "name": "Update Skills Matrix API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [-1680, -653],
+      "position": [920, -213],
       "id": "148de34e-64ca-4ed1-9906-6887e567e07b",
       "disabled": true
     },
@@ -90,7 +73,7 @@
       "name": "Check API Response",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [-1480, -653],
+      "position": [1120, -213],
       "id": "23b869ee-551c-4fcf-bf2a-dd67df4f7523",
       "disabled": true
     },
@@ -121,7 +104,7 @@
       "name": "Send Success Notification API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [-1280, -753],
+      "position": [1320, -313],
       "id": "52aacf51-c93f-40f1-821a-09f125aa40b6",
       "disabled": true
     },
@@ -152,7 +135,7 @@
       "name": "Send Error Notification API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [-1280, -553],
+      "position": [1320, -113],
       "id": "e00eb5d7-8192-4b74-89ac-7f60e6a38219",
       "disabled": true
     },
@@ -169,7 +152,7 @@
       "name": "Check for Validation Errors",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [-1620, -293],
+      "position": [980, 147],
       "id": "479f3835-58c9-460c-9b4a-73f29d3f08e0",
       "disabled": true
     },
@@ -200,238 +183,9 @@
       "name": "Log Errors to API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [-1280, -333],
+      "position": [1320, 107],
       "id": "dfb0bdfd-5dae-4f10-8e44-cbe58ebd480e",
       "disabled": true
-    },
-    {
-      "parameters": {
-        "authentication": "serviceAccount",
-        "documentId": {
-          "__rl": true,
-          "value": "=1NKLe-Csob8igAU8oxMnd_mYGiMFKisWtEIBjb8H2ekg",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NKLe-Csob8igAU8oxMnd_mYGiMFKisWtEIBjb8H2ekg/edit#gid=0"
-        },
-        "options": {}
-      },
-      "id": "9f763b45-3987-4540-9c52-27139ad521a0",
-      "name": "Read Self Assessments",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [680, -760],
-      "credentials": {
-        "googleApi": {
-          "id": "w27aj7tkRulsWxQB",
-          "name": "Stratpoint Google Service Account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "authentication": "serviceAccount",
-        "documentId": {
-          "__rl": true,
-          "value": "=1dMmzdwLNTV6-9729KpNfXcn3D6sHlT4ZcxtcXgzb9j0",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dMmzdwLNTV6-9729KpNfXcn3D6sHlT4ZcxtcXgzb9j0/edit#gid=0"
-        },
-        "options": {}
-      },
-      "id": "2e297857-6a75-4f8e-bb3a-b7dce2c4eee3",
-      "name": "Read Manager Assessments",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [640, -120],
-      "credentials": {
-        "googleApi": {
-          "id": "w27aj7tkRulsWxQB",
-          "name": "Stratpoint Google Service Account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "56abc4cf-8ec3-410f-b0f6-32b0a82311dd",
-              "leftValue": "={{ $json.errors.isEmpty() }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "f68f62bf-d8a6-4708-93da-8bfbaf6567d6",
-      "name": "Check for Validation Errors1",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [1240, -760]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "56abc4cf-8ec3-410f-b0f6-32b0a82311dd",
-              "leftValue": "={{ $json.errors.isEmpty() }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "3a4f8add-2aa6-49dc-b16f-3698816abdd4",
-      "name": "Check for Validation Errors2",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [1220, -120]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://your-nestjs-api.com/api/error-logs/create",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "errors",
-              "value": "={{ $json.errors }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Log Errors to API1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [1260, -460],
-      "id": "3ba792c2-6562-4d1e-9df2-2253531d43b6",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://172.22.156.50:3002/api/skills-matrix/bulk-update-assessments",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "assessmentType",
-              "value": "={{ $json.assessmentType }}"
-            },
-            {
-              "name": "data",
-              "value": "={{ $json.validItems }}"
-            },
-            {
-              "name": "prefix",
-              "value": "={{ $node['Process and Validate Manager Assessment Data'].json.prefixBU }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Update Skills Matrix API2",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [1480, -140],
-      "id": "8b0a0297-5d62-45b8-9b56-11cdd39f9638"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://172.22.156.50:3002/api/skills-matrix/bulk-update-assessments",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "assessmentType",
-              "value": "={{ $json.assessmentType }}"
-            },
-            {
-              "name": "data",
-              "value": "={{ $node['Process and Validate Self Assessment Data'].json.validItems }}"
-            },
-            {
-              "name": "prefix",
-              "value": "={{ $node['Process and Validate Self Assessment Data'].json.prefixBU }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Update Skills Matrix API1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [1500, -900],
-      "id": "24ab3f9d-156b-4fc4-a48b-17a62ba3a1c7"
     },
     {
       "parameters": {
@@ -444,697 +198,7 @@
       "name": "Sticky Note",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-2080, -820]
-    },
-    {
-      "parameters": {
-        "url": "=http://172.22.156.50:3002/api/skills-matrix/{{ $node['Process and Validate Self Assessment Data'].json.assessmentType }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node['Login'].json.access_token }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "GET Self Skills Data API",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [-2020, -1500],
-      "id": "1926b717-8183-4211-a49f-42ce7dcfa032"
-    },
-    {
-      "parameters": {
-        "url": "=http://172.22.156.50:3002/api/skills-matrix/{{ $node['Process and Validate Manager Assessment Data'].json.assessmentType }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node['Login'].json.access_token }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "GET Self Skills Data API1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [-2020, -1140],
-      "id": "4aee2d24-3a26-484a-981e-51693ab97f0d"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://your-nestjs-api.com/api/notifications/success",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "message",
-              "value": "=Skills Matrix update completed successfully. Updated {{ $json.body.updatedCount }} records."
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Send Success Notification API1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [2080, -1080],
-      "id": "7872b583-9373-4117-980d-a479cf348626",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ $json.statusCode }}"
-            }
-          ]
-        }
-      },
-      "name": "Check API Response1",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [1720, -140],
-      "id": "6f495c65-7889-422d-a425-fe5bdc26bc90",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ $json.statusCode }}"
-            }
-          ]
-        }
-      },
-      "name": "Check API Response2",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [1740, -900],
-      "id": "9f82f61e-a471-417d-950d-f448fd339574",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://your-nestjs-api.com/api/notifications/success",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "message",
-              "value": "=Skills Matrix update completed successfully. Updated {{ $json.body.updatedCount }} records."
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Send Success Notification API2",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [2040, -300],
-      "id": "1c835b39-daf5-48f0-808d-50756579ffa2",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://your-nestjs-api.com/api/notifications/error",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "message",
-              "value": "=Error occurred during Skills Matrix update: {{ $json.body }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Send Error Notification API1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [2080, -740],
-      "id": "2722b24b-d6e0-4c84-ad9b-284838325f6f",
-      "disabled": true
-    },
-    {
-      "parameters": {},
-      "id": "11d0aeb4-28a2-4300-8424-5a027c438562",
-      "name": "Merge",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3,
-      "position": [-1900, -1300]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
-      },
-      "id": "812a2dce-c8b1-48bb-ba4d-be54f92fd559",
-      "name": "Transform Data",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [-1680, -1300],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
-      },
-      "id": "a8ad5259-bf65-43b4-8acf-25014adb4a2c",
-      "name": "Compute Average Per Employee",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [-1460, -1300],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "options": {}
-      },
-      "id": "275f358f-afb3-45f0-a787-36996baee21c",
-      "name": "Update Average Skills API",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [-1240, -1300],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "documentId": {
-          "__rl": true,
-          "value": "={{ $node['Search Folder'].json.id }}",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": 1856184611,
-          "mode": "list",
-          "cachedResultName": "RequiredSkills",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1as7YZtwV0K7TlaMjz2Q3VkAKVqOeRiIKTAZg-gYJ_YU/edit#gid=1856184611"
-        },
-        "options": {}
-      },
-      "id": "69528caa-e8df-4b47-a31c-0fb51fe673cf",
-      "name": "Google Sheets1",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [660, -1400],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "feE9JVAcVI0VzCDr",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "56abc4cf-8ec3-410f-b0f6-32b0a82311dd",
-              "leftValue": "={{ $json.errors.isEmpty() }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "8b5af153-9c8b-46e9-a1fc-e7febca8939e",
-      "name": "Check for Validation Errors3",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [1240, -1400]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://192.168.143.2:3002/api/skills-matrix/bulk-update-assessments",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "assessmentType",
-              "value": "={{ $json.assessmentType }}"
-            },
-            {
-              "name": "data",
-              "value": "={{ $json.validItems }}"
-            },
-            {
-              "name": "prefix",
-              "value": "={{ $node['Process and Validate Required Skills Data'].json.prefixBU }}"
-            }
-          ]
-        },
-        "options": {
-          "response": {
-            "response": {
-              "neverError": true
-            }
-          }
-        }
-      },
-      "name": "Update Skills Matrix API3",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [1520, -1560],
-      "id": "0a3fca17-61d8-4550-b734-54f3ac319a40"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "boolean": [
-            {
-              "value1": "={{ true }}",
-              "value2": "={{ true }}"
-            }
-          ]
-        }
-      },
-      "name": "Check API Response3",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [1740, -1560],
-      "id": "ac931e05-5c8e-4b83-aba4-b6eb97e373bd",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://192.168.143.2:3005/email/send-success",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Login\"].json.access_token }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "{\n\"workflowName\": \"Skill Assessment Upsert Workflow\",\n\"error\": \"an error occured\"\n}",
-        "options": {}
-      },
-      "name": "Send Success Notification API3",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [2060, -1760],
-      "id": "b37dd203-7704-4a78-983c-5a17387b4cfc",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://your-nestjs-api.com/api/error-logs/create",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "errors",
-              "value": "={{ $json.errors }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Log Errors to API2",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [1260, -1140],
-      "id": "cd76eb5a-92b5-4367-9b76-af7015d95a2b",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://your-nestjs-api.com/api/error-logs/create",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "errors",
-              "value": "={{ $json.errors }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Log Errors to API3",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [1300, 160],
-      "id": "7065446b-f63b-42ba-8416-74f7dea3a7c9",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "content": "## Per Employee Average Computation",
-        "height": 653.1840467693687,
-        "width": 1052.540929513469,
-        "color": 7
-      },
-      "id": "5d78cdf5-08b6-4db7-989a-0e547e77f48e",
-      "name": "Sticky Note1",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [-2080, -1580]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://your-nestjs-api.com/api/notifications/error",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "message",
-              "value": "=Error occurred during Skills Matrix update: {{ $json.body }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Send Error Notification API2",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [2040, 100],
-      "id": "9801fafb-a16e-4a19-8566-bbfb17d97d76",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://your-nestjs-api.com/api/notifications/error",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "message",
-              "value": "=Error occurred during Skills Matrix update: {{ $json.body }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Send Error Notification API3",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [2060, -1380],
-      "id": "634238da-5170-4295-bab0-9c9437457dac",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "resource": "fileFolder",
-        "searchMethod": "query",
-        "queryString": "='{{ $('Assessment Trigger').item.json.id }}' in parents ",
-        "filter": {},
-        "options": {}
-      },
-      "id": "c14c4988-daff-4c6d-bc82-dbfe7ea6d3b0",
-      "name": "Search Folder",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [300, -760],
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "uA9Psb5vjLv1l7LZ",
-          "name": "Google Drive account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Configuration for essential fields\nconst essentialFields = {\n  email: 'Email Address',\n  timestamp: 'Timestamp',\n  resourceName: 'Name of Resource',\n  emailOfResource: 'Email of Resource',\n  nameOfRespondent: 'Name of Respondent',\n  capability: 'Capability',\n  careerLevel: 'Career Level of Resource'\n};\n\n// Extract the access token from the login response\nconst accessToken = $node['Login'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nconst prefixBU = $node['Search Folder'].json.name.split('_')[0];\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\nconst processedData = sheetData.map(row => {\n  // Extract basic information dynamically\n  const basicInfo = {};\n  Object.entries(essentialFields).forEach(([key, header]) => {\n    basicInfo[key] = row[header] || ''; // Assign empty string if the field is missing\n  });\n\n  // Dynamically create the skills object\n  const skills = {};\n  Object.keys(row).forEach(key => {\n    // Exclude essential fields and row_number\n    if (!Object.values(essentialFields).includes(key) && key !== 'row_number' && !isNaN(parseInt(row[key]))) {\n      const camelCaseKey = toCamelCase(key);\n      skills[camelCaseKey] = parseInt(row[key]) || 0;\n    }\n  });\n\n  return {\n    ...basicInfo,\n    skills\n  };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if email exists\n  if (!item.email) {\n    validationErrors.push('Missing Email Address');\n  }\n\n  // Check if name exists\n  if (!item.nameOfRespondent) {\n    validationErrors.push('Missing Name of Respondent');\n  }\n\n  // Check if capability exists\n  if (!item.capability) {\n    validationErrors.push('Missing Capability');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.nameOfRespondent,\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\nconst assessmentType = validItems.length > 0 && validItems[0].resourceName === validItems[0].name ? \"self\" : \"manager\";\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
-      },
-      "name": "Process and Validate Manager Assessment Data",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 1,
-      "position": [940, -120],
-      "id": "28ab3fbc-a5cd-43aa-b8b0-f0ac63b2b0d3"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract the access token from the login response\nconst accessToken = $node['Login'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nconst prefixBU = $node['Search Folder'].json.name.split('_')[0];\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\n// Initialize arrays for valid items and errors\nconst validItems = [];\nconst errors = [];\n\n// Process each row of data\nconst processedData = sheetData.map(row => {\n  const { \n    'Email Address': email,\n    'Timestamp': timestamp,\n    'Name of Resource': resourceName,\n    'Name of Respondent': nameOfRespondent,  // Changed from name to nameOfRespondent\n    'Capability': capability,\n    'Career Level of Resource': careerLevel \n  } = row;\n\n  // Dynamically create the skills object\n  const skills = {};\n  Object.keys(row).forEach(key => {\n    if (\n      key !== 'row_number' &&\n      key !== 'Email Address' &&\n      key !== 'Timestamp' &&\n      key !== 'Name of Resource' &&\n      key !== 'Name of Respondent' &&\n      key !== 'Capability' &&\n      key !== 'Career Level of Resource' &&\n      !isNaN(parseInt(row[key])) // Ensure that the value is numeric\n    ) {\n      const camelCaseKey = toCamelCase(key);\n      skills[camelCaseKey] = parseInt(row[key]) || 0;\n    }\n  });\n\n  return {\n    email,\n    timestamp,\n    resourceName,\n    nameOfRespondent,  // Updated here as well\n    capability,\n    careerLevel: careerLevel || '',\n    skills\n  };\n});\n\n// Validate the data\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if email exists\n  if (!item.email) {\n    validationErrors.push('Missing Email Address');\n  }\n\n  // Check if name exists\n  if (!item.nameOfRespondent) {  // Updated here\n    validationErrors.push('Missing Name of Respondent');\n  }\n\n  // Check if capability exists\n  if (!item.capability) {\n    validationErrors.push('Missing Capability');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.nameOfRespondent,  // Updated here\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Determine assessment type based on the first valid item\nconst assessmentType = validItems.length > 0 && validItems[0].resourceName === validItems[0].nameOfRespondent ? \"self\" : \"manager\";  // Updated here\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
-      },
-      "name": "Process and Validate Self Assessment Data",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 1,
-      "position": [980, -760],
-      "id": "c4900ed5-7968-43df-b797-230c8652866c",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract the access token from the login response\nconst accessToken = $node['Login'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nconst prefixBU = $node['Search Folder'].json.name.split('_')[0];\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\n// Initialize arrays for valid items and errors\nconst validItems = [];\nconst errors = [];\n\n// Process each row of data\nconst processedData = sheetData.map(row => {\n  const { \n    'Career Level': careerLevel \n  } = row;\n\n  // Dynamically create the skills object\n  const skills = {};\n  Object.keys(row).forEach(key => {\n    if (\n      key !== 'row_number' &&\n      key !== 'col_1' &&\n      !isNaN(parseInt(row[key])) // Ensure that the value is numeric\n    ) {\n      const camelCaseKey = toCamelCase(key);\n      skills[camelCaseKey] = parseInt(row[key]) || 0;\n    }\n  });\n\n  return {\n    careerLevel: careerLevel || '',\n    skills\n  };\n});\n\n// Validate the data\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if careerLevel exists\n  if (!item.careerLevel) {\n    validationErrors.push('Missing Career Level');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      careerLevel: item.careerLevel,\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Determine assessment type as \"required\" for required skills\nconst assessmentType = \"required\";\n\n// Return the results along with the access token\nreturn {\n  json: {\n    accessToken,\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
-      },
-      "name": "Process and Validate Required Skills Data",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 1,
-      "position": [980, -1400],
-      "id": "7aa368f3-35b6-41f7-a5a9-8b9bf9764a4d"
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "triggerOn": "specificFolder",
-        "folderToWatch": {
-          "__rl": true,
-          "mode": "list",
-          "value": ""
-        },
-        "event": "folderUpdated"
-      },
-      "id": "f19aeb8c-f09f-455e-9063-346367368942",
-      "name": "Assessment Trigger",
-      "type": "n8n-nodes-base.googleDriveTrigger",
-      "typeVersion": 1,
-      "position": [-140, -980],
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "uA9Psb5vjLv1l7LZ",
-          "name": "Google Drive account"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "content": "## Initial Workflow",
-        "height": 2189.415613478509,
-        "width": 2564.008202531837,
-        "color": 3
-      },
-      "id": "534147d5-873a-4f15-9e9a-c6d866e0ebc7",
-      "name": "Sticky Note2",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [-240, -1800]
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
-            {
-              "mode": "everyMinute"
-            }
-          ]
-        },
-        "authentication": "serviceAccount",
-        "triggerOn": "specificFolder",
-        "folderToWatch": {
-          "__rl": true,
-          "value": "1GFw8rXOn8lSizlc3wPM81mGijtCld8k7",
-          "mode": "id"
-        },
-        "event": "folderUpdated"
-      },
-      "id": "c19270fc-dbf9-41af-afb9-b22b0ce29318",
-      "name": "Google Drive Trigger",
-      "type": "n8n-nodes-base.googleDriveTrigger",
-      "typeVersion": 1,
-      "position": [3220, -1080],
-      "credentials": {
-        "googleApi": {
-          "id": "w27aj7tkRulsWxQB",
-          "name": "Stratpoint Google Service Account"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "888f2df9-8419-4775-8e93-39929e63c84d",
-              "leftValue": "={{ $json.name.toLowerCase() }}",
-              "rightValue": "manager",
-              "operator": {
-                "type": "string",
-                "operation": "contains"
-              }
-            },
-            {
-              "id": "c630173a-6db6-4e61-aba9-4e7daf2bf04a",
-              "leftValue": "={{ $json.name.toLowerCase() }}",
-              "rightValue": "self",
-              "operator": {
-                "type": "string",
-                "operation": "contains"
-              }
-            }
-          ],
-          "combinator": "or"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "b1d8d4fa-07ac-462b-a700-a91666b57bc7",
-      "name": "Check Assessment Type",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [4400, -1240]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "11586fad-38e4-4f9b-b45a-4c258bff6110",
-              "leftValue": "={{ $json.mimeType }}",
-              "rightValue": "application/vnd.google-apps.spreadsheet",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "5a94877e-8ae3-4298-bb06-fc84eac4a919",
-      "name": "Check File Type",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [4120, -1080]
+      "position": [520, -380]
     },
     {
       "parameters": {
@@ -1154,7 +218,7 @@
           "parameters": [
             {
               "name": "email",
-              "value": "user@example.com"
+              "value": "ellis@sample.com"
             },
             {
               "name": "password",
@@ -1164,81 +228,28 @@
         },
         "options": {}
       },
-      "name": "Login",
+      "name": "Login to API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [100, -980],
-      "id": "d6cbda86-ac20-4c8c-a51a-ab621b25d8e1"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://192.168.143.2:3001/auth/login",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "email",
-              "value": "user@example.com"
-            },
-            {
-              "name": "password",
-              "value": "password123"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Login to API",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [3460, -1080],
-      "id": "45858016-b430-4e82-9a4e-87dd2fc0272a"
+      "position": [3720, -240],
+      "id": "86ae1a32-d913-4e9b-a78d-cf91b3e03277"
     },
     {
       "parameters": {
         "authentication": "serviceAccount",
         "resource": "fileFolder",
         "searchMethod": "query",
-        "queryString": "='{{ $('Google Drive Trigger').item.json.id }}' in parents",
+        "queryString": "='{{ $('GET Watched Folder').item.json.id }}' in parents",
         "filter": {},
         "options": {
           "fields": ["mimeType", "name", "id", "version"]
         }
       },
-      "id": "25cda076-e03b-488e-be4c-1bc4b3d5842d",
-      "name": "Find Sheets",
+      "id": "cf457582-1bec-4a99-b5bd-6a811524b667",
+      "name": "Find Sheets1",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [3860, -1080],
-      "credentials": {
-        "googleApi": {
-          "id": "w27aj7tkRulsWxQB",
-          "name": "Stratpoint Google Service Account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "url": "=https://www.googleapis.com/drive/v3/files/{{ $node['Google Drive Trigger'].json.parents[0] }}?fields=id,createdTime,modifiedTime,name",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleApi",
-        "options": {}
-      },
-      "id": "83f6d08c-da9b-4730-9cb4-2ad8400dcff7",
-      "name": "GET Parent Folder",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [3660, -1080],
+      "position": [4220, -60],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1263,11 +274,11 @@
         },
         "options": {}
       },
-      "id": "435ac856-7136-4ec6-ba23-d9bfb9f0eb37",
-      "name": "GET Sheets Data",
+      "id": "395542e6-dda5-4740-ab3f-6519abfb44c3",
+      "name": "GET Sheets Data1",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [4580, -1460],
+      "position": [4880, -340],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -1277,13 +288,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract access token from login response\nconst accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nconst prefixBU = $node['GET Parent Folder'].json.name.split('_')[0];\nconst assessmentType = $node['Find Sheets'].json.name.toLowerCase().split('_')[1];\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\n// Determine required fields dynamically from the first row\nconst firstRow = sheetData[0];\nconst requiredFields = Object.keys(firstRow).filter(key => isNaN(firstRow[key]) || typeof firstRow[key] === 'string');\n\n// Process and validate data\nconst processedData = sheetData.map(row => {\n  // Separate non-numeric fields for basic info\n  const basicInfo = Object.fromEntries(\n    Object.entries(row).filter(([_, value]) => isNaN(value) || typeof value === 'string')\n  );\n\n  // Separate numeric fields for skills, excluding `row_number`\n  const skills = Object.fromEntries(\n    Object.entries(row)\n      .filter(([key, value]) => !isNaN(value) && key !== 'row_number')\n      .map(([key, value]) => [toCamelCase(key), parseInt(value) || 0]) // Use toCamelCase here\n  );\n\n  // Apply camel casing to basicInfo keys\n  const camelCasedBasicInfo = Object.fromEntries(\n    Object.entries(basicInfo).map(([key, value]) => [toCamelCase(key), value])\n  );\n\n  return { ...camelCasedBasicInfo, skills };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if required fields are present in basicInfo\n  requiredFields.forEach(field => {\n    const camelCasedField = toCamelCase(field); // Ensure the field is in camel case\n    if (!item[camelCasedField]) {\n      validationErrors.push(`Missing ${field}`);\n    }\n  });\n\n  // Additional validation for emailOfResource if assessment type is 'Manager'\n  if (assessmentType === 'manager' && !item['emailOfResource']) {\n    validationErrors.push('Missing Email of Resource');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item['nameOfRespondent'] || 'Unknown',\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
+        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract access token from login response\nconst accessToken = $node['Login to API1'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nconst prefixBU = $node['GET Parent'].json.name.split('_')[0];\nconst assessmentType = $node['Find Sheets1'].json.name.toLowerCase().split('_')[1];\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\n// Determine required fields dynamically from the first row\nconst firstRow = sheetData[0];\nconst requiredFields = Object.keys(firstRow).filter(key => isNaN(firstRow[key]) || typeof firstRow[key] === 'string');\n\n// Process and validate data\nconst processedData = sheetData.map(row => {\n  // Separate non-numeric fields for basic info\n  const basicInfo = Object.fromEntries(\n    Object.entries(row).filter(([_, value]) => isNaN(value) || typeof value === 'string')\n  );\n\n  // Separate numeric fields for skills, excluding `row_number`\n  const skills = Object.fromEntries(\n    Object.entries(row)\n      .filter(([key, value]) => !isNaN(value) && key !== 'row_number')\n      .map(([key, value]) => [toCamelCase(key), parseInt(value) || 0]) // Use toCamelCase here\n  );\n\n  // Apply camel casing to basicInfo keys\n  const camelCasedBasicInfo = Object.fromEntries(\n    Object.entries(basicInfo).map(([key, value]) => [toCamelCase(key), value])\n  );\n\n  return { ...camelCasedBasicInfo, skills };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if required fields are present in basicInfo\n  requiredFields.forEach(field => {\n    const camelCasedField = toCamelCase(field); // Ensure the field is in camel case\n    if (!item[camelCasedField]) {\n      validationErrors.push(`Missing ${field}`);\n    }\n  });\n\n  // Additional validation for emailOfResource if assessment type is 'Manager'\n  if (assessmentType === 'manager' && !item['emailOfResource']) {\n    validationErrors.push('Missing Email of Resource');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item['nameOfRespondent'] || 'Unknown',\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
       },
-      "id": "e394ac3b-e185-43df-bfbc-d5a40193ff8d",
-      "name": "Process and Validate Data1",
+      "id": "7c5de254-6735-48e1-8c12-078a6693b9f0",
+      "name": "Process and Validate Data2",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [4800, -1460]
+      "position": [5080, -200]
     },
     {
       "parameters": {
@@ -1311,22 +322,223 @@
         "looseTypeValidation": true,
         "options": {}
       },
-      "id": "94910047-0ec5-4cbf-92d5-c549854b23f2",
-      "name": "Check for Validation Errors4",
+      "id": "e88ee8a9-aa14-40a4-b15f-55078d4471a4",
+      "name": "Check for Validation Errors5",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [5020, -1460]
+      "position": [5260, -200]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ $node['Return Data'].json.parents[0] }}?fields=id,createdTime,modifiedTime,name,parents",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "options": {}
+      },
+      "id": "28904280-6e11-4e4e-b160-a258fd597168",
+      "name": "GET Watched Folder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3880, -60],
+      "credentials": {
+        "googleApi": {
+          "id": "w27aj7tkRulsWxQB",
+          "name": "Stratpoint Google Service Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return all items from the previous node as they are\nreturn $input.all(); // Directly return all items from the previous node"
+      },
+      "id": "27ee6256-2150-4b96-8fe4-8b72709d07ef",
+      "name": "Return Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3540, -60]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ $node['GET Watched Folder'].json.parents[0] }}?fields=id,name",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "options": {}
+      },
+      "id": "72477c81-6ff8-4b82-956f-fe3f4eabd04e",
+      "name": "GET Parent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [4060, -240],
+      "credentials": {
+        "googleApi": {
+          "id": "w27aj7tkRulsWxQB",
+          "name": "Stratpoint Google Service Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Template\n**Google Drive Trigger on Manager and Self Folders per BU** ",
+        "height": 1251.7691700349885,
+        "width": 4500.549169831905,
+        "color": 5
+      },
+      "id": "f02a6bf8-8924-4e67-85d3-585af11c63f4",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [3440, -560.013361499595]
+    },
+    {
+      "parameters": {
+        "content": "## Triggers\n**Sample Drives**\n",
+        "height": 1953.3320241975362,
+        "width": 565.508881533009
+      },
+      "id": "2c3de9ca-87a5-4f76-a39e-e4721ef97db8",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [2840, -898.923413030092]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1F_TlRIQu9iQoQA48_ncQQWpMoOOyv0xE",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "40a52204-a29f-4c12-b2ac-b3981f669e4d",
+      "name": "AI Self Assessment Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [2920, -600],
+      "credentials": {
+        "googleApi": {
+          "id": "w27aj7tkRulsWxQB",
+          "name": "Stratpoint Google Service Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1yYyQ91bFJTY-VGxJupsIZBE0ME0jXHas",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "cd4ec5ba-5b05-4a2a-a381-6528e2f6d14c",
+      "name": "AI Manager Assessments Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [3160, -600],
+      "credentials": {
+        "googleApi": {
+          "id": "w27aj7tkRulsWxQB",
+          "name": "Stratpoint Google Service Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1eXwPcISXx2Ndplr-sx1kXNWkYL0rrc70",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "e4796b73-871d-4ba7-b72c-facac6cf11fa",
+      "name": "QA Self Assessment Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [2920, -380],
+      "credentials": {
+        "googleApi": {
+          "id": "w27aj7tkRulsWxQB",
+          "name": "Stratpoint Google Service Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1FTltnTBVmQsR56i9mbjTik7MM3Nx_l4f",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "78cca373-7234-4bae-aff4-b2374960e028",
+      "name": "QA Manager Assessments Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [3160, -380],
+      "credentials": {
+        "googleApi": {
+          "id": "w27aj7tkRulsWxQB",
+          "name": "Stratpoint Google Service Account"
+        }
+      },
+      "disabled": true
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://172.22.156.50:3002/api/skills-matrix/bulk-update-assessments",
+        "url": "http://172.22.156.50:3002/api/skills-assessments/bulk-update-assessments",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "={{ $node['Login to API'].json.access_token }}"
+              "value": "=Bearer {{ $node['Login to API1'].json.access_token }}"
             }
           ]
         },
@@ -1334,26 +546,296 @@
         "bodyParameters": {
           "parameters": [
             {
-              "name": "=assessmentType",
-              "value": "={{ $node['Process and Validate Data1'].json.assessmentType }}"
+              "name": "assessmentType",
+              "value": "={{ $node['Process and Validate Data2'].json.assessmentType }}"
             },
             {
               "name": "data",
-              "value": "={{ $node['Process and Validate Data1'].json.validItems }}"
+              "value": "={{ $node['Process and Validate Data2'].json.validItems }}"
             },
             {
               "name": "prefix",
-              "value": "={{ $node['Process and Validate Data1'].json.prefixBU }}"
+              "value": "={{ $node['Process and Validate Data2'].json.prefixBU }}"
             }
           ]
         },
         "options": {}
       },
-      "name": "Update Skills Matrix API4",
+      "name": "Update Skills Assessments",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [5240, -1620],
-      "id": "bd156873-b78f-4282-a02c-69aeb47ae946"
+      "position": [5480, -360],
+      "id": "e46c8c01-39b0-45eb-8c24-fb942b0d9bf5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.22.156.50:3002/api/skills-assessments/bulk-update-assessments",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node['Login to API1'].json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "assessmentType",
+              "value": "={{ $node['Compute Skills Gap'].json.assessmentType }}"
+            },
+            {
+              "name": "data",
+              "value": "={{ $node['Compute Skills Gap'].json.validItems }}"
+            },
+            {
+              "name": "prefix",
+              "value": "={{ $node['Compute Skills Gap'].json.prefixBU }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Skill Gaps API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [7140, -80],
+      "id": "cb6bcc42-1a6f-4e5e-9b72-ff4c6e7e3227"
+    },
+    {
+      "parameters": {
+        "url": "http://172.22.156.50:3002/api/skills-assessments/bulk-performance",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node['Login to API1'].json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "bu",
+              "value": "={{ $node['Process and Validate Data2'].json.prefixBU }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0fa82541-904f-407d-b678-5d2855260766",
+      "name": "GET Employee Performance Data API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [6020, -220]
+    },
+    {
+      "parameters": {
+        "url": "http://172.22.156.50:3002/required-skills",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{}]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prefixBU",
+              "value": "={{ $('Process and Validate Data2').item.json.prefixBU }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d434bbc3-84af-4ede-ba4c-b52594003381",
+      "name": "GET Required Skill Levels API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [6000, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract the prefix business unit and assessment type\nconst prefixBU = $node['GET Parent'].json.name.split('_')[0];\nconst assessmentType = 'gap'; // Set as 'gap' for this context\n\n// Initialize arrays for performance and required skills data\nlet performanceData = [];\nlet requiredSkillsData = [];\n\n// Iterate through each item from the previous node\nitems.forEach(item => {\n  // Check if `emailAddress` exists to differentiate performance data from required skills\n  if (item.json.emailAddress) {\n    // This is performance data\n    performanceData.push(item.json); // Push the performance data item\n  } else {\n    // This is required skills data\n    requiredSkillsData.push(item.json); // Push the required skills data item\n  }\n});\n\n// Now calculate the skills gap for each employee in the performanceData\nlet result = [];\n\n// Iterate through each employee in performanceData\nperformanceData.forEach(employee => {\n  // Find the corresponding required skills based on capability and career level\n  const requiredSkills = requiredSkillsData.find(skill => \n    skill.capability === employee.capability && \n    skill.careerLevel === employee.careerLevel\n  );\n\n  if (requiredSkills) {\n    let skillGaps = {\n      emailAddress: employee.emailAddress,\n      nameOfResource: employee.nameOfResource,\n      careerLevel: employee.careerLevel,\n      capability: employee.capability,\n      skillGaps: {}  // Using an object to store skills and their gaps directly\n    };\n\n    // Calculate the gap for each skill\n    Object.keys(employee.averageOfSkills).forEach(skill => {\n      const performanceLevel = employee.averageOfSkills[skill];\n      const requiredLevel = requiredSkills.requiredSkills[skill] || 0; // Default to 0 if not found\n\n      // Calculate the gap\n      const gap = performanceLevel - requiredLevel;\n\n      // Add the skill gap directly as a key-value pair to the skillGaps object\n      skillGaps.skillGaps[skill] = gap;\n    });\n\n    // Add the skill gaps to the result\n    result.push(skillGaps);\n  }\n});\n\n// Validation: Check if all required fields are present in the performance data\nconst validItems = [];\nconst errors = [];\n\nresult.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if all required fields are present (emailAddress, nameOfResource, etc.)\n  if (!item.emailAddress) {\n    validationErrors.push('Missing emailAddress');\n  }\n  if (!item.nameOfResource) {\n    validationErrors.push('Missing nameOfResource');\n  }\n  if (!item.careerLevel) {\n    validationErrors.push('Missing careerLevel');\n  }\n  if (!item.capability) {\n    validationErrors.push('Missing capability');\n  }\n  if (!item.skillGaps || Object.keys(item.skillGaps).length === 0) {\n    validationErrors.push('Missing skill gaps');\n  }\n\n  // If there are validation errors, push them to the errors array\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.nameOfResource || 'Unknown',\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the result along with the access token and validation summary\nreturn {\n  json: {\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: result.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
+      },
+      "id": "61a2710b-cf37-4f01-bec9-41a0238c5c46",
+      "name": "Compute Skills Gap",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [6980, -240]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1iaPAO2NZFjOCxJoLBea3MSHS8KPFzfkm",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "c068e755-3ac6-4a1a-94f1-ee846676eceb",
+      "name": "CLD Self Assessment Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [2920, -160],
+      "credentials": {
+        "googleApi": {
+          "id": "w27aj7tkRulsWxQB",
+          "name": "Stratpoint Google Service Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1jZFic8TsBoqy_Lf8awrkskAn4KmRCApO",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "33b30426-a8a8-4dbc-9b7c-466099a613a3",
+      "name": "CLD Manager Assessments Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [3160, -160],
+      "credentials": {
+        "googleApi": {
+          "id": "w27aj7tkRulsWxQB",
+          "name": "Stratpoint Google Service Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1eB63XhjwBwS1gjN4QuKRuuc9xFfiXbtX",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "06df99e0-dd47-4b19-9a19-1e034d288f94",
+      "name": "SLS Self Assessment Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [2920, -800],
+      "credentials": {
+        "googleApi": {
+          "id": "w27aj7tkRulsWxQB",
+          "name": "Stratpoint Google Service Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1M2p_RPCABaaxjFmcity6l708umqP84Vp",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "7958d489-d870-4040-9a5c-96d0407eb8db",
+      "name": "SLS Manager Assessment Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [3160, -800],
+      "credentials": {
+        "googleApi": {
+          "id": "w27aj7tkRulsWxQB",
+          "name": "Stratpoint Google Service Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "ada5f9e2-ae2c-44c1-9c0f-71634330aed6",
+      "name": "Send Error Message API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [4660, 80],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "11586fad-38e4-4f9b-b45a-4c258bff6110",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "application/vnd.google-apps.spreadsheet",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "4c7de73c-5bc4-49e1-aca2-e2913e667f4d",
+      "name": "Check File Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [4440, -60]
     },
     {
       "parameters": {
@@ -1390,138 +872,43 @@
         "options": {}
       },
       "id": "58a530e9-897d-46a6-abe5-ccfb68442aad",
-      "name": "Check Assessment Type1",
+      "name": "Check Assessment Type",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [4880, 120]
+      "position": [4660, -200]
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "11586fad-38e4-4f9b-b45a-4c258bff6110",
-              "leftValue": "={{ $json.mimeType }}",
-              "rightValue": "application/vnd.google-apps.spreadsheet",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "looseTypeValidation": true,
         "options": {}
       },
-      "id": "4c7de73c-5bc4-49e1-aca2-e2913e667f4d",
-      "name": "Check File Type1",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [4600, 280]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://192.168.143.2:3001/auth/login",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "email",
-              "value": "user@example.com"
-            },
-            {
-              "name": "password",
-              "value": "password123"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Login to API1",
+      "id": "edad52dc-1751-4db2-9bab-da067d900dc5",
+      "name": "Send Error Message API1",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [3720, 280],
-      "id": "86ae1a32-d913-4e9b-a78d-cf91b3e03277"
+      "typeVersion": 4.2,
+      "position": [4880, -20],
+      "disabled": true
     },
     {
       "parameters": {
-        "authentication": "serviceAccount",
-        "resource": "fileFolder",
-        "searchMethod": "query",
-        "queryString": "='{{ $('GET Watched Folder').item.json.id }}' in parents",
-        "filter": {},
-        "options": {
-          "fields": ["mimeType", "name", "id", "version"]
-        }
-      },
-      "id": "cf457582-1bec-4a99-b5bd-6a811524b667",
-      "name": "Find Sheets1",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [4340, 280],
-      "credentials": {
-        "googleApi": {
-          "id": "w27aj7tkRulsWxQB",
-          "name": "Stratpoint Google Service Account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "authentication": "serviceAccount",
-        "documentId": {
-          "__rl": true,
-          "value": "={{ $json.id }}",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a6NCn008077R0jbqtc3mkhcB1U4JexnVd2pUh--Ezhw/edit#gid=0"
-        },
         "options": {}
       },
-      "id": "395542e6-dda5-4740-ab3f-6519abfb44c3",
-      "name": "GET Sheets Data1",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [5060, -100],
-      "credentials": {
-        "googleApi": {
-          "id": "w27aj7tkRulsWxQB",
-          "name": "Stratpoint Google Service Account"
-        }
-      }
+      "id": "987fb555-c7e0-442b-b5ec-0b3a4386d47f",
+      "name": "Send Error Message API2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [5480, -100],
+      "disabled": true
     },
     {
       "parameters": {
-        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract access token from login response\nconst accessToken = $node['Login to API1'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nconst prefixBU = $node['GET Parent'].json.name.split('_')[0];\nconst assessmentType = $node['Find Sheets1'].json.name.toLowerCase().split('_')[1];\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\n// Determine required fields dynamically from the first row\nconst firstRow = sheetData[0];\nconst requiredFields = Object.keys(firstRow).filter(key => isNaN(firstRow[key]) || typeof firstRow[key] === 'string');\n\n// Process and validate data\nconst processedData = sheetData.map(row => {\n  // Separate non-numeric fields for basic info\n  const basicInfo = Object.fromEntries(\n    Object.entries(row).filter(([_, value]) => isNaN(value) || typeof value === 'string')\n  );\n\n  // Separate numeric fields for skills, excluding `row_number`\n  const skills = Object.fromEntries(\n    Object.entries(row)\n      .filter(([key, value]) => !isNaN(value) && key !== 'row_number')\n      .map(([key, value]) => [toCamelCase(key), parseInt(value) || 0]) // Use toCamelCase here\n  );\n\n  // Apply camel casing to basicInfo keys\n  const camelCasedBasicInfo = Object.fromEntries(\n    Object.entries(basicInfo).map(([key, value]) => [toCamelCase(key), value])\n  );\n\n  return { ...camelCasedBasicInfo, skills };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if required fields are present in basicInfo\n  requiredFields.forEach(field => {\n    const camelCasedField = toCamelCase(field); // Ensure the field is in camel case\n    if (!item[camelCasedField]) {\n      validationErrors.push(`Missing ${field}`);\n    }\n  });\n\n  // Additional validation for emailOfResource if assessment type is 'Manager'\n  if (assessmentType === 'manager' && !item['emailOfResource']) {\n    validationErrors.push('Missing Email of Resource');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item['nameOfRespondent'] || 'Unknown',\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
+        "options": {}
       },
-      "id": "7c5de254-6735-48e1-8c12-078a6693b9f0",
-      "name": "Process and Validate Data2",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [5280, -100]
+      "id": "e1f4f4fc-c15a-4897-b3eb-76c0084daf68",
+      "name": "Send Error Message API3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [5880, 220],
+      "disabled": true
     },
     {
       "parameters": {
@@ -1534,12 +921,12 @@
           },
           "conditions": [
             {
-              "id": "dc254c3b-de36-428f-9e97-fb65e352a836",
-              "leftValue": "={{ $json.errors }}",
+              "id": "4a2c185c-5aaa-4cdb-a242-5a55aec1ecef",
+              "leftValue": "={{ $json.updatedCount }}",
               "rightValue": "",
               "operator": {
-                "type": "array",
-                "operation": "empty",
+                "type": "number",
+                "operation": "notEmpty",
                 "singleValue": true
               }
             }
@@ -1549,185 +936,192 @@
         "looseTypeValidation": true,
         "options": {}
       },
-      "id": "e88ee8a9-aa14-40a4-b15f-55078d4471a4",
-      "name": "Check for Validation Errors5",
+      "id": "42fe9348-16b7-455c-8329-1bb6029adf16",
+      "name": "Check API Response1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [5500, -100]
+      "position": [5700, -200]
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://172.22.156.50:3002/api/skills-matrix/bulk-update-assessments",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "={{ $node['Login to API1'].json.access_token }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "assessmentType",
-              "value": "={{ $node['Process and Validate Data2'].json.assessmentType }}"
-            },
-            {
-              "name": "data",
-              "value": "={{ $node['Process and Validate Data2'].json.validItems }}"
-            },
-            {
-              "name": "prefix",
-              "value": "={{ $node['Process and Validate Data2'].json.prefixBU }}"
-            }
-          ]
-        },
         "options": {}
       },
-      "name": "Update Skills Matrix API5",
+      "id": "01a6ac73-ed81-4971-88e3-4894b0603f83",
+      "name": "Send Success Message API",
       "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [5920, -440],
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "c03ba5b9-0e55-49e5-8ee8-a5544d719a0c",
+      "name": "Merge Data",
+      "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": [5720, -260],
-      "id": "e46c8c01-39b0-45eb-8c24-fb942b0d9bf5"
+      "position": [6800, -60]
     },
     {
       "parameters": {
-        "content": "## Template\n**Google Drive Trigger on BU** \n",
-        "height": 770.2289671783183,
-        "width": 2202.496358445469,
-        "color": 6
-      },
-      "id": "4d9ec7d9-dc0c-4423-9f43-87869da0c240",
-      "name": "Sticky Note3",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [3360, -1640]
-    },
-    {
-      "parameters": {
-        "pollTimes": {
-          "item": [
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
             {
-              "mode": "everyMinute"
+              "id": "4a2c185c-5aaa-4cdb-a242-5a55aec1ecef",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
             }
-          ]
+          ],
+          "combinator": "and"
         },
-        "authentication": "serviceAccount",
-        "triggerOn": "specificFolder",
-        "folderToWatch": {
-          "__rl": true,
-          "value": "1F_TlRIQu9iQoQA48_ncQQWpMoOOyv0xE",
-          "mode": "id"
-        },
-        "event": "fileUpdated",
+        "looseTypeValidation": true,
         "options": {}
       },
-      "id": "40a52204-a29f-4c12-b2ac-b3981f669e4d",
-      "name": "Self Assessment Drive Trigger",
-      "type": "n8n-nodes-base.googleDriveTrigger",
-      "typeVersion": 1,
-      "position": [3260, 140],
-      "credentials": {
-        "googleApi": {
-          "id": "w27aj7tkRulsWxQB",
-          "name": "Stratpoint Google Service Account"
-        }
-      }
+      "id": "d0d481ab-9466-4b80-a56f-25fd65775cc2",
+      "name": "Check API Response2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [6240, -220]
     },
     {
       "parameters": {
-        "pollTimes": {
-          "item": [
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
             {
-              "mode": "everyMinute"
+              "id": "4a2c185c-5aaa-4cdb-a242-5a55aec1ecef",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
             }
-          ]
+          ],
+          "combinator": "and"
         },
-        "authentication": "serviceAccount",
-        "triggerOn": "specificFolder",
-        "folderToWatch": {
-          "__rl": true,
-          "value": "1yYyQ91bFJTY-VGxJupsIZBE0ME0jXHas",
-          "mode": "id"
-        },
-        "event": "fileUpdated",
+        "looseTypeValidation": true,
         "options": {}
       },
-      "id": "cd4ec5ba-5b05-4a2a-a381-6528e2f6d14c",
-      "name": "Manager Assessments Drive Trigger",
-      "type": "n8n-nodes-base.googleDriveTrigger",
-      "typeVersion": 1,
-      "position": [3260, 400],
-      "credentials": {
-        "googleApi": {
-          "id": "w27aj7tkRulsWxQB",
-          "name": "Stratpoint Google Service Account"
-        }
-      }
+      "id": "950fac25-f7a6-4550-99ef-b740eb937c33",
+      "name": "Check API Response3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [6260, 100]
     },
     {
       "parameters": {
-        "url": "=https://www.googleapis.com/drive/v3/files/{{ $node['Return Data'].json.parents[0] }}?fields=id,createdTime,modifiedTime,name,parents",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleApi",
         "options": {}
       },
-      "id": "28904280-6e11-4e4e-b160-a258fd597168",
-      "name": "GET Watched Folder",
+      "id": "40761c8c-2039-460b-a50c-78564dcaca05",
+      "name": "Send Success Message API1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [3940, 280],
-      "credentials": {
-        "googleApi": {
-          "id": "w27aj7tkRulsWxQB",
-          "name": "Stratpoint Google Service Account"
-        }
-      }
+      "position": [6420, -420],
+      "disabled": true
     },
     {
       "parameters": {
-        "jsCode": "// Return all items from the previous node as they are\nreturn $input.all(); // Directly return all items from the previous node"
-      },
-      "id": "27ee6256-2150-4b96-8fe4-8b72709d07ef",
-      "name": "Return Data",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [3540, 280]
-    },
-    {
-      "parameters": {
-        "url": "=https://www.googleapis.com/drive/v3/files/{{ $node['GET Watched Folder'].json.parents[0] }}?fields=id,name",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleApi",
         "options": {}
       },
-      "id": "72477c81-6ff8-4b82-956f-fe3f4eabd04e",
-      "name": "GET Parent",
+      "id": "67625e51-07b8-4ae8-9967-1ac5e8727a3d",
+      "name": "Send Success Message API2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [4140, 280],
-      "credentials": {
-        "googleApi": {
-          "id": "w27aj7tkRulsWxQB",
-          "name": "Stratpoint Google Service Account"
-        }
-      }
+      "position": [6620, 160],
+      "disabled": true
     },
     {
       "parameters": {
-        "content": "## Template\n**Google Drive Trigger on Manager and Self Folders** ",
-        "height": 1010.4655133907468,
-        "width": 2605.357209118016,
-        "color": 5
+        "options": {}
       },
-      "id": "f02a6bf8-8924-4e67-85d3-585af11c63f4",
-      "name": "Sticky Note4",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [3440, -320]
+      "id": "342d79ca-0da2-40a1-acba-c7ec007dc2f6",
+      "name": "Send Error Message API4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [6420, -100],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b4f4d24b-f67e-40c7-9307-c3e227e31725",
+      "name": "Send Error Message API5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [6620, 400],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4a2c185c-5aaa-4cdb-a242-5a55aec1ecef",
+              "leftValue": "={{ $json.updatedCount }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "b8954211-9f23-4d0c-81b0-5fd56a5c4a2a",
+      "name": "Check API Response4",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [7340, -80]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "2cdd41f9-8125-4861-8224-418203af5bbc",
+      "name": "Send Success Message API3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [7620, -240],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f779adfa-c85c-452c-b549-3f7bc37063af",
+      "name": "Send Error Message API6",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [7620, 60],
+      "disabled": true
     }
   ],
   "pinData": {},
@@ -1799,427 +1193,6 @@
         ]
       ]
     },
-    "Read Self Assessments": {
-      "main": [
-        [
-          {
-            "node": "Process and Validate Self Assessment Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Read Manager Assessments": {
-      "main": [
-        [
-          {
-            "node": "Process and Validate Manager Assessment Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check for Validation Errors2": {
-      "main": [
-        [
-          {
-            "node": "Update Skills Matrix API2",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Log Errors to API3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check for Validation Errors1": {
-      "main": [
-        [
-          {
-            "node": "Update Skills Matrix API1",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Log Errors to API1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update Skills Matrix API1": {
-      "main": [
-        [
-          {
-            "node": "Check API Response2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update Skills Matrix API2": {
-      "main": [
-        [
-          {
-            "node": "Check API Response1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "GET Self Skills Data API": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "GET Self Skills Data API1": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Check API Response2": {
-      "main": [
-        [
-          {
-            "node": "Send Success Notification API1",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send Error Notification API1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check API Response1": {
-      "main": [
-        [
-          {
-            "node": "Send Success Notification API2",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send Error Notification API2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge": {
-      "main": [
-        [
-          {
-            "node": "Transform Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Transform Data": {
-      "main": [
-        [
-          {
-            "node": "Compute Average Per Employee",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Compute Average Per Employee": {
-      "main": [
-        [
-          {
-            "node": "Update Average Skills API",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Sheets1": {
-      "main": [
-        [
-          {
-            "node": "Process and Validate Required Skills Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check for Validation Errors3": {
-      "main": [
-        [
-          {
-            "node": "Update Skills Matrix API3",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Log Errors to API2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update Skills Matrix API3": {
-      "main": [
-        [
-          {
-            "node": "Check API Response3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check API Response3": {
-      "main": [
-        [
-          {
-            "node": "Send Success Notification API3",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send Error Notification API3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Search Folder": {
-      "main": [
-        [
-          {
-            "node": "Read Manager Assessments",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Read Self Assessments",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Process and Validate Manager Assessment Data": {
-      "main": [
-        [
-          {
-            "node": "Check for Validation Errors2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Process and Validate Self Assessment Data": {
-      "main": [
-        [
-          {
-            "node": "Check for Validation Errors1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Process and Validate Required Skills Data": {
-      "main": [
-        [
-          {
-            "node": "Check for Validation Errors3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Assessment Trigger": {
-      "main": [
-        [
-          {
-            "node": "Login",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Assessment Type": {
-      "main": [
-        [
-          {
-            "node": "GET Sheets Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check File Type": {
-      "main": [
-        [
-          {
-            "node": "Check Assessment Type",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Login": {
-      "main": [
-        [
-          {
-            "node": "Search Folder",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Login to API": {
-      "main": [
-        [
-          {
-            "node": "GET Parent Folder",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Find Sheets": {
-      "main": [
-        [
-          {
-            "node": "Check File Type",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "GET Parent Folder": {
-      "main": [
-        [
-          {
-            "node": "Find Sheets",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "GET Sheets Data": {
-      "main": [
-        [
-          {
-            "node": "Process and Validate Data1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Process and Validate Data1": {
-      "main": [
-        [
-          {
-            "node": "Check for Validation Errors4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check for Validation Errors4": {
-      "main": [
-        [
-          {
-            "node": "Update Skills Matrix API4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Drive Trigger": {
-      "main": [
-        [
-          {
-            "node": "Login to API",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Assessment Type1": {
-      "main": [
-        [
-          {
-            "node": "GET Sheets Data1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check File Type1": {
-      "main": [
-        [
-          {
-            "node": "Check Assessment Type1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Login to API1": {
       "main": [
         [
@@ -2235,7 +1208,7 @@
       "main": [
         [
           {
-            "node": "Check File Type1",
+            "node": "Check File Type",
             "type": "main",
             "index": 0
           }
@@ -2268,7 +1241,14 @@
       "main": [
         [
           {
-            "node": "Update Skills Matrix API5",
+            "node": "Update Skills Assessments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Message API2",
             "type": "main",
             "index": 0
           }
@@ -2308,7 +1288,51 @@
         ]
       ]
     },
-    "Manager Assessments Drive Trigger": {
+    "Update Skills Assessments": {
+      "main": [
+        [
+          {
+            "node": "Check API Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Employee Performance Data API": {
+      "main": [
+        [
+          {
+            "node": "Check API Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Required Skill Levels API": {
+      "main": [
+        [
+          {
+            "node": "Check API Response3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Skills Gap": {
+      "main": [
+        [
+          {
+            "node": "Update Skill Gaps API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SLS Self Assessment Drive Trigger": {
       "main": [
         [
           {
@@ -2319,11 +1343,161 @@
         ]
       ]
     },
-    "Self Assessment Drive Trigger": {
+    "SLS Manager Assessment Drive Trigger": {
       "main": [
         [
           {
             "node": "Return Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check File Type": {
+      "main": [
+        [
+          {
+            "node": "Check Assessment Type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Message API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Assessment Type": {
+      "main": [
+        [
+          {
+            "node": "GET Sheets Data1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Message API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Response1": {
+      "main": [
+        [
+          {
+            "node": "GET Employee Performance Data API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET Required Skill Levels API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Success Message API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Message API3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Data": {
+      "main": [
+        [
+          {
+            "node": "Compute Skills Gap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Response2": {
+      "main": [
+        [
+          {
+            "node": "Send Success Message API1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Message API4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Response3": {
+      "main": [
+        [
+          {
+            "node": "Send Success Message API2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Send Error Message API5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Skill Gaps API": {
+      "main": [
+        [
+          {
+            "node": "Check API Response4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Response4": {
+      "main": [
+        [
+          {
+            "node": "Send Success Message API3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Message API6",
             "type": "main",
             "index": 0
           }
@@ -2335,7 +1509,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "eb934ace-bc48-435e-bb53-365572e08f96",
+  "versionId": "824be8d8-20fd-44f3-be24-179b116d7350",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "a31f8c9eb797a311bc289ce7bafeb2442b7772146dd18635dc019f72cb5829a0"

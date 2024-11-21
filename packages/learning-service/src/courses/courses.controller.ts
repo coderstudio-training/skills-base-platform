@@ -8,8 +8,10 @@ export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Post('bulk-update')
-  async bulkUpdate(@Body() bulkUpdateDto: BulkUpdateCoursesDto): Promise<BulkUpsertResponse> {
+  async bulkUpdate(
+    @Body() bulkUpdateDto: BulkUpdateCoursesDto,
+  ): Promise<BulkUpsertResponse> {
     const response = await this.coursesService.bulkUpsert(bulkUpdateDto);
-    return this.coursesService.bulkUpsert(bulkUpdateDto);
+    return response;
   }
 }

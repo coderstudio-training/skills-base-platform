@@ -132,8 +132,14 @@ export interface TopPerformerData {
   keySkills: string[];
 }
 
+export interface TopSkillData {
+  name: string;
+  prevalence: number; // This will be the average rating converted to percentage
+}
+
 export interface SkillGapData {
-  skill: string;
+  name: string;
   currentLevel: number;
   requiredLevel: number;
+  gap: number;
 }

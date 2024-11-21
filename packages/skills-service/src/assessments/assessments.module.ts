@@ -1,14 +1,33 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AssessmentsController } from './assessments.controller';
-import { AssessmentsService } from './assessments.service';
+import { AssessmentsController } from './controllers/assessments.controller';
+import { PerformanceController } from './controllers/computation.controller';
+import { SkillMatrixController } from './controllers/skill-matrix.controller';
+import { RequiredSkillsController } from './controllers/user-skills.controller';
+import { AssessmentsService } from './services/assessments.service';
+import { PerformanceService } from './services/computation.service';
+import { SkillsMatrixService } from './services/skills-matrix.service';
+import { UserSkillsService } from './services/user-skills.service';
 
 @Module({
-  imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/skills_base_assessments'),
+  imports: [MongooseModule],
+  controllers: [
+    AssessmentsController,
+    PerformanceController,
+    RequiredSkillsController,
+    SkillMatrixController,
   ],
-  controllers: [AssessmentsController],
-  providers: [AssessmentsService],
-  exports: [AssessmentsService],
+  providers: [
+    AssessmentsService,
+    PerformanceService,
+    UserSkillsService,
+    SkillsMatrixService,
+  ],
+  exports: [
+    AssessmentsService,
+    PerformanceService,
+    UserSkillsService,
+    SkillsMatrixService,
+  ],
 })
 export class AssessmentsModule {}

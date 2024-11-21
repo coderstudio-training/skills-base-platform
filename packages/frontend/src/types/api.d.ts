@@ -61,3 +61,12 @@ interface DevelopmentPlansResponse {
   total: number;
   // Other possible metadata in the response
 }
+
+export interface SkillAnalyticsResponse {
+  topSkills: TopSkillData[];
+  skillGaps: SkillGapData[];
+}
+
+export interface SkillsResponse {
+  skills: StaffSkill[];
+}
