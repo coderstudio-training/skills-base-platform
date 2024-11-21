@@ -35,6 +35,7 @@ export default function ManagerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // I suggest using hook.ts for client side or do server side rendering like skills/taxonomy/[businessUnit]
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
