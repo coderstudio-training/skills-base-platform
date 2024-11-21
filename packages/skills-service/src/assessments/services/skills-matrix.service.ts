@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import {
+  AdminSkillAnalyticsDto,
+  SkillGapDto,
+  TopSkillDto,
+} from '../dto/computation.dto';
 import { SkillGapsDto } from '../dto/user-skills.dto';
 import { transformToReadableKeys } from '../utils/transform-keys.util';
 
@@ -34,6 +39,88 @@ export class SkillsMatrixService {
   private readonly logger = new Logger(SkillsMatrixService.name);
 
   constructor(@InjectConnection() private readonly connection: Connection) {}
+
+  async getAdminSkillsAnalytics(): Promise<AdminSkillAnalyticsDto> {
+    try {
+      const allEmployeesData = await this.getAllEmployeesSkillsData();
+
+      // Collect all unique skills
+      const skillsMap = new Map<
+        string,
+        {
+          totalRating: number;
+          count: number;
+          category: string;
+          gapCount: number;
+          totalGap: number;
+          requiredLevel: number;
+          currentLevel: number;
+        }
+      >();
+
+      // Process all employees' skills
+      allEmployeesData.forEach((employee) => {
+        employee.skills.forEach((skill) => {
+          const currentSkill = skillsMap.get(skill.skill) || {
+            totalRating: 0,
+            count: 0,
+            category: skill.category,
+            gapCount: 0,
+            totalGap: 0,
+            requiredLevel: skill.requiredRating,
+            currentLevel: skill.average,
+          };
+
+          currentSkill.totalRating += skill.average;
+          currentSkill.count += 1;
+
+          if (skill.gap < 0) {
+            currentSkill.gapCount += 1;
+            currentSkill.totalGap += Math.abs(skill.gap);
+          }
+
+          skillsMap.set(skill.skill, currentSkill);
+        });
+      });
+
+      // Transform to match frontend DTOs
+      const topSkills: TopSkillDto[] = Array.from(skillsMap.entries())
+        .map(([name, data]) => ({
+          name,
+          prevalence: (data.totalRating / (data.count * 5)) * 100, // Convert to percentage based on max rating of 5
+        }))
+        .sort((a, b) => b.prevalence - a.prevalence)
+        .slice(0, 5);
+
+      const skillGaps: SkillGapDto[] = Array.from(skillsMap.entries())
+        .map(([name, data]) => {
+          const currentLevel = data.totalRating / data.count;
+          const requiredLevel = data.requiredLevel;
+          const gap = Math.max(0, requiredLevel - currentLevel);
+
+          return {
+            name,
+            currentLevel,
+            requiredLevel,
+            gap,
+          };
+        })
+        .filter((gap) => gap.gap > 0)
+        .sort((a, b) => b.gap - a.gap)
+        .slice(0, 5);
+
+      return {
+        topSkills,
+        skillGaps,
+      };
+    } catch (error) {
+      this.logger.error('Error calculating admin skills analytics:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+      throw error;
+    }
+  }
 
   async getAllEmployeesSkillsData(): Promise<TransformedSkillsResponseDto[]> {
     try {

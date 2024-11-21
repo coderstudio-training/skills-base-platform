@@ -1,6 +1,7 @@
 import { Controller, Get, HttpStatus, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
+import { AdminSkillAnalyticsDto } from '../dto/computation.dto';
 import { SkillsMatrixService } from '../services/skills-matrix.service';
 
 @ApiTags('Skill Matrix')
@@ -22,5 +23,16 @@ export class SkillMatrixController {
   })
   async getAllEmployeesSkillsMatrix() {
     return this.skillMatrixService.getAllEmployeesSkillsData();
+  }
+
+  @Get('analytics')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({ summary: 'Get organization-wide skill analytics' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved skill analytics',
+  })
+  async getOrganizationAnalytics(): Promise<AdminSkillAnalyticsDto> {
+    return this.skillMatrixService.getAdminSkillsAnalytics();
   }
 }
