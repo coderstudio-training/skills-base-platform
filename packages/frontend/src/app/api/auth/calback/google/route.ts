@@ -6,9 +6,7 @@ export async function GET(req: NextRequest) {
 
   if (token?.role) {
     const role = token.role.toLowerCase();
-    return NextResponse.redirect(
-      new URL(`${window.location.origin}/dashboard/${role}`, req.url)
-    );
+    return NextResponse.redirect(new URL(`${window.location.origin}/dashboard/${role}`, req.url));
   }
 
   // If no role is found, redirect to a default page or show an error

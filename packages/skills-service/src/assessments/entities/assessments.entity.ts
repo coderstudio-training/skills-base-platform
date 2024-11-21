@@ -1,13 +1,13 @@
 // assessments.entity.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { BaseEntity } from '@skills-base/shared';
 
 @Schema()
-export class Assessments extends Document {
+export class Assessments extends BaseEntity {
   @Prop({ required: true }) // Keep as Date in the entity
   timestamp!: Date;
 
-  @Prop({ required: true, unique: true, index: true })
+  @Prop({ required: true })
   emailAddress!: string;
 
   @Prop({ required: true })
@@ -34,19 +34,29 @@ export class Assessments extends Document {
 
 export const BaseSkillsSchema = SchemaFactory.createForClass(Assessments);
 
-// SelfSkills entity
 @Schema()
-export class SelfAssessments extends Assessments {}
+export class SelfAssessments extends Assessments {
+  @Prop({ required: true, unique: true, index: true })
+  emailAddress!: string;
+}
 
 export const SelfAssessmentSchema =
   SchemaFactory.createForClass(SelfAssessments);
 
-// ManagerSkills entity
 @Schema()
 export class ManagerAssessment extends Assessments {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true, index: true })
   emailOfResource!: string;
 }
 
 export const ManagerAssessmentSchema =
   SchemaFactory.createForClass(ManagerAssessment);
+
+@Schema()
+export class AverageAssessments extends Assessments {
+  @Prop({ required: true, unique: true, index: true })
+  emailAddress!: string;
+}
+
+export const AverageAssessmentsSchema =
+  SchemaFactory.createForClass(AverageAssessments);

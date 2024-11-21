@@ -70,11 +70,11 @@ export const dummyStaffData: StaffData = {
   department: 'Engineering',
   email: 'john.doe@example.com',
   skills: [
-    { name: 'JavaScript', level: 90 },
+    { name: 'JavaScript', level: 100 },
     { name: 'React', level: 85 },
-    { name: 'Node.js', level: 80 },
-    { name: 'Python', level: 75 },
-    { name: 'SQL', level: 70 },
+    { name: 'Node.js', level: 75 },
+    { name: 'Python', level: 65 },
+    { name: 'SQL', level: 30 },
   ],
   qualifications: [
     { name: "Bachelor's in Computer Science", date: '2018' },

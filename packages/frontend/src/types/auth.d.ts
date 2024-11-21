@@ -1,9 +1,9 @@
 export interface DecodedToken {
-  email: string
-  sub: string
-  roles: string[]
-  iat: number
-  exp: number
+  email: string;
+  sub: string;
+  roles: string[];
+  iat: number;
+  exp: number;
 }
 
 export interface AuthResponse {

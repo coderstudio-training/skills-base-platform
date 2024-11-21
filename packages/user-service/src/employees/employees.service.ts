@@ -25,13 +25,11 @@ export class EmployeesService {
           { employeeId: 1 },
           { unique: true, background: true },
         ),
+      ]);
+      await Promise.all([
         this.employeeModel.collection.createIndex(
-          { firstName: 'text', email: 'text' },
-          { background: true },
-        ),
-        this.employeeModel.collection.createIndex(
-          { firstName: 1, email: 1 },
-          { background: true },
+          { employeeId: 1 },
+          { unique: true, background: true },
         ),
       ]);
       this.logger.log('Indexes ensured for Employees collection');
@@ -164,10 +162,18 @@ export class EmployeesService {
     const skip = (page - 1) * limit;
 
     try {
-      const searchRegex = new RegExp(searchDto.searchTerm, 'i');
-      const query = {
+      const searchRegex = new RegExp(searchDto.searchTerm || '', 'i');
+      const query: any = {
         $or: [{ firstName: searchRegex }, { email: searchRegex }],
       };
+
+      // Add business unit filter if specified
+      if (
+        searchDto.businessUnit &&
+        searchDto.businessUnit !== 'All Business Units'
+      ) {
+        query.businessUnit = searchDto.businessUnit;
+      }
 
       const fields = {
         employeeId: 1,
@@ -201,6 +207,73 @@ export class EmployeesService {
       };
     } catch (error) {
       this.logger.error('Error searching employees:', error);
+      throw error;
+    }
+  }
+
+  async getBusinessUnits(): Promise<{
+    businessUnits: string[];
+    distribution: { name: string; count: number }[];
+  }> {
+    try {
+      const [businessUnits, distribution] = await Promise.all([
+        this.employeeModel
+          .distinct('businessUnit')
+          .then((bus) => bus.filter((bu) => bu != null && bu !== '')),
+        this.employeeModel
+          .aggregate([
+            {
+              $group: {
+                _id: '$businessUnit',
+                count: { $sum: 1 },
+              },
+            },
+            {
+              $match: {
+                _id: { $ne: '' },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                name: '$_id',
+                count: 1,
+              },
+            },
+            { $sort: { count: -1 } },
+          ])
+          .exec(),
+      ]);
+
+      return { businessUnits, distribution };
+    } catch (error) {
+      this.logger.error('Error fetching business units:', error);
+      throw error;
+    }
+  }
+
+  async getEmployeeStats(): Promise<{
+    totalEmployeesCount: number;
+    businessUnitsCount: number;
+    activeEmployeesCount: number;
+  }> {
+    try {
+      const [totalEmployeesCount, businessUnitsCount, activeEmployeesCount] =
+        await Promise.all([
+          this.employeeModel.countDocuments(),
+          this.employeeModel
+            .distinct('businessUnit')
+            .then((bus) => bus.filter((bu) => bu != null && bu !== '').length),
+          this.employeeModel.countDocuments({ employmentStatus: 'Active' }),
+        ]);
+
+      return {
+        totalEmployeesCount,
+        businessUnitsCount,
+        activeEmployeesCount,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching employee statistics:', error);
       throw error;
     }
   }

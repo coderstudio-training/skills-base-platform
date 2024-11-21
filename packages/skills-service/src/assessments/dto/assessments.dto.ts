@@ -1,3 +1,4 @@
+import { BaseDto } from '@skills-base/shared';
 import { Type } from 'class-transformer';
 import {
   IsEmail,
@@ -8,7 +9,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class BaseAssessmentDto {
+export class BaseAssessmentDto extends BaseDto {
   @IsNotEmpty()
   timestamp!: Date;
 

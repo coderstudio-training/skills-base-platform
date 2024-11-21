@@ -1,6 +1,6 @@
 // lib/api.ts
 import { logger } from '@/lib/utils';
-import { AdminData, Course, Department, LearningPath, Skill, Staff } from '@/types/admin';
+import { AdminData, Department, LearningPath, Skill, Staff } from '@/types/admin';
 import * as ApiTypes from '@/types/api';
 import { RecommendationResponse } from '@/types/staff';
 
@@ -24,17 +24,27 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
-//Learning Recommendation API
-export async function learningRecommendationAPI(email: string): Promise<RecommendationResponse> {
-  const response = await fetch(`/api/learning/recommendations/${encodeURIComponent(email)}`);
+export async function getSkillMatrix(): Promise<ApiTypes.SkillsResponse> {
+  const response = await fetch('/api/skills/skills-matrix');
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to fetch recommendations');
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to fetch skill matrix data');
   }
 
   return response.json();
 }
+
+export const getSkillAnalytics = async (): Promise<ApiTypes.SkillAnalyticsResponse> => {
+  const response = await fetch('/api/skills/analytics');
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to fetch skill analytics data');
+  }
+
+  return response.json();
+};
 
 export async function getAdminData(accessToken: string): Promise<AdminData> {
   logger.log(accessToken);
@@ -53,8 +63,16 @@ export async function getSkills(): Promise<Skill[]> {
   return fetchWithAuth(`${API_BASE_URL}/admin/skills`);
 }
 
-export async function getCourses(): Promise<Course[]> {
-  return fetchWithAuth(`${API_BASE_URL}/admin/courses`);
+//Learning Recommendation API
+export async function learningRecommendationAPI(email: string): Promise<RecommendationResponse> {
+  const response = await fetch(`/api/learning/recommendations/${encodeURIComponent(email)}`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to fetch recommendations');
+  }
+
+  return response.json();
 }
 
 export async function getLearningPaths(): Promise<LearningPath[]> {

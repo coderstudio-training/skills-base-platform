@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
@@ -13,23 +13,20 @@ export async function GET(req: NextRequest) {
     }
 
     // Get search parameters from URL
-    const searchParams = req.nextUrl.searchParams;
+    const searchParams = request.nextUrl.searchParams;
+    const page = searchParams.get('page') || '1';
+    const limit = searchParams.get('limit') || '10';
     const searchTerm = searchParams.get('searchTerm') || '';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const businessUnit = searchParams.get('businessUnit') || '';
 
-    // Validate pagination parameters
-    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
-      return NextResponse.json({ error: 'Invalid pagination parameters' }, { status: 400 });
-    }
+    const queryParams = new URLSearchParams({
+      page,
+      limit,
+      ...(searchTerm && { searchTerm }),
+      ...(businessUnit && { businessUnit }),
+    }).toString();
 
-    // Call the employees API
-    const apiUrl = new URL(API_BASE_URL + '/employees/search');
-    apiUrl.searchParams.set('searchTerm', searchTerm);
-    apiUrl.searchParams.set('page', page.toString());
-    apiUrl.searchParams.set('limit', limit.toString());
-
-    const response = await fetch(apiUrl, {
+    const response = await fetch(`${API_BASE_URL}/employees/search?${queryParams}`, {
       headers: {
         Authorization: `Bearer ${session?.user?.accessToken}`,
         'Content-Type': 'application/json',
@@ -37,20 +34,12 @@ export async function GET(req: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
+      throw new Error('Failed to search employees');
     }
 
     const data = await response.json();
-
-    return NextResponse.json({
-      items: data.items,
-      total: data.total,
-      page: data.page,
-      limit: data.limit,
-      totalPages: data.totalPages,
-    });
+    return NextResponse.json(data);
   } catch (error) {
-    console.error('Search error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to search employees' }, { status: 500 });
   }
 }

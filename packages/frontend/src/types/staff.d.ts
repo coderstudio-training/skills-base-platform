@@ -1,6 +1,11 @@
-export interface Skill {
-  name: string;
-  level: number;
+export interface StaffSkill {
+  skill: string;
+  category: string;
+  selfRating: number;
+  managerRating: number;
+  requiredRating: number;
+  gap: number;
+  average: number;
 }
 
 export interface Qualification {
