@@ -267,6 +267,13 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
     }
   }
 
+  if (option?.role) {
+    if (session.user.role !== option.role) {
+      logger.log(errorMessages.UNAUTHORIZED);
+      redirect('/error/unauthorized');
+    }
+  }
+
   if (option?.permission) {
     const isPermitted = await hasPermission(option.permission);
     if (!isPermitted) {

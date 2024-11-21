@@ -15,7 +15,7 @@ export default async function ShowcasePage() {
 
   if (session.user.role !== 'manager') {
     logger.log('User is not manager, redirecting to unauthorized');
-    redirect('/unauthorized');
+    redirect('/error/unauthorized');
   }
 
   return <ShowcaseDashboard />;

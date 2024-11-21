@@ -35,7 +35,8 @@ export interface ApiClientOptions {
 
 export interface ServerInterceptOptions {
   route?: string;
-  permission: Permission;
+  permission?: Permission;
+  role?: Roles;
 }
 
 export interface GoogleUser {
