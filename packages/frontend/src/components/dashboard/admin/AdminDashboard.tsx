@@ -55,6 +55,7 @@ import {
 import { useEffect, useState } from 'react';
 import { Input } from '../../ui/input';
 import { Progress } from '../../ui/progress';
+import AnalysisView from '../AnalysisView';
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
@@ -647,6 +648,9 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="metrics">
+          <AnalysisView />
         </TabsContent>
       </Tabs>
     </div>

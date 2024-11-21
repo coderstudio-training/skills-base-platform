@@ -5,12 +5,12 @@ import { AdminSkillAnalyticsDto } from '../dto/computation.dto';
 import { SkillsMatrixService } from '../services/skills-matrix.service';
 
 @ApiTags('Skill Matrix')
-@Controller('api/skill-metrics')
+@Controller('api/skills')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SkillMatrixController {
   constructor(private readonly skillMatrixService: SkillsMatrixService) {}
 
-  @Get()
+  @Get('skills-matrix')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.USER)
   @ApiOperation({ summary: 'Get skills matrix for all employees' })
   @ApiResponse({
