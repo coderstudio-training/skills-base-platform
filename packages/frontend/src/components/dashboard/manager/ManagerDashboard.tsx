@@ -21,21 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { TeamMember } from '@/types/manager';
+import TeamCompositionChart from './TeamCompositionView';
 // import { ManagerData } from '@/types/manager'
 // import { dummyManagerData } from '@/lib/dummyData'
-
-// const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
-
-interface TeamMember {
-  employeeId: number;
-  firstName: string;
-  lastName: string;
-  designation: string;
-  email?: string;
-  performanceScore?: number;
-  managerName?: string;
-  picture?: string;
-}
 
 export default function ManagerDashboard() {
   const { data: session } = useSession();
@@ -187,13 +176,7 @@ export default function ManagerDashboard() {
           {/* Bottom Grid */}
           <div className="grid gap-4 md:grid-cols-2 mt-4">
             {/* Team Composition */}
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="font-bold mb-1">Team Composition</h3>
-                <p className="text-sm text-gray-500 mb-4">Distribution of roles in your team</p>
-                <div className="h-48 bg--100 rounded-lg" />
-              </CardContent>
-            </Card>
+            <TeamCompositionChart teamMembers={membersWithPictures} />
 
             {/* Top Performers */}
             <Card>
@@ -239,7 +222,7 @@ export default function ManagerDashboard() {
                               <p className="font-medium">
                                 {member.firstName} {member.lastName}
                               </p>
-                              <p className="text-sm text-gray-500">{member.designation}</p>
+                              <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
                             </div>
                           </div>
                           <div className="flex items-center">
@@ -329,7 +312,7 @@ export default function ManagerDashboard() {
                             <p className="font-medium">
                               {member.firstName} {member.lastName}
                             </p>
-                            <p className="text-sm text-gray-500">{member.designation}</p>
+                            <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
@@ -422,11 +405,11 @@ export default function ManagerDashboard() {
                             <p className="font-medium">
                               {member.firstName} {member.lastName}
                             </p>
-                            <p className="text-sm text-gray-500">{member.designation}</p>
+                            <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
                             <div className="flex flex-wrap gap-2">
-                              <Badge>Automated Testing</Badge>
-                              <Badge>Manual Testing</Badge>
-                              <Badge>Performance Testing</Badge>
+                              <Badge variant="outline">Automated Testing</Badge>
+                              <Badge variant="outline">Manual Testing</Badge>
+                              <Badge variant="outline">Performance Testing</Badge>
                             </div>
                           </div>
                         </div>

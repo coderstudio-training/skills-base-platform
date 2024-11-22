@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -29,7 +30,8 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Employee } from '@/types/admin';
+import { Employee, SkillDetail } from '@/types/admin';
+import { getSkillDescription } from '@/types/skill-description';
 import {
   AlertTriangle,
   Award,
@@ -55,7 +57,7 @@ import {
 import { useEffect, useState } from 'react';
 import { Input } from '../../ui/input';
 import { Progress } from '../../ui/progress';
-import AnalysisView from '../AnalysisView';
+import AnalysisView from './AnalysisView';
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
@@ -81,6 +83,11 @@ export default function AdminDashboard() {
     businessUnitsCount: 0,
     activeEmployeesCount: 0,
   });
+  const [selectedEmployeeSkills, setSelectedEmployeeSkills] = useState<SkillDetail[]>([]);
+  const [topSkills, setTopSkills] = useState<{ name: string; prevalence: number }[]>([]);
+  const [skillGaps, setSkillGaps] = useState<
+    { name: string; currentLevel: number; requiredLevel: number; gap: number }[]
+  >([]);
   const [syncStatus, setSyncStatus] = useState<
     Record<string, 'idle' | 'syncing' | 'success' | 'error'>
   >({
@@ -171,6 +178,88 @@ export default function AdminDashboard() {
 
     fetchEmployeeStats();
   }, []);
+
+  useEffect(() => {
+    const fetchSkillAnalytics = async () => {
+      try {
+        const response = await fetch('/api/skills/analytics');
+        if (!response.ok) {
+          throw new Error('Failed to fetch skill analytics');
+        }
+        const data = await response.json();
+        setTopSkills(data.topSkills);
+        setSkillGaps(data.skillGaps);
+      } catch (err) {
+        console.error('Error fetching skill analytics:', err);
+      }
+    };
+
+    fetchSkillAnalytics();
+  }, []);
+
+  const fetchEmployeeSkills = async (email: string) => {
+    try {
+      const response = await fetch(`/api/skills/employee/${email}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch employee skills');
+      }
+      const data = await response.json();
+      setSelectedEmployeeSkills(data.skills || []);
+    } catch (error) {
+      console.error('Error fetching employee skills:', error);
+      setSelectedEmployeeSkills([]);
+    }
+  };
+
+  const getSkillLevelLabel = (average: number) => {
+    if (average <= 1) return 'Novaice';
+    if (average <= 2) return 'Beginner';
+    if (average <= 3) return 'Intermediate';
+    if (average <= 4) return 'Advanced';
+    if (average <= 5) return 'Expert';
+    return 'Guru';
+  };
+
+  const renderSkillStatusIcon = (skill: SkillDetail) => {
+    const progress = (skill.average / skill.requiredRating) * 100;
+
+    if (progress >= 100) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+            </TooltipTrigger>
+            <TooltipContent>Meets Required Level</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    if (progress >= 75) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            </TooltipTrigger>
+            <TooltipContent>Close to Required Level</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <XCircle className="h-5 w-5 text-red-500" />
+          </TooltipTrigger>
+          <TooltipContent>Below Required Level</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
 
   const handleGoToPage = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -333,12 +422,15 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {/* {topSkills.map(skill => (
+              {topSkills.map(skill => (
                 <div key={skill.name} className="flex justify-between items-center">
                   <span>{skill.name}</span>
-                  <Badge>{skill.level}</Badge>
+                  <Badge>{`${skill.prevalence.toFixed(1)}%`}</Badge>
                 </div>
-              ))} */}
+              ))}
+              {topSkills.length === 0 && (
+                <div className="text-center text-gray-500 py-4">No top skills data available</div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -352,15 +444,21 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {/* {skillGaps.map(skill => (
+              {skillGaps.map(skill => (
                 <div key={skill.name} className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span>{skill.name}</span>
-                    <span>{skill.value.toFixed(1)}</span>
+                    <span>{skill.gap.toFixed(1)}</span>
                   </div>
-                  <Progress value={skill.value * 20} />
+                  <Progress
+                    value={(skill.currentLevel / skill.requiredLevel) * 100}
+                    className="h-2"
+                  />
                 </div>
-              ))} */}
+              ))}
+              {skillGaps.length === 0 && (
+                <div className="text-center text-gray-500 py-4">No skill gaps identified</div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -465,103 +563,59 @@ export default function AdminDashboard() {
                         </Badge>
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => fetchEmployeeSkills(employee.email)}
+                            >
                               View Skills
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-3xl">
+                          <DialogContent className="max-w-4xl">
                             <DialogHeader>
                               <DialogTitle>{`${employee.firstName} ${employee.lastName}'s Skills`}</DialogTitle>
                               <DialogDescription>Skill levels and proficiencies</DialogDescription>
                             </DialogHeader>
-                            <div className="space-y-4">
-                              {/* JavaScript Skill */}
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium">JavaScript</span>
-                                  <div className="flex items-center space-x-2">
-                                    <Progress value={80} className="w-[100px]" />
-                                    <span className="text-sm text-gray-500">Advanced</span>
-                                    <TooltipProvider>
-                                      <Tooltip>
-                                        <TooltipTrigger>
-                                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                                        </TooltipTrigger>
-                                        <TooltipContent>Required Level: Expert</TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
+                            <ScrollArea className="h-[500px] w-full pr-4">
+                              <div className="space-y-4">
+                                {selectedEmployeeSkills.length > 0 ? (
+                                  selectedEmployeeSkills.map(skill => (
+                                    <div key={skill.skill} className="space-y-2 border-b pb-4">
+                                      <div className="flex items-center justify-between">
+                                        <span className="font-medium">{skill.skill}</span>
+                                        <div className="flex items-center space-x-2">
+                                          <Progress
+                                            value={(skill.average / skill.requiredRating) * 100}
+                                            className="w-[100px]"
+                                          />
+                                          <span className="text-sm text-gray-500">
+                                            {getSkillLevelLabel(skill.average)}
+                                          </span>
+                                          {renderSkillStatusIcon(skill)}
+                                        </div>
+                                      </div>
+                                      <p className="text-sm text-gray-600">
+                                        {getSkillDescription(skill)}
+                                      </p>
+                                      <div className="flex justify-between text-sm">
+                                        <span>
+                                          Self Assessment:{' '}
+                                          {getSkillLevelLabel(+skill.selfRating.toFixed(1))}
+                                        </span>
+                                        <span>
+                                          Manager Assessment:{' '}
+                                          {getSkillLevelLabel(+skill.managerRating.toFixed(1))}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="text-center text-gray-500 py-4">
+                                    No skills data available for this employee
                                   </div>
-                                </div>
-                                <p className="text-sm text-gray-600">
-                                  Proficiency in JavaScript programming.
-                                </p>
-                                <p className="text-sm font-medium">
-                                  Current Level: Creates advanced frameworks
-                                </p>
-                                <div className="flex justify-between text-sm">
-                                  <span>Self Assessment: Advanced</span>
-                                  <span>Manager Assessment: Advanced</span>
-                                </div>
+                                )}
                               </div>
-
-                              {/* React Skill */}
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium">React</span>
-                                  <div className="flex items-center space-x-2">
-                                    <Progress value={60} className="w-[100px]" />
-                                    <span className="text-sm text-gray-500">Intermediate</span>
-                                    <TooltipProvider>
-                                      <Tooltip>
-                                        <TooltipTrigger>
-                                          <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                                        </TooltipTrigger>
-                                        <TooltipContent>Required Level: Advanced</TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
-                                  </div>
-                                </div>
-                                <p className="text-sm text-gray-600">
-                                  Proficiency in React library for building user interfaces.
-                                </p>
-                                <p className="text-sm font-medium">
-                                  Current Level: Develops moderate complexity React applications
-                                </p>
-                                <div className="flex justify-between text-sm">
-                                  <span>Self Assessment: Advanced</span>
-                                  <span>Manager Assessment: Intermediate</span>
-                                </div>
-                              </div>
-
-                              {/* Python Skill */}
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium">Python</span>
-                                  <div className="flex items-center space-x-2">
-                                    <Progress value={40} className="w-[100px]" />
-                                    <span className="text-sm text-gray-500">Basic</span>
-                                    <TooltipProvider>
-                                      <Tooltip>
-                                        <TooltipTrigger>
-                                          <XCircle className="h-5 w-5 text-red-500" />
-                                        </TooltipTrigger>
-                                        <TooltipContent>Required Level: Advanced</TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
-                                  </div>
-                                </div>
-                                <p className="text-sm text-gray-600">
-                                  Proficiency in Python programming language.
-                                </p>
-                                <p className="text-sm font-medium">
-                                  Current Level: Can perform simple scripting tasks
-                                </p>
-                                <div className="flex justify-between text-sm">
-                                  <span>Self Assessment: Basic</span>
-                                  <span>Manager Assessment: Basic</span>
-                                </div>
-                              </div>
-                            </div>
+                            </ScrollArea>
                           </DialogContent>
                         </Dialog>
                       </div>

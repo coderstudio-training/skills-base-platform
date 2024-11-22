@@ -8,7 +8,17 @@ export interface Employee {
   businessUnit: string;
   employmentStatus: string;
   grade: string;
-  skills?: EmployeeSkill[];
+  skills?: SkillDetail[];
+}
+
+export interface SkillDetail {
+  skill: string;
+  category: string;
+  selfRating: number;
+  managerRating: number;
+  requiredRating: number;
+  gap: number;
+  average: number;
 }
 
 export interface EmployeeSkill {
