@@ -8,9 +8,16 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 # Service configurations
 declare -A SERVICES
 SERVICES=(
-    ["user-service"]="http://172.31.220.111:3001"
-    ["email-service"]="http://172.31.220.111:3005"
-    ["frontend"]="http://172.31.220.111:3000"
+    # ["user-service"]="http://192.168.100.70:3001"
+    # ["email-service"]="http://192.168.100.70:3005"
+    ["frontend"]="http://192.168.100.70:3000"
+)
+
+# OpenAPI/Swagger endpoints
+declare -A SWAGGER_ENDPOINTS
+SWAGGER_ENDPOINTS=(
+    ["user-service"]="/swagger/json"
+    ["email-service"]="/swagger/json"
 )
 
 # ZAP configurations
@@ -24,7 +31,7 @@ ZAP_LOG_LEVEL="INFO"
 declare -A SCAN_TYPES
 SCAN_TYPES=(
     ["baseline"]="Basic baseline scan"
-    ["api"]="API-specific scan"
+    # ["api"]="API-specific scan"
     ["full"]="Full security scan"
 )
 
@@ -66,20 +73,20 @@ run_zap_scan() {
     
     # Common ZAP configurations
     local zap_common_configs="-config scanner.attackOnStart=true \
-        -config view.mode=attack \
-        -config api.disablekey=true \
-        -config database.recoverylog=false \
-        -config connection.timeoutInSecs=120 \
-        -config log.timestamping=true \
-        -config scanner.threadPerHost=5"
+      -config view.mode=attack \
+      -config api.disablekey=true \
+      -config database.recoverylog=false \
+      -config connection.timeoutInSecs=120 \
+      -config log.timestamping=true \
+      -config scanner.threadPerHost=5"
 
     # NestJS-specific configurations for REST APIs
     local nestjs_configs="-config scanner.maxRuleDurationInMins=60 \
-        -config scanner.maxScanDurationInMins=240 \
-        -config rules.cookie.ignoredCookies=JWT \
-        -config scanner.scanHeadersAllRequests=true \
-        -config scanner.scanNullJsonElements=true \
-        -config scanner.handleAntiCSRFTokens=false"
+      -config scanner.maxScanDurationInMins=240 \
+      -config rules.cookie.ignoredCookies=JWT \
+      -config scanner.scanHeadersAllRequests=true \
+      -config scanner.scanNullJsonElements=true \
+      -config scanner.handleAntiCSRFTokens=false"
 
     case $scan_type in
         "baseline")
@@ -88,52 +95,88 @@ run_zap_scan() {
                 -v "${PWD}/${LOGS_DIR}:/zap/logs:rw" \
                 -t ${ZAP_IMAGE} ${ZAP_BASELINE} \
                 -t "${target_url}" \
-                -I \
-                -j \
+                -m 30 \
                 -r "${service_name}_baseline_${TIMESTAMP}.html" \
-                -l ${ZAP_LOG_LEVEL} \
+                -d \
+                -j \
+                -a \
+                -I \
+                -l WARN \
+                -P 8090 \
+                -D 60 \
+                -T 90 \
+                --auto \
                 -z "${zap_common_configs} ${nestjs_configs}" \
                 2>&1 | tee "${log_file}"
             ;;
             
         "api")
-            # Direct API scanning without OpenAPI spec
-            docker run --rm \
-                -v "${PWD}/${REPORT_DIR}:/zap/wrk/:rw" \
-                -v "${PWD}/${LOGS_DIR}:/zap/logs:rw" \
-                -t ${ZAP_IMAGE} ${ZAP_FULL_SCAN} \
-                -t "${target_url}" \
-                -r "${service_name}_api_${TIMESTAMP}.html" \
-                -z "${zap_common_configs} ${nestjs_configs} \
-                    -config scanner.scanHeadersAllRequests=true \
-                    -config scanner.scanNullJsonElements=true \
-                    -config rules.csrf.ignore=true \
-                    -config scanner.parseComments=true \
-                    -config scanner.injectable.querystring=true \
-                    -config scanner.injectable.postdata=true \
-                    -config scanner.injectable.headers=true \
-                    -config scanner.injectable.customHeader=Authorization \
-                    -config scanner.injectable.customHeader=X-API-Key" \
-                2>&1 | tee "${log_file}"
+            if [[ -n "${SWAGGER_ENDPOINTS[$service_name]}" ]]; then
+                local swagger_url="${target_url}${SWAGGER_ENDPOINTS[$service_name]}"
+                echo "Using OpenAPI specification from: ${swagger_url}"
+                
+                docker run --rm \
+                    -v "${PWD}/${REPORT_DIR}:/zap/wrk/:rw" \
+                    -v "${PWD}/${LOGS_DIR}:/zap/logs:rw" \
+                    -t ${ZAP_IMAGE} ${ZAP_API_SCAN} \
+                    -t "${swagger_url}" \
+                    -f openapi \
+                    -d \
+                    -T 60 \
+                    -D 45 \
+                    -I \
+                    -l WARN \
+                    -r "/zap/wrk/${service_name}_api_${TIMESTAMP}.html" \
+                    -r "${service_name}_api_${TIMESTAMP}.html" \
+                    -z "${zap_common_configs} ${nestjs_configs}" \
+                    2>&1 | tee "${log_file}"
+            else
+                echo "No OpenAPI specification endpoint defined for ${service_name}. Using regular API scan."
+                docker run --rm \
+                    -v "${PWD}/${REPORT_DIR}:/zap/wrk/:rw" \
+                    -v "${PWD}/${LOGS_DIR}:/zap/logs:rw" \
+                    --shm-size="2g" \
+                    -t ${ZAP_IMAGE} ${ZAP_FULL_SCAN} \
+                    -t "${target_url}" \
+                    -d \
+                    -T 60 \
+                    -D 45 \
+                    -I \
+                    -r "/zap/wrk/${service_name}_api_${TIMESTAMP}.html" \
+                    -r "${service_name}_api_${TIMESTAMP}.html" \
+                    -z "${zap_common_configs} ${nestjs_configs}" \
+                    2>&1 | tee "${log_file}"
+            fi
             ;;
             
         "full")
+            # Additional scanner configurations for full scan
+            local full_scan_configs="-config scanner.scanHeadersAllRequests=true \
+              -config scanner.maxAjaxDepth=10 \
+              -config scanner.maxScansInUI=12 \
+              -config scanner.delayInMs=150 \
+              -config scanner.injectable.querystring=true \
+              -config scanner.injectable.postdata=true \
+              -config scanner.injectable.headers=true \
+              -config scanner.injectable.customHeader=Authorization \
+              -config view.enableScripts=true"
+
             docker run --rm \
                 -v "${PWD}/${REPORT_DIR}:/zap/wrk/:rw" \
                 -v "${PWD}/${LOGS_DIR}:/zap/logs:rw" \
                 -t ${ZAP_IMAGE} ${ZAP_FULL_SCAN} \
                 -t "${target_url}" \
                 -r "${service_name}_full_${TIMESTAMP}.html" \
-                -z "${zap_common_configs} ${nestjs_configs} \
-                    -config scanner.scanHeadersAllRequests=true \
-                    -config scanner.maxAjaxDepth=10 \
-                    -config scanner.maxScansInUI=12 \
-                    -config scanner.delayInMs=150 \
-                    -config scanner.injectable.querystring=true \
-                    -config scanner.injectable.postdata=true \
-                    -config scanner.injectable.headers=true \
-                    -config scanner.injectable.customHeader=Authorization \
-                    -config view.enableScripts=true" \
+                -m 60\
+                -d \
+                -a \
+                -j \
+                -I \
+                -l WARN \
+                -P 8090 \
+                -D 120 \
+                -T 180 \
+                -z "${zap_common_configs} ${nestjs_configs} ${full_scan_configs}" \
                 2>&1 | tee "${log_file}"
             ;;
     esac
@@ -143,18 +186,6 @@ run_zap_scan() {
         echo "Scan completed successfully for ${service_name} (${scan_type})"
     else
         echo "Scan failed for ${service_name} (${scan_type}). Check logs for details."
-    fi
-}
-
-# Function to parse and summarize results
-summarize_results() {
-    local service_name=$1
-    local scan_type=$2
-    local json_report="${REPORT_DIR}/${service_name}_${scan_type}_${TIMESTAMP}.json"
-    
-    if [ -f "$json_report" ]; then
-        echo "=== Summary for ${service_name} (${scan_type}) ==="
-        jq -r '.alerts | group_by(.risk) | map({risk: .[0].risk, count: length}) | .[]' "$json_report" 2>/dev/null || echo "Could not parse JSON report"
     fi
 }
 
@@ -171,7 +202,6 @@ for service_name in "${!SERVICES[@]}"; do
     for scan_type in "${!SCAN_TYPES[@]}"; do
         echo "=== Starting ${scan_type} scan for ${service_name} ==="
         run_zap_scan "${service_name}" "${SERVICES[$service_name]}" "${scan_type}"
-        summarize_results "${service_name}" "${scan_type}"
         echo "=== ${scan_type} scan complete for ${service_name} ==="
         echo "Reports saved in: ${REPORT_DIR}"
         echo "Logs saved in: ${LOGS_DIR}"

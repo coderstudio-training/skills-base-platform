@@ -1,12 +1,19 @@
 import json
 import logging
+import os
 import random
+import threading
 import time
+from collections import deque
 from datetime import datetime
+from statistics import mean, median, stdev
 from typing import Dict, Optional
 
+import psutil
+from colorama import Fore, Style, init
 from locust import HttpUser, TaskSet, between, events, task
 from requests.exceptions import RequestException
+from tabulate import tabulate
 
 # Enhanced logging configuration
 logging.basicConfig(
@@ -15,6 +22,266 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger("skills-base-loadtest")
+
+# Initialize colorama for cross-platform colored output
+init()
+
+class SystemMetrics:
+    def __init__(self, interval=1.0):
+        self.interval = interval
+        self.running = False
+        self.metrics_history = {
+            'cpu_total': deque(maxlen=60),
+            'cpu_per_core': {},
+            'memory_percent': deque(maxlen=60),
+            'memory_used': deque(maxlen=60),
+            'memory_available': deque(maxlen=60),
+            'swap_percent': deque(maxlen=60),
+            'network_in': deque(maxlen=60),
+            'network_out': deque(maxlen=60),
+            'disk_io_read': deque(maxlen=60),
+            'disk_io_write': deque(maxlen=60),
+            'tps': deque(maxlen=60),  # Transactions per second
+        }
+        self.last_network_io = None
+        self.last_disk_io = None
+        self.last_request_count = 0
+        self.last_request_time = time.time()
+        self._lock = threading.Lock()
+        self.collection_thread = None
+        
+        # Initialize CPU per core tracking
+        cpu_count = psutil.cpu_count()
+        for i in range(cpu_count):
+            self.metrics_history['cpu_per_core'][i] = deque(maxlen=60)
+
+    def start(self):
+        """Start the metrics collection thread"""
+        self.running = True
+        self.collection_thread = threading.Thread(target=self._collect_metrics)
+        self.collection_thread.daemon = True
+        self.collection_thread.start()
+        logging.info("System metrics collection started")
+
+    def stop(self):
+        """Stop the metrics collection thread"""
+        self.running = False
+        if self.collection_thread and self.collection_thread.is_alive():
+            self.collection_thread.join(timeout=5)
+        logging.info("System metrics collection stopped")
+
+    def _collect_metrics(self):
+        while self.running:
+            try:
+                # CPU metrics
+                cpu_percent = psutil.cpu_percent(interval=None)
+                cpu_per_core = psutil.cpu_percent(interval=None, percpu=True)
+                
+                # Memory metrics
+                memory = psutil.virtual_memory()
+                swap = psutil.swap_memory()
+                
+                # I/O metrics
+                network_io = psutil.net_io_counters()
+                disk_io = psutil.disk_io_counters()
+
+                with self._lock:
+                    # CPU metrics
+                    self.metrics_history['cpu_total'].append(cpu_percent)
+                    for i, core_percent in enumerate(cpu_per_core):
+                        self.metrics_history['cpu_per_core'][i].append(core_percent)
+
+                    # Memory metrics
+                    self.metrics_history['memory_percent'].append(memory.percent)
+                    self.metrics_history['memory_used'].append(memory.used / (1024 * 1024 * 1024))  # Convert to GB
+                    self.metrics_history['memory_available'].append(memory.available / (1024 * 1024 * 1024))  # Convert to GB
+                    self.metrics_history['swap_percent'].append(swap.percent)
+
+                    # Network I/O
+                    if self.last_network_io:
+                        bytes_sent = network_io.bytes_sent - self.last_network_io.bytes_sent
+                        bytes_recv = network_io.bytes_recv - self.last_network_io.bytes_recv
+                        self.metrics_history['network_out'].append(bytes_sent / self.interval)
+                        self.metrics_history['network_in'].append(bytes_recv / self.interval)
+
+                    # Disk I/O
+                    if self.last_disk_io:
+                        bytes_read = disk_io.read_bytes - self.last_disk_io.read_bytes
+                        bytes_written = disk_io.write_bytes - self.last_disk_io.write_bytes
+                        self.metrics_history['disk_io_read'].append(bytes_read / self.interval)
+                        self.metrics_history['disk_io_write'].append(bytes_written / self.interval)
+
+                    self.last_network_io = network_io
+                    self.last_disk_io = disk_io
+
+            except Exception as e:
+                logging.error(f"Error collecting system metrics: {str(e)}")
+
+            time.sleep(self.interval)
+
+    def update_tps(self, current_requests):
+        """Update the transactions per second metric"""
+        try:
+            current_time = time.time()
+            time_diff = current_time - self.last_request_time
+            if time_diff >= 1.0:  # Calculate TPS over 1-second intervals
+                requests_diff = current_requests - self.last_request_count
+                tps = requests_diff / time_diff
+                with self._lock:
+                    self.metrics_history['tps'].append(tps)
+                self.last_request_count = current_requests
+                self.last_request_time = current_time
+        except Exception as e:
+            logging.error(f"Error updating TPS: {str(e)}")
+
+    def get_current_metrics(self):
+        """Get the current metrics with proper error handling"""
+        try:
+            with self._lock:
+                cpu_per_core_avg = {i: mean(values) if values else 0 
+                                  for i, values in self.metrics_history['cpu_per_core'].items()}
+                
+                return {
+                    'cpu_total_avg': mean(self.metrics_history['cpu_total']) if self.metrics_history['cpu_total'] else 0,
+                    'cpu_total_max': max(self.metrics_history['cpu_total']) if self.metrics_history['cpu_total'] else 0,
+                    'cpu_per_core': cpu_per_core_avg,
+                    'memory_percent_avg': mean(self.metrics_history['memory_percent']) if self.metrics_history['memory_percent'] else 0,
+                    'memory_used_avg': mean(self.metrics_history['memory_used']) if self.metrics_history['memory_used'] else 0,
+                    'memory_available_avg': mean(self.metrics_history['memory_available']) if self.metrics_history['memory_available'] else 0,
+                    'swap_percent_avg': mean(self.metrics_history['swap_percent']) if self.metrics_history['swap_percent'] else 0,
+                    'network_in_avg': mean(self.metrics_history['network_in']) if self.metrics_history['network_in'] else 0,
+                    'network_out_avg': mean(self.metrics_history['network_out']) if self.metrics_history['network_out'] else 0,
+                    'disk_io_read_avg': mean(self.metrics_history['disk_io_read']) if self.metrics_history['disk_io_read'] else 0,
+                    'disk_io_write_avg': mean(self.metrics_history['disk_io_write']) if self.metrics_history['disk_io_write'] else 0,
+                    'tps_current': mean(list(self.metrics_history['tps'])[-5:]) if self.metrics_history['tps'] else 0,
+                    'tps_avg': mean(self.metrics_history['tps']) if self.metrics_history['tps'] else 0,
+                }
+        except Exception as e:
+            logging.error(f"Error getting current metrics: {str(e)}")
+            return {}
+
+class TestMetrics:
+    def __init__(self):
+        self.start_time = None
+        self.total_requests = 0
+        self.failed_requests = 0
+        self.response_times = deque(maxlen=1000)  # Increased history
+        self.system_metrics = SystemMetrics()
+
+    def start(self):
+        """Start metrics collection"""
+        try:
+            self.start_time = time.time()
+            self.system_metrics.start()
+            logging.info("Test metrics collection started")
+        except Exception as e:
+            logging.error(f"Error starting metrics collection: {str(e)}")
+
+    def stop(self):
+        """Stop metrics collection"""
+        try:
+            self.system_metrics.stop()
+            self.print_live_metrics()  # Final metrics display
+            logging.info("Test metrics collection stopped")
+        except Exception as e:
+            logging.error(f"Error stopping metrics collection: {str(e)}")
+
+    def print_live_metrics(self):
+        """Print formatted metrics with horizontal layout"""
+        try:
+            current_metrics = self.system_metrics.get_current_metrics()
+            if not current_metrics:
+                logging.error("Failed to get current metrics")
+                return
+
+            print("\033[2J\033[H")  # Clear screen and move cursor to top
+            
+            # Performance Metrics Table
+            perf_headers = ["Metric", "Value"]
+            perf_data = [
+                ["Total Requests", f"{self.total_requests:,}"],
+                ["Failed Requests", f"{Fore.RED if self.failed_requests > 0 else Fore.GREEN}{self.failed_requests:,}{Style.RESET_ALL}"],
+                ["Success Rate", f"{Fore.GREEN}{((self.total_requests - self.failed_requests) / max(self.total_requests, 1)) * 100:.1f}%{Style.RESET_ALL}"],
+                ["Current TPS", f"{Fore.CYAN}{current_metrics.get('tps_current', 0):.1f}{Style.RESET_ALL}"],
+                ["Average TPS", f"{current_metrics.get('tps_avg', 0):.1f}"],
+            ]
+            
+            if self.response_times:
+                perf_data.extend([
+                    ["Avg Response Time", f"{mean(self.response_times):.1f}ms"],
+                    ["Median Response Time", f"{median(self.response_times):.1f}ms"],
+                ])
+                if len(self.response_times) > 20:
+                    perf_data.append(["95th Percentile", f"{sorted(self.response_times)[int(len(self.response_times)*0.95)]:.1f}ms"])
+            
+            # System Metrics Table
+            sys_headers = ["Resource", "Usage"]
+            sys_data = [
+                ["CPU (Total)", f"{Fore.YELLOW if current_metrics.get('cpu_total_avg', 0) > 70 else Fore.GREEN}{current_metrics.get('cpu_total_avg', 0):.1f}%{Style.RESET_ALL}"],
+                ["Memory", f"{Fore.YELLOW if current_metrics.get('memory_percent_avg', 0) > 80 else Fore.GREEN}{current_metrics.get('memory_percent_avg', 0):.1f}%{Style.RESET_ALL}"],
+                ["Memory Used", f"{current_metrics.get('memory_used_avg', 0):.1f} GB"],
+                ["Memory Available", f"{current_metrics.get('memory_available_avg', 0):.1f} GB"],
+                ["Swap", f"{current_metrics.get('swap_percent_avg', 0):.1f}%"],
+                ["Network In", f"{current_metrics.get('network_in_avg', 0)/1024/1024:.2f} MB/s"],
+                ["Network Out", f"{current_metrics.get('network_out_avg', 0)/1024/1024:.2f} MB/s"],
+                ["Disk Read", f"{current_metrics.get('disk_io_read_avg', 0)/1024/1024:.2f} MB/s"],
+                ["Disk Write", f"{current_metrics.get('disk_io_write_avg', 0)/1024/1024:.2f} MB/s"],
+            ]
+
+            # CPU Per Core Table
+            cpu_headers = ["Core", "Usage"]
+            cpu_data = [[f"Core {core}", f"{usage:.1f}%"] for core, usage in current_metrics.get('cpu_per_core', {}).items()]
+
+            # Calculate table widths
+            perf_table = tabulate(perf_data, headers=perf_headers, tablefmt="grid")
+            sys_table = tabulate(sys_data, headers=sys_headers, tablefmt="grid")
+            cpu_table = tabulate(cpu_data, headers=cpu_headers, tablefmt="grid")
+
+            # Split tables into lines
+            perf_lines = perf_table.split('\n')
+            sys_lines = sys_table.split('\n')
+            cpu_lines = cpu_table.split('\n')
+
+            # Calculate maximum height
+            max_height = max(len(perf_lines), len(sys_lines), len(cpu_lines))
+
+            # Pad tables to same height
+            while len(perf_lines) < max_height:
+                perf_lines.append(' ' * len(perf_lines[0]))
+            while len(sys_lines) < max_height:
+                sys_lines.append(' ' * len(sys_lines[0]))
+            while len(cpu_lines) < max_height:
+                cpu_lines.append(' ' * len(cpu_lines[0]))
+
+            # Print title
+            terminal_width = os.get_terminal_size().columns
+            print("\n" + "="*terminal_width)
+            title = "Load Test Metrics Dashboard"
+            print(f"{title:^{terminal_width}}")
+            print("="*terminal_width + "\n")
+
+            # Print tables side by side with titles
+            table_width = max(len(perf_lines[0]), len(sys_lines[0]), len(cpu_lines[0]))
+            spacing = "   "  # Space between tables
+
+            print(f"{Fore.CYAN}Performance Metrics{' '*(table_width-18)}{spacing}System Resources{' '*(table_width-16)}{spacing}CPU Core Usage{Style.RESET_ALL}")
+            
+            for i in range(max_height):
+                print(f"{perf_lines[i]}{spacing}{sys_lines[i]}{spacing}{cpu_lines[i]}")
+
+            # Print test duration at the bottom
+            if self.start_time:
+                duration = time.time() - self.start_time
+                print(f"\n{Fore.CYAN}Test Duration: {duration:.0f} seconds{Style.RESET_ALL}")
+
+            # Print current time
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(f"{Fore.CYAN}Last Updated: {current_time}{Style.RESET_ALL}")
+
+        except Exception as e:
+            logging.error(f"Error printing live metrics: {str(e)}")
+            
+metrics = TestMetrics()
 
 class BaseTaskSet(TaskSet):
     def get_auth_headers(self) -> Dict[str, str]:
@@ -271,24 +538,6 @@ class EmailServiceUser(HttpUser):
         """Cleanup after test completion"""
         logger.info("Email service test completed")
 
-class TestMetrics:
-    def __init__(self):
-        self.start_time = None
-        self.total_requests = 0
-        self.failed_requests = 0
-
-    def start(self):
-        self.start_time = time.time()
-
-    def stop(self):
-        duration = time.time() - self.start_time
-        logger.info(f"\nTest Summary:")
-        logger.info(f"Duration: {duration:.2f} seconds")
-        logger.info(f"Total Requests: {self.total_requests}")
-        logger.info(f"Failed Requests: {self.failed_requests}")
-        logger.info(f"Success Rate: {((self.total_requests - self.failed_requests) / max(self.total_requests, 1)) * 100:.2f}%")
-
-metrics = TestMetrics()
 
 @events.init.add_listener
 def on_locust_init(environment, **kwargs):
@@ -299,11 +548,23 @@ def on_locust_init(environment, **kwargs):
 
 @events.request.add_listener
 def on_request(request_type, name, response_time, response_length, exception, **kwargs):
-    metrics.total_requests += 1
-    if exception:
-        metrics.failed_requests += 1
-        logger.error(f"Request failed: {name}, Exception: {str(exception)}")
+    try:
+        metrics.total_requests += 1
+        if exception:
+            metrics.failed_requests += 1
+        if response_time is not None:
+            metrics.response_times.append(response_time)
+        
+        # Update TPS
+        metrics.system_metrics.update_tps(metrics.total_requests)
 
+        # Update live metrics every 5 requests
+        if metrics.total_requests % 5 == 0:
+            metrics.print_live_metrics()
+    except Exception as e:
+        logging.error(f"Error in request event handler: {str(e)}")
+        
+        
 @events.quitting.add_listener
 def on_locust_quit(environment, **kwargs):
     metrics.stop()

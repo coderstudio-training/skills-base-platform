@@ -21,7 +21,7 @@ import { UsersModule } from './users/users.module';
       environment: 'development',
     }),
     MonitoringModule.forRoot({
-      serviceName: 'email_service',
+      serviceName: 'user_service',
       enabled: true,
       metrics: {
         http: {
@@ -35,7 +35,7 @@ import { UsersModule } from './users/users.module';
       },
       tags: {
         environment: process.env.NODE_ENV || 'development',
-        service: 'email_service',
+        service: 'user_service',
       },
     }),
     SecurityModule.forRoot({
