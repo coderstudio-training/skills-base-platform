@@ -1,5 +1,15 @@
 // types/admin.d.ts
 
+export interface TopPerformer {
+  name: string;
+  score: number;
+  ranking: number;
+}
+
+export interface TopPerformersResponse {
+  rankings: TopPerformer[];
+}
+
 export interface Employee {
   employeeId: number;
   firstName: string;
