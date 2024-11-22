@@ -4,6 +4,7 @@ import {
   IsArray,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Max,
   Min,
@@ -83,4 +84,14 @@ export class BulkUpdateCoursesDto extends BaseDto {
   @IsString()
   @IsNotEmpty()
   collection!: string;
+}
+
+export class GetCoursesQueryDto extends BaseDto {
+  @IsString()
+  @IsOptional()
+  category?: string;
+
+  @IsString()
+  @IsOptional()
+  level?: string;
 }

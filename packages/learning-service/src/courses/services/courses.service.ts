@@ -6,6 +6,7 @@ import {
   BulkUpdateCoursesDto,
   BulkUpsertResponse,
   CourseDto,
+  GetCoursesQueryDto,
   ValidationError,
 } from '../dto/courses.dto';
 import { Course, CourseSchema } from '../entity/courses.entity';
@@ -158,5 +159,32 @@ export class CoursesService {
     }));
 
     return model.bulkWrite(operations, { ordered: false });
+  }
+
+  async getCourses({ category, level }: GetCoursesQueryDto): Promise<Course[]> {
+    try {
+      const model = await this.getModelForCollection('QA_LEARNING_RESOURCES');
+
+      const filter: any = {};
+
+      if (category && category !== 'All Categories') {
+        filter.skillCategory = category;
+        this.logger.debug(`Filtering by category: ${category}`);
+      }
+
+      if (level && level !== 'All Levels') {
+        filter.requiredLevel = parseInt(level);
+        this.logger.debug(`Filtering by level: ${level}`);
+      }
+
+      return model
+        .find(filter)
+        .sort({ skillCategory: 1, requiredLevel: 1 })
+        .lean()
+        .exec();
+    } catch (error: any) {
+      this.logger.error(`Error fetching courses: ${error.message}`);
+      throw error;
+    }
   }
 }
