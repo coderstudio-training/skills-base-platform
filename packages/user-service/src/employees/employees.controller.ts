@@ -8,6 +8,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   JwtAuthGuard,
   LoggingInterceptor,
@@ -18,6 +19,8 @@ import {
 } from '@skills-base/shared';
 import { EmployeesService } from './employees.service';
 
+@ApiTags('User Service: Employees')
+@ApiBearerAuth()
 @Controller('employees')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)

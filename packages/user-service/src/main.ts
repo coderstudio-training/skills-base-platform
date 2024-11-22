@@ -6,6 +6,7 @@ import {
   HttpExceptionFilter,
   Logger,
   MetricsInterceptor,
+  SwaggerHelper,
   TransformInterceptor,
 } from '@skills-base/shared';
 import { json } from 'express';
@@ -42,6 +43,8 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   });
+
+  SwaggerHelper.setup(app, 'User Service API', 'swagger');
 
   const port = process.env.PORT || 3000;
   await app.listen(port);

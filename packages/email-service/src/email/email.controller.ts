@@ -1,9 +1,12 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Logger, TrackMetric } from '@skills-base/shared';
 import { GrafanaWebhookPayload } from '../interfaces/grafana-webhook.interface';
 import { EmailDto } from './dto/email.dto';
 import { EmailService } from './email.service';
 
+@ApiTags('Email Notifications')
+@ApiBearerAuth()
 @Controller('email')
 export class EmailController {
   constructor(
@@ -17,6 +20,10 @@ export class EmailController {
   @TrackMetric({
     name: 'grafana_webhook_received',
     eventType: 'grafana.webhook',
+  })
+  @ApiOperation({
+    summary: 'Handle Grafana alert webhook',
+    description: 'Processes Grafana alerts and sends notification emails',
   })
   async handleGrafanaAlert(
     @Body() webhook: GrafanaWebhookPayload,
@@ -75,6 +82,11 @@ export class EmailController {
     name: 'email_workflow_success',
     eventType: 'email_sent',
   })
+  @ApiOperation({
+    summary: 'Send workflow success notification',
+    description:
+      'Sends an email notification for successful workflow completion',
+  })
   async sendWorkflowSuccess(
     @Body() data: EmailDto,
   ): Promise<{ message: string }> {
@@ -95,6 +107,10 @@ export class EmailController {
   @TrackMetric({
     name: 'email_workflow_error',
     eventType: 'email_sent',
+  })
+  @ApiOperation({
+    summary: 'Send workflow error notification',
+    description: 'Sends an email notification for workflow failures',
   })
   async sendWorkflowError(
     @Body() data: EmailDto,

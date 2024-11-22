@@ -18,9 +18,10 @@ groups:
             model:
               editorMode: code
               expr: |
-                sum(rate({__name__=~".*_http_requests_total", status="400"}[1m])) by (service)
+                sum(rate(http_requests_total{status="400"}[1m])) by (service)
                 /
-                sum(rate({__name__=~".*_http_requests_total"}[1m])) by (service) * 100
+                sum(rate(http_requests_total[1m])) by (service) * 100
+
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}}'
@@ -84,9 +85,10 @@ groups:
             model:
               editorMode: code
               expr: |
-                sum(rate({__name__=~".*_http_requests_total", status="401"}[1m])) by (service)
+                sum(rate(http_requests_total{status="401"}[1m])) by (service)
                 /
-                sum(rate({__name__=~".*_http_requests_total"}[1m])) by (service) * 100
+                sum(rate(http_requests_total[1m])) by (service) * 100
+
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}}'
@@ -150,9 +152,10 @@ groups:
             model:
               editorMode: code
               expr: |
-                sum(rate({__name__=~".*_http_requests_total", status="404"}[1m])) by (service)
+                sum(rate(http_requests_total{status="404"}[1m])) by (service)
                 /
-                sum(rate({__name__=~".*_http_requests_total"}[1m])) by (service) * 100
+                sum(rate(http_requests_total[1m])) by (service) * 100
+
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}}'
@@ -216,9 +219,10 @@ groups:
             model:
               editorMode: code
               expr: |
-                sum(rate({__name__=~".*_http_requests_total", status="500"}[1m])) by (service)
+                sum(rate(http_requests_total{status="500"}[1m])) by (service)
                 /
-                sum(rate({__name__=~".*_http_requests_total"}[1m])) by (service) * 100
+                sum(rate(http_requests_total[1m])) by (service) * 100
+
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}}'
@@ -282,7 +286,7 @@ groups:
             model:
               editorMode: code
               expr: |
-                histogram_quantile(0.95, sum by (le, service, path) (rate({__name__=~".*_http_request_duration_seconds_bucket"}[1m]))) > 1
+                histogram_quantile(0.95, sum by (le, service, path) (rate(http_request_duration_seconds_bucket[1m]))) > 1
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}} - {{path}}'
@@ -346,7 +350,7 @@ groups:
             model:
               editorMode: code
               expr: |
-                sum(rate({__name__=~".*_cpu_usage_seconds_total"}[1m])) by (service) * 100
+                sum(rate(cpu_usage_seconds_total[1m])) by (service) * 100
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}}'
@@ -390,8 +394,8 @@ groups:
             model:
               editorMode: code
               expr: |
-                {__name__=~".*_memory_usage_bytes",type="heapUsed"} / 
-                {__name__=~".*_memory_usage_bytes",type="heapTotal"} * 100
+                memory_usage_bytes{type="heapUsed"} / memory_usage_bytes{type="heapTotal"} * 100
+
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}}'
@@ -435,7 +439,8 @@ groups:
             model:
               editorMode: code
               expr: |
-                histogram_quantile(0.95, sum by (le) (rate({__name__=~".*_event_loop_lag_seconds_bucket"}[1m])))
+                histogram_quantile(0.95, sum by (le) (rate(event_loop_lag_seconds_bucket[1m])))
+
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}}'
@@ -479,8 +484,8 @@ groups:
             model:
               editorMode: code
               expr: |
-                sum(rate({__name__=~".*_nodejs_gc_duration_seconds_sum"}[1m])) by (service) /
-                sum(rate({__name__=~".*_nodejs_gc_duration_seconds_count"}[1m])) by (service)
+                sum(rate({nodejs_gc_duration_seconds_sum"}[1m])) by (service) /
+                sum(rate({cnodejs_gc_duration_seconds_count"}[1m])) by (service)
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}}'
@@ -524,8 +529,8 @@ groups:
             model:
               editorMode: code
               expr: |
-                # Rate of 501 errors per endpoint
-                sum(rate({__name__=~".*_http_requests_total", status="501"}[1m])) by (service, path)
+                sum(rate(http_requests_total{status="501"}[1m])) by (service, path)
+
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}} - {{path}}'
@@ -593,10 +598,10 @@ groups:
             model:
               editorMode: code
               expr: |
-                # Calculate error rate percentage for 502s
-                sum(rate({__name__=~".*_http_requests_total", status="502"}[2m])) by (service, path)
+                sum(rate(http_requests_total{status="502"}[1m])) by (service)
                 /
-                sum(rate({__name__=~".*_http_requests_total"}[2m])) by (service, path) * 100
+                sum(rate(http_requests_total[1m])) by (service) * 100
+
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}} - {{path}}'
@@ -664,10 +669,9 @@ groups:
             model:
               editorMode: code
               expr: |
-                # Calculate error rate percentage for 503s
-                sum(rate({__name__=~".*_http_requests_total", status="503"}[2m])) by (service, path)
+                sum(rate(http_requests_total{status="503"}[1m])) by (service)
                 /
-                sum(rate({__name__=~".*_http_requests_total"}[2m])) by (service, path) * 100
+                sum(rate(http_requests_total[1m])) by (service) * 100
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}} - {{path}}'
@@ -715,77 +719,6 @@ groups:
           description: 'Service {{ $labels.service }} endpoint {{ $labels.path }} is returning Service Unavailable errors (>3%). This indicates the service is overloaded or temporarily unavailable.'
           summary: Service Unavailable Errors Detected
           runbook_url: 'https://your-runbook-url/503-errors'
-        labels:
-          severity: critical
-          category: availability
-        isPaused: false
-        notification_settings:
-          receiver: skills_base_email_service
-
-      # Combined Server Error Rate Alert
-      - uid: combined_server_error_alert
-        title: High Combined Server Error Rate
-        condition: C
-        data:
-          - refId: A
-            relativeTimeRange:
-              from: 300
-              to: 0
-            datasourceUid: PBFA97CFB590B2093
-            model:
-              editorMode: code
-              expr: |
-                # Calculate total server error rate
-                sum(rate({__name__=~".*_http_requests_total", status=~"501|502|503"}[1m])) by (service)
-                /
-                sum(rate({__name__=~".*_http_requests_total"}[1m])) by (service) * 100
-              instant: true
-              intervalMs: 1000
-              legendFormat: '{{service}}'
-              maxDataPoints: 43200
-              range: false
-          - refId: B
-            datasourceUid: __expr__
-            model:
-              conditions:
-                - evaluator:
-                    params: []
-                    type: gt
-                  operator:
-                    type: and
-                  query:
-                    params: [B]
-                  reducer:
-                    params: []
-                    type: last
-                  type: query
-              expression: A
-              reducer: last
-              type: reduce
-          - refId: C
-            datasourceUid: __expr__
-            model:
-              conditions:
-                - evaluator:
-                    params: [5] # Alert if combined error rate exceeds 5%
-                    type: gt
-                  operator:
-                    type: and
-                  query:
-                    params: [C]
-                  reducer:
-                    params: []
-                    type: last
-                  type: query
-              expression: B
-              type: threshold
-        noDataState: NoData
-        execErrState: Error
-        for: 10s
-        annotations:
-          description: 'Service {{ $labels.service }} is experiencing a high rate of server errors (501s, 502s, 503s). This indicates severe service issues.'
-          summary: High Server Error Rate
-          runbook_url: 'https://your-runbook-url/server-errors'
         labels:
           severity: critical
           category: availability

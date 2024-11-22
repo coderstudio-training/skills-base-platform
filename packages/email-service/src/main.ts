@@ -5,6 +5,7 @@ import {
   HttpExceptionFilter,
   Logger,
   MetricsInterceptor,
+  SwaggerHelper,
   TransformInterceptor,
 } from '@skills-base/shared';
 import helmet from 'helmet';
@@ -37,6 +38,8 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   });
+
+  SwaggerHelper.setup(app, 'Email Service API', 'swagger');
 
   // Security middleware
   app.use(helmet());

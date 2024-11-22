@@ -16,13 +16,11 @@ export * from './entities/base.entity';
 export * from './filters/http-exception.filter';
 export * from './guards/jwt-auth.guard';
 export * from './guards/roles.guard';
-// export * from './interceptors/logging.interceptor';
 export * from './interceptors/transform.interceptor';
 export * from './interfaces/config.interface';
 export * from './interfaces/jwt-strategy.interface';
 export * from './interfaces/user.interface';
 export * from './messaging/messaging.service';
-// export * from './middlewares/logger.middleware';
 export * from './strategy/jwt.strategy';
 export * from './utils/date.util';
 export * from './utils/validation.util';
@@ -55,3 +53,6 @@ export * from './middlewares/security.middleware';
 export * from './modules/security.module';
 export * from './services/security-monitoring.service';
 export * from './validators/security.validator';
+
+// swagger
+export * from './utils/swagger.utils';
