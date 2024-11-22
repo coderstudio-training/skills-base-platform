@@ -90,33 +90,23 @@ export class SkillsMatrixService {
         },
       );
 
-      // Sort and assign rankings
-      let currentRank = 1;
-      let previousScore: number | null = null;
+      // Sort employees
+      const sortedEmployees = employeeScores.sort((a, b) => {
+        const scoreDiff = b.score - a.score;
+        if (scoreDiff !== 0) return scoreDiff;
 
-      const sortedScores = employeeScores
-        .sort((a, b) => {
-          const scoreDiff = b.score - a.score;
-          if (scoreDiff !== 0) return scoreDiff;
+        const skillCountDiff = b.skillCount - a.skillCount;
+        if (skillCountDiff !== 0) return skillCountDiff;
 
-          const skillCountDiff = b.skillCount - a.skillCount;
-          if (skillCountDiff !== 0) return skillCountDiff;
+        return a.name.localeCompare(b.name);
+      });
 
-          return a.name.localeCompare(b.name);
-        })
-        .map((employee, index) => {
-          // Handle tied rankings
-          if (previousScore !== null && employee.score !== previousScore) {
-            currentRank = index + 1;
-          }
-          previousScore = employee.score;
-
-          return {
-            name: employee.name,
-            ranking: currentRank,
-            score: employee.score,
-          };
-        });
+      // Assign continuous rankings
+      const sortedScores = sortedEmployees.map((employee, index) => ({
+        name: employee.name,
+        ranking: index + 1, // Continuous ranking, no duplicates
+        score: employee.score,
+      }));
 
       return {
         rankings: sortedScores,
