@@ -1,0 +1,52 @@
+import { Controller, Get, HttpStatus, Param, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
+import { AdminSkillAnalyticsDto } from '../dto/computation.dto';
+import { EmployeeRankingsResponseDto } from '../dto/user-skills.dto';
+import { SkillsMatrixService } from '../services/skills-matrix.service';
+
+@ApiTags('Skill Matrix')
+@Controller('api/skills')
+@UseGuards(JwtAuthGuard, RolesGuard)
+export class SkillMatrixController {
+  constructor(private readonly skillMatrixService: SkillsMatrixService) {}
+
+  @Get('skills-matrix')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.USER)
+  @ApiOperation({ summary: 'Get skills matrix for all employees' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved skills matrix for all employees',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'User does not have sufficient permissions',
+  })
+  async getAllEmployeesSkillsMatrix() {
+    return this.skillMatrixService.getAllEmployeesSkillsData();
+  }
+
+  @Get('analytics')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({ summary: 'Get organization-wide skill analytics' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved skill analytics',
+  })
+  async getOrganizationAnalytics(): Promise<AdminSkillAnalyticsDto> {
+    return this.skillMatrixService.getAdminSkillsAnalytics();
+  }
+
+  @Get('employee/:email')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({ summary: 'Get skills for a specific employee' })
+  async getEmployeeSkills(@Param('email') email: string) {
+    return this.skillMatrixService.getEmployeeSkillsByEmail(email);
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Get('rankings')
+  async getEmployeeRankings(): Promise<EmployeeRankingsResponseDto> {
+    return this.skillMatrixService.getEmployeeRankings();
+  }
+}

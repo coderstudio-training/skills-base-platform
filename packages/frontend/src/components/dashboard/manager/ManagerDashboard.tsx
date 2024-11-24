@@ -1,6 +1,5 @@
 'use client';
 
-import { signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 // import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from '@/components/ui/button';
@@ -9,30 +8,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Download, LogOut, TrendingUp, Trophy, Upload, Users } from 'lucide-react';
+import { Award, Download, TrendingUp, Upload, Users } from 'lucide-react';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import { useAuth } from '@/lib/api/hooks';
 import { getUserPicture } from '@/lib/users/api';
 import { getTeamMembers } from '@/lib/users/employees/api';
-import { TeamMember } from '@/lib/users/employees/types';
-
-// const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+import { TeamMember } from '@/types/manager';
+import TeamCompositionChart from './TeamCompositionView';
+// import { ManagerData } from '@/types/manager'
+// import { dummyManagerData } from '@/lib/dummyData'
 
 export default function ManagerDashboard() {
   const { user } = useAuth();
-  const [timeRange, setTimeRange] = useState<string>('6m');
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [membersWithPictures, setMembersWithPictures] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
   const [error, setError] = useState<string | null>(null);
 
   // I suggest using hook.ts for client side or do server side rendering like skills/taxonomy/[businessUnit]
@@ -92,10 +86,6 @@ export default function ManagerDashboard() {
     fetchUserPictures();
   }, [teamMembers]);
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
-
   const handleExportReport = async () => {
     // Simulate report generation
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -103,24 +93,8 @@ export default function ManagerDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Manager Dashboard</h1>
-          <p className="text-muted-foreground">Skills Base Platform Overview</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={user?.image || ''} alt={user?.name || ''} />
-            <AvatarFallback>{user?.name?.[0] || 'M'}</AvatarFallback>
-          </Avatar>
-          <span className="text-sm font-medium">{user?.name}</span>
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </div>
+    <div className="container mx-auto p-4 max-w-[80%]">
+      <ManagerDashboardHeader />
 
       <div className="flex justify-between items-center mb-6">
         <div className="flex space-x-2">
@@ -133,58 +107,46 @@ export default function ManagerDashboard() {
             Export Report
           </Button>
         </div>
-        <Select value={timeRange} onValueChange={(value: string) => setTimeRange(value)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select time range" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1m">Last Month</SelectItem>
-            <SelectItem value="3m">Last 3 Months</SelectItem>
-            <SelectItem value="6m">Last 6 Months</SelectItem>
-            <SelectItem value="1y">Last Year</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
-      <Tabs defaultValue="overview">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="team-skills">Team Skills</TabsTrigger>
-          <TabsTrigger value="development">Development</TabsTrigger>
+          <TabsTrigger value="skills">Skills</TabsTrigger>
+          <TabsTrigger value="training">Training</TabsTrigger>
+          <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
           {/* Metrics Grid */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-gray-500" />
-                  <h3 className="text-sm text-gray-500">Team Size</h3>
-                </div>
-                <p className="text-3xl font-bold mt-2">12</p>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Team Size</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{teamMembers.length}</div>
               </CardContent>
             </Card>
-
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-gray-500" />
-                  <h3 className="text-sm text-gray-500">Average Performance</h3>
-                </div>
-                <p className="text-3xl font-bold mt-2">87%</p>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Average Performance</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{87}%</div>
               </CardContent>
             </Card>
-
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-gray-500" />
-                  <h3 className="text-sm text-gray-500">Skill Growth</h3>
-                </div>
-                <p className="text-3xl font-bold mt-2">+15%</p>
-                <p className="text-sm text-gray-500">In the last 6 months</p>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Skill Growth</CardTitle>
+                <Award className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">+{15}%</div>
+                <p className="text-xs text-muted-foreground">In the last 6 months</p>
               </CardContent>
             </Card>
           </div>
@@ -192,13 +154,7 @@ export default function ManagerDashboard() {
           {/* Bottom Grid */}
           <div className="grid gap-4 md:grid-cols-2 mt-4">
             {/* Team Composition */}
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="font-bold mb-1">Team Composition</h3>
-                <p className="text-sm text-gray-500 mb-4">Distribution of roles in your team</p>
-                <div className="h-48 bg--100 rounded-lg" />
-              </CardContent>
-            </Card>
+            <TeamCompositionChart teamMembers={membersWithPictures} />
 
             {/* Top Performers */}
             <Card>
@@ -244,7 +200,7 @@ export default function ManagerDashboard() {
                               <p className="font-medium">
                                 {member.firstName} {member.lastName}
                               </p>
-                              <p className="text-sm text-gray-500">{member.designation}</p>
+                              <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
                             </div>
                           </div>
                           <div className="flex items-center">
@@ -334,7 +290,7 @@ export default function ManagerDashboard() {
                             <p className="font-medium">
                               {member.firstName} {member.lastName}
                             </p>
-                            <p className="text-sm text-gray-500">{member.designation}</p>
+                            <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
@@ -358,7 +314,7 @@ export default function ManagerDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="team-skills">
+        <TabsContent value="skills">
           {/* Team Performance Trend Card */}
           <Card>
             <CardContent className="pt-6">
@@ -427,11 +383,11 @@ export default function ManagerDashboard() {
                             <p className="font-medium">
                               {member.firstName} {member.lastName}
                             </p>
-                            <p className="text-sm text-gray-500">{member.designation}</p>
+                            <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
                             <div className="flex flex-wrap gap-2">
-                              <Badge>Automated Testing</Badge>
-                              <Badge>Manual Testing</Badge>
-                              <Badge>Performance Testing</Badge>
+                              <Badge variant="outline">Automated Testing</Badge>
+                              <Badge variant="outline">Manual Testing</Badge>
+                              <Badge variant="outline">Performance Testing</Badge>
                             </div>
                           </div>
                         </div>
@@ -447,7 +403,8 @@ export default function ManagerDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="development">{/* Development content */}</TabsContent>
+        <TabsContent value="training">{/* Training content */}</TabsContent>
+        <TabsContent value="evaluation">{/* Evaluation content */}</TabsContent>
       </Tabs>
     </div>
   );

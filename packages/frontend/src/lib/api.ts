@@ -1,14 +1,7 @@
 // lib/api.ts
 
 import { logger } from '@/lib/utils';
-import {
-  AdminData,
-  Course,
-  Department,
-  LearningPath,
-  Skill,
-  Staff,
-} from '@/types/admin';
+import { AdminData, Course, Department, LearningPath, Skill, Staff } from '@/types/admin';
 import * as ApiTypes from '@/types/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_USER_SERVICE_URL;
@@ -25,13 +18,33 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(
-      errorData.message || 'An error occurred while fetching data'
-    );
+    throw new Error(errorData.message || 'An error occurred while fetching data');
   }
 
   return response.json();
 }
+
+export async function getSkillMatrix(): Promise<ApiTypes.SkillsResponse> {
+  const response = await fetch('/api/skills/skills-matrix');
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to fetch skill matrix data');
+  }
+
+  return response.json();
+}
+
+export const getSkillAnalytics = async (): Promise<ApiTypes.SkillAnalyticsResponse> => {
+  const response = await fetch('/api/skills/analytics');
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to fetch skill analytics data');
+  }
+
+  return response.json();
+};
 
 export async function getAdminData(accessToken: string): Promise<AdminData> {
   logger.log(accessToken);
@@ -58,17 +71,13 @@ export async function getLearningPaths(): Promise<LearningPath[]> {
   return fetchWithAuth(`${API_BASE_URL}/admin/learning-paths`);
 }
 
-export async function syncData(
-  dataType: string
-): Promise<{ success: boolean; message: string }> {
+export async function syncData(dataType: string): Promise<{ success: boolean; message: string }> {
   return fetchWithAuth(`${API_BASE_URL}/admin/sync/${dataType}`, {
     method: 'POST',
   });
 }
 
-export async function importData(
-  data: []
-): Promise<{ success: boolean; message: string }> {
+export async function importData(data: []): Promise<{ success: boolean; message: string }> {
   return fetchWithAuth(`${API_BASE_URL}/admin/import`, {
     method: 'POST',
     body: JSON.stringify(data),
@@ -89,10 +98,7 @@ export async function exportReport(reportType: string): Promise<Blob> {
   return response.blob();
 }
 
-export async function updateStaff(
-  staffId: string,
-  data: Partial<Staff>
-): Promise<Staff> {
+export async function updateStaff(staffId: string, data: Partial<Staff>): Promise<Staff> {
   return fetchWithAuth(`${API_BASE_URL}/admin/staffs/${staffId}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
@@ -106,19 +112,14 @@ export async function addSkill(skill: Omit<Skill, 'id'>): Promise<Skill> {
   });
 }
 
-export async function updateSkill(
-  skillId: string,
-  data: Partial<Skill>
-): Promise<Skill> {
+export async function updateSkill(skillId: string, data: Partial<Skill>): Promise<Skill> {
   return fetchWithAuth(`${API_BASE_URL}/admin/skills/${skillId}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
   });
 }
 
-export async function deleteSkill(
-  skillId: string
-): Promise<{ success: boolean; message: string }> {
+export async function deleteSkill(skillId: string): Promise<{ success: boolean; message: string }> {
   return fetchWithAuth(`${API_BASE_URL}/admin/skills/${skillId}`, {
     method: 'DELETE',
   });
@@ -126,18 +127,15 @@ export async function deleteSkill(
 
 export async function assignCourseToStaff(
   staffId: string,
-  courseId: string
+  courseId: string,
 ): Promise<{ success: boolean; message: string }> {
-  return fetchWithAuth(
-    `${API_BASE_URL}/admin/staffs/${staffId}/courses/${courseId}`,
-    {
-      method: 'POST',
-    }
-  );
+  return fetchWithAuth(`${API_BASE_URL}/admin/staffs/${staffId}/courses/${courseId}`, {
+    method: 'POST',
+  });
 }
 
 export async function getPerformanceMetrics(
-  departmentId?: string
+  departmentId?: string,
 ): Promise<ApiTypes.PerformanceMetricsResponse> {
   const url = departmentId
     ? `${API_BASE_URL}/admin/performance-metrics?departmentId=${departmentId}`

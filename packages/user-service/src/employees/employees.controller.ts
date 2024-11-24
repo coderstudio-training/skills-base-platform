@@ -5,17 +5,20 @@ import {
   Logger,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   JwtAuthGuard,
   LoggingInterceptor,
+  PaginationDto,
   Roles,
   RolesGuard,
   TransformInterceptor,
   UserRole,
 } from '@skills-base/shared';
+import { EmployeeSearchDto } from './dto/search-employee.dto';
 import { EmployeesService } from './employees.service';
 
 @Controller('employees')
@@ -41,14 +44,43 @@ export class EmployeesController {
 
   @Get()
   @Roles(UserRole.ADMIN)
-  async findAll() {
-    return this.employeesService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.employeesService.findAll(paginationDto);
+  }
+
+  @Get('search')
+  @Roles(UserRole.ADMIN)
+  search(@Query() searchDto: EmployeeSearchDto) {
+    return this.employeesService.search(searchDto);
+  }
+
+  @Get('business-units')
+  @Roles(UserRole.ADMIN)
+  async getBusinessUnits() {
+    return this.employeesService.getBusinessUnits();
+  }
+
+  @Get('stats')
+  @Roles(UserRole.ADMIN)
+  async getEmployeeStats() {
+    return this.employeesService.getEmployeeStats();
   }
 
   @Get(':employeeId')
   @Roles(UserRole.ADMIN)
   async findOne(@Param('employeeId') employeeId: number) {
     return this.employeesService.findByEmployeeId(employeeId);
+  }
+
+  @Get('email/:email')
+  @Roles(UserRole.MANAGER, UserRole.ADMIN, UserRole.USER)
+  async findByEmail(@Param('email') email: string) {
+    this.logger.log(`Fetching employee details for email: ${email}`);
+    const employee = await this.employeesService.findByEmail(email);
+    if (!employee) {
+      this.logger.warn(`No employee found for email: ${email}`);
+    }
+    return employee;
   }
 
   @Get('manager/:managerName')

@@ -178,7 +178,11 @@ export class AuthService {
         this.logger.log(`Updated existing user with Google ID: ${email}`);
       }
 
-      const jwtPayload = { email: user.email, sub: user.id, roles: user.roles };
+      const jwtPayload = {
+        email: user.email,
+        sub: user.id,
+        roles: user.roles,
+      };
       return {
         access_token: this.jwtService.sign(jwtPayload),
         roles: user.roles,

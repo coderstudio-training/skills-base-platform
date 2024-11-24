@@ -1,5 +1,65 @@
 // types/admin.d.ts
 
+export interface TopPerformer {
+  name: string;
+  score: number;
+  ranking: number;
+}
+
+export interface TopPerformersResponse {
+  rankings: TopPerformer[];
+}
+
+export interface Employee {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  businessUnit: string;
+  employmentStatus: string;
+  grade: string;
+  skills?: SkillDetail[];
+}
+
+export interface SkillDetail {
+  skill: string;
+  category: string;
+  selfRating: number;
+  managerRating: number;
+  requiredRating: number;
+  gap: number;
+  average: number;
+}
+
+export interface EmployeeSkill {
+  name: string;
+  level: string;
+  currentLevel?: number;
+  requiredLevel?: number;
+  selfAssessment?: string;
+  managerAssessment?: string;
+  description?: string;
+}
+
+export interface BusinessUnitStats {
+  name: string;
+  count: number;
+}
+
+export interface SkillGap {
+  name: string;
+  value: number;
+}
+
+export interface DashboardStats {
+  totalEmployees: number;
+  activeEmployees: number;
+  departmentsCount: number;
+  topSkills: Array<{ name: string; level: string }>;
+  skillGaps: Array<SkillGap>;
+  businessUnitStats: Array<BusinessUnitStats>;
+}
+
 export interface AdminData {
   totalStaffs: number;
   totalDepartments: number;
@@ -92,8 +152,14 @@ export interface TopPerformerData {
   keySkills: string[];
 }
 
+export interface TopSkillData {
+  name: string;
+  prevalence: number; // This will be the average rating converted to percentage
+}
+
 export interface SkillGapData {
-  skill: string;
+  name: string;
   currentLevel: number;
   requiredLevel: number;
+  gap: number;
 }

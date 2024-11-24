@@ -1,3 +1,27 @@
+export interface PaginatedEmployeeResponse extends ApiResponse<Employee[]> {
+  items: Employee[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface SyncStatus {
+  success: boolean;
+  message: string;
+  status: 'idle' | 'syncing' | 'success' | 'error';
+}
+
+export interface DataSourceType {
+  'Self-Assessment': string;
+  'Manager Assessment': string;
+  'Staff List': string;
+  Courses: string;
+  'Learning Paths': string;
+  'Skills Matrix': string;
+  'Skills Taxonomy': string;
+}
+
 export interface ApiResponse<T> {
   data: T;
   error?: string;
@@ -36,4 +60,13 @@ interface DevelopmentPlansResponse {
   plans: DevelopmentPlan[];
   total: number;
   // Other possible metadata in the response
+}
+
+export interface SkillAnalyticsResponse {
+  topSkills: TopSkillData[];
+  skillGaps: SkillGapData[];
+}
+
+export interface SkillsResponse {
+  skills: StaffSkill[];
 }
