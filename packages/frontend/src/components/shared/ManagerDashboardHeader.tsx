@@ -51,12 +51,18 @@ export default function ManagerHeader() {
     <div className="flex justify-between items-center mb-6">
       <div className="flex items-center space-x-4">
         <Avatar className="h-20 w-20">
-          <AvatarImage
-            src={session?.user?.image || ''}
-            alt={session?.user?.name || ''}
-            width={120}
-            height={120}
-          />
+          {session?.user?.image ? (
+            <AvatarImage
+              src={session?.user?.image}
+              alt={session?.user?.name}
+              width={120}
+              height={120}
+              onError={e => {
+                const imgElement = e.target as HTMLImageElement;
+                imgElement.style.display = 'none';
+              }}
+            />
+          ) : null}
           <AvatarFallback className="text-lg">{getInitials(session?.user?.name)}</AvatarFallback>
         </Avatar>
         <div>

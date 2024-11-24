@@ -379,22 +379,26 @@ export default function AdminDashboard() {
         {/* Search and Filter */}
         <div className="flex gap-4 mb-6">
           <div className="flex-1 flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2 min-w-[200px] justify-start">
-                  <Building2 className="h-4 w-4" />
-                  {selectedBusinessUnit}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[200px]">
+            <Select value={selectedBusinessUnit} onValueChange={handleBusinessUnitChange}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue>
+                  <div className="flex items-center">
+                    <Building2 className="w-4 h-4 mr-2" />
+                    {selectedBusinessUnit}
+                  </div>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
                 {businessUnits.map(unit => (
-                  <DropdownMenuItem key={unit} onClick={() => handleBusinessUnitChange(unit)}>
-                    <Building2 className="h-4 w-4 mr-2" />
-                    {unit}
-                  </DropdownMenuItem>
+                  <SelectItem key={unit} value={unit}>
+                    <div className="flex items-center">
+                      <Building2 className="h-4 w-4 mr-2" />
+                      {unit}
+                    </div>
+                  </SelectItem>
                 ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </SelectContent>
+            </Select>
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
               <Input
@@ -405,8 +409,8 @@ export default function AdminDashboard() {
               />
             </div>
           </div>
-          <Button variant="ghost" size="icon">
-            <Filter className="h-4 w-4" />{' '}
+          <Button variant="outline" size="icon">
+            <Filter className="h-4 w-4" />
           </Button>
         </div>
 
@@ -567,7 +571,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tabs Structure */}
-        <Tabs defaultValue="users" className="space-y-4 mb-6">
+        <Tabs defaultValue="users" className="space-y-4">
           <TabsList>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -592,6 +596,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="learning" className="flex items-center gap-2">
               <BookOpen className="h-4 w-4" />
               Learning
+            </TabsTrigger>
+            <TabsTrigger value="taxonomy" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Taxonomy
             </TabsTrigger>
           </TabsList>
 
@@ -632,10 +640,8 @@ export default function AdminDashboard() {
                           <Badge variant="outline">{employee.grade}</Badge>
                           <Badge variant="secondary">{employee.businessUnit}</Badge>
                           <Badge
-                            className={
-                              employee.employmentStatus === 'Active'
-                                ? 'bg-green-500 text-white'
-                                : 'bg-gray-500 text-white'
+                            variant={
+                              employee.employmentStatus === 'Active' ? 'success' : 'destructive'
                             }
                           >
                             {employee.employmentStatus}
