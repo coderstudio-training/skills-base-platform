@@ -1,6 +1,7 @@
 'use client';
 
 import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
+import { TaxonomyManager } from '@/components/skills/TaxonomyManager';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,7 +60,6 @@ import { useEffect, useState } from 'react';
 import { Input } from '../../ui/input';
 import { Progress } from '../../ui/progress';
 import AnalysisView from './AnalysisView';
-
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
 export default function AdminDashboard() {
@@ -131,6 +131,7 @@ export default function AdminDashboard() {
           throw new Error('Failed to fetch business units');
         }
         const data = await response.json();
+        console.log('Business units call: ', data, ' | Business units:', businessUnits);
         setBusinessUnits(['All Business Units', ...data.businessUnits]);
         setBusinessUnitStats(data.distribution);
       } catch (err) {
@@ -558,6 +559,10 @@ export default function AdminDashboard() {
               <BookOpen className="h-4 w-4" />
               Learning
             </TabsTrigger>
+            <TabsTrigger value="taxonomy" className="flex iutems-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Taxonomy
+            </TabsTrigger>
           </TabsList>
 
           {/* Employee Directory */}
@@ -750,6 +755,9 @@ export default function AdminDashboard() {
           </TabsContent>
           <TabsContent value="metrics">
             <AnalysisView />
+          </TabsContent>
+          <TabsContent value="taxonomy">
+            <TaxonomyManager />
           </TabsContent>
         </Tabs>
       </main>

@@ -39,7 +39,7 @@ export default function ManagerDashboard() {
           throw new Error('Name is missing!');
         }
 
-        const response = await getTeamMembers(user?.name, { cache: 'force-cache' });
+        const response = await getTeamMembers(user?.name);
 
         if (response.error || response.data === null) {
           throw new Error(`Error fetching team members: ${error}`);
