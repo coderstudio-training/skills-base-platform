@@ -84,6 +84,9 @@ export default function AdminDashboard() {
   });
   const [selectedEmployeeSkills, setSelectedEmployeeSkills] = useState<SkillDetail[]>([]);
   const [topPerformers, setTopPerformers] = useState<TopPerformer[]>([]);
+  const [topPerformersLoading, setTopPerformersLoading] = useState(true);
+  const [skillGapsLoading, setSkillGapsLoading] = useState(true);
+  const [businessUnitsLoading, setBusinessUnitsLoading] = useState(true);
   const [skillGaps, setSkillGaps] = useState<
     { name: string; currentLevel: number; requiredLevel: number; gap: number }[]
   >([]);
@@ -101,6 +104,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchTopPerformers = async () => {
+      setTopPerformersLoading(true);
       try {
         const response = await fetch('/api/skills/rankings');
         if (!response.ok) throw new Error('Failed to fetch top performers');
@@ -108,6 +112,8 @@ export default function AdminDashboard() {
         setTopPerformers(data.rankings.slice(0, 10));
       } catch (error) {
         console.error('Error fetching top performers:', error);
+      } finally {
+        setTopPerformersLoading(false);
       }
     };
 
@@ -125,6 +131,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchBusinessUnits = async () => {
+      setBusinessUnitsLoading(true);
       try {
         const response = await fetch('/api/employees/business-units');
         if (!response.ok) {
@@ -135,6 +142,8 @@ export default function AdminDashboard() {
         setBusinessUnitStats(data.distribution);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch business units');
+      } finally {
+        setBusinessUnitsLoading(false);
       }
     };
 
@@ -195,6 +204,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchSkillAnalytics = async () => {
+      setSkillGapsLoading(true);
       try {
         const response = await fetch('/api/skills/analytics');
         if (!response.ok) {
@@ -204,6 +214,8 @@ export default function AdminDashboard() {
         setSkillGaps(data.skillGaps);
       } catch (err) {
         console.error('Error fetching skill analytics:', err);
+      } finally {
+        setSkillGapsLoading(false);
       }
     };
 
@@ -442,38 +454,43 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted/50 rounded-t-lg">
-                <div className="grid grid-cols-12 px-4 py-2 text-sm font-medium text-muted-foreground">
-                  <div className="col-span-2">Rank</div>
-                  <div className="col-span-8">Employee Name</div>
-                  <div className="col-span-2 text-right">Score</div>
+              {topPerformersLoading ? (
+                <div className="h-[350px] flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <p className="text-sm text-muted-foreground">Loading top performers...</p>
+                  </div>
                 </div>
-              </div>
-
-              <ScrollArea className="h-[350px]">
-                <div className="divide-y">
-                  {topPerformers.map(performer => (
-                    <div
-                      key={performer.ranking}
-                      className={cn(
-                        'grid grid-cols-12 px-4 py-3 items-center transition-colors hover:bg-muted/50',
-                        performer.ranking <= 5 && 'bg-muted/20',
-                      )}
-                    >
-                      <div className="col-span-2 flex items-center gap-2">
-                        <span className="font-medium">{performer.ranking}</span>
-                      </div>
-                      <div className="col-span-8">{performer.name}</div>
-                      <div className="col-span-2 text-right">{performer.score}</div>
+              ) : (
+                <>
+                  <div className="bg-muted/50 rounded-t-lg">
+                    <div className="grid grid-cols-12 px-4 py-2 text-sm font-medium text-muted-foreground">
+                      <div className="col-span-2">Rank</div>
+                      <div className="col-span-8">Employee Name</div>
+                      <div className="col-span-2 text-right">Score</div>
                     </div>
-                  ))}
-                </div>
-              </ScrollArea>
+                  </div>
 
-              {topPerformers.length === 0 && (
-                <div className="py-8 text-center text-muted-foreground">
-                  No performers data available
-                </div>
+                  <ScrollArea className="h-[350px]">
+                    <div className="divide-y">
+                      {topPerformers.map(performer => (
+                        <div
+                          key={performer.ranking}
+                          className={cn(
+                            'grid grid-cols-12 px-4 py-3 items-center transition-colors hover:bg-muted/50',
+                            performer.ranking <= 5 && 'bg-muted/20',
+                          )}
+                        >
+                          <div className="col-span-2 flex items-center gap-2">
+                            <span className="font-medium">{performer.ranking}</span>
+                          </div>
+                          <div className="col-span-8">{performer.name}</div>
+                          <div className="col-span-2 text-right">{performer.score}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </>
               )}
             </CardContent>
           </Card>
@@ -486,23 +503,32 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {skillGaps.map(skill => (
-                  <div key={skill.name} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>{skill.name}</span>
-                      <span>{skill.gap.toFixed(1)}</span>
-                    </div>
-                    <Progress
-                      value={(skill.currentLevel / skill.requiredLevel) * 100}
-                      className="h-2"
-                    />
+              {skillGapsLoading ? (
+                <div className="h-[350px] flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <p className="text-sm text-muted-foreground">Loading skill gaps...</p>
                   </div>
-                ))}
-                {skillGaps.length === 0 && (
-                  <div className="text-center text-gray-500 py-4">No skill gaps identified</div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {skillGaps.map(skill => (
+                    <div key={skill.name} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{skill.name}</span>
+                        <span>{skill.gap.toFixed(1)}</span>
+                      </div>
+                      <Progress
+                        value={(skill.currentLevel / skill.requiredLevel) * 100}
+                        className="h-2"
+                      />
+                    </div>
+                  ))}
+                  {skillGaps.length === 0 && (
+                    <div className="text-center text-gray-500 py-4">No skill gaps identified</div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -514,19 +540,28 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {businessUnitStats.map(bu => (
-                  <div key={bu.name} className="flex justify-between items-center">
-                    <span>{bu.name}</span>
-                    <Badge>{bu.count}</Badge>
+              {businessUnitsLoading ? (
+                <div className="h-[350px] flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <p className="text-sm text-muted-foreground">Loading business units...</p>
                   </div>
-                ))}
-                {businessUnitStats.length === 0 && (
-                  <div className="text-center text-gray-500 py-4">
-                    No business unit data available
-                  </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {businessUnitStats.map(bu => (
+                    <div key={bu.name} className="flex justify-between items-center">
+                      <span>{bu.name}</span>
+                      <Badge>{bu.count}</Badge>
+                    </div>
+                  ))}
+                  {businessUnitStats.length === 0 && (
+                    <div className="text-center text-gray-500 py-4">
+                      No business unit data available
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -574,8 +609,9 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {loading ? (
-                    <div className="flex justify-center py-8">
+                    <div className="flex flex-col items-center gap-2">
                       <Loader2 className="h-8 w-8 animate-spin" />
+                      <p className="text-sm text-muted-foreground">Loading employees...</p>
                     </div>
                   ) : (
                     employees.map(employee => (

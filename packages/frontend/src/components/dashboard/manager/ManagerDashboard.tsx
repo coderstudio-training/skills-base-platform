@@ -15,7 +15,8 @@ import { Award, Download, TrendingUp, Upload, Users } from 'lucide-react';
 
 import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import { TeamMember } from '@/types/manager';
-import TeamCompositionChart from './TeamCompositionView';
+import TeamCompositionChart from './TeamCompositionChart';
+import TeamMembersList from './TeamMembersList';
 // import { ManagerData } from '@/types/manager'
 // import { dummyManagerData } from '@/lib/dummyData'
 
@@ -157,70 +158,10 @@ export default function ManagerDashboard() {
           {/* Bottom Grid */}
           <div className="grid gap-4 md:grid-cols-2 mt-4">
             {/* Team Composition */}
-            <TeamCompositionChart teamMembers={membersWithPictures} />
+            <TeamCompositionChart teamMembers={membersWithPictures} loading={loading} />
 
-            {/* Top Performers */}
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="font-bold mb-1">Team Members List</h3>
-                <p className="text-sm text-gray-500 mb-4">List of your team members</p>
-                <ScrollArea className="h-[300px] w-full">
-                  {loading ? (
-                    <div className="flex items-center justify-center h-full">
-                      <p>Loading team members...</p>
-                    </div>
-                  ) : error ? (
-                    <div className="flex items-center justify-center h-full text-red-500">
-                      <p>{error}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 pr-4">
-                      {membersWithPictures.map(member => (
-                        <div
-                          key={member.email}
-                          className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              {member.picture ? (
-                                <AvatarImage
-                                  src={member.picture}
-                                  alt={`${member.firstName} ${member.lastName}`}
-                                  width={40}
-                                  height={40}
-                                  onError={e => {
-                                    const imgElement = e.target as HTMLImageElement;
-                                    imgElement.style.display = 'none';
-                                  }}
-                                />
-                              ) : null}
-                              <AvatarFallback className="uppercase bg-gray-100 text-gray-600">
-                                {member.firstName?.[0]}
-                                {member.lastName?.[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">
-                                {member.firstName} {member.lastName}
-                              </p>
-                              <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center">
-                            {member.performanceScore && (
-                              <span className="font-medium">{member.performanceScore}%</span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                      {teamMembers.length === 0 && (
-                        <div className="text-center text-gray-500">No team members found</div>
-                      )}
-                    </div>
-                  )}
-                </ScrollArea>
-              </CardContent>
-            </Card>
+            {/* Team Members List */}
+            <TeamMembersList loading={loading} error={error} members={membersWithPictures} />
           </div>
         </TabsContent>
 
