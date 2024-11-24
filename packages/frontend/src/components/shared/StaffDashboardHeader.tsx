@@ -67,7 +67,7 @@ export default function StaffDashboardHeader() {
         </Avatar>
 
         <div>
-          <h1 className="text-3xl font-bold">{session?.user?.name}</h1>
+          <h1 className="text-3xl font-bold">{session?.user?.name} (Staff)</h1>
           <p className="text-muted-foreground">
             {userData ? `${userData.designation} - ${userData.businessUnit}` : 'Loading...'}
           </p>

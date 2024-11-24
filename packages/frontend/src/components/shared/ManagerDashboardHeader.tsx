@@ -66,7 +66,7 @@ export default function ManagerHeader() {
           <AvatarFallback className="text-lg">{getInitials(session?.user?.name)}</AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-3xl font-bold">{session?.user?.name}</h1>
+          <h1 className="text-3xl font-bold">{session?.user?.name} (Manager)</h1>
           <p className="text-muted-foreground">
             {userData ? `${userData.designation} - ${userData.businessUnit}` : 'Loading...'}
           </p>
