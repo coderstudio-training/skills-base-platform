@@ -2,10 +2,8 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {
-  ApplicationMetricsService,
   HttpExceptionFilter,
   Logger,
-  MetricsInterceptor,
   SwaggerHelper,
   TransformInterceptor,
 } from '@skills-base/shared';
@@ -25,17 +23,13 @@ async function bootstrap() {
 
   // Create logger and metrics service instances
   const logger = new Logger('user-service-main');
-  const metricsService = new ApplicationMetricsService('user_service');
 
   // Global pipes and filters
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
 
   // Global interceptors with their required dependencies
-  app.useGlobalInterceptors(
-    new MetricsInterceptor(metricsService, app.get('Reflector')),
-    new TransformInterceptor(),
-  );
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   // CORS configuration
   app.enableCors({

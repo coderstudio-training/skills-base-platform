@@ -1,10 +1,8 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {
-  ApplicationMetricsService,
   HttpExceptionFilter,
   Logger,
-  MetricsInterceptor,
   SwaggerHelper,
   TransformInterceptor,
 } from '@skills-base/shared';
@@ -20,13 +18,9 @@ async function bootstrap() {
 
   // Create logger and metrics service instances
   const logger = new Logger('bootstrap');
-  const metricsService = new ApplicationMetricsService('email_service');
 
   // Global interceptors for monitoring and logging
-  app.useGlobalInterceptors(
-    new MetricsInterceptor(metricsService, app.get('Reflector')),
-    new TransformInterceptor(),
-  );
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   // CORS configuration
   app.enableCors({
