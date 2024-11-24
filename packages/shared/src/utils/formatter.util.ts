@@ -1,7 +1,5 @@
-import { format } from 'date-fns';
 import * as winston from 'winston';
 
-// Enhanced color palette with more vibrant and distinguishable colors
 const colors = {
   reset: '\x1b[0m',
   bold: '\x1b[1m',
@@ -25,7 +23,6 @@ const colors = {
   bgGray: '\x1b[48;5;245m',
 };
 
-// Enhanced level styles with more consistent visual hierarchy
 const levelStyles = {
   error: {
     badge: `${colors.bgRed}${colors.white}${colors.bold}`,
@@ -49,14 +46,14 @@ const levelStyles = {
   },
 };
 
-// Enhanced symbols for better visual hierarchy
 const symbols = {
-  separator: '│', // Thinner separator for cleaner look
-  metadata: '•', // Simple dot for metadata
-  stackTrace: '└─', // Tree-like structure for stack traces
-  subStack: '├─', // Tree branch for stack items
-  subStackLast: '└─', // Tree branch for last stack item
-  metadataSymbol: '🔍', // Magnifying glass for metadata section
+  separator: '│',
+  metadata: '•',
+  stackTrace: '└─',
+  subStack: '├─',
+  subStackLast: '└─',
+  metadataSymbol: '🔍',
+  errorSymbol: '⛔', // Changed to stop sign emoji
 };
 
 const excludedMetadataFields = new Set(['type']);
@@ -69,8 +66,30 @@ interface LogMetadata extends winston.Logform.TransformableInfo {
   job: string;
   correlationId?: string;
   error?: Error;
-  errorTracking?: any;
-  [key: string]: any;
+}
+
+interface ErrorInfo {
+  name?: string;
+  message?: string;
+  stack?: string;
+  context?: {
+    environment?: string;
+    [key: string]: any;
+  };
+}
+
+function formatTimestamp(date: Date): string {
+  const pad = (n: number): string => n.toString().padStart(2, '0');
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
 }
 
 export const createConsoleFormat = () => {
@@ -88,82 +107,113 @@ export const createConsoleFormat = () => {
     } = info;
 
     const style = levelStyles[level as keyof typeof levelStyles];
+    const isError = level === 'error';
 
-    // Enhanced timestamp format
-    const formattedTime = `${colors.gray}${colors.dim}${format(
-      new Date(timestamp),
-      'yyyy-MM-dd HH:mm:ss.SSS',
-    )}${colors.reset}`;
+    // Format timestamp using native Date
+    const formattedTime = `${colors.gray}${colors.dim}${formatTimestamp(new Date(timestamp))}${colors.reset}`;
 
     // Enhanced level badge with padding
     const formattedLevel = `${style.badge} ${level.toUpperCase().padEnd(5)} ${colors.reset}`;
 
-    // Enhanced service and job formatting
+    // Service and job formatting
     const formattedService = `${colors.cyan}${colors.bold}${service}${colors.reset}`;
     const formattedJob =
       job && !['root'].includes(job)
         ? ` ${colors.magenta}(${job})${colors.reset}`
         : '';
 
-    // Enhanced correlation ID with better visual separation
+    // Correlation ID with visual separation
     const correlationPart = correlationId
-      ? `${colors.gray}${symbols.separator} ${colors.dim}${correlationId.slice(0, 8)}${colors.reset}`
+      ? `${colors.gray} ${symbols.separator} ${colors.dim}${correlationId.slice(0, 8)}${colors.reset}`
       : '';
 
-    // Build the base log line with improved spacing
+    // Build the base log line
     let output = `${formattedTime} ${formattedLevel} ${formattedService}${formattedJob} ${style.symbol}  ${style.text}${message}${colors.reset}${correlationPart}\n`;
 
-    // Enhanced error formatting
-    if (error) {
-      output += `${colors.red}${symbols.stackTrace} ${colors.bold}${error.name}:${colors.reset}${colors.red} ${error.message}${colors.reset}\n`;
-      if (error.stack) {
-        const formattedStack = error.stack
-          .split('\n')
-          .slice(1)
-          .map(
-            (line) =>
-              `${colors.gray}   ${symbols.subStack} ${line.trim()}${colors.reset}`,
-          )
-          .join('\n');
-        output += `${formattedStack}\n`;
+    // Enhanced unified error handling
+    const formatErrorDetails = (errorInfo: ErrorInfo, indent: string = '') => {
+      let errorOutput = '';
+
+      if (errorInfo.name || errorInfo.message) {
+        errorOutput += `${indent}${colors.red}${symbols.errorSymbol} ${colors.bold}${errorInfo.name || 'Error'}:${colors.reset}${colors.red} ${errorInfo.message}${colors.reset}\n`;
+      }
+
+      if (errorInfo.context) {
+        Object.entries(errorInfo.context).forEach(
+          ([key, value], index, array) => {
+            const isLast = index === array.length - 1;
+            const contextSymbol = isLast
+              ? symbols.subStackLast
+              : symbols.subStack;
+            const formattedValue =
+              typeof value === 'object'
+                ? JSON.stringify(value, null, 2)
+                : value;
+            errorOutput += `${indent}   ${contextSymbol} ${colors.dim}${key}:${colors.reset} ${formattedValue}\n`;
+          },
+        );
+      }
+
+      if (errorInfo.stack) {
+        const stackLines = errorInfo.stack.split('\n').slice(1);
+        stackLines.forEach((line, index) => {
+          const isLast = index === stackLines.length - 1;
+          const stackSymbol = isLast ? symbols.subStackLast : symbols.subStack;
+          errorOutput += `${indent}   ${stackSymbol} ${colors.gray}${line.trim()}${colors.reset}\n`;
+        });
+      }
+
+      return errorOutput;
+    };
+
+    // Show error details if it's an error
+    if (isError && (error || errorTracking)) {
+      output += `${colors.red}${symbols.stackTrace} ${colors.bold}Error Details${colors.reset}\n`;
+
+      if (error) {
+        output += formatErrorDetails(
+          {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          },
+          '   ',
+        );
+      }
+
+      if (errorTracking) {
+        const errorTrackingData = {
+          ...errorTracking,
+        };
+
+        if (error) {
+          output += `      ${symbols.stackTrace} ${colors.dim}Additional Error Context${colors.reset}\n`;
+        }
+        output += formatErrorDetails(errorTrackingData, '      ');
       }
     }
+    // Only show metadata/details for non-error logs
+    else if (!isError) {
+      // Metadata formatting
+      const remainingMeta = { ...metadata };
+      excludedMetadataFields.forEach((field) => delete remainingMeta[field]);
 
-    // Enhanced error tracking format
-    if (errorTracking) {
-      output += `${colors.yellow}${symbols.stackTrace} ${colors.bold}Error Tracking Details:${colors.reset}\n`;
-      if (errorTracking.context?.environment) {
-        output += `   ${symbols.subStack} ${colors.dim}Environment:${colors.reset} ${errorTracking.context.environment}\n`;
+      if (Object.keys(remainingMeta).length > 0) {
+        output += `${colors.gray}${symbols.stackTrace} ${symbols.metadataSymbol} ${colors.bold}Details${colors.reset}\n`;
+        const metaEntries = Object.entries(remainingMeta);
+        metaEntries.forEach(([key, value], index) => {
+          const isLast = index === metaEntries.length - 1;
+          const metaSymbol = isLast ? symbols.subStackLast : symbols.subStack;
+          const formattedValue =
+            typeof value === 'object'
+              ? JSON.stringify(value, null, 2).replace(
+                  /\n/g,
+                  '\n              ',
+                )
+              : value;
+          output += `   ${metaSymbol} ${colors.dim}${key}:${colors.reset} ${formattedValue}\n`;
+        });
       }
-      if (errorTracking.error) {
-        output += `   ${symbols.subStack} ${colors.dim}${errorTracking.error.name}:${colors.reset} ${errorTracking.error.message}\n`;
-      }
-    }
-
-    // Enhanced metadata formatting with graphic symbol
-    const remainingMeta = { ...metadata };
-    excludedMetadataFields.forEach((field) => delete remainingMeta[field]);
-
-    if (Object.keys(remainingMeta).length > 0) {
-      output += `${colors.gray}${symbols.stackTrace} ${symbols.metadataSymbol} ${colors.bold}Details${colors.reset}\n`;
-      const metaEntries = Object.entries(remainingMeta);
-      for (let i = 0; i < metaEntries.length - 1; i++) {
-        const [key, value] = metaEntries[i];
-        const formattedValue =
-          typeof value === 'object'
-            ? JSON.stringify(value, null, 2).replace(/\n/g, '\n              ')
-            : value;
-        output += `   ${symbols.subStack} ${colors.dim}${key}:${colors.reset} ${formattedValue}\n`;
-      }
-      const [lastKey, lastValue] = metaEntries[metaEntries.length - 1];
-      const formattedLastValue =
-        typeof lastValue === 'object'
-          ? JSON.stringify(lastValue, null, 2).replace(
-              /\n/g,
-              '\n              ',
-            )
-          : lastValue;
-      output += `   ${symbols.subStackLast} ${colors.dim}${lastKey}:${colors.reset} ${formattedLastValue}\n`;
     }
 
     return output;

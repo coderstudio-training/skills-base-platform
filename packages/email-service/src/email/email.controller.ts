@@ -77,7 +77,7 @@ export class EmailController {
     }
   }
 
-  @Post('workflow/success')
+  @Post('send-success')
   @TrackMetric({
     name: 'email_workflow_success',
     eventType: 'email_sent',
@@ -103,7 +103,7 @@ export class EmailController {
     return { message: 'Success email sent' };
   }
 
-  @Post('workflow/error')
+  @Post('send-error')
   @TrackMetric({
     name: 'email_workflow_error',
     eventType: 'email_sent',

@@ -1,84 +1,46 @@
-import { ConfigurationManager } from '../config/logging.config';
-import { Logger } from '../services/logger.service';
-
-export interface ErrorContext {
-  userId?: string;
-  correlationId?: string;
-  tags?: Record<string, string>;
-  extra?: Record<string, any>;
-  [key: string]: any;
-}
+import { ErrorContext, ErrorDetails } from '../interfaces/logging.interfaces';
 
 export class ErrorTracker {
-  private readonly logger: Logger;
-  private readonly config: ReturnType<
-    typeof ConfigurationManager.prototype.getErrorTrackerConfig
-  >;
+  constructor() {}
 
-  constructor(logger: Logger) {
-    this.logger = logger;
-    this.config = ConfigurationManager.getInstance().getErrorTrackerConfig();
-  }
-
-  private shouldSample(): boolean {
-    return Math.random() < this.config.sampleRate;
-  }
-
-  private extractStackInfo(error: Error): {
-    message: string;
-    stack: string[];
-    type: string;
-  } {
-    const stack = error.stack?.split('\n').slice(1) || [];
+  trackError(error: Error, context?: ErrorContext): ErrorDetails {
     return {
+      name: error.name,
       message: error.message,
-      stack: stack.slice(0, this.config.maxStackFrames),
-      type: error.name,
-    };
-  }
-
-  private normalizeError(error: unknown): Error {
-    if (error instanceof Error) {
-      return error;
-    }
-
-    let normalized: Error;
-    if (typeof error === 'string') {
-      normalized = new Error(error);
-    } else {
-      normalized = new Error('Unknown error');
-      normalized.name = 'UnknownError';
-    }
-
-    (normalized as any).originalValue = error;
-    return normalized;
-  }
-
-  async trackError(error: Error, context: ErrorContext = {}) {
-    if (!this.shouldSample()) return;
-
-    const stackInfo = this.extractStackInfo(error);
-    const enrichedContext = {
-      ...context,
-      environment: this.config.environment,
-      release: this.config.release,
+      stack: error.stack, // Keep the original stack string intact
+      code: (error as any).code,
       timestamp: new Date().toISOString(),
-      error: {
-        name: error.name,
-        message: error.message,
-        stack: stackInfo.stack,
+      context: {
+        ...context,
       },
     };
-
-    // Return the tracking info instead of logging it directly
-    return {
-      error: enrichedContext.error,
-      context: enrichedContext,
-    };
   }
 
-  async captureException(error: unknown, context: ErrorContext = {}) {
-    const normalizedError = this.normalizeError(error);
-    return this.trackError(normalizedError, context);
+  captureException(error: unknown, context?: ErrorContext): ErrorDetails {
+    // Handle various error types
+    if (error instanceof Error) {
+      return this.trackError(error, context);
+    }
+
+    // Handle string errors
+    if (typeof error === 'string') {
+      const err = new Error(error);
+      return this.trackError(err, context);
+    }
+
+    // Handle unknown error types
+    const unknownError = new Error('Unknown error occurred');
+    unknownError.name = 'UnknownError';
+
+    // Attach original value for debugging
+    if (error !== null && error !== undefined) {
+      try {
+        (unknownError as any).originalValue = JSON.stringify(error);
+      } catch {
+        (unknownError as any).originalValue = String(error);
+      }
+    }
+
+    return this.trackError(unknownError, context);
   }
 }

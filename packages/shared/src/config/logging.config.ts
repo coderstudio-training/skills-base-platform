@@ -1,5 +1,4 @@
 import {
-  ErrorTrackerConfig,
   LoggingConfig,
   LogLevel,
   WinstonLoggerConfig,
@@ -71,11 +70,6 @@ export class ConfigurationManager {
         ...envOverrides.logger,
         ...customConfig.logger,
       },
-      errorTracker: {
-        ...envConfig.errorTracker,
-        ...envOverrides.errorTracker,
-        ...customConfig.errorTracker,
-      },
     };
   }
 
@@ -104,19 +98,13 @@ export class ConfigurationManager {
     return this.config.logger;
   }
 
-  getErrorTrackerConfig(): ErrorTrackerConfig {
-    return this.config.errorTracker;
-  }
-
   updateConfig(
     updates: Partial<{
       logger: Partial<WinstonLoggerConfig>;
-      errorTracker: Partial<ErrorTrackerConfig>;
     }>,
   ) {
     this.config = {
       logger: { ...this.config.logger, ...updates.logger },
-      errorTracker: { ...this.config.errorTracker, ...updates.errorTracker },
     };
   }
 }

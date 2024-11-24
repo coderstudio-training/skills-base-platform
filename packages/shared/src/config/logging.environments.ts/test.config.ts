@@ -24,9 +24,5 @@ export const createTestConfig = (env: string, appVersion: string) => {
         },
       },
     },
-    errorTracker: {
-      ...baseConfig.errorTracker,
-      sampleRate: 0,
-    },
   };
 };

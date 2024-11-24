@@ -25,10 +25,5 @@ export const createProductionConfig = (env: string, appVersion: string) => {
         },
       },
     },
-    errorTracker: {
-      ...baseConfig.errorTracker,
-      sampleRate: 1,
-      maxStackFrames: 20,
-    },
   };
 };

@@ -16,15 +16,15 @@ import { StringUtils } from '../utils/string.utils';
 @Injectable()
 export class Logger {
   private logger: winston.Logger;
-  private readonly errorTracker: ErrorTracker;
   private static globalService: string = 'unknown-service';
+  private readonly errorTracker: ErrorTracker;
 
   constructor(
     private readonly job: string,
     private config = ConfigurationManager.getInstance().getLoggerConfig(),
   ) {
     this.job = job;
-    this.errorTracker = new ErrorTracker(this);
+    this.errorTracker = new ErrorTracker();
     this.logger = this.createLogger();
   }
 
@@ -149,9 +149,25 @@ export class Logger {
 
   error(error: Error | string, context?: Partial<LogContext>) {
     const errorObj = typeof error === 'string' ? new Error(error) : error;
+
+    const trackingInfo = this.errorTracker.captureException(errorObj, {
+      ...context,
+      service: Logger.globalService,
+      job: this.job,
+    });
+
     this.logger.error(errorObj.message, {
       ...this.formatContext(context),
-      error: errorObj,
+      error: errorObj, // Keep original error for stack trace
+      errorTracking: {
+        error: {
+          name: trackingInfo.name,
+          message: trackingInfo.message,
+          code: trackingInfo.code,
+        },
+        context: trackingInfo.context,
+        timestamp: trackingInfo.timestamp,
+      },
     });
   }
 
@@ -161,26 +177,6 @@ export class Logger {
 
   debug(message: string, context?: Partial<LogContext>) {
     this.logger.debug(message, this.formatContext(context));
-  }
-
-  async trackException(error: unknown, context?: Partial<LogContext>) {
-    const trackingResult = await this.errorTracker.captureException(error, {
-      ...context,
-      service: Logger.globalService,
-      job: this.job,
-    });
-
-    if (trackingResult) {
-      const normalizedError =
-        error instanceof Error ? error : new Error(String(error));
-
-      this.logger.error(normalizedError.message, {
-        ...this.formatContext(context),
-        error: normalizedError,
-        errorTracking: trackingResult,
-        isErrorTracking: true,
-      });
-    }
   }
 
   // Method to update logger configuration at runtime

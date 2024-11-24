@@ -25,9 +25,5 @@ export const createStagingConfig = (env: string, appVersion: string) => {
         },
       },
     },
-    errorTracker: {
-      ...baseConfig.errorTracker,
-      contextLines: 5,
-    },
   };
 };

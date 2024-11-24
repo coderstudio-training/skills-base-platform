@@ -14,14 +14,6 @@ export interface LogContext {
   [key: string]: any;
 }
 
-export interface ErrorTrackerConfig {
-  sampleRate: number;
-  environment: string;
-  release?: string;
-  contextLines?: number;
-  maxStackFrames?: number;
-}
-
 export interface LokiLogBase {
   ts: string; // Timestamp
   level: LogLevel; // Log level
@@ -63,16 +55,6 @@ export interface WinstonLoggerConfig {
   file?: LogFileConfig;
 }
 
-export interface ErrorTracking {
-  context: {
-    environment: string;
-  };
-  error?: {
-    name: string;
-    message: string;
-  };
-}
-
 export interface LogRetentionConfig {
   enabled: boolean;
   days: number;
@@ -86,11 +68,6 @@ export interface LogFileConfig {
   permissions?: number;
   compress?: boolean;
   retention?: LogRetentionConfig;
-}
-
-export interface LoggingConfig {
-  logger: WinstonLoggerConfig;
-  errorTracker: ErrorTrackerConfig;
 }
 
 export interface RequestContext {
@@ -124,4 +101,24 @@ export interface LoggingModuleOptions {
   enableRequestLogging?: boolean;
   enableGlobalInterceptor?: boolean;
   skipPaths?: string[];
+}
+
+export interface ErrorContext {
+  userId?: string;
+  correlationId?: string;
+  component?: string;
+  [key: string]: any;
+}
+
+export interface ErrorDetails {
+  name: string;
+  message: string;
+  stack?: string;
+  code?: string;
+  timestamp: string;
+  context?: ErrorContext;
+}
+
+export interface LoggingConfig {
+  logger: WinstonLoggerConfig;
 }

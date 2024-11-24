@@ -14,6 +14,7 @@ export const createBaseConfig = (env: string, appVersion: string) => {
   return {
     logger: {
       level: LogLevel.INFO,
+      appVersion,
       format: 'text' as 'json' | 'text',
       outputs: ['console', 'file', 'loki'] as ('console' | 'file' | 'loki')[],
       filename: 'app.log',
@@ -31,14 +32,6 @@ export const createBaseConfig = (env: string, appVersion: string) => {
           checkInterval: 24 * 60 * 60 * 1000, // 24 hours
         },
       },
-    },
-
-    errorTracker: {
-      sampleRate: 1,
-      environment: env,
-      release: appVersion,
-      contextLines: 3,
-      maxStackFrames: 50,
     },
   };
 };
