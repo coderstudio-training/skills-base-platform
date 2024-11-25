@@ -3,7 +3,6 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 // import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // import { Progress } from "@/components/ui/progress"
 // import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
@@ -11,10 +10,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Award, Download, TrendingUp, Upload, Users } from 'lucide-react';
+import { Award, TrendingUp, Users } from 'lucide-react';
 
 import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import { TeamMember } from '@/types/manager';
+import ImportExportActions from './ImportExportActions';
 import ManagerTrainingRecommendation from './ManagerTrainingRecommendation';
 import TeamCompositionChart from './TeamCompositionChart';
 import TeamMembersList from './TeamMembersList';
@@ -91,28 +91,13 @@ export default function ManagerDashboard() {
     fetchUserPictures();
   }, [teamMembers, session?.user?.accessToken]);
 
-  const handleExportReport = async () => {
-    // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    alert('Report exported successfully!');
-  };
-
   return (
     <div className="container mx-auto p-4 max-w-[80%]">
+      {/* Header */}
       <ManagerDashboardHeader />
 
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex space-x-2">
-          <Button>
-            <Upload className="mr-2 h-4 w-4" />
-            Import Data
-          </Button>
-          <Button onClick={handleExportReport}>
-            <Download className="mr-2 h-4 w-4" />
-            Export Report
-          </Button>
-        </div>
-      </div>
+      {/* Import/Export Actions */}
+      <ImportExportActions />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
