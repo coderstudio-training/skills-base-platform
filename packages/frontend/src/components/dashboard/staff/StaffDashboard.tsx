@@ -1,24 +1,21 @@
 'use client';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEffect, useState } from 'react';
 // import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 // import { ScrollArea } from "@/components/ui/scroll-area";
-import StaffLearningRecommendations from '@/components/dashboard/staff/StaffLearningRecommendation';
 import StaffDashboardHeader from '@/components/shared/StaffDashboardHeader';
 import { CustomBarChart } from '@/components/ui/barchart';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getSkillMatrix } from '@/lib/api';
-import { dummyStaffData } from '@/lib/dummyData';
-import { StaffData, StaffSkill } from '@/types/staff';
-import { Award, BookOpen, Scroll, TrendingUp } from 'lucide-react';
+import { StaffSkill } from '@/types/staff';
+import { Award, Scroll, Users } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { ResponsiveContainer } from 'recharts';
+import StaffLearningRecommendations from './StaffLearningRecommendation';
 
 const getGapStatus = (gap: number) => {
   if (gap < -2)
@@ -42,12 +39,58 @@ const getGapStatus = (gap: number) => {
   };
 };
 
+// Mock skills data
+const mockSkillsData = [
+  {
+    skill: 'Software Testing',
+    category: 'Technical Skills',
+    selfRating: 4,
+    managerRating: 3,
+    requiredRating: 4,
+  },
+  {
+    skill: 'Test Planning',
+    category: 'Technical Skills',
+    selfRating: 3,
+    managerRating: 3,
+    requiredRating: 4,
+  },
+  {
+    skill: 'Agile Software Development',
+    category: 'Technical Skills',
+    selfRating: 4,
+    managerRating: 4,
+    requiredRating: 3,
+  },
+  {
+    skill: 'Problem Solving',
+    category: 'Soft Skills',
+    selfRating: 4,
+    managerRating: 4,
+    requiredRating: 4,
+  },
+  {
+    skill: 'Communication',
+    category: 'Soft Skills',
+    selfRating: 3,
+    managerRating: 4,
+    requiredRating: 4,
+  },
+  {
+    skill: 'Collaboration and Inclusivity',
+    category: 'Soft Skills',
+    selfRating: 4,
+    managerRating: 3,
+    requiredRating: 3,
+  },
+];
+
 export default function StaffDashboard() {
   const { data: session } = useSession();
-  const [staffData] = useState<StaffData>(dummyStaffData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [skills, setSkills] = useState<StaffSkill[]>([]);
+  const [activeTab, setActiveTab] = useState('overview');
   const [selectedCategory, setSelectedCategory] = useState<'Technical Skills' | 'Soft Skills'>(
     'Technical Skills',
   );
@@ -85,65 +128,66 @@ export default function StaffDashboard() {
     [skill.skill]: skill.average, // This is needed for the chart to work properly
   }));
 
+  const averageRating = (category: string) => {
+    const filteredSkills = mockSkillsData.filter(skill => skill.category === category);
+    const sum = filteredSkills.reduce((acc, skill) => acc + skill.selfRating, 0);
+    return (sum / filteredSkills.length).toFixed(2);
+  };
+
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 max-w-[80%]">
       <StaffDashboardHeader />
 
-      <Tabs defaultValue="overview">
-        <TabsList className="grid w-full grid-cols-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="skills">My Skills</TabsTrigger>
-          <TabsTrigger value="qualifications">Qualifications</TabsTrigger>
-          <TabsTrigger value="learning">Learning Paths</TabsTrigger>
-          <TabsTrigger value="network">My Network</TabsTrigger>
+          <TabsTrigger value="skills">Skills Details</TabsTrigger>
           <TabsTrigger value="growth-plan">Growth Plan</TabsTrigger>
         </TabsList>
+
+        {/* Overview Tab */}
         <TabsContent value="overview">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Skills</CardTitle>
-                <Award className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Soft Skills Average</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{staffData.skills.length}</div>
-                <p className="text-xs text-muted-foreground">Total skills</p>
+                <div className="text-2xl font-bold">{averageRating('Soft Skills')}</div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Learning Paths</CardTitle>
-                <BookOpen className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{staffData.learningPaths.length}</div>
-                <p className="text-xs text-muted-foreground">Active paths</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Performance</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {staffData.performanceMetrics.currentScore}%
-                </div>
-                <p className="text-xs text-muted-foreground">Current score</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Network</CardTitle>
+                <CardTitle className="text-sm font-medium">Technical Skills Average</CardTitle>
                 <Scroll className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{staffData.network.length}</div>
-                <p className="text-xs text-muted-foreground">Connections</p>
+                <div className="text-2xl font-bold">{averageRating('Technical Skills')}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Skills Assessed</CardTitle>
+                <Award className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{mockSkillsData.length}</div>
               </CardContent>
             </Card>
           </div>
+
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle>Skills Overview</CardTitle>
+              <CardDescription>
+                Your current skill levels compared to required levels
+              </CardDescription>
+            </CardHeader>
+            <CardContent></CardContent>
+          </Card>
         </TabsContent>
+
         <TabsContent value="skills">
           <Card className="w-full">
             <CardHeader>
@@ -267,69 +311,6 @@ export default function StaffDashboard() {
                   </div>
                 </>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="qualifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Qualifications</CardTitle>
-              <CardDescription>Your certifications and degrees</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-4">
-                {staffData.qualifications.map((qual, index) => (
-                  <li key={index} className="flex justify-between items-center">
-                    <span>{qual.name}</span>
-                    <Badge>{qual.date}</Badge>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="learning">
-          <Card>
-            <CardHeader>
-              <CardTitle>Learning Paths</CardTitle>
-              <CardDescription>Your current learning progress</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-4">
-                {staffData.learningPaths.map((path, index) => (
-                  <li key={index}>
-                    <div className="flex justify-between items-center mb-1">
-                      <span>{path.name}</span>
-                      <span>{path.progress}%</span>
-                    </div>
-                    <Progress value={path.progress} className="w-full" />
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="network">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Network</CardTitle>
-              <CardDescription>Your professional connections</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-4">
-                {staffData.network.map((connection, index) => (
-                  <li key={index} className="flex items-center space-x-4">
-                    <Avatar>
-                      <AvatarFallback>{connection.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{connection.name}</p>
-                      <p className="text-sm text-muted-foreground">{connection.role}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
             </CardContent>
           </Card>
         </TabsContent>

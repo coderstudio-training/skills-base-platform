@@ -1,5 +1,15 @@
 // types/admin.d.ts
 
+export interface TopPerformer {
+  name: string;
+  score: number;
+  ranking: number;
+}
+
+export interface TopPerformersResponse {
+  rankings: TopPerformer[];
+}
+
 export interface Employee {
   employeeId: number;
   firstName: string;
@@ -8,7 +18,17 @@ export interface Employee {
   businessUnit: string;
   employmentStatus: string;
   grade: string;
-  skills?: EmployeeSkill[];
+  skills?: SkillDetail[];
+}
+
+export interface SkillDetail {
+  skill: string;
+  category: string;
+  selfRating: number;
+  managerRating: number;
+  requiredRating: number;
+  gap: number;
+  average: number;
 }
 
 export interface EmployeeSkill {

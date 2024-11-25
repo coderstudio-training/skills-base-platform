@@ -3,7 +3,7 @@
 import { getSkillAnalytics } from '@/lib/api';
 import { SkillAnalyticsResponse } from '@/types/api';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 
 export default function AnalysisView() {
   const [analyticsData, setAnalyticsData] = useState<SkillAnalyticsResponse | null>(null);

@@ -101,3 +101,21 @@ export class TransformedSkillsResponseDto {
   @Type(() => TransformedSkillDto)
   skills!: TransformedSkillDto[];
 }
+
+export class EmployeeRankingDto {
+  @IsString()
+  name!: string;
+
+  @IsNumber()
+  ranking!: number;
+
+  @IsNumber()
+  score!: number;
+}
+
+export class EmployeeRankingsResponseDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EmployeeRankingDto)
+  rankings!: EmployeeRankingDto[];
+}

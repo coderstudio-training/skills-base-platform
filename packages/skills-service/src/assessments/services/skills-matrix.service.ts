@@ -6,7 +6,10 @@ import {
   SkillGapDto,
   TopSkillDto,
 } from '../dto/computation.dto';
-import { SkillGapsDto } from '../dto/user-skills.dto';
+import {
+  EmployeeRankingsResponseDto,
+  SkillGapsDto,
+} from '../dto/user-skills.dto';
 import { transformToReadableKeys } from '../utils/transform-keys.util';
 
 export enum SkillCategory {
@@ -34,11 +37,83 @@ export interface TransformedSkillsResponseDto {
   skills: TransformedSkillDto[];
 }
 
+interface EmployeeScore {
+  name: string;
+  email: string;
+  score: number;
+  skillCount: number;
+  department: string;
+  ranking?: number; // Add ranking as optional property
+}
+
 @Injectable()
 export class SkillsMatrixService {
   private readonly logger = new Logger(SkillsMatrixService.name);
 
   constructor(@InjectConnection() private readonly connection: Connection) {}
+
+  async getEmployeeRankings(): Promise<EmployeeRankingsResponseDto> {
+    try {
+      const allEmployeesData = await this.getAllEmployeesSkillsData();
+
+      // Calculate average scores for each employee
+      const employeeScores: EmployeeScore[] = allEmployeesData.map(
+        (employee) => {
+          const validSkills = employee.skills.filter(
+            (skill) =>
+              skill.average > 0 ||
+              skill.selfRating > 0 ||
+              skill.managerRating > 0,
+          );
+
+          const totalScore = validSkills.reduce(
+            (sum, skill) => sum + skill.average,
+            0,
+          );
+          const averageScore =
+            validSkills.length > 0
+              ? Number((totalScore / validSkills.length).toFixed(1))
+              : 0;
+
+          return {
+            name: employee.employeeInfo.name,
+            email: employee.employeeInfo.email,
+            score: averageScore,
+            skillCount: validSkills.length,
+            department: employee.employeeInfo.capability,
+          };
+        },
+      );
+
+      // Sort employees
+      const sortedEmployees = employeeScores.sort((a, b) => {
+        const scoreDiff = b.score - a.score;
+        if (scoreDiff !== 0) return scoreDiff;
+
+        const skillCountDiff = b.skillCount - a.skillCount;
+        if (skillCountDiff !== 0) return skillCountDiff;
+
+        return a.name.localeCompare(b.name);
+      });
+
+      // Assign continuous rankings
+      const sortedScores = sortedEmployees.map((employee, index) => ({
+        name: employee.name,
+        ranking: index + 1, // Continuous ranking, no duplicates
+        score: employee.score,
+      }));
+
+      return {
+        rankings: sortedScores,
+      };
+    } catch (error) {
+      this.logger.error('Error calculating employee rankings:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+      throw error;
+    }
+  }
 
   async getAdminSkillsAnalytics(): Promise<AdminSkillAnalyticsDto> {
     try {
@@ -250,5 +325,14 @@ export class SkillsMatrixService {
       return a.skill.localeCompare(b.skill);
     }
     return a.category === SkillCategory.TECHNICAL ? -1 : 1;
+  }
+
+  async getEmployeeSkillsByEmail(
+    email: string,
+  ): Promise<TransformedSkillsResponseDto | null> {
+    const allEmployeesSkills = await this.getAllEmployeesSkillsData();
+    return (
+      allEmployeesSkills.find((emp) => emp.employeeInfo.email === email) || null
+    );
   }
 }
