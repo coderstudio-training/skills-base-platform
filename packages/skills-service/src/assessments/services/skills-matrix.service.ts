@@ -101,12 +101,14 @@ export class SkillsMatrixService {
         return a.name.localeCompare(b.name);
       });
 
-      // Assign continuous rankings
-      const sortedScores = sortedEmployees.map((employee, index) => ({
-        name: employee.name,
-        ranking: index + 1, // Continuous ranking, no duplicates
-        score: employee.score,
-      }));
+      // Assign continuous rankings and take only top 5
+      const sortedScores = sortedEmployees
+        .slice(0, 5) // Take only the first 5 employees
+        .map((employee, index) => ({
+          name: employee.name,
+          ranking: index + 1,
+          score: employee.score,
+        }));
 
       return {
         rankings: sortedScores,

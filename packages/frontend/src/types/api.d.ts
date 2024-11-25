@@ -69,9 +69,29 @@ export interface SkillAnalyticsResponse {
 
 export interface SkillsResponse {
   skills: StaffSkill[];
+  metrics: SkillMetrics;
 }
 
 export interface DistributionResponse {
   skillDistribution: BusinessUnitSkillDistribution[];
   gradeDistribution: GradeDistributionItem[];
+}
+
+export interface BackendSkillResponse {
+  employeeInfo: {
+    email: string;
+    name: string;
+    careerLevel: string;
+    capability: string;
+    managerEmail?: string;
+  };
+  skills: {
+    skill: string;
+    category: string;
+    selfRating: number;
+    managerRating: number;
+    requiredRating: number;
+    gap: number;
+    average: number;
+  }[];
 }

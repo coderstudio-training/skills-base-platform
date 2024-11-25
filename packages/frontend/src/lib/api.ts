@@ -24,7 +24,9 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
-export async function getSkillMatrix(): Promise<ApiTypes.SkillsResponse> {
+export async function getSkillMatrix(): Promise<
+  ApiTypes.SkillsResponse | ApiTypes.BackendSkillResponse[]
+> {
   const response = await fetch('/api/skills/skills-matrix');
 
   if (!response.ok) {

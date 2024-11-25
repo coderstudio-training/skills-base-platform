@@ -9,8 +9,6 @@ import { useEffect, useState } from 'react';
 import { ResponsiveContainer } from 'recharts';
 import { CustomBarChart } from '../../ui/barchart';
 
-`use client`;
-
 const getGapStatus = (gap: number) => {
   if (gap < -2)
     return {
@@ -51,7 +49,16 @@ export default function StaffSkillsView() {
       setLoading(true);
       try {
         const data = await getSkillMatrix();
-        setSkills(data.skills);
+
+        // Narrowing type to check if data is SkillsResponse or BackendSkillResponse[]
+        if (Array.isArray(data)) {
+          // If data is an array of BackendSkillResponse
+          const allSkills = data.flatMap(employee => employee.skills);
+          setSkills(allSkills);
+        } else {
+          // If data is SkillsResponse
+          setSkills(data.skills);
+        }
       } catch (err: unknown) {
         const error = err instanceof Error ? err.message : 'Failed to fetch skills data';
         console.error('Error fetching skills data:', err);
@@ -114,7 +121,6 @@ export default function StaffSkillsView() {
                     { key: 'average', name: 'Current Level', color: '#4285f4' },
                     { key: 'requiredRating', name: 'Required Level', color: '#666666' },
                   ]}
-                  title="Skills Gap Analysis"
                 />
               </ResponsiveContainer>
             </div>

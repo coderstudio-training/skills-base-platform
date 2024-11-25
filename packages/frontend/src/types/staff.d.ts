@@ -23,6 +23,12 @@ export interface PerformanceMetrics {
   trend: { month: string; score: number }[];
 }
 
+export interface SkillMetrics {
+  technicalSkillsAverage: number;
+  softSkillsAverage: number;
+  skillsAssessed: number;
+}
+
 export interface NetworkConnection {
   name: string;
   role: string;

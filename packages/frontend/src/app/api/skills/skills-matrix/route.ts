@@ -1,31 +1,38 @@
-// packages/frontend/src/app/api/skills/skill-matrix/route.ts
 import { authOptions } from '@/lib/auth';
-import { SkillsResponse } from '@/types/api';
+import { logger } from '@/lib/utils';
+import { Employee } from '@/types/admin';
+import { BackendSkillResponse, SkillsResponse } from '@/types/api';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_SKILLS_SERVICE_URL || 'http://localhost:3002';
-
-interface BackendSkillResponse {
-  employeeInfo: {
-    email: string;
-    name: string;
-    careerLevel: string;
-    capability: string;
-    managerEmail?: string;
-  };
-  skills: {
-    skill: string;
-    category: string;
-    selfRating: number;
-    managerRating: number;
-    requiredRating: number;
-    gap: number;
-    average: number;
-  }[];
-}
+const SKILLS_API_URL = process.env.NEXT_PUBLIC_SKILLS_SERVICE_URL || 'http://localhost:3002';
+const EMPLOYEES_API_URL = process.env.NEXT_PUBLIC_EMPLOYEES_SERVICE_URL || 'http://localhost:3001';
 
 function transformToStaffResponse(data: BackendSkillResponse): SkillsResponse {
+  const skills = data.skills;
+
+  // Calculate averages and counts
+  const technicalSkills = skills.filter(skill => skill.category === 'Technical Skills');
+  const softSkills = skills.filter(skill => skill.category === 'Soft Skills');
+
+  const technicalAverage =
+    technicalSkills.length > 0
+      ? Number(
+          (
+            technicalSkills.reduce((sum, skill) => sum + skill.average, 0) / technicalSkills.length
+          ).toFixed(2),
+        )
+      : 0;
+
+  const softAverage =
+    softSkills.length > 0
+      ? Number(
+          (softSkills.reduce((sum, skill) => sum + skill.average, 0) / softSkills.length).toFixed(
+            2,
+          ),
+        )
+      : 0;
+
   return {
     skills: data.skills.map(skill => ({
       skill: skill.skill,
@@ -36,6 +43,11 @@ function transformToStaffResponse(data: BackendSkillResponse): SkillsResponse {
       gap: skill.gap,
       average: skill.average,
     })),
+    metrics: {
+      technicalSkillsAverage: technicalAverage,
+      softSkillsAverage: softAverage,
+      skillsAssessed: skills.length,
+    },
   };
 }
 
@@ -44,10 +56,13 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.accessToken) {
+      logger.warn('Unauthorized access attempt');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/skills/skills-matrix`, {
+    logger.log(`Fetching skills data for user role: ${session.user.role}`);
+
+    const skillsResponse = await fetch(`${SKILLS_API_URL}/api/skills/skills-matrix`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${session.user.accessToken}`,
@@ -55,40 +70,126 @@ export async function GET() {
       },
     });
 
-    if (!response.ok) {
-      const data = await response.json();
+    if (!skillsResponse.ok) {
+      const error = await skillsResponse.json();
+      logger.error('Failed to fetch skills data', error);
       return NextResponse.json(
-        { error: data.message || 'Failed to fetch skill matrix data' },
-        { status: response.status },
+        { error: error.message || 'Failed to fetch skill matrix data' },
+        { status: skillsResponse.status },
       );
     }
 
-    const data: BackendSkillResponse[] = await response.json();
-    const { role, email } = session.user;
+    const skillsData: BackendSkillResponse[] = await skillsResponse.json();
+    const { role, email, name } = session.user;
 
-    // For staff role or default case
+    // For staff role
     if (role !== 'admin' && role !== 'manager') {
-      const staffData = data.find(employee => employee.employeeInfo.email === email);
-
+      logger.log(`Fetching staff data for email: ${email}`);
+      const staffData = skillsData.find(employee => employee.employeeInfo.email === email);
       if (!staffData) {
+        logger.warn(`Staff data not found for email: ${email}`);
         return NextResponse.json({ error: 'Staff data not found' }, { status: 404 });
       }
-
-      return NextResponse.json(transformToStaffResponse(staffData));
+      const response = transformToStaffResponse(staffData);
+      logger.debug('Staff metrics computed:', {
+        email,
+        metrics: response.metrics,
+        skillsCount: response.skills.length,
+      });
+      return NextResponse.json(response);
     }
 
-    // For manager role
+    // For manager role, fetch team members first
     if (role === 'manager') {
-      const teamData = data.filter(employee => employee.employeeInfo.managerEmail === email);
-      return NextResponse.json(
-        teamData.map(employeeData => transformToStaffResponse(employeeData)),
-      );
+      try {
+        logger.log(`Fetching team data for manager: ${name}`);
+
+        const teamResponse = await fetch(
+          `${EMPLOYEES_API_URL}/employees/manager/${encodeURIComponent(name)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.user.accessToken}`,
+            },
+          },
+        );
+
+        if (!teamResponse.ok) {
+          logger.error(`Failed to fetch team data for manager: ${name}`);
+          throw new Error('Failed to fetch team data');
+        }
+
+        const teamMembers: Employee[] = await teamResponse.json();
+        logger.debug(
+          'Team members fetched:',
+          JSON.stringify(
+            {
+              managerName: name,
+              teamSize: teamMembers.length,
+              teamMembers: teamMembers.map(m => ({
+                email: m.email,
+                name: `${m.firstName} ${m.lastName}`,
+              })),
+            },
+            null,
+            2,
+          ),
+        );
+
+        // Get team member emails
+        const teamEmails = new Set(teamMembers.map(member => member.email.toLowerCase()));
+
+        // Filter skills data to only include team members
+        const teamData = skillsData.filter(employee =>
+          teamEmails.has(employee.employeeInfo.email.toLowerCase()),
+        );
+
+        logger.log(`Found skills data for ${teamData.length} team members`);
+
+        // Use JSON.stringify with indentation to show full skills array
+        logger.debug(
+          'Team skills data:',
+          JSON.stringify(
+            {
+              managerName: name,
+              teamSize: teamMembers.length,
+              matchedMembers: teamData.length,
+              teamData: teamData.map(td => ({
+                email: td.employeeInfo.email,
+                name: td.employeeInfo.name,
+                skillsCount: td.skills.length,
+                skills: td.skills.map(skill => ({
+                  name: skill.skill,
+                  category: skill.category,
+                  average: skill.average,
+                  gap: skill.gap,
+                  selfRating: skill.selfRating,
+                  managerRating: skill.managerRating,
+                  requiredRating: skill.requiredRating,
+                })),
+              })),
+            },
+            null,
+            2,
+          ),
+        );
+
+        return NextResponse.json(teamData);
+      } catch (error) {
+        logger.error('Error in manager route:', {
+          managerName: name,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+        return NextResponse.json({ error: 'Failed to fetch team data' }, { status: 500 });
+      }
     }
 
     // For admin role
-    return NextResponse.json(data.map(employeeData => transformToStaffResponse(employeeData)));
+    logger.log('Returning all skills data for admin role');
+    return NextResponse.json(skillsData);
   } catch (error) {
-    console.error('Error in skill matrix API route:', error);
+    logger.error('Error in skill matrix route:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
