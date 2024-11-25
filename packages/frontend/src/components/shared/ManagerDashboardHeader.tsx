@@ -1,6 +1,7 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
@@ -9,6 +10,7 @@ import { useEffect, useState } from 'react';
 interface UserData {
   designation: string;
   businessUnit: string;
+  grade: string;
 }
 
 export default function ManagerHeader() {
@@ -70,6 +72,7 @@ export default function ManagerHeader() {
           <p className="text-muted-foreground">
             {userData ? `${userData.designation} - ${userData.businessUnit}` : 'Loading...'}
           </p>
+          <Badge className="mt-1">{userData ? userData.grade : 'Loading...'}</Badge>
         </div>
       </div>
       <div className="flex items-center space-x-4">
