@@ -1,5 +1,21 @@
 # Setup Guide for Core Modules
 
+## Prerequisites
+
+- Make sure that the .env file in docker has the relevant IP address in the SERVICE_HOST variable:
+
+```bash
+GRAFANA_ADMIN_USER=admin
+GRAFANA_ADMIN_PASSWORD=admin1234
+SERVICE_HOST= #your relevant IP address here
+```
+
+- Compose the docker containers for logging and monitoring
+
+```bash
+docker compose -f docker/compose.monitoring.yml up -d
+```
+
 ## 1. Configure app.module.ts
 
 ```typescript
@@ -116,7 +132,7 @@ bootstrap();
 
 ## 3. Environment Variables
 
-Create a `.env` file in your project root:
+Ensure that there is an env file in your service root. Below is an example of a basic env setup for the shared features:
 
 ```env
 # Basic Configuration
@@ -127,8 +143,8 @@ PORT=3000
 MONGODB_URI=mongodb://localhost:27017/your-database
 
 # Security Configuration
-API_KEY=your-api-key-here
-JWT_SECRET=your-jwt-secret-here
+API_KEY=your-api-key-here (Optional)
+JWT_SECRET=your-jwt-secret-here (Required)
 
 # Monitoring Configuration (Optional)
 METRICS_ENABLED=true

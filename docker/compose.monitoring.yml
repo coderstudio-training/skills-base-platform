@@ -6,11 +6,16 @@ services:
     volumes:
       - ./prometheus:/etc/prometheus
       - prometheus_data:/prometheus
+      - ./prometheus.process-env.sh:/prometheus.process-env.sh
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+    entrypoint: ['/bin/sh', '/prometheus.process-env.sh']
+    environment:
+      - SERVICE_HOST=${SERVICE_HOST}
+    env_file:
+      - .env
     networks:
       - monitoring
-
   loki:
     image: grafana/loki:latest
     ports:
@@ -21,7 +26,6 @@ services:
     command: -config.file=/etc/loki/config.yml
     networks:
       - monitoring
-
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -29,6 +33,8 @@ services:
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - grafana_data:/var/lib/grafana
+      - ./grafana.process-env.sh:/grafana.process-env.sh
+    entrypoint: ['/bin/sh', '/grafana.process-env.sh']
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=false
       - GF_AUTH_DISABLE_LOGIN_FORM=false
