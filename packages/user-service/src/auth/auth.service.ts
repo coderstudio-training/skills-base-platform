@@ -1,13 +1,14 @@
-// src/auth/auth.service.ts
+// packages/user-service/src/auth/auth.service.ts
 import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Logger, TrackMetric, UserRole } from '@skills-base/shared';
+import { UserRole } from '@skills-base/shared';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { EmployeesService } from '../employees/employees.service';
@@ -17,7 +18,7 @@ import { LoginDto, RegisterDto } from './dto';
 @Injectable()
 export class AuthService {
   private googleClient: OAuth2Client;
-  private readonly logger: Logger;
+  private readonly logger = new Logger(AuthService.name);
 
   constructor(
     private usersService: UsersService,
@@ -25,7 +26,6 @@ export class AuthService {
     private configService: ConfigService,
     private employeeService: EmployeesService,
   ) {
-    this.logger = new Logger('AuthService');
     const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
     if (!clientId) {
       this.logger.error('Google Client ID is not defined');
@@ -34,82 +34,66 @@ export class AuthService {
     this.googleClient = new OAuth2Client(clientId);
   }
 
-  @TrackMetric({ eventType: 'user_registration' })
   async register(registerDto: RegisterDto) {
     const { email, password, ...rest } = registerDto;
 
     try {
-      this.logger.info('Attempting user registration', { email });
-
+      // Check if user already exists
       const existingUser = await this.usersService.findByEmail(email);
       if (existingUser) {
-        this.logger.warn('Registration failed - email already exists', {
-          email,
-        });
         throw new ConflictException('User with this email already exists');
       }
 
+      // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create the user
       const newUser = await this.usersService.create({
         ...rest,
         email,
         password: hashedPassword,
       });
 
-      this.logger.info('User registered successfully', {
-        userId: newUser.id,
-        email: newUser.email,
-      });
-
+      // Generate JWT token
       const payload = {
         email: newUser.email,
         sub: newUser.id,
         roles: newUser.roles,
       };
-
       return {
         access_token: this.jwtService.sign(payload),
         roles: newUser.roles,
       };
     } catch (error) {
-      this.logger.error('Registration error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        email,
-      });
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to register user: ${errorMessage}`, errorStack);
       throw error;
     }
   }
 
-  @TrackMetric({ eventType: 'user_login' })
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
     try {
-      this.logger.info('Attempting user login', { email });
-
       const user = await this.usersService.findByEmail(email);
+
       if (!user) {
-        this.logger.warn('Login failed - user not found', { email });
         throw new UnauthorizedException('Invalid credentials');
       }
 
       if (!user.password) {
-        this.logger.warn('Login failed - Google OAuth account', { email });
         throw new UnauthorizedException(
           'This account uses Google OAuth. Please sign in with Google.',
         );
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
+
       if (!isPasswordValid) {
-        this.logger.warn('Login failed - invalid password', { email });
         throw new UnauthorizedException('Invalid credentials');
       }
-
-      this.logger.info('User logged in successfully', {
-        userId: user.id,
-        email: user.email,
-      });
 
       const payload = { email: user.email, sub: user.id, roles: user.roles };
       return {
@@ -117,19 +101,16 @@ export class AuthService {
         roles: user.roles,
       };
     } catch (error) {
-      this.logger.error('Login error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        email,
-      });
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to login user: ${errorMessage}`, errorStack);
       throw error;
     }
   }
 
-  @TrackMetric({ eventType: 'google_auth' })
   async verifyGoogleToken(token: string) {
     try {
-      this.logger.info('Verifying Google token');
-
       const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
       if (!clientId) {
         this.logger.error('Google Client ID is not defined');
@@ -151,9 +132,13 @@ export class AuthService {
 
       return this.handleGoogleUser(payload);
     } catch (error) {
-      this.logger.error('Google token verification error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(
+        `Failed to verify Google token: ${errorMessage}`,
+        errorStack,
+      );
       throw new UnauthorizedException('Invalid Google token');
     }
   }
@@ -167,55 +152,48 @@ export class AuthService {
     }
 
     try {
-      this.logger.info('Processing Google user', { email });
-
       let user = await this.usersService.findByEmail(email);
-      const employedUser = await this.employeeService.findByEmail(email);
 
+      const employedUser = await this.employeeService.findByEmail(email);
       if (!employedUser) {
-        this.logger.warn('Google auth failed - user not employed', { email });
         throw new UnauthorizedException(
           'User is not employed/registered by the company',
         );
       }
 
       if (!user) {
+        // If the user doesn't exist, create a new one
         user = await this.usersService.create({
           email,
           googleId: googleId!,
           firstName: given_name || 'Google',
           lastName: family_name || 'User',
           picture: picture || '',
-          roles: [UserRole.USER],
+          roles: [UserRole.USER], // Default role
         });
-        this.logger.info('Created new user with Google OAuth', {
-          userId: user.id,
-          email,
-        });
+        this.logger.log(`Created new user with Google OAuth: ${email}`);
       } else if (!user.googleId) {
+        // If the user exists but doesn't have a googleId, update it
         user = await this.usersService.update(user.id, { googleId: googleId! });
-        this.logger.info('Updated existing user with Google ID', {
-          userId: user.id,
-          email,
-        });
+        this.logger.log(`Updated existing user with Google ID: ${email}`);
       }
 
-      const jwtPayload = {
-        email: user.email,
-        sub: user.id,
-        roles: user.roles,
-      };
-
+      const jwtPayload = { email: user.email, sub: user.id, roles: user.roles };
       return {
         access_token: this.jwtService.sign(jwtPayload),
         roles: user.roles,
       };
     } catch (error) {
-      this.logger.error('Google user handling error', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        email,
-      });
-      throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(
+        `Failed to handle Google user: ${errorMessage}`,
+        errorStack,
+      );
+      throw new InternalServerErrorException(
+        'Failed to process Google authentication',
+      );
     }
   }
 }

@@ -1,53 +1,16 @@
-// src/app.module.ts
-import { Module } from '@nestjs/common';
+// packages/user-service/src/app.module.ts
+
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import {
-  DatabaseModule,
-  LoggingModule,
-  MonitoringModule,
-  SecurityModule,
-} from '@skills-base/shared';
+import { DatabaseModule, LoggerMiddleware } from '@skills-base/shared';
 import { AuthModule } from './auth/auth.module';
-import { EmployeesModule } from './employees/employees.module';
 import { UsersModule } from './users/users.module';
+import { EmployeesModule } from './employees/employees.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-    }),
-    LoggingModule.forRoot({
-      serviceName: 'user_service',
-      environment: 'development',
-    }),
-    MonitoringModule.forRoot({
-      serviceName: 'user_service',
-      enabled: true,
-      metrics: {
-        http: {
-          enabled: true,
-          excludePaths: ['/health', '/metrics'],
-        },
-        system: {
-          enabled: true,
-          collectInterval: 30000,
-        },
-      },
-      tags: {
-        environment: process.env.NODE_ENV || 'development',
-        service: 'user_service',
-      },
-    }),
-    SecurityModule.forRoot({
-      rateLimit: {
-        enabled: true,
-        windowMs: 15 * 60 * 1000,
-        max: 100,
-        skipPaths: ['/health', '/metrics'],
-      },
-      apiKey: {
-        enabled: false,
-      },
     }),
     DatabaseModule,
     UsersModule,
@@ -55,4 +18,8 @@ import { UsersModule } from './users/users.module';
     EmployeesModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
