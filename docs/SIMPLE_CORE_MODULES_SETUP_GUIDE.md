@@ -37,6 +37,9 @@ import { LoggingModule, MonitoringModule, SecurityModule } from '@skills-base/sh
         enabled: false, // Enable if you want IP whitelisting
         allowedIps: [],
       },
+      payload: {
+        maxSize: 10 * 1024 * 1024, // 10MB
+      },
     }),
 
     // Configure Monitoring Module
