@@ -8,9 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Award, TrendingUp, Users } from 'lucide-react';
 
 import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import { TeamMember } from '@/types/manager';
@@ -18,6 +17,7 @@ import ImportExportActions from './ImportExportActions';
 import ManagerTrainingRecommendation from './ManagerTrainingRecommendation';
 import TeamCompositionChart from './TeamCompositionChart';
 import TeamMembersList from './TeamMembersList';
+import TeamStatsCard from './TeamStatsCards';
 // import { ManagerData } from '@/types/manager'
 // import { dummyManagerData } from '@/lib/dummyData'
 
@@ -109,37 +109,8 @@ export default function ManagerDashboard() {
         </TabsList>
 
         <TabsContent value="overview">
-          {/* Metrics Grid */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Team Size</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{teamMembers.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Average Performance</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{87}%</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Skill Growth</CardTitle>
-                <Award className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">+{15}%</div>
-                <p className="text-xs text-muted-foreground">In the last 6 months</p>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Team Stats */}
+          <TeamStatsCard teamSize={teamMembers.length} averagePerformance={87} skillGrowth={15} />
 
           {/* Bottom Grid */}
           <div className="grid gap-4 md:grid-cols-2 mt-4">

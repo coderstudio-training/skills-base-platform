@@ -42,7 +42,7 @@ const ManagerTrainingRecommendation = () => {
           teamMembers.map(async (member: TeamMember) => {
             try {
               const recResponse = await fetch(
-                `/api/learning/recommendations/${encodeURIComponent(member.email)}`,
+                `/api/learning/recommendations/${encodeURIComponent(member.email || '')}`,
               );
               const recommendations = await recResponse.json();
               return {
@@ -120,7 +120,7 @@ const ManagerTrainingRecommendation = () => {
                   </div>
                 </div>
 
-                {member.recommendations?.recommendations.length ? (
+                {member.recommendations?.recommendations?.length ? (
                   <div className="space-y-4">
                     {member.recommendations.recommendations.map((rec, index) => (
                       <Card key={index} className="p-4">
