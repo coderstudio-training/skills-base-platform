@@ -143,7 +143,7 @@ export default function SkillsView() {
                       <div className="mt-2 flex flex-wrap gap-2">
                         {member.skills
                           .sort((a, b) => b.average - a.average) // Sort by average in descending order
-                          .slice(0, 5) // Get the top 5 skills
+                          // .slice(0, 5) // Get the top 5 skills
                           .map((skill, skillIndex) => (
                             <Badge key={skillIndex} variant="outline">
                               {skill.skill}
