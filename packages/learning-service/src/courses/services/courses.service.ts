@@ -7,6 +7,7 @@ import {
   BulkUpsertResponse,
   CourseDto,
   GetCoursesQueryDto,
+  ResourcesResponseDto,
   ValidationError,
 } from '../dto/courses.dto';
 import { Course, CourseSchema } from '../entity/courses.entity';
@@ -166,12 +167,12 @@ export class CoursesService {
       const model = await this.getModelForCollection('QA_LEARNING_RESOURCES');
 
       const filter: any = {};
-
+      // Category Filter Logic
       if (category && category !== 'All Categories') {
         filter.skillCategory = category;
         this.logger.debug(`Filtering by category: ${category}`);
       }
-
+      // Level Filter Logic
       if (level && level !== 'All Levels') {
         filter.requiredLevel = parseInt(level);
         this.logger.debug(`Filtering by level: ${level}`);
@@ -184,6 +185,35 @@ export class CoursesService {
         .exec();
     } catch (error: any) {
       this.logger.error(`Error fetching courses: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getResources(category?: string): Promise<ResourcesResponseDto> {
+    try {
+      const model = await this.getModelForCollection('QA_LEARNING_RESOURCES');
+
+      const filter: any = {};
+      if (category) {
+        filter.skillCategory = category;
+        this.logger.debug(`Filtering resources by category: ${category}`);
+      }
+
+      const [resources, totalCount] = await Promise.all([
+        model.find(filter).sort({ skillCategory: 1 }).lean().exec(),
+        model.countDocuments(filter),
+      ]);
+
+      this.logger.debug(
+        `Found ${totalCount} resources for ${category || 'all categories'}`,
+      );
+
+      return {
+        resources,
+        totalCount,
+      };
+    } catch (error: any) {
+      this.logger.error(`Error fetching resources: ${error.message}`);
       throw error;
     }
   }

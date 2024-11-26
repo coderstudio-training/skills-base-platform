@@ -19,6 +19,7 @@ import {
   BulkUpdateCoursesDto,
   BulkUpsertResponse,
   GetCoursesQueryDto,
+  ResourcesResponseDto,
 } from '../dto/courses.dto';
 import { CoursesService } from '../services/courses.service';
 
@@ -41,5 +42,13 @@ export class CoursesController {
   @Roles(UserRole.ADMIN)
   async getCourses(@Query() query: GetCoursesQueryDto) {
     return this.coursesService.getCourses(query);
+  }
+
+  @Get('resources')
+  @Roles(UserRole.ADMIN)
+  async getResources(
+    @Query('category') category?: string,
+  ): Promise<ResourcesResponseDto> {
+    return this.coursesService.getResources(category);
   }
 }

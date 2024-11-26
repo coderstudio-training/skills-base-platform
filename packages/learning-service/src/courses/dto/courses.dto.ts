@@ -10,6 +10,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { Course } from '../entity/courses.entity';
 
 // Field definitions moved from interface
 export interface Field {
@@ -94,4 +95,12 @@ export class GetCoursesQueryDto extends BaseDto {
   @IsString()
   @IsOptional()
   level?: string;
+}
+
+export class ResourcesResponseDto extends BaseDto {
+  @IsArray()
+  resources!: Course[];
+
+  @IsNumber()
+  totalCount!: number;
 }

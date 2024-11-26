@@ -42,7 +42,7 @@ const ManagerTrainingRecommendation = () => {
           teamMembers.map(async (member: TeamMember) => {
             try {
               const recResponse = await fetch(
-                `/api/learning/recommendations/${encodeURIComponent(member.email)}`,
+                `/api/learning/recommendations/${encodeURIComponent(member.email || '')}`,
               );
               const recommendations = await recResponse.json();
               return {
