@@ -1,3 +1,4 @@
+import { Roles } from '@/lib/api/types';
 import 'next-auth';
 
 declare module 'next-auth' {
@@ -8,7 +9,7 @@ declare module 'next-auth' {
       email: string;
       image?: string;
       accessToken: string;
-      role: 'staff' | 'manager' | 'admin';
+      role: Roles;
     };
   }
 
@@ -18,7 +19,7 @@ declare module 'next-auth' {
     email: string;
     accessToken: string;
     image?: string;
-    role: 'staff' | 'manager' | 'admin';
+    role: Roles;
   }
 }
 
@@ -28,6 +29,6 @@ declare module 'next-auth/jwt' {
     name: string;
     email: string;
     accessToken: string;
-    role: 'staff' | 'manager' | 'admin';
+    role: Roles;
   }
 }
