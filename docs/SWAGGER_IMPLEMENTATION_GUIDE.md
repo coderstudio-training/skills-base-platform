@@ -2,7 +2,51 @@
 
 This guide explains how to implement comprehensive API documentation using Swagger/OpenAPI in your NestJS microservice using the shared swagger utilities.
 
-## Prerequisites
+## Standard Swagger Installation
+
+> IMPORTANT: This is installation section is for temporary guidance purposes only and will be removed when shared utilities is fully standardized in the entire codebase. Please skip if you will be using the swagger config from the shared utilities.
+
+First, navigate to your service directory:
+
+```bash
+cd packages/your-service-name
+```
+
+Install the required Swagger packages:
+
+```bash
+npm install @nestjs/swagger
+```
+
+### Basic Swagger Setup (Standard)
+
+```typescript
+// main.ts
+import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  const config = new DocumentBuilder()
+    .setTitle('Your API Title')
+    .setDescription('API Description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api-docs', app, document);
+
+  await app.listen(3000);
+}
+bootstrap();
+```
+
+## Prerequisites for Shared Utilities (Shared Swagger Installation)
+
+> Note: You do not need to install swagger in your service. You may remove it from your dependencies
 
 1. Your service must have `@skills-base/shared` as a dependency:
 
@@ -43,7 +87,79 @@ async function bootstrap() {
 }
 ```
 
-## Step 2: Document DTOs
+## Step 2: Document Entities
+
+### Basic Entity Documentation
+
+```typescript
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { BaseEntity } from '@skills-base/shared';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+@Schema()
+export class User extends BaseEntity {
+  @ApiProperty({
+    description: 'User email address',
+    example: 'user@example.com',
+  })
+  @Prop({ required: true, unique: true })
+  email!: string;
+
+  @ApiPropertyOptional({
+    description: 'User password (not required for OAuth)',
+    minLength: 8,
+  })
+  @Prop({ required: false })
+  password?: string;
+
+  @ApiProperty({
+    description: 'User first name',
+    example: 'John',
+  })
+  @Prop({ required: true })
+  firstName!: string;
+
+  @ApiProperty({
+    description: 'User roles',
+    enum: UserRole,
+    isArray: true,
+    example: [UserRole.USER],
+  })
+  @Prop({ type: [String], enum: UserRole, default: [UserRole.USER] })
+  roles!: UserRole[];
+}
+```
+
+### Advanced Entity Documentation
+
+```typescript
+@Schema()
+export class ComplexEntity extends BaseEntity {
+  @ApiProperty({
+    type: () => NestedEntity,
+    description: 'Nested entity reference',
+  })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'NestedEntity' })
+  nestedRef!: NestedEntity;
+
+  @ApiProperty({
+    type: [String],
+    description: 'Array of identifiers',
+    example: ['id1', 'id2'],
+  })
+  @Prop({ type: [String] })
+  identifiers!: string[];
+
+  @ApiPropertyOptional({
+    type: () => MetadataSchema,
+    description: 'Additional metadata',
+  })
+  @Prop({ type: MetadataSchema })
+  metadata?: Record<string, any>;
+}
+```
+
+## Step 3: Document DTOs
 
 ### Basic DTO Documentation
 
@@ -52,33 +168,35 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
   @ApiProperty({
-    description: 'The email address of the user',
+    description: 'User email address',
     example: 'user@example.com',
-    format: 'email',
   })
-  email: string;
+  @IsEmail()
+  @IsNotEmpty()
+  email!: string;
 
   @ApiProperty({
-    description: 'The user password',
+    description: 'User password',
     minLength: 8,
     writeOnly: true,
   })
-  password: string;
+  @IsString()
+  @MinLength(8)
+  password!: string;
 
   @ApiProperty({
     description: 'User role',
-    enum: ['user', 'admin'],
-    default: 'user',
+    enum: UserRole,
+    default: UserRole.USER,
   })
-  role: string;
+  @IsEnum(UserRole)
+  role!: UserRole;
 }
 ```
 
 ### Advanced DTO Documentation
 
 ```typescript
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-
 export class AdvancedDto {
   @ApiProperty({
     type: [String],
@@ -103,7 +221,7 @@ export class AdvancedDto {
 }
 ```
 
-## Step 3: Document Controllers
+## Step 4: Document Controllers
 
 ### Basic Controller Documentation
 
@@ -185,7 +303,7 @@ export class AdvancedController {
 }
 ```
 
-## Step 4: Document Authentication
+## Step 5: Document Authentication
 
 ### JWT Authentication
 
