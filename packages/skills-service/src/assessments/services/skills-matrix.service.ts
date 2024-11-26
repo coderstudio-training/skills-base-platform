@@ -462,4 +462,13 @@ export class SkillsMatrixService {
     }
     return a.category === SkillCategory.TECHNICAL ? -1 : 1;
   }
+
+  async getEmployeeSkillsByEmail(
+    email: string,
+  ): Promise<TransformedSkillsResponseDto | null> {
+    const allEmployeesSkills = await this.getAllEmployeesSkillsData();
+    return (
+      allEmployeesSkills.find((emp) => emp.employeeInfo.email === email) || null
+    );
+  }
 }

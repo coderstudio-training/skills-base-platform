@@ -1,10 +1,10 @@
 // lib/api.ts
-
 import { logger } from '@/lib/utils';
-import { AdminData, Course, Department, LearningPath, Skill, Staff } from '@/types/admin';
+import { AdminData, Department, LearningPath, Skill, Staff } from '@/types/admin';
 import * as ApiTypes from '@/types/api';
+import { RecommendationResponse } from '@/types/staff';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_USER_SERVICE_URL;
+const API_BASE_URL = 'http://localhost:3003';
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const response = await fetch(url, {
@@ -76,8 +76,16 @@ export async function getSkills(): Promise<Skill[]> {
   return fetchWithAuth(`${API_BASE_URL}/admin/skills`);
 }
 
-export async function getCourses(): Promise<Course[]> {
-  return fetchWithAuth(`${API_BASE_URL}/admin/courses`);
+//Learning Recommendation API
+export async function learningRecommendationAPI(email: string): Promise<RecommendationResponse> {
+  const response = await fetch(`/api/learning/recommendations/${encodeURIComponent(email)}`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to fetch recommendations');
+  }
+
+  return response.json();
 }
 
 export async function getLearningPaths(): Promise<LearningPath[]> {

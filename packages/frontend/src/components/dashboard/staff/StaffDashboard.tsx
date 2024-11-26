@@ -1,56 +1,44 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
 // import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { dummyStaffData } from '@/lib/dummyData';
-import { StaffData } from '@/types/staff';
 import StaffSkillsView from './StaffSkillsView';
 // import { ScrollArea } from "@/components/ui/scroll-area";
 import StaffDashboardHeader from '@/components/shared/StaffDashboardHeader';
 import Overview from './Overview';
+import StaffLearningRecommendations from './StaffLearningRecommendation';
 
 export default function StaffDashboard() {
-  //const { data: session } = useSession();
-  const [staffData] = useState<StaffData>(dummyStaffData);
+  const [activeTab, setActiveTab] = useState('overview');
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 max-w-[80%]">
       <StaffDashboardHeader />
 
-      <Tabs defaultValue="overview">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="skills">Skills Details</TabsTrigger>
-          <TabsTrigger value="career">Learning Recommendations</TabsTrigger>
+          <TabsTrigger value="growth-plan">Growth Plan</TabsTrigger>
         </TabsList>
+
+        {/* Overview Tab */}
+
         <TabsContent value="overview">
           <Overview />
         </TabsContent>
+
+        {/* Skills Tab */}
+
         <TabsContent value="skills">
           <StaffSkillsView />
         </TabsContent>
 
-        <TabsContent value="career">
-          <Card>
-            <CardHeader>
-              <CardTitle>Learning Recommendations</CardTitle>
-              <CardDescription>Potential career progression</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-4">
-                {staffData.careerPaths.map((path, index) => (
-                  <li key={index}>
-                    <p className="font-medium">{path.role}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Required Skills: {path.requiredSkills.join(', ')}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+        {/* Growth Tab */}
+
+        <TabsContent value="growth-plan">
+          <StaffLearningRecommendations />
         </TabsContent>
       </Tabs>
     </div>

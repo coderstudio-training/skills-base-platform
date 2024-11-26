@@ -5,7 +5,7 @@ import { AuthResponse, DecodedToken } from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
+import GoogleProvider, { GoogleProfile } from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
 
 logger.log('Starting to load auth options in lib/auth.ts...');
@@ -90,7 +90,7 @@ export const authOptions: NextAuthOptions = {
         if (response.ok) {
           user.role = data.roles[0];
           user.accessToken = data.access_token;
-          user.image = profile?.image;
+          user.image = (profile as GoogleProfile)?.picture || undefined;
           logger.log('Google Auth USER: ', JSON.stringify(user));
           return true;
         } else {
@@ -118,7 +118,7 @@ export const authOptions: NextAuthOptions = {
         name: token.name as string,
         email: token.email as string,
         accessToken: token.accessToken as string,
-        image: token.picture as string,
+        image: token.picture || '',
         role: token.role as 'staff' | 'manager' | 'admin',
       };
       logger.log('Session Callback - Session:', JSON.stringify(session));

@@ -26,6 +26,12 @@ export class EmployeesService {
           { unique: true, background: true },
         ),
       ]);
+      await Promise.all([
+        this.employeeModel.collection.createIndex(
+          { employeeId: 1 },
+          { unique: true, background: true },
+        ),
+      ]);
       this.logger.log('Indexes ensured for Employees collection');
     } catch (error) {
       this.logger.error(

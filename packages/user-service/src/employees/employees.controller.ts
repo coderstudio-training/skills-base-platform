@@ -72,6 +72,17 @@ export class EmployeesController {
     return this.employeesService.findByEmployeeId(employeeId);
   }
 
+  @Get('email/:email')
+  @Roles(UserRole.MANAGER, UserRole.ADMIN, UserRole.USER)
+  async findByEmail(@Param('email') email: string) {
+    this.logger.log(`Fetching employee details for email: ${email}`);
+    const employee = await this.employeesService.findByEmail(email);
+    if (!employee) {
+      this.logger.warn(`No employee found for email: ${email}`);
+    }
+    return employee;
+  }
+
   @Get('manager/:managerName')
   @Roles(UserRole.MANAGER, UserRole.ADMIN)
   async findTeamMembers(@Param('managerName') managerName: string) {

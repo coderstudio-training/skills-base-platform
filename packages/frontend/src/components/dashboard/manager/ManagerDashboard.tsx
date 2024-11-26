@@ -3,46 +3,30 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 // import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // import { Progress } from "@/components/ui/progress"
 // import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Download, TrendingUp, Trophy, Upload, Users } from 'lucide-react';
+import { Award, TrendingUp, Users } from 'lucide-react';
 
 import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { TeamMember } from '@/types/manager';
+import ImportExportActions from './ImportExportActions';
+import ManagerTrainingRecommendation from './ManagerTrainingRecommendation';
 import SkillsView from './SkillsView';
+import TeamCompositionChart from './TeamCompositionChart';
+import TeamMembersList from './TeamMembersList';
 // import { ManagerData } from '@/types/manager'
 // import { dummyManagerData } from '@/lib/dummyData'
 
-// const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
-
-interface TeamMember {
-  employeeId: number;
-  firstName: string;
-  lastName: string;
-  designation: string;
-  email?: string;
-  performanceScore?: number;
-  managerName?: string;
-  picture?: string;
-}
-
 export default function ManagerDashboard() {
   const { data: session } = useSession();
-  const [timeRange, setTimeRange] = useState<string>('6m');
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [membersWithPictures, setMembersWithPictures] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
   const [error, setError] = useState<string | null>(null);
 
   //   const [managerData, setManagerData] = useState<ManagerData>(dummyManagerData)
@@ -107,79 +91,52 @@ export default function ManagerDashboard() {
     fetchUserPictures();
   }, [teamMembers, session?.user?.accessToken]);
 
-  const handleExportReport = async () => {
-    // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    alert('Report exported successfully!');
-  };
-
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 max-w-[80%]">
+      {/* Header */}
       <ManagerDashboardHeader />
 
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex space-x-2">
-          <Button>
-            <Upload className="mr-2 h-4 w-4" />
-            Import Data
-          </Button>
-          <Button onClick={handleExportReport}>
-            <Download className="mr-2 h-4 w-4" />
-            Export Report
-          </Button>
-        </div>
-        <Select value={timeRange} onValueChange={(value: string) => setTimeRange(value)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select time range" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1m">Last Month</SelectItem>
-            <SelectItem value="3m">Last 3 Months</SelectItem>
-            <SelectItem value="6m">Last 6 Months</SelectItem>
-            <SelectItem value="1y">Last Year</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Import/Export Actions */}
+      <ImportExportActions />
 
-      <Tabs defaultValue="overview">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="team-skills">Team Skills</TabsTrigger>
-          <TabsTrigger value="development">Development</TabsTrigger>
+          <TabsTrigger value="skills">Skills</TabsTrigger>
+          <TabsTrigger value="training">Training</TabsTrigger>
+          <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
           {/* Metrics Grid */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-gray-500" />
-                  <h3 className="text-sm text-gray-500">Team Size</h3>
-                </div>
-                <p className="text-3xl font-bold mt-2">12</p>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Team Size</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{teamMembers.length}</div>
               </CardContent>
             </Card>
-
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-gray-500" />
-                  <h3 className="text-sm text-gray-500">Average Performance</h3>
-                </div>
-                <p className="text-3xl font-bold mt-2">87%</p>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Average Performance</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{87}%</div>
               </CardContent>
             </Card>
-
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-gray-500" />
-                  <h3 className="text-sm text-gray-500">Skill Growth</h3>
-                </div>
-                <p className="text-3xl font-bold mt-2">+15%</p>
-                <p className="text-sm text-gray-500">In the last 6 months</p>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Skill Growth</CardTitle>
+                <Award className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">+{15}%</div>
+                <p className="text-xs text-muted-foreground">In the last 6 months</p>
               </CardContent>
             </Card>
           </div>
@@ -187,76 +144,10 @@ export default function ManagerDashboard() {
           {/* Bottom Grid */}
           <div className="grid gap-4 md:grid-cols-2 mt-4">
             {/* Team Composition */}
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="font-bold mb-1">Team Composition</h3>
-                <p className="text-sm text-gray-500 mb-4">Distribution of roles in your team</p>
-                <div className="h-48 bg--100 rounded-lg" />
-              </CardContent>
-            </Card>
+            <TeamCompositionChart teamMembers={membersWithPictures} loading={loading} />
 
-            {/* Top Performers */}
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="font-bold mb-1">Team Members List</h3>
-                <p className="text-sm text-gray-500 mb-4">List of your team members</p>
-                <ScrollArea className="h-[300px] w-full">
-                  {loading ? (
-                    <div className="flex items-center justify-center h-full">
-                      <p>Loading team members...</p>
-                    </div>
-                  ) : error ? (
-                    <div className="flex items-center justify-center h-full text-red-500">
-                      <p>{error}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 pr-4">
-                      {membersWithPictures.map(member => (
-                        <div
-                          key={member.email}
-                          className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              {member.picture ? (
-                                <AvatarImage
-                                  src={member.picture}
-                                  alt={`${member.firstName} ${member.lastName}`}
-                                  width={40}
-                                  height={40}
-                                  onError={e => {
-                                    const imgElement = e.target as HTMLImageElement;
-                                    imgElement.style.display = 'none';
-                                  }}
-                                />
-                              ) : null}
-                              <AvatarFallback className="uppercase bg-gray-100 text-gray-600">
-                                {member.firstName?.[0]}
-                                {member.lastName?.[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">
-                                {member.firstName} {member.lastName}
-                              </p>
-                              <p className="text-sm text-gray-500">{member.designation}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center">
-                            {member.performanceScore && (
-                              <span className="font-medium">{member.performanceScore}%</span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                      {teamMembers.length === 0 && (
-                        <div className="text-center text-gray-500">No team members found</div>
-                      )}
-                    </div>
-                  )}
-                </ScrollArea>
-              </CardContent>
-            </Card>
+            {/* Team Members List */}
+            <TeamMembersList loading={loading} error={error} members={membersWithPictures} />
           </div>
         </TabsContent>
 
@@ -329,7 +220,7 @@ export default function ManagerDashboard() {
                             <p className="font-medium">
                               {member.firstName} {member.lastName}
                             </p>
-                            <p className="text-sm text-gray-500">{member.designation}</p>
+                            <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
@@ -353,7 +244,7 @@ export default function ManagerDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="team-skills">
+        <TabsContent value="skills">
           {/* Team Performance Trend Card */}
           {/* <Card>
             <CardContent className="pt-6">
@@ -382,7 +273,11 @@ export default function ManagerDashboard() {
           <SkillsView />
         </TabsContent>
 
-        <TabsContent value="development">{/* Development content */}</TabsContent>
+        <TabsContent value="training">
+          {' '}
+          <ManagerTrainingRecommendation />
+        </TabsContent>
+        <TabsContent value="evaluation">{/* Evaluation content */}</TabsContent>
       </Tabs>
     </div>
   );
