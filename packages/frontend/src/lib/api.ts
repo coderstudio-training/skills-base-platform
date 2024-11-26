@@ -24,20 +24,7 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
-export async function getSkillMatrix(): Promise<
-  ApiTypes.SkillsResponse | ApiTypes.BackendSkillResponse[]
-> {
-  const response = await fetch('/api/skills/skills-matrix');
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || 'Failed to fetch skill matrix data');
-  }
-
-  return response.json();
-}
-
-export const getSkillAnalytics = async (): Promise<ApiTypes.SkillAnalyticsResponse> => {
+export async function getSkillAnalytics(): Promise<ApiTypes.SkillAnalyticsResponse> {
   const response = await fetch('/api/skills/analytics');
 
   if (!response.ok) {
@@ -46,7 +33,7 @@ export const getSkillAnalytics = async (): Promise<ApiTypes.SkillAnalyticsRespon
   }
 
   return response.json();
-};
+}
 
 export async function getDistributions(): Promise<ApiTypes.DistributionResponse> {
   const response = await fetch('/api/skills/distributions');
@@ -72,8 +59,17 @@ export async function getStaffs(): Promise<Staff[]> {
   return fetchWithAuth(`${API_BASE_URL}/admin/staffs`);
 }
 
-export async function getSkills(): Promise<Skill[]> {
-  return fetchWithAuth(`${API_BASE_URL}/admin/skills`);
+export async function getSkills(): Promise<
+  ApiTypes.SkillsResponse | ApiTypes.BackendSkillResponse[]
+> {
+  const response = await fetch('/api/skills/skills-matrix');
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to fetch skill matrix data');
+  }
+
+  return response.json();
 }
 
 //Learning Recommendation API

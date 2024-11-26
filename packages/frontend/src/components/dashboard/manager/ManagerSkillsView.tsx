@@ -4,7 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { getSkillMatrix } from '@/lib/api';
+import { getSkills } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { Employee } from '@/types/admin';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -30,7 +31,7 @@ interface TeamMemberWithSkills {
 //   picture: string;
 // }
 
-export default function SkillsView() {
+export default function ManagerSkillsView() {
   const { data: session } = useSession();
   const [teamSkills, setTeamSkills] = useState<TeamMemberWithSkills[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +54,7 @@ export default function SkillsView() {
         const teamMembers = await teamResponse.json();
 
         // Fetch skills data (can return either SkillsResponse or BackendSkillResponse[])
-        const skillsData = await getSkillMatrix();
+        const skillsData = await getSkills();
 
         if (Array.isArray(skillsData)) {
           // skillsData is of type BackendSkillResponse[]
@@ -142,11 +143,19 @@ export default function SkillsView() {
                       </div>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {member.skills
-                          .sort((a, b) => b.average - a.average) // Sort by average in descending order
-                          // .slice(0, 5) // Get the top 5 skills
+                          .sort((a, b) => b.average - a.average)
                           .map((skill, skillIndex) => (
-                            <Badge key={skillIndex} variant="outline">
-                              {skill.skill}
+                            <Badge
+                              key={skillIndex}
+                              variant="outline"
+                              className={cn(
+                                'border-2',
+                                skill.gap >= 0
+                                  ? 'border-green-500 text-green-700 bg-green-50 hover:bg-green-100'
+                                  : 'border-red-500 text-red-700 bg-red-50 hover:bg-red-100',
+                              )}
+                            >
+                              {skill.skill}: {skill.average.toFixed(1)}
                             </Badge>
                           ))}
                       </div>

@@ -10,8 +10,6 @@ const EMPLOYEES_API_URL = process.env.NEXT_PUBLIC_EMPLOYEES_SERVICE_URL || 'http
 
 function transformToStaffResponse(data: BackendSkillResponse): SkillsResponse {
   const skills = data.skills;
-
-  // Calculate averages and counts
   const technicalSkills = skills.filter(skill => skill.category === 'Technical Skills');
   const softSkills = skills.filter(skill => skill.category === 'Soft Skills');
 
@@ -91,11 +89,6 @@ export async function GET() {
         return NextResponse.json({ error: 'Staff data not found' }, { status: 404 });
       }
       const response = transformToStaffResponse(staffData);
-      logger.debug('Staff metrics computed:', {
-        email,
-        metrics: response.metrics,
-        skillsCount: response.skills.length,
-      });
       return NextResponse.json(response);
     }
 
@@ -144,35 +137,6 @@ export async function GET() {
         );
 
         logger.log(`Found skills data for ${teamData.length} team members`);
-
-        // Use JSON.stringify with indentation to show full skills array
-        logger.debug(
-          'Team skills data:',
-          JSON.stringify(
-            {
-              managerName: name,
-              teamSize: teamMembers.length,
-              matchedMembers: teamData.length,
-              teamData: teamData.map(td => ({
-                email: td.employeeInfo.email,
-                name: td.employeeInfo.name,
-                skillsCount: td.skills.length,
-                skills: td.skills.map(skill => ({
-                  name: skill.skill,
-                  category: skill.category,
-                  average: skill.average,
-                  gap: skill.gap,
-                  selfRating: skill.selfRating,
-                  managerRating: skill.managerRating,
-                  requiredRating: skill.requiredRating,
-                })),
-              })),
-            },
-            null,
-            2,
-          ),
-        );
-
         return NextResponse.json(teamData);
       } catch (error) {
         logger.error('Error in manager route:', {

@@ -14,8 +14,8 @@ import { Award, TrendingUp, Users } from 'lucide-react';
 import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import { TeamMember } from '@/types/manager';
 import ImportExportActions from './ImportExportActions';
+import ManagerSkillsView from './ManagerSkillsView';
 import ManagerTrainingRecommendation from './ManagerTrainingRecommendation';
-import SkillsView from './SkillsView';
 import TeamCompositionChart from './TeamCompositionChart';
 import TeamMembersList from './TeamMembersList';
 // import { ManagerData } from '@/types/manager'
@@ -153,14 +153,14 @@ export default function ManagerDashboard() {
 
         <TabsContent value="performance">
           {/* Team Performance Trend Card */}
-          <Card>
+          {/* <Card>
             <CardContent className="pt-6">
               <h3 className="text-lg font-semibold">Team Performance Trend</h3>
               <p className="text-sm text-gray-500 mb-4">
                 Average team performance over the last 6 months
               </p>
               <div className="w-full">
-                {/* <BarChart
+                <BarChart
                   width={800}
                   height={300}
                   data={trendData}
@@ -171,10 +171,10 @@ export default function ManagerDashboard() {
                   <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} />
                   <Tooltip />
                   <Bar dataKey="performance" fill="#8884d8" radius={[4, 4, 0, 0]} />
-                </BarChart> */}
+                </BarChart>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Individual Performance Card */}
           <Card className="mt-4">
@@ -270,7 +270,7 @@ export default function ManagerDashboard() {
           </Card> */}
 
           {/* Individual Performance Card */}
-          <SkillsView />
+          <ManagerSkillsView />
         </TabsContent>
 
         <TabsContent value="training">
