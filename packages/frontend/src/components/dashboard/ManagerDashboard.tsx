@@ -1,6 +1,6 @@
 'use client';
 
-import { signOut, useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 // import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from '@/components/ui/button';
@@ -20,49 +20,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-// import { ManagerData } from '@/types/manager'
-// import { dummyManagerData } from '@/lib/dummyData'
+import { useAuth } from '@/lib/api/hooks';
+import { getUserPicture } from '@/lib/users/api';
+import { getTeamMembers } from '@/lib/users/employees/api';
+import { TeamMember } from '@/lib/users/employees/types';
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
-interface TeamMember {
-  employeeId: number;
-  firstName: string;
-  lastName: string;
-  designation: string;
-  email?: string;
-  performanceScore?: number;
-  managerName?: string;
-  picture?: string;
-}
-
 export default function ManagerDashboard() {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [timeRange, setTimeRange] = useState<string>('6m');
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [membersWithPictures, setMembersWithPictures] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  //   const [managerData, setManagerData] = useState<ManagerData>(dummyManagerData)
-
+  // I suggest using hook.ts for client side or do server side rendering like skills/taxonomy/[businessUnit]
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
         setLoading(true);
-        const token = session?.user?.accessToken;
+        if (!user?.name) {
+          setError('Name is missing!');
+          throw new Error('Name is missing!');
+        }
 
-        const response = await fetch(
-          `/api/employees/manager/${encodeURIComponent(session?.user?.name || '')}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
+        const response = await getTeamMembers(user?.name, { cache: 'force-cache' });
 
-        const data = await response.json();
-        setTeamMembers(data);
+        if (response.error || response.data === null) {
+          throw new Error(`Error fetching team members: ${error}`);
+        }
+
+        setTeamMembers(response.data);
         setError(null);
       } catch (err) {
         console.error('Error fetching team members:', err);
@@ -72,10 +61,10 @@ export default function ManagerDashboard() {
       }
     };
 
-    if (session?.user?.name) {
+    if (user?.name) {
       fetchTeamMembers();
     }
-  }, [session?.user?.name, session?.user?.accessToken]);
+  }, [user?.name]);
 
   useEffect(() => {
     const fetchUserPictures = async () => {
@@ -84,15 +73,12 @@ export default function ManagerDashboard() {
       const updatedMembers = await Promise.all(
         teamMembers.map(async member => {
           if (!member.email) return member;
-
           try {
-            const response = await fetch(`/api/users/picture/${encodeURIComponent(member.email)}`, {
-              headers: {
-                Authorization: `Bearer ${session?.user?.accessToken}`,
-              },
-            });
-            const data = await response.json();
-            return { ...member, picture: data.picture };
+            const response = await getUserPicture(member.email, { cache: 'force-cache' });
+            if (response.error || response.data === null) {
+              throw new Error(`Error fetching team members' photos: ${error}`);
+            }
+            return { ...member, picture: response.data.picture };
           } catch (error) {
             console.error(`Error fetching picture for ${member.email}:`, error);
             return member;
@@ -104,7 +90,7 @@ export default function ManagerDashboard() {
     };
 
     fetchUserPictures();
-  }, [teamMembers, session?.user?.accessToken]);
+  }, [teamMembers]);
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
@@ -125,10 +111,10 @@ export default function ManagerDashboard() {
         </div>
         <div className="flex items-center space-x-4">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || ''} />
-            <AvatarFallback>{session?.user?.name?.[0] || 'M'}</AvatarFallback>
+            <AvatarImage src={user?.image || ''} alt={user?.name || ''} />
+            <AvatarFallback>{user?.name?.[0] || 'M'}</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium">{session?.user?.name}</span>
+          <span className="text-sm font-medium">{user?.name}</span>
           <Button variant="outline" size="sm" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Logout
