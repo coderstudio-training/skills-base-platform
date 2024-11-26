@@ -149,10 +149,9 @@ export default function ManagerSkillsView() {
                               key={skillIndex}
                               variant="outline"
                               className={cn(
-                                'border-2',
                                 skill.gap >= 0
-                                  ? 'border-green-500 text-green-700 bg-green-50 hover:bg-green-100'
-                                  : 'border-red-500 text-red-700 bg-red-50 hover:bg-red-100',
+                                  ? 'text-white rounded-md bg-green-500 hover:bg-green-600'
+                                  : 'text-white rounded-md bg-red-500 hover:bg-red-600',
                               )}
                             >
                               {skill.skill}: {skill.average.toFixed(1)}

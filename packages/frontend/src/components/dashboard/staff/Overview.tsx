@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CustomTooltip } from '@/components/ui/tooltip';
-import { getSkillMatrix } from '@/lib/api';
+import { getSkills } from '@/lib/api';
 import { calculateMetricsFromBackendResponse, isSkillsResponse } from '@/lib/type-guards';
 import type { SkillMetrics, StaffSkill } from '@/types/staff';
 import { Blocks, BrainCircuit, User2 } from 'lucide-react';
@@ -35,7 +35,7 @@ export default function Overview() {
   useEffect(() => {
     const fetchSkillData = async () => {
       try {
-        const response = await getSkillMatrix();
+        const response = await getSkills();
         if (isSkillsResponse(response)) {
           setData({
             metrics: response.metrics,

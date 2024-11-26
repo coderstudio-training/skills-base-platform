@@ -128,7 +128,7 @@ export default function StaffSkillsView() {
                   series={[
                     { key: 'average', name: 'Current Level', color: '#4285f4' },
                     { key: 'requiredRating', name: 'Required Level', color: '#666666' },
-                    { key: 'gap', name: 'Skill Gap', color: '#dc2626' }, // Added gap with red color
+                    { key: 'gap', name: 'Skill Gap', color: '#dc2626' },
                   ]}
                 />
               </ResponsiveContainer>
@@ -183,7 +183,10 @@ export default function StaffSkillsView() {
                               </td>
                               <td className="py-4 px-6 text-sm w-[20%]">
                                 <div className="flex items-center gap-2">
-                                  <Progress value={skill.selfRating * 20} className="w-20 h-2" />
+                                  <Progress
+                                    value={(skill.selfRating / 6) * 100}
+                                    className="w-20 h-2"
+                                  />
                                   <span className="text-sm font-normal w-4">
                                     {skill.selfRating}
                                   </span>
@@ -191,7 +194,10 @@ export default function StaffSkillsView() {
                               </td>
                               <td className="py-4 px-6 text-sm w-[20%]">
                                 <div className="flex items-center gap-2">
-                                  <Progress value={skill.managerRating * 20} className="w-20 h-2" />
+                                  <Progress
+                                    value={(skill.managerRating / 6) * 100}
+                                    className="w-20 h-2"
+                                  />
                                   <span className="text-sm font-normal w-4">
                                     {skill.managerRating}
                                   </span>
@@ -200,7 +206,7 @@ export default function StaffSkillsView() {
                               <td className="py-4 px-6 w-[15%] text-sm">
                                 <div className="flex items-center justify-center gap-2">
                                   <Progress
-                                    value={skill.requiredRating * 20}
+                                    value={(skill.requiredRating / 6) * 100}
                                     className="w-20 h-2"
                                   />
                                   <span className="text-sm font-normal w-4">
