@@ -80,7 +80,7 @@ export default function AnalysisView() {
       <div className="h-[350px] flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="text-sm text-muted-foreground">Loading taxonomy...</p>
+          <p className="text-sm text-muted-foreground">Loading metrics...</p>
         </div>
       </div>
     );
