@@ -13,6 +13,7 @@ import { Settings } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { NotificationCenter } from './NotificationCenter';
+import { ReportGenerator } from '../ReportGenerator';
 
 export default function AdminDashboardHeader() {
   const [lastSyncTime, setLastSyncTime] = useState('No sync data');
@@ -43,6 +44,7 @@ export default function AdminDashboardHeader() {
         </div>
         <div className="flex items-center space-x-4">
           <NotificationCenter onLastNotificationDateChange={handleLastNotificationDate} />
+          <ReportGenerator />
           <Button variant="ghost" size="icon">
             <Settings className="h-5 w-5" />
           </Button>

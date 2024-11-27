@@ -7,13 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // import { Progress } from "@/components/ui/progress"
 // import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import { TeamMember } from '@/types/manager';
 import ImportExportActions from './ImportExportActions';
+import ManagerSkillsView from './ManagerSkillsView';
 import ManagerTrainingRecommendation from './ManagerTrainingRecommendation';
 import TeamCompositionChart from './TeamCompositionChart';
 import TeamMembersList from './TeamMembersList';
@@ -124,14 +124,14 @@ export default function ManagerDashboard() {
 
         <TabsContent value="performance">
           {/* Team Performance Trend Card */}
-          <Card>
+          {/* <Card>
             <CardContent className="pt-6">
               <h3 className="text-lg font-semibold">Team Performance Trend</h3>
               <p className="text-sm text-gray-500 mb-4">
                 Average team performance over the last 6 months
               </p>
               <div className="w-full">
-                {/* <BarChart
+                <BarChart
                   width={800}
                   height={300}
                   data={trendData}
@@ -142,10 +142,10 @@ export default function ManagerDashboard() {
                   <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} />
                   <Tooltip />
                   <Bar dataKey="performance" fill="#8884d8" radius={[4, 4, 0, 0]} />
-                </BarChart> */}
+                </BarChart>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Individual Performance Card */}
           <Card className="mt-4">
@@ -217,14 +217,14 @@ export default function ManagerDashboard() {
 
         <TabsContent value="skills">
           {/* Team Performance Trend Card */}
-          <Card>
+          {/* <Card>
             <CardContent className="pt-6">
               <h3 className="text-lg font-semibold">Team Performance Trend</h3>
               <p className="text-sm text-gray-500 mb-4">
                 Average team performance over the last 6 months
               </p>
               <div className="w-full">
-                {/* <BarChart
+                <BarChart
                   width={800}
                   height={300}
                   data={trendData}
@@ -235,73 +235,13 @@ export default function ManagerDashboard() {
                   <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} />
                   <Tooltip />
                   <Bar dataKey="performance" fill="#8884d8" radius={[4, 4, 0, 0]} />
-                </BarChart> */}
+                </BarChart>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Individual Performance Card */}
-          <Card className="mt-4">
-            <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold">Team Skills Breakdown</h3>
-              <p className="text-sm text-gray-500 mb-4">Detailed view of individual skills</p>
-              <ScrollArea className="h-[300px] w-full">
-                {loading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <p>Loading team members...</p>
-                  </div>
-                ) : error ? (
-                  <div className="flex items-center justify-center h-full text-red-500">
-                    <p>{error}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4 pr-4">
-                    {membersWithPictures.map(member => (
-                      <div
-                        key={member.email}
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            {member.picture ? (
-                              <AvatarImage
-                                src={member.picture}
-                                alt={`${member.firstName} ${member.lastName}`}
-                                width={40}
-                                height={40}
-                                onError={e => {
-                                  const imgElement = e.target as HTMLImageElement;
-                                  imgElement.style.display = 'none';
-                                }}
-                              />
-                            ) : null}
-                            <AvatarFallback className="uppercase bg-gray-100 text-gray-600">
-                              {member.firstName?.[0]}
-                              {member.lastName?.[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <p className="font-medium">
-                              {member.firstName} {member.lastName}
-                            </p>
-                            <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
-                            <div className="flex flex-wrap gap-2">
-                              <Badge variant="outline">Automated Testing</Badge>
-                              <Badge variant="outline">Manual Testing</Badge>
-                              <Badge variant="outline">Performance Testing</Badge>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {teamMembers.length === 0 && (
-                      <div className="text-center text-gray-500">No team members found</div>
-                    )}
-                  </div>
-                )}
-              </ScrollArea>
-            </CardContent>
-          </Card>
+          <ManagerSkillsView />
         </TabsContent>
 
         <TabsContent value="training">

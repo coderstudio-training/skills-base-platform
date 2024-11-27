@@ -58,7 +58,7 @@ export default function SearchAndFilter({
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search by name or email..."
+            placeholder="Search by users or skills..."
             className="pl-8 w-[300px]"
             value={searchQuery}
             onChange={onSearchChange}

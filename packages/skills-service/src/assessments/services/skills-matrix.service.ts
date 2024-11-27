@@ -7,6 +7,11 @@ import {
   TopSkillDto,
 } from '../dto/computation.dto';
 import {
+  BusinessUnitDistributionDto,
+  DistributionsResponseDto,
+  SkillStatus,
+} from '../dto/distributions.dto';
+import {
   EmployeeRankingsResponseDto,
   SkillGapsDto,
 } from '../dto/user-skills.dto';
@@ -96,12 +101,14 @@ export class SkillsMatrixService {
         return a.name.localeCompare(b.name);
       });
 
-      // Assign continuous rankings
-      const sortedScores = sortedEmployees.map((employee, index) => ({
-        name: employee.name,
-        ranking: index + 1, // Continuous ranking, no duplicates
-        score: employee.score,
-      }));
+      // Assign continuous rankings and take only top 5
+      const sortedScores = sortedEmployees
+        .slice(0, 5) // Take only the first 5 employees
+        .map((employee, index) => ({
+          name: employee.name,
+          ranking: index + 1,
+          score: employee.score,
+        }));
 
       return {
         rankings: sortedScores,
@@ -113,6 +120,135 @@ export class SkillsMatrixService {
       });
       throw error;
     }
+  }
+
+  async getDistributions(): Promise<DistributionsResponseDto> {
+    try {
+      const allEmployeesData = await this.getAllEmployeesSkillsData();
+
+      // Maps for tracking distributions by business unit
+      const businessUnitMap = new Map<string, Map<string, Set<string>>>();
+      const skillUserMap = new Map<
+        string,
+        {
+          users: Set<string>;
+          totalGap: number;
+          category: SkillCategory;
+          businessUnit: string;
+        }
+      >();
+      const gradeMap = new Map<string, number>();
+
+      // Process each employee's data
+      for (const employee of allEmployeesData) {
+        // Track grade distribution
+        const grade = employee.employeeInfo.careerLevel;
+        gradeMap.set(grade, (gradeMap.get(grade) || 0) + 1);
+
+        const businessUnit = employee.employeeInfo.capability;
+
+        // Initialize business unit map if not exists
+        if (!businessUnitMap.has(businessUnit)) {
+          businessUnitMap.set(businessUnit, new Map());
+        }
+        const categoryMap = businessUnitMap.get(businessUnit)!;
+
+        // Process each skill
+        employee.skills.forEach((skill) => {
+          // Track skills by category within business unit
+          const category = skill.category;
+          if (!categoryMap.has(category)) {
+            categoryMap.set(category, new Set());
+          }
+          categoryMap.get(category)?.add(skill.skill);
+
+          // Track users and gaps per skill
+          const skillKey = `${businessUnit}:${skill.skill}`;
+          if (!skillUserMap.has(skillKey)) {
+            skillUserMap.set(skillKey, {
+              users: new Set(),
+              totalGap: 0,
+              category,
+              businessUnit,
+            });
+          }
+
+          const skillData = skillUserMap.get(skillKey)!;
+          skillData.users.add(employee.employeeInfo.email);
+
+          if (skill.gap < 0) {
+            skillData.totalGap += Math.abs(skill.gap);
+          }
+        });
+      }
+
+      // Transform data for response
+      const skillDistribution: BusinessUnitDistributionDto[] = Array.from(
+        businessUnitMap.entries(),
+      )
+        .map(([businessUnit, categoryMap]) => ({
+          businessUnit,
+          categories: Array.from(categoryMap.entries())
+            .map(([category, skills]) => ({
+              category,
+              skills: Array.from(skills)
+                .map((skillName) => {
+                  const skillKey = `${businessUnit}:${skillName}`;
+                  const skillData = skillUserMap.get(skillKey)!;
+                  const averageGap = skillData.totalGap / skillData.users.size;
+
+                  return {
+                    name: skillName,
+                    userCount: skillData.users.size,
+                    status: this.determineSkillStatus(
+                      averageGap,
+                      skillData.users.size,
+                    ),
+                  };
+                })
+                .sort((a, b) => b.userCount - a.userCount), // Sort by user count
+            }))
+            .sort((a, b) => a.category.localeCompare(b.category)), // Sort categories alphabetically
+        }))
+        .sort((a, b) => a.businessUnit.localeCompare(b.businessUnit)); // Sort business units
+
+      const gradeDistribution = Array.from(gradeMap.entries())
+        .map(([grade, userCount]) => ({
+          grade,
+          userCount,
+        }))
+        .sort((a, b) => {
+          // Custom sort for grade levels
+          const gradeOrder = [
+            'Associate',
+            'Professional',
+            'Senior Professional',
+            'Lead',
+            'Principal',
+          ];
+          return gradeOrder.indexOf(a.grade) - gradeOrder.indexOf(b.grade);
+        });
+
+      return {
+        skillDistribution,
+        gradeDistribution,
+      };
+    } catch (error) {
+      this.logger.error('Error calculating distributions:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+      throw error;
+    }
+  }
+
+  private determineSkillStatus(
+    averageGap: number,
+    userCount: number,
+  ): SkillStatus {
+    if (averageGap > 2 || userCount < 2) return SkillStatus.CRITICAL;
+    if (averageGap > 1 || userCount < 5) return SkillStatus.WARNING;
+    return SkillStatus.NORMAL;
   }
 
   async getAdminSkillsAnalytics(): Promise<AdminSkillAnalyticsDto> {

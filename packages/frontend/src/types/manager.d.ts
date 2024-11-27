@@ -22,6 +22,7 @@ export interface EvaluationStatusData {
 }
 
 interface TeamMember {
+  grade: string;
   employeeId: number;
   firstName: string;
   lastName: string;
@@ -53,4 +54,21 @@ interface MemberRecommendations {
 export interface TeamRecommendations {
   member: TeamMember;
   recommendations: RecommendationResponse;
+}
+
+interface TeamMemberWithSkills {
+  email: string;
+  firstName: string;
+  lastName: string;
+  designation: string;
+  picture?: string;
+  skills: {
+    skill: string;
+    category: string;
+    selfRating: number;
+    managerRating: number;
+    requiredRating: number;
+    gap: number;
+    average: number;
+  }[];
 }

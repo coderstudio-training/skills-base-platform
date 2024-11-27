@@ -2,13 +2,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { TeamMember } from '@/types/manager';
 import { Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-
-const cleanDesignation = (designation: string) => {
-  return designation === 'Software QA Engineer' ? 'QA Engineer' : designation;
-};
+const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00ced1'];
 
 interface TeamCompositionChartProps {
   teamMembers: TeamMember[];
@@ -17,26 +22,48 @@ interface TeamCompositionChartProps {
 
 const TeamCompositionChart = ({ teamMembers, loading = false }: TeamCompositionChartProps) => {
   const compositionData = useMemo(() => {
-    const composition = teamMembers.reduce(
-      (acc, member) => {
-        const cleanedDesignation = cleanDesignation(member.designation);
-        const role = `${member.jobLevel} ${cleanedDesignation}`;
-        acc[role] = (acc[role] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
+    // Manually create unique levels and designations
+    const levels = Array.from(new Set(teamMembers.map(member => member.jobLevel))).filter(
+      level => level && level.trim() !== '',
+    );
+    const designations = Array.from(new Set(teamMembers.map(member => member.designation))).filter(
+      designation => designation && designation.trim() !== '',
     );
 
-    return Object.entries(composition).map(([name, value]) => ({
-      name,
-      value,
-    }));
+    // Create a dynamic data structure
+    const composition = designations
+      .map(designation => {
+        const rowData: Record<string, number | string> = { skill: designation };
+        let hasNonZeroValues = false;
+
+        // Dynamically add counts for each job level
+        levels.forEach(level => {
+          const count = teamMembers.filter(
+            member => member.designation === designation && member.jobLevel === level,
+          ).length;
+
+          if (count > 0) {
+            rowData[level] = count;
+            hasNonZeroValues = true;
+          }
+        });
+
+        return hasNonZeroValues ? rowData : null;
+      })
+      .filter(Boolean);
+
+    // Filter out levels with no data
+    const filteredLevels = levels.filter(level =>
+      composition.some(row => row && row[level] !== undefined),
+    );
+
+    return { composition, levels: filteredLevels };
   }, [teamMembers]);
 
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="flex items-center justify-center h-[300px]">
+        <div className="flex items-center justify-center h-[400px]">
           <div className="flex flex-col items-center gap-2">
             <Loader2 className="h-8 w-8 animate-spin" />
             <p className="text-sm text-muted-foreground">Loading team composition...</p>
@@ -45,34 +72,32 @@ const TeamCompositionChart = ({ teamMembers, loading = false }: TeamCompositionC
       );
     }
 
-    if (teamMembers.length === 0) {
+    if (teamMembers.length === 0 || compositionData.composition.length === 0) {
       return (
-        <div className="flex items-center justify-center h-[300px] text-gray-500">
+        <div className="flex items-center justify-center h-[400px] text-gray-500">
           No team data available
         </div>
       );
     }
 
     return (
-      <ResponsiveContainer width="100%" height={300}>
-        <PieChart>
-          <Pie
-            data={compositionData}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            outerRadius={80}
-            fill="#8884d8"
-            dataKey="value"
-            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-          >
-            {compositionData.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
+      <ResponsiveContainer width="100%" height={400}>
+        <BarChart data={compositionData.composition}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="skill" />
+          <YAxis />
           <Tooltip />
           <Legend />
-        </PieChart>
+          {compositionData.levels.map((level, index) => (
+            <Bar
+              key={level}
+              dataKey={level}
+              stackId="a"
+              fill={COLORS[index % COLORS.length]}
+              name={level}
+            />
+          ))}
+        </BarChart>
       </ResponsiveContainer>
     );
   };
@@ -81,7 +106,7 @@ const TeamCompositionChart = ({ teamMembers, loading = false }: TeamCompositionC
     <Card>
       <CardHeader>
         <CardTitle className="font-bold mb-1">Team Composition</CardTitle>
-        <CardDescription>Distribution of roles in your team</CardDescription>
+        <CardDescription>Distribution of roles across experience levels</CardDescription>
       </CardHeader>
       <CardContent>{renderContent()}</CardContent>
     </Card>

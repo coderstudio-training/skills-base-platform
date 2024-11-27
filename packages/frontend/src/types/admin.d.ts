@@ -1,5 +1,3 @@
-// types/admin.d.ts
-
 export interface TopPerformer {
   name: string;
   score: number;
@@ -24,6 +22,8 @@ export interface Employee {
 export interface SkillDetail {
   skill: string;
   category: string;
+  description?: string;
+  proficiencyDescription?: string;
   selfRating: number;
   managerRating: number;
   requiredRating: number;
@@ -112,13 +112,30 @@ export interface Skill {
 }
 
 export interface Course {
-  id: string;
-  title: string;
-  description: string;
-  skillIds: string[];
-  duration: number; // in hours
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  provider: string;
+  _id: string;
+  courseId: string;
+  skillCategory: string;
+  skillName: string;
+  requiredLevel: number;
+  careerLevel: string;
+  courseLevel: string;
+  fields: {
+    name: string;
+    value: string;
+  }[];
+  lastUpdated: string;
+}
+
+// Query parameters for learning resources
+export interface LearningResourceParams {
+  category?: string;
+  level?: string;
+}
+
+// Response type for resource management
+export interface ResourcesResponse {
+  resources: Course[];
+  totalCount: number;
 }
 
 export interface LearningPath {
@@ -138,6 +155,27 @@ export interface DepartmentPerformanceData {
 export interface SkillDistributionData {
   name: string;
   value: number;
+}
+
+export interface SkillDistributionCategory {
+  category: string;
+  skills: SkillDistributionItem[];
+}
+
+export interface SkillDistributionItem {
+  name: string;
+  userCount: number;
+  status: 'warning' | 'critical' | 'normal';
+}
+
+export interface GradeDistributionItem {
+  grade: string;
+  userCount: number;
+}
+
+export interface BusinessUnitSkillDistribution {
+  businessUnit: string;
+  categories: SkillDistributionCategory[];
 }
 
 export interface PerformanceTrendData {

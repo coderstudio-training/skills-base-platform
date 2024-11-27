@@ -103,4 +103,12 @@ export class TaxonomyService {
     const taxonomyModel = this.getTaxonomyModel(businessUnit);
     return taxonomyModel.findOne({ docId }).exec();
   }
+
+  async findByTitle(
+    title: string | RegExp,
+    businessUnit: string,
+  ): Promise<Taxonomy[]> {
+    const taxonomyModel = this.getTaxonomyModel(businessUnit);
+    return taxonomyModel.find({ title }).exec();
+  }
 }

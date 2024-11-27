@@ -13,6 +13,12 @@ import {
 } from '../entity/required-skills.entity';
 import { SkillGap, SkillGapSchema } from '../entity/skill-gap.entity';
 
+/**
+ * Service responsible for generating personalized learning recommendations
+ * based on employee skill gaps and career levels.
+ * Integrates data from multiple collections across different databases.
+ */
+
 @Injectable()
 export class RecommendationService {
   private readonly logger = new Logger(RecommendationService.name);
@@ -20,6 +26,13 @@ export class RecommendationService {
   private skillGapsModel: Model<SkillGap>;
   private requiredSkillsModel: Model<RequiredSkills>;
 
+  /**
+   * Initializes the service with connections to multiple MongoDB databases
+   * and sets up the required models for courses, skill gaps, and required skills.
+   *
+   * @param defaultConnection - Primary MongoDB connection
+   * @param skillsConnection - Secondary MongoDB connection for skills data
+   */
   constructor(
     @InjectConnection() private readonly defaultConnection: Connection,
     @InjectConnection('MONGODB_SKILLS_URI')
@@ -44,7 +57,17 @@ export class RecommendationService {
       'capabilityRequiredSkills',
     );
   }
-
+  /**
+   * Generates personalized learning recommendations for an employee.
+   * Process includes:
+   * 1. Retrieving employee's skill gap data
+   * 2. Getting required skills for their career level
+   * 3. Finding matching courses for skill gaps
+   * 4. Generating recommendations based on gaps and available courses
+   *
+   * @param email - Employee's email address
+   * @returns Promise resolving to recommendations response
+   */
   async getRecommendations(email: string): Promise<RecommendationResponseDto> {
     try {
       // Step 1: Get skill gap data
@@ -84,7 +107,13 @@ export class RecommendationService {
       throw error;
     }
   }
-
+  /**
+   * Retrieves the most recent skill gap assessment for an employee.
+   * Uses case-insensitive email matching.
+   *
+   * @param email - Employee's email address
+   * @returns Promise resolving to skill gap data or null if not found
+   */
   private async findLatestSkillGap(email: string): Promise<SkillGap | null> {
     const skillGap = await this.skillGapsModel
       .findOne({ emailAddress: { $regex: new RegExp(`^${email}$`, 'i') } })
@@ -98,7 +127,13 @@ export class RecommendationService {
 
     return skillGap;
   }
-
+  /**
+   * Finds required skills for a specific career level.
+   * Currently hardcoded to 'QA' capability becaus of limited data, but should be made configurable in the future.
+   *
+   * @param careerLevel - Career level to find required skills for
+   * @returns Promise resolving to required skills or null if not found
+   */
   private async findRequiredSkills(
     careerLevel: string,
   ): Promise<RequiredSkills | null> {
@@ -125,6 +160,15 @@ export class RecommendationService {
     return requiredSkills;
   }
 
+  /**
+   * Processes skill gaps to generate course recommendations.
+   * Matches skills with appropriate courses based on career level and required skill level.
+   *
+   * @param skillGaps - Current skill levels mapped to skill names
+   * @param careerLevel - Employee's career level
+   * @param requiredSkills - Required skill levels mapped to skill names
+   * @returns Promise resolving to array of recommendations
+   */
   private async processSkillGaps(
     skillGaps: Record<string, number>, // Current Skills
     careerLevel: string, // Career Level
@@ -177,6 +221,15 @@ export class RecommendationService {
     return recommendations.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap));
   }
 
+  /**
+   * Finds a matching course for a skill, first trying exact match,
+   * then falling back to loose match if necessary.
+   *
+   * @param skillName - Name of the skill
+   * @param careerLevel - Career level to match
+   * @param requiredLevel - Required skill level
+   * @returns Promise resolving to matching course or null
+   */
   private async findMatchingCourse(
     skillName: string,
     careerLevel: string,
@@ -196,6 +249,10 @@ export class RecommendationService {
     return this.findLooseMatchCourse(skillName, careerLevel);
   }
 
+  /**
+   * Attempts to find a course matching exact criteria.
+   * Uses regex to handle variations in skill name formatting.
+   */
   private async findExactMatchCourse(
     skillName: string,
     careerLevel: string,
@@ -219,7 +276,11 @@ export class RecommendationService {
       })
       .exec();
   }
-  // still optional
+  //Stil optional
+  /**
+   * Attempts to find a course with looser matching criteria.
+   * Used as fallback when exact match fails.
+   */
   private async findLooseMatchCourse(
     skillName: string,
     careerLevel: string,
@@ -241,7 +302,10 @@ export class RecommendationService {
       })
       .exec();
   }
-
+  /**
+   * Creates a recommendation based on skill gap and matching course.
+   * Only creates recommendations for non-zero gaps.
+   */
   private async createRecommendation(
     skillName: string,
     gap: number,
@@ -262,7 +326,10 @@ export class RecommendationService {
 
     return null;
   }
-
+  /**
+   * Formats course details into a standardized DTO structure.
+   * Extracts values from dynamic course fields.
+   */
   private formatCourseDetails(
     course: Course,
     currentLevel: number,
@@ -282,12 +349,18 @@ export class RecommendationService {
       businessValue: this.getFieldValue(course, 'businessValue'),
     };
   }
-
+  /**
+   * Helper function to safely extract field values from course data.
+   * Returns empty string if field is not found.
+   */
   private getFieldValue(course: Course, fieldName: string): string {
     const field = course.fields.find((f) => f.name === fieldName);
     return field?.value || '';
   }
-
+  /**
+   * Formats skill names by replacing abbreviations and adding spaces.
+   * Handles special cases like 'QE' and 'QA'.
+   */
   private formatSkillName(camelCase: string): string {
     const formatted = camelCase
       .replace(/QE/g, 'Quality Engineering')
@@ -298,7 +371,10 @@ export class RecommendationService {
       .replace(/^./, (str) => str.toUpperCase())
       .trim();
   }
-
+  /**
+   * Creates an empty response for cases where no recommendations can be generated.
+   * Used when no skill gap data is found or when required skills are missing.
+   */
   private createEmptyResponse(): RecommendationResponseDto {
     return {
       success: false,

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import AnalysisView from './AnalysisView';
 import BusinessUnitDistribution from './BusinessUnitDistribution';
 import DataManagementActions from './DataManagementActions';
+import { LearningManagement } from './learning/LearningManagement';
 import SearchAndFilter from './SearchAndFilter';
 import SkillGapOverview from './SkillGapOverview';
 import StatsCards from './StatsCards';
@@ -205,6 +206,11 @@ export default function AdminDashboard() {
           {/* Metrics */}
           <TabsContent value="metrics">
             <AnalysisView />
+          </TabsContent>
+
+          {/* Learning */}
+          <TabsContent value="learning">
+            <LearningManagement />
           </TabsContent>
         </Tabs>
       </main>
