@@ -30,8 +30,8 @@ export default function ErrorCard({
           <CardDescription className="text-sm text-gray-600">{description}</CardDescription>
         </div>
         <div className="flex items-center gap-2">
-          <AlertCircle className="h-6 w-6 text-red-500" />
           <p className="text-lg font-bold text-red-500">Error {status}</p>
+          <AlertCircle className="h-6 w-6 text-red-500" />
         </div>
       </CardHeader>
 
