@@ -1,6 +1,5 @@
 // packages/frontend/src/app/api/skills/distributions/route.ts
 import { authOptions } from '@/lib/auth';
-import { DistributionResponse } from '@/types/api';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
@@ -40,15 +39,3 @@ export async function GET() {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-
-// packages/frontend/src/lib/api.ts
-export const getDistributions = async (): Promise<DistributionResponse> => {
-  const response = await fetch('/api/skills/distributions'); // Updated path
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || 'Failed to fetch distribution data');
-  }
-
-  return response.json();
-};

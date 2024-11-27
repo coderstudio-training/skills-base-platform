@@ -1,5 +1,6 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter, TransformInterceptor } from '@skills-base/shared';
 import * as bodyParser from 'body-parser';
 import helmet from 'helmet';
@@ -29,5 +30,15 @@ async function bootstrap() {
     `Skills service is running on: http://localhost:${port}`,
     'Bootstrap',
   );
+
+  const config = new DocumentBuilder()
+    .setTitle('Your API Title')
+    .setDescription('API Description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api-docs', app, document);
 }
 bootstrap();
