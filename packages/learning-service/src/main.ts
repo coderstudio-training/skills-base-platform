@@ -21,7 +21,7 @@ async function bootstrap() {
       API for managing learning resources and course recommendations.
       
       Authentication:
-      - Admin endpoints: Use JWT token from admin login
+      - Admin endpoints: Use JWT token from the admin login
       - Staff/Manager endpoints: Use Google OAuth token (from frontend)
       
       Note: For testing in Swagger UI:
@@ -51,7 +51,7 @@ async function bootstrap() {
     ],
   });
 
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api-docs', app, document);
 
   app.enableCors({
     origin: ['http://localhost:3000'],
