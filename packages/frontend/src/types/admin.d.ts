@@ -1,5 +1,3 @@
-// types/admin.d.ts
-
 export interface TopPerformer {
   name: string;
   score: number;

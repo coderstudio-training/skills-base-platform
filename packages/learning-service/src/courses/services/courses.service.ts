@@ -12,14 +12,28 @@ import {
 } from '../dto/courses.dto';
 import { Course, CourseSchema } from '../entity/courses.entity';
 
+/**
+ * Service responsible for managing course-related operations.
+ * Handles CRUD operations, bulk updates, and querying of course data.
+ * Uses dynamic model creation for flexible collection management.
+ */
 @Injectable()
 export class CoursesService {
   private readonly logger = new Logger(CoursesService.name);
+  // Maximum number of documents to process in a single batch
   private readonly BATCH_SIZE = 1000;
-  // This cache stores our dynamic models to avoid recreating them
+  // Cache to store dynamically created Mongoose models
   private modelCache: Map<string, Model<Course>> = new Map();
 
   constructor(@InjectConnection() private readonly connection: Connection) {}
+
+  /**
+   * Gets or creates a Mongoose model for a specific collection.
+   * Uses caching to avoid recreating models for the same collection.
+   *
+   * @param collection - Name of the MongoDB collection
+   * @returns Promise resolving to a Mongoose model for the collection
+   */
 
   private async getModelForCollection(
     collection: string,
@@ -41,6 +55,12 @@ export class CoursesService {
     return model;
   }
 
+  /**
+   * Creates necessary indexes for a course collection.
+   * Ensures courseId is unique and indexed for efficient queries.
+   *
+   * @param model - Mongoose model to create indexes for
+   */
   private async ensureIndexes(model: Model<Course>): Promise<void> {
     try {
       await model.collection.createIndex(
@@ -54,7 +74,12 @@ export class CoursesService {
       this.logger.error(`Error ensuring indexes: ${error.message}`);
     }
   }
-
+  /**
+   * Validates a course object against required fields and business rules.
+   *
+   * @param course - CourseDto object to validate
+   * @returns Array of validation error messages, empty if validation passes
+   */
   private validateCourse(course: CourseDto): string[] {
     const errors: string[] = [];
     const requiredFields = [
@@ -72,7 +97,7 @@ export class CoursesService {
       }
     }
 
-    // Keep only essential business rule
+    // Validate required Level Range
     if (
       course.requiredLevel &&
       (course.requiredLevel < 1 || course.requiredLevel > 6)
@@ -83,6 +108,14 @@ export class CoursesService {
     return errors;
   }
 
+  /**
+   * Performs bulk upsert operation for multiple courses.
+   * Includes validation, batching, and error handling.
+   *
+   * @param bulkUpdateDto - Contains collection name and array of courses to upsert
+   * @returns Promise resolving to response containing update counts and any errors
+   * @throws Error if collection name is not provided
+   */
   async bulkUpsert(
     bulkUpdateDto: BulkUpdateCoursesDto,
   ): Promise<BulkUpsertResponse> {
@@ -142,6 +175,13 @@ export class CoursesService {
     return { updatedCount: totalUpdatedCount, errors, validationErrors };
   }
 
+  /**
+   * Processes a batch of courses using MongoDB bulk write operations.
+   *
+   * @param batch - Array of courses to process
+   * @param model - Mongoose model to use for the operation
+   * @returns Promise resolving to bulk write result
+   */
   private async processBatch(
     batch: CourseDto[],
     model: Model<Course>,
@@ -162,33 +202,50 @@ export class CoursesService {
     return model.bulkWrite(operations, { ordered: false });
   }
 
+  /**
+   * Retrieves courses based on category and level filters.
+   *
+   * @param param0 - Object containing optional category and level filters
+   * @returns Promise resolving to array of filtered courses
+   */
   async getCourses({ category, level }: GetCoursesQueryDto): Promise<Course[]> {
     try {
       const model = await this.getModelForCollection('QA_LEARNING_RESOURCES');
 
-      const filter: any = {};
+      const filterQuery = {} as any;
+
       // Category Filter Logic
       if (category && category !== 'All Categories') {
-        filter.skillCategory = category;
+        filterQuery.skillCategory = category;
         this.logger.debug(`Filtering by category: ${category}`);
       }
+
       // Level Filter Logic
       if (level && level !== 'All Levels') {
-        filter.requiredLevel = parseInt(level);
+        filterQuery.requiredLevel = parseInt(level);
         this.logger.debug(`Filtering by level: ${level}`);
       }
 
-      return model
-        .find(filter)
-        .sort({ skillCategory: 1, requiredLevel: 1 })
-        .lean()
-        .exec();
+      // Execute query with sorting
+      const query = model
+        .find(filterQuery)
+        .sort({ skillCategory: 1, requiredLevel: 1 });
+
+      const results = await query.exec();
+      return results;
     } catch (error: any) {
       this.logger.error(`Error fetching courses: ${error.message}`);
       throw error;
     }
   }
 
+  /**
+   * Retrieves learning resources with optional category filtering.
+   * Includes total count of resources matching the filter.
+   *
+   * @param category - Optional category to filter resources
+   * @returns Promise resolving to resources and total count
+   */
   async getResources(category?: string): Promise<ResourcesResponseDto> {
     try {
       const model = await this.getModelForCollection('QA_LEARNING_RESOURCES');
@@ -198,7 +255,7 @@ export class CoursesService {
         filter.skillCategory = category;
         this.logger.debug(`Filtering resources by category: ${category}`);
       }
-
+      // Parallel execution of find and count operations
       const [resources, totalCount] = await Promise.all([
         model.find(filter).sort({ skillCategory: 1 }).lean().exec(),
         model.countDocuments(filter),
@@ -211,7 +268,7 @@ export class CoursesService {
       return {
         resources,
         totalCount,
-      };
+      } as ResourcesResponseDto;
     } catch (error: any) {
       this.logger.error(`Error fetching resources: ${error.message}`);
       throw error;

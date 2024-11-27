@@ -13,12 +13,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Session required' }, { status: 401 });
     }
 
-    // Get query parameters
+    // Get or Extract filter parameters
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const level = searchParams.get('level');
 
-    // Construct URL with query parameters
+    // Construct API URL including the filters
     const queryParams = new URLSearchParams();
     if (category) queryParams.append('category', category);
     if (level) queryParams.append('level', level);
