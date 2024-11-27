@@ -1,7 +1,7 @@
 'use client';
 
 import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
-import { TaxonomyManager } from '@/components/skills/TaxonomyManager';
+import TSCManager from '@/components/TSC/TSCManager';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -757,7 +757,7 @@ export default function AdminDashboard() {
             <AnalysisView />
           </TabsContent>
           <TabsContent value="taxonomy">
-            <TaxonomyManager />
+            <TSCManager selectedBusinessUnit={selectedBusinessUnit} />
           </TabsContent>
         </Tabs>
       </main>

@@ -1,6 +1,7 @@
 import * as ApiTypes from '@/lib/skills/types';
 import { logger } from '@/lib/utils';
 import { skillsApi } from '../api/client';
+import { useQuery } from '../api/hooks';
 import { ApiClientOptions } from '../api/types';
 
 const TAXONOMY_BASE_URL = '/taxonomy';
@@ -36,6 +37,18 @@ export async function bulkUpsert(
   return skillsApi.post<ApiTypes.ITaxonomyResponse>(
     `${TAXONOMY_BASE_URL}/bulk-upsert`,
     data,
+    options,
+  );
+}
+
+export function useQueryTechnicalTaxonomy(
+  businessUnit: string,
+  options: ApiClientOptions = { requiresAuth: true },
+) {
+  logger.log(`[TAXONOMY] querying technical taxonomy`);
+  return useQuery<ApiTypes.IBaseTaxonomy[]>(
+    skillsApi,
+    `${TAXONOMY_BASE_URL}?businessUnit=${businessUnit}`,
     options,
   );
 }
