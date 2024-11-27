@@ -12,7 +12,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import { TeamMember } from '@/types/manager';
-import ImportExportActions from './ImportExportActions';
 import ManagerSkillsView from './ManagerSkillsView';
 import ManagerTrainingRecommendation from './ManagerTrainingRecommendation';
 import TeamCompositionChart from './TeamCompositionChart';
@@ -95,9 +94,6 @@ export default function ManagerDashboard() {
     <div className="container mx-auto p-4 max-w-[80%]">
       {/* Header */}
       <ManagerDashboardHeader />
-
-      {/* Import/Export Actions */}
-      <ImportExportActions />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
