@@ -1,7 +1,7 @@
+import { cacheConfig, errorMessages } from '@/lib/api/config';
+import { ApiError, FetchOptions } from '@/lib/api/types';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { ApiError, FetchOptions } from '../lib/api/types';
-import { cacheConfig, errorMessages } from './api/config';
 
 type LogArgs = string | number | boolean | null | undefined | Error | object | unknown;
 

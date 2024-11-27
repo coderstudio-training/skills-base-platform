@@ -1,8 +1,8 @@
+import { skillsApi } from '@/lib/api/client';
+import { useQuery } from '@/lib/api/hooks';
+import { ApiClientOptions } from '@/lib/api/types';
 import * as ApiTypes from '@/lib/skills/types';
 import { logger } from '@/lib/utils';
-import { skillsApi } from '../api/client';
-import { useQuery } from '../api/hooks';
-import { ApiClientOptions } from '../api/types';
 
 const TAXONOMY_BASE_URL = '/taxonomy';
 

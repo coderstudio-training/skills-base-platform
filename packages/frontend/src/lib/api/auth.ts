@@ -1,5 +1,13 @@
 // lib/auth.ts
 
+import { authConfig, errorMessages, rolePermissions } from '@/lib/api/config';
+import {
+  AuthState,
+  Permission,
+  RolePermissions,
+  Roles,
+  ServerInterceptOptions,
+} from '@/lib/api/types';
 import { logger } from '@/lib/utils';
 import { AuthResponse, DecodedToken } from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
@@ -8,8 +16,6 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import { authConfig, errorMessages, rolePermissions } from './config';
-import { AuthState, Permission, RolePermissions, Roles, ServerInterceptOptions } from './types';
 logger.log('Starting to load auth options in lib/auth.ts...');
 
 export const authOptions: NextAuthOptions = {
