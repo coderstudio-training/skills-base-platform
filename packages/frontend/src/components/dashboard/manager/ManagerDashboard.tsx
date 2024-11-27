@@ -69,7 +69,7 @@ export default function ManagerDashboard() {
         teamMembers.map(async member => {
           if (!member.email) return member;
           try {
-            const response = await getUserPicture(member.email, { cache: 'force-cache' });
+            const response = await getUserPicture(member.email);
             if (response.error || response.data === null) {
               throw new Error(`Error fetching team members' photos: ${error}`);
             }
