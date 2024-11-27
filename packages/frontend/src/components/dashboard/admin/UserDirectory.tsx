@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Employee, SkillDetail } from '@/types/admin';
-import { getSkillDescription } from '@/types/skill-description';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -64,7 +63,50 @@ export default function EmployeeDirectory({
         throw new Error('Failed to fetch employee skills');
       }
       const data = await response.json();
-      setSelectedEmployeeSkills(data.skills || []);
+
+      // Fetch descriptions for each skill using taxonomy find by title
+      const skillsWithDescriptions = await Promise.all(
+        data.skills.map(async (skill: SkillDetail) => {
+          try {
+            const taxonomyResponse = await fetch(
+              `/api/taxonomy/title/${skill.skill}?businessUnit=QA`,
+            );
+
+            if (!taxonomyResponse.ok) {
+              console.warn(`No taxonomy found for skill: ${skill.skill}`);
+              return {
+                ...skill,
+                description: 'No description available',
+                proficiencyDescription: 'No proficiency description available',
+              };
+            }
+
+            const taxonomyData = await taxonomyResponse.json();
+
+            // Use Math.floor to get the exact level key
+            const levelKey = `Level ${Math.floor(skill.average)}`;
+            const proficiencyDescription =
+              taxonomyData[0]?.proficiencyDescription?.[levelKey]?.[1] ||
+              'No proficiency description available';
+
+            return {
+              ...skill,
+              description:
+                taxonomyData.length > 0 ? taxonomyData[0].description : 'No description available',
+              proficiencyDescription,
+            };
+          } catch (error) {
+            console.error(`Error fetching description for ${skill.skill}:`, error);
+            return {
+              ...skill,
+              description: 'No description available',
+              proficiencyDescription: 'No proficiency description available',
+            };
+          }
+        }),
+      );
+
+      setSelectedEmployeeSkills(skillsWithDescriptions);
     } catch (error) {
       console.error('Error fetching employee skills:', error);
       setSelectedEmployeeSkills([]);
@@ -175,7 +217,10 @@ export default function EmployeeDirectory({
                                   </div>
                                 </div>
                                 <p className="text-sm text-gray-600">
-                                  {getSkillDescription(skill)}
+                                  {skill.description || 'No description available'}
+                                </p>
+                                <p className="text-sm font-medium">
+                                  Current Level: {skill.proficiencyDescription}
                                 </p>
                                 <div className="flex justify-between text-sm">
                                   <span>

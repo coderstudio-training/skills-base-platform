@@ -24,6 +24,8 @@ export interface Employee {
 export interface SkillDetail {
   skill: string;
   category: string;
+  description?: string;
+  proficiencyDescription?: string;
   selfRating: number;
   managerRating: number;
   requiredRating: number;
