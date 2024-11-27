@@ -1,5 +1,3 @@
-// types/admin.d.ts
-
 export interface TopPerformer {
   name: string;
   score: number;
@@ -114,13 +112,30 @@ export interface Skill {
 }
 
 export interface Course {
-  id: string;
-  title: string;
-  description: string;
-  skillIds: string[];
-  duration: number; // in hours
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  provider: string;
+  _id: string;
+  courseId: string;
+  skillCategory: string;
+  skillName: string;
+  requiredLevel: number;
+  careerLevel: string;
+  courseLevel: string;
+  fields: {
+    name: string;
+    value: string;
+  }[];
+  lastUpdated: string;
+}
+
+// Query parameters for learning resources
+export interface LearningResourceParams {
+  category?: string;
+  level?: string;
+}
+
+// Response type for resource management
+export interface ResourcesResponse {
+  resources: Course[];
+  totalCount: number;
 }
 
 export interface LearningPath {

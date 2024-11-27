@@ -8,6 +8,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
   JwtAuthGuard,
   LoggingInterceptor,
   Roles,
@@ -19,17 +26,33 @@ import {
   BulkUpdateCoursesDto,
   BulkUpsertResponse,
   GetCoursesQueryDto,
+  ResourcesResponseDto,
 } from '../dto/courses.dto';
 import { CoursesService } from '../services/courses.service';
 
+@ApiTags('Courses')
 @Controller('api/courses')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)
+@ApiBearerAuth('JWT-auth')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Post('bulk-update')
   @Roles(UserRole.ADMIN)
+  @ApiOperation({
+    summary: 'Bulk update courses',
+    description:
+      'Update multiple courses in a single operation. Requires admin role.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Courses successfully updated',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error in request body',
+  })
   async bulkUpdate(
     @Body() bulkUpdateDto: BulkUpdateCoursesDto,
   ): Promise<BulkUpsertResponse> {
@@ -39,7 +62,49 @@ export class CoursesController {
 
   @Get()
   @Roles(UserRole.ADMIN)
+  @ApiOperation({
+    summary: 'Get all courses',
+    description:
+      'Retrieve all courses with optional filtering by category and level.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of courses retrieved successfully',
+  })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Filter by skill category',
+  })
+  @ApiQuery({
+    name: 'level',
+    required: false,
+    description: 'Filter by required level',
+  })
   async getCourses(@Query() query: GetCoursesQueryDto) {
     return this.coursesService.getCourses(query);
+  }
+
+  @Get('resources')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({
+    summary: 'Get learning resources',
+    description:
+      'Retrieve all learning resources with optional category filtering',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Resources retrieved successfully',
+    type: ResourcesResponseDto,
+  })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Filter resources by category',
+  })
+  async getResources(
+    @Query('category') category?: string,
+  ): Promise<ResourcesResponseDto> {
+    return this.coursesService.getResources(category);
   }
 }

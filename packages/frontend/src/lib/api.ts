@@ -1,6 +1,15 @@
 // lib/api.ts
 import { logger } from '@/lib/utils';
-import { AdminData, Department, LearningPath, Skill, Staff } from '@/types/admin';
+import {
+  AdminData,
+  Course,
+  Department,
+  LearningPath,
+  LearningResourceParams,
+  ResourcesResponse,
+  Skill,
+  Staff,
+} from '@/types/admin';
 import * as ApiTypes from '@/types/api';
 import { RecommendationResponse } from '@/types/staff';
 
@@ -73,6 +82,47 @@ export async function learningRecommendationAPI(email: string): Promise<Recommen
   }
 
   return response.json();
+}
+
+export async function getLearningResources(params?: LearningResourceParams): Promise<Course[]> {
+  try {
+    // Build query string
+    const queryParams = new URLSearchParams();
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.level) queryParams.append('level', params.level);
+
+    const response = await fetch(
+      `/api/courses${queryParams.toString() ? `?${queryParams.toString()}` : ''}`,
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch learning resources');
+    }
+
+    return response.json();
+  } catch (error) {
+    logger.error('Error fetching learning resources:', error);
+    throw error;
+  }
+}
+
+export async function getResourceManagement(category?: string): Promise<ResourcesResponse> {
+  try {
+    const response = await fetch(
+      `/api/courses/resources${category ? `?category=${category}` : ''}`,
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch resource management data');
+    }
+
+    return response.json();
+  } catch (error) {
+    logger.error('Error fetching resource management:', error);
+    throw error;
+  }
 }
 
 export async function getLearningPaths(): Promise<LearningPath[]> {
