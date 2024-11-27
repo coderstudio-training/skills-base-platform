@@ -42,7 +42,24 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
-    // Add OAuth
+    // Add OAuth2 for staff/manager endpoints
+    .addOAuth2(
+      {
+        type: 'oauth2',
+        flows: {
+          implicit: {
+            authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+            scopes: {
+              openid: 'OpenID Connect scope',
+              email: 'Email scope',
+              profile: 'Profile scope',
+            },
+          },
+        },
+        description: 'Google OAuth2 authentication for Staff and Managers',
+      },
+      'google-oauth2',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {

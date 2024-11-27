@@ -6,7 +6,13 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOAuth2,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   JwtAuthGuard,
   LoggingInterceptor,
@@ -22,6 +28,7 @@ import { RecommendationService } from '../services/recommendation.service';
 @Controller('api/learning')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)
+@ApiOAuth2(['email', 'profile'], 'google-oauth2') // Specify OAuth2 for staff/manager endpoints
 export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
