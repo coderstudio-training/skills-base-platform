@@ -7,29 +7,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { getSkills } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Employee } from '@/types/admin';
+import { TeamMemberWithSkills } from '@/types/manager';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-
-interface TeamMemberWithSkills {
-  email: string;
-  firstName: string;
-  lastName: string;
-  designation: string;
-  picture?: string;
-  skills: {
-    skill: string;
-    category: string;
-    selfRating: number;
-    managerRating: number;
-    requiredRating: number;
-    gap: number;
-    average: number;
-  }[];
-}
-
-// interface UserPictureResponse {
-//   picture: string;
-// }
 
 export default function ManagerSkillsView() {
   const { data: session } = useSession();
