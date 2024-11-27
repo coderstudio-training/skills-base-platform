@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useQueryTechnicalTaxonomy } from '@/lib/skills/api';
 import { cn } from '@/lib/utils';
 import { Employee, SkillDetail, TopPerformer, TopPerformersResponse } from '@/types/admin';
 import { getSkillDescription } from '@/types/skill-description';
@@ -322,6 +323,8 @@ export default function AdminDashboard() {
     await new Promise(resolve => setTimeout(resolve, 2000));
     alert('Report exported successfully!');
   };
+
+  const { data: QA_Tsc, isLoading, error: queryError, refetch } = useQueryTechnicalTaxonomy('QA');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -757,7 +760,16 @@ export default function AdminDashboard() {
             <AnalysisView />
           </TabsContent>
           <TabsContent value="taxonomy">
-            <TSCManager selectedBusinessUnit={selectedBusinessUnit} />
+            {queryError ? (
+              <div>
+                <p>Error loading TSCs: {queryError.message}</p>
+                <button onClick={() => refetch()}>Retry</button>
+              </div>
+            ) : !isLoading && QA_Tsc ? (
+              <TSCManager selectedBusinessUnit={selectedBusinessUnit} data={QA_Tsc} />
+            ) : (
+              <div>Loading ...</div>
+            )}
           </TabsContent>
         </Tabs>
       </main>
