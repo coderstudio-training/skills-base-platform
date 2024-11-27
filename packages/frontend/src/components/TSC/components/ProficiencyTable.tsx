@@ -1,5 +1,7 @@
 'use client';
 
+import { PROFICIENCY_LEVELS } from '@/components/TSC/constants';
+import { TSCProficiency } from '@/components/TSC/types';
 import {
   Table,
   TableBody,
@@ -8,8 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PROFICIENCY_LEVELS } from '../constants';
-import { TSCProficiency } from '../types';
 
 export default function ProficiencyTable({ proficiencies }: { proficiencies: TSCProficiency[] }) {
   return (

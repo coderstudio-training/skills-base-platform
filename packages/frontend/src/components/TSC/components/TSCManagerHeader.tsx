@@ -1,9 +1,9 @@
 'use client';
 
+import { BusinessUnit } from '@/components/TSC/types';
 import { Button } from '@/components/ui/button';
 import { CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle } from 'lucide-react';
-import { BusinessUnit } from '../types';
 
 interface TSCManagerHeaderProps {
   buCode: BusinessUnit;

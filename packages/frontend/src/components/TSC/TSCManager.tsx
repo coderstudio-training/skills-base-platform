@@ -1,5 +1,14 @@
 'use client';
 
+import DeletePopup from '@/components/TSC/components/DeletePopup';
+import ProficiencyTable from '@/components/TSC/components/ProficiencyTable';
+import TSCForm from '@/components/TSC/components/TSCForm';
+import TSCManagerHeader from '@/components/TSC/components/TSCManagerHeader';
+import { BUSINESS_UNITS } from '@/components/TSC/constants';
+import { useFilteredTSCs } from '@/components/TSC/hooks/useFilteredTSCs';
+import { useTSCFormValidation } from '@/components/TSC/hooks/useTSCFormValidation';
+import { useTSCOperations } from '@/components/TSC/hooks/useTSCOperations';
+import { TSC } from '@/components/TSC/types';
 import { buildProficiency, getKeyFromValue, validateTaxonomyData } from '@/components/TSC/utils';
 import {
   Accordion,
@@ -8,18 +17,9 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { IBaseTaxonomy } from '@/lib/skills/types';
 import { Pencil, Trash2 } from 'lucide-react';
-import { Card, CardContent } from '../ui/card';
-import DeletePopup from './components/DeletePopup';
-import ProficiencyTable from './components/ProficiencyTable';
-import TSCForm from './components/TSCForm';
-import TSCManagerHeader from './components/TSCManagerHeader';
-import { BUSINESS_UNITS } from './constants';
-import { useFilteredTSCs } from './hooks/useFilteredTSCs';
-import { useTSCFormValidation } from './hooks/useTSCFormValidation';
-import { useTSCOperations } from './hooks/useTSCOperations';
-import { TSC } from './types';
 
 interface TSCManagerProps {
   selectedBusinessUnit?: string;

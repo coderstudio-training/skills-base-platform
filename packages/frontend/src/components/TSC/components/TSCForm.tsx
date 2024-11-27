@@ -1,4 +1,6 @@
 'use client';
+import { PROFICIENCY_LEVELS } from '@/components/TSC/constants';
+import { emptyProficiency, TSC } from '@/components/TSC/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,8 +15,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Save, Trash2 } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
-import { PROFICIENCY_LEVELS } from '../constants';
-import { emptyProficiency, TSC } from '../types';
 
 interface TSCFormProps {
   isOpen: boolean;

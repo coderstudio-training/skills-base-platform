@@ -1,5 +1,6 @@
 'use client';
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getDistributions, getSkillAnalytics } from '@/lib/api';
 import {
   BusinessUnitSkillDistribution,
@@ -10,7 +11,6 @@ import {
 import { DistributionResponse, SkillAnalyticsResponse } from '@/types/api';
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 
 interface LimitedItems<T> {
   displayed: T[];

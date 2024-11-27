@@ -1,3 +1,5 @@
+import { EmployeeSkillsReport, EmployeeSkillsReportData } from '@/components/EmployeeSkillsReport';
+import { ReportTemplate } from '@/components/ReportTemplate';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,8 +20,6 @@ import {
 } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { EmployeeSkillsReport, EmployeeSkillsReportData } from './EmployeeSkillsReport';
-import { ReportTemplate } from './ReportTemplate';
 
 export interface Skill {
   name: string;

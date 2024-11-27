@@ -1,7 +1,7 @@
+import type { BusinessUnit, TSC } from '@/components/TSC/types';
 import { skillsApi } from '@/lib/api/client';
 import { useMutation, useQuery } from '@/lib/api/hooks';
 import { IBaseTaxonomy, IBulkUpsertDTO } from '@/lib/skills/types';
-import type { BusinessUnit, TSC } from '../types';
 
 export function useTSCManager(businessUnit: BusinessUnit) {
   const TAXONOMY_BASE_URL = '/taxonomy';

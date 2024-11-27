@@ -1,4 +1,4 @@
-import { BUSINESS_UNITS } from './constants';
+import { BUSINESS_UNITS } from '@/components/TSC/constants';
 
 export interface TSCProficiency {
   level: string;

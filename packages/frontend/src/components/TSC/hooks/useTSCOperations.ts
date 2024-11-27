@@ -1,6 +1,6 @@
+import { TSC, emptyTSC } from '@/components/TSC/types';
+import { getKeyFromValue } from '@/components/TSC/utils';
 import { Dispatch, SetStateAction, useCallback, useState } from 'react';
-import { TSC, emptyTSC } from '../types';
-import { getKeyFromValue } from '../utils';
 
 export const useTSCOperations = (
   selectedBusinessUnit: string,

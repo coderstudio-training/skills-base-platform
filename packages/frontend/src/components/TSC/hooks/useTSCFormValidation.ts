@@ -1,5 +1,5 @@
+import { TSC, TSCProficiency } from '@/components/TSC/types';
 import { useCallback, useState } from 'react';
-import { TSC, TSCProficiency } from '../types';
 
 export const useTSCFormValidation = () => {
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});

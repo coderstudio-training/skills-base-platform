@@ -1,5 +1,7 @@
 'use client';
 
+import { NotificationCenter } from '@/components/NotificationCenter';
+import { ReportGenerator } from '@/components/ReportGenerator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,8 +14,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Settings } from 'lucide-react';
 import { signOut } from 'next-auth/react';
-import { NotificationCenter } from '../NotificationCenter';
-import { ReportGenerator } from '../ReportGenerator';
 
 export default function AdminDashboardHeader() {
   const handleLogout = () => {

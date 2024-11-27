@@ -1,5 +1,13 @@
 'use client';
 
+import AnalysisView from '@/components/dashboard/admin/AnalysisView';
+import BusinessUnitDistribution from '@/components/dashboard/admin/BusinessUnitDistribution';
+import { LearningManagement } from '@/components/dashboard/admin/learning/LearningManagement';
+import SearchAndFilter from '@/components/dashboard/admin/SearchAndFilter';
+import SkillGapOverview from '@/components/dashboard/admin/SkillGapOverview';
+import StatsCards from '@/components/dashboard/admin/StatsCards';
+import TopPerformers from '@/components/dashboard/admin/TopPerformers';
+import EmployeeDirectory from '@/components/dashboard/admin/UserDirectory';
 import ErrorCard from '@/components/error/ErrorCard';
 import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
 import TSCManager from '@/components/TSC/TSCManager';
@@ -8,14 +16,6 @@ import { useQueryTechnicalTaxonomy } from '@/lib/skills/api';
 import { Employee } from '@/types/admin';
 import { Award, BarChart2, BookOpen, Loader2, Network, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import AnalysisView from './AnalysisView';
-import BusinessUnitDistribution from './BusinessUnitDistribution';
-import { LearningManagement } from './learning/LearningManagement';
-import SearchAndFilter from './SearchAndFilter';
-import SkillGapOverview from './SkillGapOverview';
-import StatsCards from './StatsCards';
-import TopPerformers from './TopPerformers';
-import EmployeeDirectory from './UserDirectory';
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 

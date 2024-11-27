@@ -1,6 +1,6 @@
+import { BUSINESS_UNITS } from '@/components/TSC/constants';
+import { BusinessUnit, TSCProficiency } from '@/components/TSC/types';
 import { IBaseTaxonomy } from '@/lib/skills/types';
-import { BUSINESS_UNITS } from './constants';
-import { BusinessUnit, TSCProficiency } from './types';
 
 export function validateTaxonomyData(text: string): boolean {
   const regex = /^(n\/a|)$/i; // This regex matches "N/A" (case-insensitive) or an empty string

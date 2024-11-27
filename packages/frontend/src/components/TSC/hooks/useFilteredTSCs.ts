@@ -1,5 +1,5 @@
+import { TSC } from '@/components/TSC/types';
 import { useMemo } from 'react';
-import { TSC } from '../types';
 import { getKeyFromValue, getValueFromKey } from '../utils';
 
 export const useFilteredTSCs = (tscs: TSC[], selectedBusinessUnit: string) => {
