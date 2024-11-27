@@ -52,4 +52,17 @@ export class TaxonomyController {
     }
     return this.taxonomyService.findByDocId(docId, businessUnit);
   }
+
+  @Get('title/:title')
+  async findByTitle(@Param('title') title: string, @Req() req: Request) {
+    const businessUnit = req.query.businessUnit as string;
+    if (!businessUnit) {
+      throw new Error('Business unit is required to find records by title.');
+    }
+
+    return this.taxonomyService.findByTitle(
+      new RegExp(title, 'i'),
+      businessUnit,
+    );
+  }
 }

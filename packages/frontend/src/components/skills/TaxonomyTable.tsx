@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogExit,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -25,7 +24,7 @@ import { useState } from 'react';
 export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
   const [tableData, setTableData] = useState(data); // Local state to manage table edits
   const [selectedRow, setSelectedRow] = useState<ITaxonomyDTO | null>(null); // State for selected row (for dialog)
-  const [dialogOpen, setDialogOpen] = useState(false); // State for dialog visibility
+  const [dialogOpen] = useState(false); // State for dialog visibility
 
   console.log(`[INFO] Fetched taxonomy data for ${data[0].businessUnit}:`, data);
   const handleEdit = (docId: string, field: keyof IBaseTaxonomy, value: string) => {
@@ -54,16 +53,16 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
     );
   };
 
-  const handleDialogClose = () => {
-    if (selectedRow) {
-      // Update tableData with changes from selectedRow
-      setTableData(prevData =>
-        prevData.map(row => (row.docId === selectedRow.docId ? { ...selectedRow } : row)),
-      );
-    }
-    setDialogOpen(false); // Close the dialog
-    setSelectedRow(null); // Reset the selected row when the dialog is closed
-  };
+  // const handleDialogClose = () => {
+  //   if (selectedRow) {
+  //     // Update tableData with changes from selectedRow
+  //     setTableData(prevData =>
+  //       prevData.map(row => (row.docId === selectedRow.docId ? { ...selectedRow } : row)),
+  //     );
+  //   }
+  //   setDialogOpen(false); // Close the dialog
+  //   setSelectedRow(null); // Reset the selected row when the dialog is closed
+  // };
 
   const triggerRevalidate = async () => {
     const businessUnit = 'taxonomy';
@@ -313,11 +312,11 @@ export default function TaxonomyTable({ data }: IBulkUpsertDTO) {
               </Table>
 
               {/* Close Button for Dialog */}
-              <DialogExit>
+              {/* <DialogExit>
                 <Button onClick={handleDialogClose} className="mt-4">
                   Close
                 </Button>
-              </DialogExit>
+              </DialogExit> */}
             </>
           )}
         </DialogContent>

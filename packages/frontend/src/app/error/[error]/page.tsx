@@ -1,4 +1,4 @@
-import ErrorPage from '@/components/shared/ErrorPage';
+import ErrorPage from '@/components/error/ErrorPage';
 import { errorMessages } from '@/lib/api/config';
 import { notFound } from 'next/navigation';
 

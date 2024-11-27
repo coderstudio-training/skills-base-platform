@@ -1,11 +1,11 @@
 'use client';
 
+import { isTokenExpired } from '@/lib/api/auth';
+import { learningApi, skillsApi, userApi } from '@/lib/api/client';
+import { authConfig, rolePermissions } from '@/lib/api/config';
+import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
 import { getSession, signOut } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
-import { isTokenExpired } from './auth';
-import { learningApi, skillsApi, userApi } from './client';
-import { authConfig, rolePermissions } from './config';
-import { ApiError, ApiResponse, AuthState, Permission } from './types';
 
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({

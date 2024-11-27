@@ -1,7 +1,4 @@
-import { cache } from 'react';
-import { buildFetchOptions } from '../utils';
-import { getAuthHeaders } from './auth';
-import { errorMessages, serverActionsConfig, serviceConfigs } from './config';
+import { errorMessages, serverActionsConfig, serviceConfigs } from '@/lib/api/config';
 import type {
   ApiClientOptions,
   ApiConfig,
@@ -9,7 +6,10 @@ import type {
   ApiResponse,
   FetchOptions,
   RetryConfig,
-} from './types';
+} from '@/lib/api/types';
+import { buildFetchOptions } from '@/lib/utils';
+import { cache } from 'react';
+import { getAuthHeaders } from './auth';
 
 export class ApiClient {
   private config: ApiConfig;

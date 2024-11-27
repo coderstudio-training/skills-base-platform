@@ -17,9 +17,7 @@ export async function middleware(request: NextRequest) {
       case 'admin':
         return NextResponse.redirect(new URL('/dashboard/admin', request.url));
       case 'manager':
-        return NextResponse.redirect(
-          new URL('/dashboard/manager', request.url)
-        );
+        return NextResponse.redirect(new URL('/dashboard/manager', request.url));
       case 'staff':
         return NextResponse.redirect(new URL('/dashboard/staff', request.url));
       default:
