@@ -258,19 +258,19 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
 
   if (!session) {
     logger.log(errorMessages.UNAUTHORIZED);
-    redirect('/error/unauthorized');
+    redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
   } else {
     const tokenExpired = await isTokenExpired(session?.user.accessToken);
     if (tokenExpired) {
       logger.log(errorMessages.TOKEN_EXPIRED);
-      redirect('error/unauthorized');
+      redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
     }
   }
 
   if (option?.role) {
     if (session.user.role !== option.role) {
       logger.log(errorMessages.UNAUTHORIZED);
-      redirect('/error/unauthorized');
+      redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
     }
   }
 
@@ -278,7 +278,7 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
     const isPermitted = await hasPermission(option.permission);
     if (!isPermitted) {
       logger.log(errorMessages.FORBIDDEN);
-      redirect('/error/forbidden');
+      redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
     }
   }
 
@@ -286,7 +286,7 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
     const canAccess = await canAccessRoutes(option.route);
     if (!canAccess) {
       logger.log(errorMessages.FORBIDDEN);
-      redirect('/error/forbidden');
+      redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
     }
   }
 }
