@@ -3,33 +3,38 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { getSkillMatrix } from '@/lib/api';
+import { getSkills } from '@/lib/api';
 import { StaffSkill } from '@/types/staff';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { ResponsiveContainer } from 'recharts';
 
-`use client`;
+const calculateSummaryMetrics = (skills: StaffSkill[]) => {
+  const averageGap = Number(
+    (skills.reduce((sum, skill) => sum + skill.gap, 0) / skills.length).toFixed(2),
+  );
+
+  const skillsMeetingRequired = skills.filter(skill => skill.gap >= 0).length;
+  const skillsNeedingImprovement = skills.filter(skill => skill.gap < 0).length;
+  const largestGap = Math.max(...skills.map(skill => skill.gap));
+
+  return {
+    averageGap,
+    skillsMeetingRequired,
+    skillsNeedingImprovement,
+    largestGap,
+  };
+};
 
 const getGapStatus = (gap: number) => {
-  if (gap < -2)
+  if (gap >= 0)
     return {
-      text: 'Critical',
-      className: 'text-red-600 bg-red-100 px-2 py-1 rounded-full text-sm',
-    };
-  if (gap < 0)
-    return {
-      text: 'Developing',
-      className: 'text-yellow-500 bg-yellow-100 px-2 py-1 rounded-full text-sm',
-    };
-  if (gap < 1)
-    return {
-      text: 'Sufficient',
-      className: 'text-green-500 bg-green-100 px-2 py-1 rounded-full text-sm',
+      text: 'Proficient',
+      className: 'text-white bg-green-500 px-2 py-1 rounded-md text-sm font-medium',
     };
   return {
-    text: 'Proficient',
-    className: 'text-blue-500 bg-blue-100 px-2 py-1 rounded-full text-sm',
+    text: 'Developing',
+    className: 'text-white bg-orange-500 px-2 py-1 rounded-md text-sm font-medium',
   };
 };
 
@@ -50,8 +55,17 @@ export default function StaffSkillsView() {
       }
       setLoading(true);
       try {
-        const data = await getSkillMatrix();
-        setSkills(data.skills);
+        const data = await getSkills();
+
+        // Narrowing type to check if data is SkillsResponse or BackendSkillResponse[]
+        if (Array.isArray(data)) {
+          // If data is an array of BackendSkillResponse
+          const allSkills = data.flatMap(employee => employee.skills);
+          setSkills(allSkills);
+        } else {
+          // If data is SkillsResponse
+          setSkills(data.skills);
+        }
       } catch (err: unknown) {
         const error = err instanceof Error ? err.message : 'Failed to fetch skills data';
         console.error('Error fetching skills data:', err);
@@ -68,6 +82,7 @@ export default function StaffSkillsView() {
 
   const transformedChartData = filteredSkills.map(skill => ({
     skill: skill.skill,
+    gap: skill.gap,
     selfRating: skill.selfRating,
     managerRating: skill.managerRating,
     average: skill.average,
@@ -105,7 +120,7 @@ export default function StaffSkillsView() {
           <div className="text-red-500">{error}</div>
         ) : (
           <>
-            <div className="h-[500px] w-full">
+            <div className="h-[450px] w-full">
               <ResponsiveContainer width="100%" height={500}>
                 <CustomBarChart
                   data={transformedChartData}
@@ -113,13 +128,13 @@ export default function StaffSkillsView() {
                   series={[
                     { key: 'average', name: 'Current Level', color: '#4285f4' },
                     { key: 'requiredRating', name: 'Required Level', color: '#666666' },
+                    { key: 'gap', name: 'Skill Gap', color: '#dc2626' },
                   ]}
-                  title="Skills Gap Analysis"
                 />
               </ResponsiveContainer>
             </div>
             <div className="mt-8">
-              <h3 className="text-lg font-semibold mb-2">Skill Details</h3>
+              <h3 className="text-md font-semibold mb-2">Detailed Gap Analysis</h3>
               <p className="text-sm text-gray-600 mb-4">
                 Breakdown of your {selectedCategory.toLowerCase()}
               </p>
@@ -130,17 +145,23 @@ export default function StaffSkillsView() {
                     <thead>
                       <tr className="text-left">
                         <th
-                          className="py-4 px-6 font-medium w-[30%]"
+                          className="py-4 px-6 text-gray-600 font-normal w-[30%] text-sm"
                           style={{ paddingLeft: '24px' }}
                         >
                           Skill
                         </th>
-                        <th className="py-4 px-6 font-medium w-[20%]">Self Rating</th>
-                        <th className="py-4 px-6 font-medium w-[20%]">Manager Rating</th>
-                        <th className="py-4 px-6 font-medium w-[15%] text-center">
+                        <th className="py-4 px-6 text-gray-600 font-normal text-sm w-[20%]">
+                          Self Rating
+                        </th>
+                        <th className="py-4 px-6 text-gray-600 font-normal text-sm w-[20%]">
+                          Manager Rating
+                        </th>
+                        <th className="py-4 px-6 text-gray-600 font-normal text-sm w-[15%] text-center">
                           Required Level
                         </th>
-                        <th className="py-4 px-6 font-medium w-[15%]">Status</th>
+                        <th className="py-4 px-6 text-gray-600 font-normal text-sm w-[15%]">
+                          Status
+                        </th>
                       </tr>
                     </thead>
                   </table>
@@ -154,29 +175,46 @@ export default function StaffSkillsView() {
                           const status = getGapStatus(skill.gap);
                           return (
                             <tr key={index} className="hover:bg-gray-50">
-                              <td className="py-4 px-6 w-[30%]" style={{ paddingLeft: '24px' }}>
+                              <td
+                                className="py-4 px-6 font-medium text-sm w-[30%]"
+                                style={{ paddingLeft: '24px' }}
+                              >
                                 {skill.skill}
                               </td>
-                              <td className="py-4 px-6 w-[20%]">
-                                <div className="flex items-center gap-4">
-                                  <Progress value={skill.selfRating * 20} className="w-32" />
-                                  <span className="text-sm font-medium w-4">
+                              <td className="py-4 px-6 text-sm w-[20%]">
+                                <div className="flex items-center gap-2">
+                                  <Progress
+                                    value={(skill.selfRating / 6) * 100}
+                                    className="w-20 h-2"
+                                  />
+                                  <span className="text-sm font-normal w-4">
                                     {skill.selfRating}
                                   </span>
                                 </div>
                               </td>
-                              <td className="py-4 px-6 w-[20%]">
-                                <div className="flex items-center gap-4">
-                                  <Progress value={skill.managerRating * 20} className="w-32" />
-                                  <span className="text-sm font-medium w-4">
+                              <td className="py-4 px-6 text-sm w-[20%]">
+                                <div className="flex items-center gap-2">
+                                  <Progress
+                                    value={(skill.managerRating / 6) * 100}
+                                    className="w-20 h-2"
+                                  />
+                                  <span className="text-sm font-normal w-4">
                                     {skill.managerRating}
                                   </span>
                                 </div>
                               </td>
-                              <td className="py-4 px-6 w-[15%] text-center">
-                                <span className="text-sm font-medium">{skill.requiredRating}</span>
+                              <td className="py-4 px-6 w-[15%] text-sm">
+                                <div className="flex items-center justify-center gap-2">
+                                  <Progress
+                                    value={(skill.requiredRating / 6) * 100}
+                                    className="w-20 h-2"
+                                  />
+                                  <span className="text-sm font-normal w-4">
+                                    {skill.requiredRating}
+                                  </span>
+                                </div>
                               </td>
-                              <td className="py-4 px-6 w-[15%]">
+                              <td className="py-4 px-6 text-sm w-[15%]">
                                 <span className={status.className}>{status.text}</span>
                               </td>
                             </tr>
@@ -186,6 +224,35 @@ export default function StaffSkillsView() {
                     </table>
                   </div>
                 </ScrollArea>
+              </div>
+            </div>
+            <div className="mt-8">
+              <h4 className="text-md font-semibold mb-2">Summary</h4>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Average Gap</p>
+                  <p className="text-2xl font-medium">
+                    {calculateSummaryMetrics(filteredSkills).averageGap}
+                  </p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Skills Meeting Required</p>
+                  <p className="text-2xl font-medium">
+                    {calculateSummaryMetrics(filteredSkills).skillsMeetingRequired}
+                  </p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Skills Needing Improvement</p>
+                  <p className="text-2xl font-medium">
+                    {calculateSummaryMetrics(filteredSkills).skillsNeedingImprovement}
+                  </p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Largest Gap</p>
+                  <p className="text-2xl font-medium">
+                    {calculateSummaryMetrics(filteredSkills).largestGap}
+                  </p>
+                </div>
               </div>
             </div>
           </>

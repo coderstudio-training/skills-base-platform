@@ -1,10 +1,19 @@
 // lib/api.ts
-
 import { logger } from '@/lib/utils';
-import { AdminData, Course, Department, LearningPath, Skill, Staff } from '@/types/admin';
+import {
+  AdminData,
+  Course,
+  Department,
+  LearningPath,
+  LearningResourceParams,
+  ResourcesResponse,
+  Skill,
+  Staff,
+} from '@/types/admin';
 import * as ApiTypes from '@/types/api';
+import { RecommendationResponse } from '@/types/staff';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_USER_SERVICE_URL;
+const API_BASE_URL = 'http://localhost:3003';
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const response = await fetch(url, {
@@ -24,18 +33,7 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
-export async function getSkillMatrix(): Promise<ApiTypes.SkillsResponse> {
-  const response = await fetch('/api/skills/skills-matrix');
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || 'Failed to fetch skill matrix data');
-  }
-
-  return response.json();
-}
-
-export const getSkillAnalytics = async (): Promise<ApiTypes.SkillAnalyticsResponse> => {
+export async function getSkillAnalytics(): Promise<ApiTypes.SkillAnalyticsResponse> {
   const response = await fetch('/api/skills/analytics');
 
   if (!response.ok) {
@@ -44,7 +42,18 @@ export const getSkillAnalytics = async (): Promise<ApiTypes.SkillAnalyticsRespon
   }
 
   return response.json();
-};
+}
+
+export async function getDistributions(): Promise<ApiTypes.DistributionResponse> {
+  const response = await fetch('/api/skills/distributions');
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to fetch distribution data');
+  }
+
+  return response.json();
+}
 
 export async function getAdminData(accessToken: string): Promise<AdminData> {
   logger.log(accessToken);
@@ -59,12 +68,70 @@ export async function getStaffs(): Promise<Staff[]> {
   return fetchWithAuth(`${API_BASE_URL}/admin/staffs`);
 }
 
-export async function getSkills(): Promise<Skill[]> {
-  return fetchWithAuth(`${API_BASE_URL}/admin/skills`);
+export async function getSkills(): Promise<
+  ApiTypes.SkillsResponse | ApiTypes.BackendSkillResponse[]
+> {
+  const response = await fetch('/api/skills/skills-matrix');
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to fetch skill matrix data');
+  }
+
+  return response.json();
 }
 
-export async function getCourses(): Promise<Course[]> {
-  return fetchWithAuth(`${API_BASE_URL}/admin/courses`);
+//Learning Recommendation API
+export async function learningRecommendationAPI(email: string): Promise<RecommendationResponse> {
+  const response = await fetch(`/api/learning/recommendations/${encodeURIComponent(email)}`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to fetch recommendations');
+  }
+
+  return response.json();
+}
+
+export async function getLearningResources(params?: LearningResourceParams): Promise<Course[]> {
+  try {
+    // Build query string
+    const queryParams = new URLSearchParams();
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.level) queryParams.append('level', params.level);
+
+    const response = await fetch(
+      `/api/courses${queryParams.toString() ? `?${queryParams.toString()}` : ''}`,
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch learning resources');
+    }
+
+    return response.json();
+  } catch (error) {
+    logger.error('Error fetching learning resources:', error);
+    throw error;
+  }
+}
+
+export async function getResourceManagement(category?: string): Promise<ResourcesResponse> {
+  try {
+    const response = await fetch(
+      `/api/courses/resources${category ? `?category=${category}` : ''}`,
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch resource management data');
+    }
+
+    return response.json();
+  } catch (error) {
+    logger.error('Error fetching resource management:', error);
+    throw error;
+  }
 }
 
 export async function getLearningPaths(): Promise<LearningPath[]> {

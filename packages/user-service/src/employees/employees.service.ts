@@ -164,7 +164,7 @@ export class EmployeesService {
     try {
       const searchRegex = new RegExp(searchDto.searchTerm || '', 'i');
       const query: any = {
-        $or: [{ firstName: searchRegex }, { email: searchRegex }],
+        $or: [{ firstName: searchRegex }, { skill: searchRegex }],
       };
 
       // Add business unit filter if specified
@@ -183,6 +183,7 @@ export class EmployeesService {
         businessUnit: 1,
         employmentStatus: 1,
         grade: 1,
+        skill: 1,
         _id: 0,
       };
 
