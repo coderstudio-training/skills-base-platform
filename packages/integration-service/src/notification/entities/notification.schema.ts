@@ -1,10 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Document } from 'mongoose';
 
 export type NotificationDocument = Notification & Document;
 
 @Schema({ timestamps: true })
 export class Notification {
+  @ApiProperty({
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      name: { type: 'string' },
+    },
+  })
   @Prop({
     type: {
       id: String,
@@ -17,6 +25,15 @@ export class Notification {
     name: string;
   };
 
+  @ApiProperty({
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      status: { type: 'string', enum: ['success', 'error', 'running'] },
+      startedAt: { type: 'string', format: 'date-time' },
+      finishedAt: { type: 'string', format: 'date-time' },
+    },
+  })
   @Prop({
     type: {
       id: String,
@@ -33,6 +50,12 @@ export class Notification {
     finishedAt?: Date;
   };
 
+  @ApiPropertyOptional({
+    type: 'object',
+    properties: {
+      recordsProcessed: { type: 'number' },
+    },
+  })
   @Prop({
     type: {
       recordsProcessed: Number,
@@ -42,9 +65,11 @@ export class Notification {
     recordsProcessed?: number;
   };
 
+  @ApiProperty({ default: false })
   @Prop({ type: Boolean, default: false })
   read: boolean = false;
 
+  @ApiPropertyOptional({ type: Date })
   @Prop({ type: Date })
   readAt?: Date;
 }
