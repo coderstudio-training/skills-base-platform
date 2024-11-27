@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Settings } from 'lucide-react';
 import { signOut } from 'next-auth/react';
+import { NotificationCenter } from '../NotificationCenter';
+import { ReportGenerator } from '../ReportGenerator';
 
 export default function AdminDashboardHeader() {
   const handleLogout = () => {
@@ -26,6 +28,8 @@ export default function AdminDashboardHeader() {
           <Badge variant="secondary">Data synced: Today 8:00 AM</Badge>
         </div>
         <div className="flex items-center space-x-4">
+          <ReportGenerator />
+          <NotificationCenter />
           <Button variant="ghost" size="icon">
             <Settings className="h-5 w-5" />
           </Button>

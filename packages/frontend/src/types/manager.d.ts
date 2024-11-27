@@ -22,6 +22,7 @@ export interface EvaluationStatusData {
 }
 
 interface TeamMember {
+  grade: string;
   employeeId: number;
   firstName: string;
   lastName: string;

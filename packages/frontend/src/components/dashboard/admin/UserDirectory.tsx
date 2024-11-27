@@ -19,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Employee, SkillDetail } from '@/types/admin';
 import { getSkillDescription } from '@/types/skill-description';
 import {
@@ -81,45 +80,13 @@ export default function EmployeeDirectory({
     return 'Guru';
   };
 
-  const renderSkillStatusIcon = (skill: SkillDetail) => {
-    const progress = (skill.average / skill.requiredRating) * 100;
-
-    if (progress >= 100) {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-            </TooltipTrigger>
-            <TooltipContent>Meets Required Level</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
+  const getSkillStatusIcon = (currentLevel: number, requiredLevel: number) => {
+    if (currentLevel >= requiredLevel) {
+      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+    } else if (currentLevel === requiredLevel - 1) {
+      return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
     }
-
-    if (progress >= 75) {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
-            </TooltipTrigger>
-            <TooltipContent>Close to Required Level</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
-
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <XCircle className="h-5 w-5 text-red-500" />
-          </TooltipTrigger>
-          <TooltipContent>Below Required Level</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
+    return <XCircle className="h-5 w-5 text-red-500" />;
   };
 
   const handleGoToPage = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -204,7 +171,7 @@ export default function EmployeeDirectory({
                                     <span className="text-sm text-gray-500">
                                       {getSkillLevelLabel(skill.average)}
                                     </span>
-                                    {renderSkillStatusIcon(skill)}
+                                    {getSkillStatusIcon(skill.average, skill.requiredRating)}
                                   </div>
                                 </div>
                                 <p className="text-sm text-gray-600">
@@ -212,12 +179,10 @@ export default function EmployeeDirectory({
                                 </p>
                                 <div className="flex justify-between text-sm">
                                   <span>
-                                    Self Assessment:{' '}
-                                    {getSkillLevelLabel(+skill.selfRating.toFixed(1))}
+                                    Self Assessment: {getSkillLevelLabel(skill.selfRating)}
                                   </span>
                                   <span>
-                                    Manager Assessment:{' '}
-                                    {getSkillLevelLabel(+skill.managerRating.toFixed(1))}
+                                    Manager Assessment: {getSkillLevelLabel(skill.managerRating)}
                                   </span>
                                 </div>
                               </div>

@@ -7,15 +7,18 @@ import { LogOut } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
-interface UserData {
+interface UserProfile {
+  firstName: string;
+  lastName: string;
   designation: string;
   businessUnit: string;
   grade: string;
+  picture?: string;
 }
 
 export default function ManagerHeader() {
   const { data: session } = useSession();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const getInitials = (name: string = '') => {
     return name
@@ -26,37 +29,39 @@ export default function ManagerHeader() {
   };
 
   useEffect(() => {
-    const fetchEmployeeData = async () => {
+    const fetchUserProfile = async () => {
       if (session?.user?.email) {
         try {
-          const response = await fetch(`/api/employees/email/${session.user.email}`);
+          const response = await fetch('/api/users/profile');
           if (response.ok) {
             const data = await response.json();
-            setUserData(data);
+            setUserProfile(data);
           } else {
-            console.error('Failed to fetch employee data');
+            console.error('Failed to fetch user profile');
           }
         } catch (error) {
-          console.error('Error fetching employee data:', error);
+          console.error('Error fetching user profile:', error);
         }
       }
     };
 
-    fetchEmployeeData();
+    fetchUserProfile();
   }, [session?.user?.email]);
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
   };
 
+  const fullName = userProfile ? `${userProfile.firstName} ${userProfile.lastName}` : 'Loading...';
+
   return (
     <div className="flex justify-between items-center mb-6">
       <div className="flex items-center space-x-4">
         <Avatar className="h-20 w-20">
-          {session?.user?.image ? (
+          {userProfile?.picture ? (
             <AvatarImage
-              src={session?.user?.image}
-              alt={session?.user?.name}
+              src={userProfile.picture}
+              alt={fullName}
               width={120}
               height={120}
               onError={e => {
@@ -65,14 +70,16 @@ export default function ManagerHeader() {
               }}
             />
           ) : null}
-          <AvatarFallback className="text-lg">{getInitials(session?.user?.name)}</AvatarFallback>
+          <AvatarFallback className="text-lg">{getInitials(fullName)}</AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-3xl font-bold">{session?.user?.name} (Manager)</h1>
+          <h1 className="text-3xl font-bold">{fullName}</h1>
           <p className="text-muted-foreground">
-            {userData ? `${userData.designation} - ${userData.businessUnit}` : 'Loading...'}
+            {userProfile
+              ? `${userProfile.designation} - ${userProfile.businessUnit}`
+              : 'Loading...'}
           </p>
-          <Badge className="mt-1">{userData ? userData.grade : 'Loading...'}</Badge>
+          <Badge className="mt-1">{userProfile ? userProfile.grade : 'Loading...'}</Badge>
         </div>
       </div>
       <div className="flex items-center space-x-4">
