@@ -1,10 +1,6 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import {
-  DatabaseModule,
-  JwtStrategy,
-  LoggerMiddleware,
-} from '@skills-base/shared';
+import { DatabaseModule, JwtStrategy } from '@skills-base/shared';
 import { AssessmentsModule } from './assessments/assessments.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
 @Module({
@@ -18,8 +14,4 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
   ],
   providers: [JwtStrategy],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}
