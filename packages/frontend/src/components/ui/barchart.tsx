@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import * as React from 'react';
 import {
   Bar,
@@ -57,57 +56,42 @@ export function CustomBarChart({
   yAxisTicks = [0, 1.5, 3, 4.5, 6],
   series,
   height = 500,
-  title,
-  className,
-  ...props
+  // title,
+  // className,
+  // ...props
 }: BarChartProps) {
   return (
-    <Card className={className} {...props}>
-      {title && (
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
-      )}
-      <CardContent>
-        <div style={{ height: `${height}px`, width: '100%' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 40, right: 30, left: 20, bottom: 120 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                dataKey={xAxisKey}
-                height={100}
-                interval={0}
-                tick={CustomXAxisTick}
-                tickLine={false}
-              />
-              <YAxis
-                domain={yAxisDomain}
-                ticks={yAxisTicks}
-                tick={{ fill: '#666', fontSize: '11px' }}
-                tickLine={false}
-              />
-              <Tooltip />
-              <Legend
-                verticalAlign="bottom"
-                height={36}
-                wrapperStyle={{
-                  paddingTop: '50px',
-                  paddingBottom: '0px',
-                }}
-              />
-              {series.map(s => (
-                <Bar
-                  key={s.key}
-                  dataKey={s.key}
-                  name={s.name}
-                  fill={s.color}
-                  radius={[4, 4, 0, 0]}
-                />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+    <div style={{ height: `${height}px`, width: '100%' }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 40, right: 30, left: 20, bottom: 120 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey={xAxisKey}
+            height={100}
+            interval={0}
+            tick={CustomXAxisTick}
+            tickLine={false}
+          />
+          <YAxis
+            domain={yAxisDomain}
+            ticks={yAxisTicks}
+            tick={{ fill: '#666', fontSize: '11px' }}
+            tickLine={false}
+          />
+          <Tooltip />
+          <Legend
+            verticalAlign="bottom"
+            height={36}
+            wrapperStyle={{
+              paddingTop: '50px',
+              paddingBottom: '0px',
+            }}
+          />
+          {series.map(s => (
+            <Bar key={s.key} dataKey={s.key} name={s.name} fill={s.color} radius={[4, 4, 0, 0]} />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

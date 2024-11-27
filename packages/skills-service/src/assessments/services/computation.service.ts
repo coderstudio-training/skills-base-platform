@@ -47,7 +47,7 @@ export class PerformanceService {
     model.createIndexes();
   }
 
-  // New method to bulk calculate performance for all employees from MongoDB
+  // Method to bulk calculate performance for all employees from MongoDB
   async bulkCalculatePerformance(prefixBU: string) {
     this.logger.log(
       `Bulk calculating performance for all employees in ${prefixBU}`,

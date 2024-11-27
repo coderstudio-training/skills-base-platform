@@ -157,6 +157,27 @@ export interface SkillDistributionData {
   value: number;
 }
 
+export interface SkillDistributionCategory {
+  category: string;
+  skills: SkillDistributionItem[];
+}
+
+export interface SkillDistributionItem {
+  name: string;
+  userCount: number;
+  status: 'warning' | 'critical' | 'normal';
+}
+
+export interface GradeDistributionItem {
+  grade: string;
+  userCount: number;
+}
+
+export interface BusinessUnitSkillDistribution {
+  businessUnit: string;
+  categories: SkillDistributionCategory[];
+}
+
 export interface PerformanceTrendData {
   month: string;
   performance: number;
