@@ -54,10 +54,12 @@ export default function EmployeeDirectory({
   onLimitChange,
 }: EmployeeDirectoryProps) {
   const [selectedEmployeeSkills, setSelectedEmployeeSkills] = useState<SkillDetail[]>([]);
+  const [skillsLoading, setSkillsLoading] = useState(false);
   const [goToPage, setGoToPage] = useState<string>('');
 
   const fetchEmployeeSkills = async (email: string) => {
     try {
+      setSkillsLoading(true);
       const response = await fetch(`/api/skills/employee/${email}`);
       if (!response.ok) {
         throw new Error('Failed to fetch employee skills');
@@ -107,9 +109,11 @@ export default function EmployeeDirectory({
       );
 
       setSelectedEmployeeSkills(skillsWithDescriptions);
+      setSkillsLoading(false);
     } catch (error) {
       console.error('Error fetching employee skills:', error);
       setSelectedEmployeeSkills([]);
+      setSkillsLoading(false);
     }
   };
 
@@ -198,47 +202,54 @@ export default function EmployeeDirectory({
                         <DialogTitle>{`${employee.firstName} ${employee.lastName}'s Skills`}</DialogTitle>
                         <DialogDescription>Skill levels and proficiencies</DialogDescription>
                       </DialogHeader>
-                      <ScrollArea className="h-[500px] w-full pr-4">
-                        <div className="space-y-4">
-                          {selectedEmployeeSkills.length > 0 ? (
-                            selectedEmployeeSkills.map(skill => (
-                              <div key={skill.skill} className="space-y-2 border-b pb-4">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium">{skill.skill}</span>
-                                  <div className="flex items-center space-x-2">
-                                    <Progress
-                                      value={(skill.average / skill.requiredRating) * 100}
-                                      className="w-[100px]"
-                                    />
-                                    <span className="text-sm text-gray-500">
-                                      {getSkillLevelLabel(skill.average)}
+                      {skillsLoading ? (
+                        <div className="flex flex-col items-center justify-center h-[500px] gap-2">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                          <p className="text-sm text-muted-foreground">Loading skills data...</p>
+                        </div>
+                      ) : (
+                        <ScrollArea className="h-[500px] w-full pr-4">
+                          <div className="space-y-4">
+                            {selectedEmployeeSkills.length > 0 ? (
+                              selectedEmployeeSkills.map(skill => (
+                                <div key={skill.skill} className="space-y-2 border-b pb-4">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium">{skill.skill}</span>
+                                    <div className="flex items-center space-x-2">
+                                      <Progress
+                                        value={(skill.average / skill.requiredRating) * 100}
+                                        className="w-[100px]"
+                                      />
+                                      <span className="text-sm text-gray-500">
+                                        {getSkillLevelLabel(skill.average)}
+                                      </span>
+                                      {getSkillStatusIcon(skill.average, skill.requiredRating)}
+                                    </div>
+                                  </div>
+                                  <p className="text-sm text-gray-600">
+                                    {skill.description || 'No description available'}
+                                  </p>
+                                  <p className="text-sm font-medium">
+                                    Current Level: {skill.proficiencyDescription}
+                                  </p>
+                                  <div className="flex justify-between text-sm">
+                                    <span>
+                                      Self Assessment: {getSkillLevelLabel(skill.selfRating)}
                                     </span>
-                                    {getSkillStatusIcon(skill.average, skill.requiredRating)}
+                                    <span>
+                                      Manager Assessment: {getSkillLevelLabel(skill.managerRating)}
+                                    </span>
                                   </div>
                                 </div>
-                                <p className="text-sm text-gray-600">
-                                  {skill.description || 'No description available'}
-                                </p>
-                                <p className="text-sm font-medium">
-                                  Current Level: {skill.proficiencyDescription}
-                                </p>
-                                <div className="flex justify-between text-sm">
-                                  <span>
-                                    Self Assessment: {getSkillLevelLabel(skill.selfRating)}
-                                  </span>
-                                  <span>
-                                    Manager Assessment: {getSkillLevelLabel(skill.managerRating)}
-                                  </span>
-                                </div>
+                              ))
+                            ) : (
+                              <div className="text-center text-gray-500 py-4">
+                                No skills data available for this employee
                               </div>
-                            ))
-                          ) : (
-                            <div className="text-center text-gray-500 py-4">
-                              No skills data available for this employee
-                            </div>
-                          )}
-                        </div>
-                      </ScrollArea>
+                            )}
+                          </div>
+                        </ScrollArea>
+                      )}
                     </DialogContent>
                   </Dialog>
                 </div>
