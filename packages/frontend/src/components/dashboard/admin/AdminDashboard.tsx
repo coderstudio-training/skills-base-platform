@@ -7,7 +7,6 @@ import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AnalysisView from './AnalysisView';
 import BusinessUnitDistribution from './BusinessUnitDistribution';
-import DataManagementActions from './DataManagementActions';
 import { LearningManagement } from './learning/LearningManagement';
 import SearchAndFilter from './SearchAndFilter';
 import SkillGapOverview from './SkillGapOverview';
@@ -127,9 +126,6 @@ export default function AdminDashboard() {
       <AdminDashboardHeader />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Import, Export, Sync Data */}
-        <DataManagementActions />
-
         {/* Search and Filter */}
         <SearchAndFilter
           selectedBusinessUnit={selectedBusinessUnit}
