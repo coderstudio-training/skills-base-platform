@@ -1,12 +1,12 @@
 import { skillsApi } from '@/lib/api/client';
 import { useMutation, useQuery } from '@/lib/api/hooks';
-import { IBulkUpsertDTO } from '@/lib/skills/types';
+import { IBaseTaxonomy, IBulkUpsertDTO } from '@/lib/skills/types';
 import type { BusinessUnit, TSC } from '../types';
 
 export function useTSCManager(businessUnit: BusinessUnit) {
   const TAXONOMY_BASE_URL = '/taxonomy';
 
-  const { data, error, isLoading, refetch } = useQuery<TSC[]>(
+  const { data, error, isLoading, refetch } = useQuery<IBaseTaxonomy[]>(
     skillsApi,
     `${TAXONOMY_BASE_URL}?businessUnit=${businessUnit}`,
     {
@@ -36,8 +36,9 @@ export function useTSCManager(businessUnit: BusinessUnit) {
     'DELETE',
   );
 
+  // data?.filter(tsc => (businessUnit === 'ALL' ? true : tsc.businessUnit === businessUnit)),
   return {
-    data: data?.filter(tsc => (businessUnit === 'ALL' ? true : tsc.businessUnit === businessUnit)),
+    data,
     error,
     isLoading,
     isCreating,

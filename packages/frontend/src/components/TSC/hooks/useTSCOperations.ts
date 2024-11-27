@@ -4,11 +4,11 @@ import { getKeyFromValue } from '../utils';
 
 export const useTSCOperations = (
   selectedBusinessUnit: string,
-  initialTSCs: TSC[] | undefined,
+  initialTSCs: TSC[],
   setFormErrors: Dispatch<SetStateAction<{ [key: string]: string }>>,
   validateForm: (tsc: TSC) => boolean,
 ) => {
-  const [tscs, setTSCs] = useState<TSC[]>(initialTSCs || ([] as TSC[]));
+  const [tscs, setTSCs] = useState<TSC[]>(initialTSCs);
   const [editingTSC, setEditingTSC] = useState<TSC | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);

@@ -17,16 +17,91 @@ import TSCManagerHeader from './components/TSCManagerHeader';
 import { BUSINESS_UNITS } from './constants';
 import { useFilteredTSCs } from './hooks/useFilteredTSCs';
 import { useTSCFormValidation } from './hooks/useTSCFormValidation';
-import { useTSCManager } from './hooks/useTSCManager';
 import { useTSCOperations } from './hooks/useTSCOperations';
+import { TSC } from './types';
 
 interface TSCManagerProps {
   selectedBusinessUnit?: string;
 }
 
+const initialTSCs: TSC[] = [
+  {
+    id: '1',
+    businessUnit: 'CLD',
+    category: 'Development and Implementation',
+    title: 'Clouding',
+    description:
+      'Apply quality standards to review performance through the planning and conduct of quality assurance audits to ensure that quality expectations are upheld. This includes the analysis of quality audit results and setting of follow-up actions to improve or enhance the quality of products, services or processes',
+    proficiencies: [
+      {
+        level: '3',
+        code: 'ICT-DIT-3010-1.1',
+        description:
+          'Conduct quality assurance (QA) audits and 1idate results and identify lapses and discrepancies',
+        knowledge: [
+          'Concept of quality assurance',
+          'QA audit techniques, tools and standard processes',
+          "Organization's quality management plan, processes and standards",
+          'Basic measures of quality and performance',
+        ],
+        abilities: [
+          'Apply quality standards to review performance of software or hardware product or service components',
+          'Monitor day to day activities are in accordance to the requirements of the quality management plan',
+          'Conduct QA audits based on a set plan',
+          'Consolidate QA audit results and identify lapses or discrepancies',
+          'Identify performance levels given existing quality assurance processes and areas for improvement',
+          'Communicate changes or enhancements to QA processes or standards',
+        ],
+      },
+      {
+        level: '4',
+        code: 'ICT-DIT-4010-1.1',
+        description:
+          'Implement quality performance guidelines and review the effectiveness of Quality Assurance (QA) processes',
+        knowledge: [
+          'QA audit principles, requirements and process planning',
+          'Quality management techniques, tools and processes',
+          'Interpretation and potential implications of various QA audit results',
+          'Impact of QA processes and process changes on various business units or business processes',
+        ],
+        abilities: [
+          'Implement quality performance guidelines, procedures and processes in the quality management plan, ensuring organization-wide understanding',
+          'Manage QA audits in the organization',
+          'Clarify uncertainties or queries on the QA audit results',
+          'Analyze QA audit results and prioritize critical areas for further review and improvement',
+          'Recommend changes to organization processes, to sustain or improve quality of products or services',
+          'Review the effectiveness of quality assurance processes',
+          'Propose improvements or changes to quality standards',
+        ],
+      },
+      {
+        level: '5',
+        code: 'ICT-DIT-5010-1.1',
+        description:
+          'Establish quality benchmark standards and drive organizational commitment to ongoing quality through regular review of Quality Assurance (QA) audit results',
+        knowledge: [
+          'QA and quality management industry standards',
+          'Industry best practices for quality assurance audits',
+          'Internal and external requirements and trends, and their impact on quality assurance processes and standards',
+          'QA audit philosophy and key underlying principles',
+          'Short-term and long-term impact of QA processes and process changes on the organization',
+        ],
+        abilities: [
+          'Establish quality benchmark standards based on alignment with external requirements, industry practices and internal business priorities',
+          'Evaluate best practices against regular review of QA audit result',
+          'Develop organization wide protocols and processes for QA audits, taking into account implications of emerging technological developments and external trends',
+          'Resolve complex or significant disputes or disagreements on QA audit results and matters',
+          'Review proposed future plans for improvements',
+          'Spearhead enhancements to quality management plan, including quality performance guidelines, procedures and processes',
+        ],
+      },
+    ],
+    rangeOfApplication: [],
+  },
+];
+
 export default function TSCManager({ selectedBusinessUnit = BUSINESS_UNITS.ALL }: TSCManagerProps) {
   const buKey = getKeyFromValue(selectedBusinessUnit);
-  const { data, error, refetch } = useTSCManager(buKey);
   const { formErrors, setFormErrors, validateForm } = useTSCFormValidation();
   const {
     tscs,
@@ -41,18 +116,9 @@ export default function TSCManager({ selectedBusinessUnit = BUSINESS_UNITS.ALL }
     handleDelete,
     handleSave,
     confirmDelete,
-  } = useTSCOperations(selectedBusinessUnit, data, setFormErrors, validateForm);
+  } = useTSCOperations(selectedBusinessUnit, initialTSCs, setFormErrors, validateForm);
 
-  const filteredTSCs = useFilteredTSCs(tscs, selectedBusinessUnit);
-
-  if (error) {
-    return (
-      <div>
-        <p>Error loading TSCs: {error.message}</p>
-        <button onClick={() => refetch()}>Retry</button>
-      </div>
-    );
-  }
+  const filteredTSCs = useFilteredTSCs(tscs, selectedBusinessUnit) ?? [];
 
   return (
     <Card className="w-full">
