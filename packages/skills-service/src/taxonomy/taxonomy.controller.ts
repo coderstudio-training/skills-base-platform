@@ -30,7 +30,7 @@ import { BulkUpsertTaxonomyDTO } from './dto/taxonomy.dto';
 import { TaxonomyService } from './taxonomy.service';
 
 @ApiTags('Taxonomy')
-@ApiBearerAuth('JWT-auth')
+@ApiBearerAuth('JWT-Admin')
 @Controller('taxonomy')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)

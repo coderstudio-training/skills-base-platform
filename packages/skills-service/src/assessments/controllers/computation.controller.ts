@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   NotFoundException,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -13,11 +14,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
+import { Request } from 'express';
 import { BulkRequiredSkillsDto } from '../dto/required-skills.dto';
 import { PerformanceService } from '../services/computation.service';
 
 @ApiTags('Skills Assessments')
-@ApiBearerAuth('JWT-auth')
+@ApiBearerAuth('JWT-Admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('api/skills-assessments')
 export class PerformanceController {
@@ -84,19 +86,6 @@ export class PerformanceController {
     summary: 'Get required skills by capability',
     description: 'Get all required skills for a specific capability',
   })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        capability: {
-          type: 'string',
-          description: 'Capability to get required skills for',
-          example: 'Quality Assurance',
-        },
-      },
-      required: ['capability'],
-    },
-  })
   @ApiResponse({
     status: 200,
     description: 'Required skills successfully retrieved',
@@ -114,9 +103,9 @@ export class PerformanceController {
     status: 500,
     description: 'Internal server error while retrieving skills',
   })
-  async getRequiredSkillsByCapability(@Body() body: { capability: string }) {
+  async getRequiredSkillsByCapability(@Req() req: Request) {
     try {
-      const { capability } = body;
+      const capability = req.query.capability as string;
       if (!capability) {
         throw new Error('Capability is required.');
       }

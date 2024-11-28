@@ -13,13 +13,13 @@ import { EmployeeRankingsResponseDto } from '../dto/user-skills.dto';
 import { SkillsMatrixService } from '../services/skills-matrix.service';
 
 @ApiTags('Skill Matrix')
-@ApiBearerAuth('JWT-auth')
 @Controller('api/skills')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SkillMatrixController {
   constructor(private readonly skillMatrixService: SkillsMatrixService) {}
 
   @Get('skills-matrix')
+  @ApiBearerAuth('JWT-Admin')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.USER)
   @ApiOperation({
     summary: 'Get skills matrix for all employees',
@@ -44,6 +44,7 @@ export class SkillMatrixController {
   }
 
   @Get('analytics')
+  @ApiBearerAuth('JWT-Admin')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({
     summary: 'Get organization-wide skill analytics',
@@ -69,6 +70,7 @@ export class SkillMatrixController {
   }
 
   @Get('distributions')
+  @ApiBearerAuth('JWT-Admin')
   @Roles(UserRole.ADMIN)
   @ApiOperation({
     summary: 'Get skill distributions',
@@ -128,6 +130,7 @@ export class SkillMatrixController {
   }
 
   @Get('rankings')
+  @ApiBearerAuth('JWT-Admin')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({
     summary: 'Get employee skill rankings',
