@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { IBaseTaxonomy } from '@/lib/skills/types';
 import { Pencil, Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useFilteredTSCs } from './hooks/useFilteredTSCs';
 
 interface TSCManagerProps {
   selectedBusinessUnit?: string;
@@ -60,22 +60,24 @@ export default function TSCManager({
   } = useTSCOperations(selectedBusinessUnit, newTSCs || ([] as TSC[]), setFormErrors, validateForm);
 
   // Memoized filtering of TSCs based on business unit and search query
-  const filteredTSCs = useMemo(() => {
-    let result = tscs;
+  // const filteredTSCs = useMemo(() => {
+  //   let result = tscs;
 
-    // Filter by business unit
-    if (selectedBusinessUnit !== BUSINESS_UNITS.ALL) {
-      result = result.filter(tsc => tsc.businessUnit === selectedBusinessUnit.replace(' ', ''));
-    }
+  //   // Filter by business unit
+  //   if (selectedBusinessUnit !== BUSINESS_UNITS.ALL) {
+  //     result = result.filter(tsc => tsc.businessUnit === selectedBusinessUnit.replace(' ', ''));
+  //   }
 
-    // Filter by search query
-    if (searchQuery) {
-      const normalizedQuery = searchQuery.toLowerCase().trim();
-      result = result.filter(tsc => tsc.title.toLowerCase().includes(normalizedQuery));
-    }
+  //   // Filter by search query
+  //   if (searchQuery) {
+  //     const normalizedQuery = searchQuery.toLowerCase().trim();
+  //     result = result.filter(tsc => tsc.title.toLowerCase().includes(normalizedQuery));
+  //   }
 
-    return result;
-  }, [tscs, selectedBusinessUnit, searchQuery]);
+  //   return result;
+  // }, [tscs, selectedBusinessUnit, searchQuery]);
+
+  const filteredTSCs = useFilteredTSCs(tscs, selectedBusinessUnit, searchQuery);
 
   return (
     <Card className="w-full">
