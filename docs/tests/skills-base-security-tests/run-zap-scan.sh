@@ -9,8 +9,11 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 declare -A SERVICES
 SERVICES=(
     # ["user-service"]="http://192.168.100.70:3001"
+    # ["skills-service"]="http://192.168.100.70:3002"
+    # ["learning-service"]="http://192.168.100.70:3003"
+    # ["integration-service"]="http://192.168.100.70:3004"
     # ["email-service"]="http://192.168.100.70:3005"
-    ["frontend"]="http://192.168.100.70:3000"
+    # ["frontend"]="http://192.168.100.70:3000"
 )
 
 # OpenAPI/Swagger endpoints
@@ -31,7 +34,7 @@ ZAP_LOG_LEVEL="INFO"
 declare -A SCAN_TYPES
 SCAN_TYPES=(
     ["baseline"]="Basic baseline scan"
-    # ["api"]="API-specific scan"
+    ["api"]="API-specific scan"
     ["full"]="Full security scan"
 )
 
@@ -205,7 +208,7 @@ for service_name in "${!SERVICES[@]}"; do
         echo "=== ${scan_type} scan complete for ${service_name} ==="
         echo "Reports saved in: ${REPORT_DIR}"
         echo "Logs saved in: ${LOGS_DIR}"
-        echo
+        echo ""
     done
 done
 
