@@ -57,7 +57,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('Skills Assessments', 'Endpoints for managing skill assessments')
     .addTag('Skill Matrix', 'Endpoints for skill matrix and employee rankings')
-    .addTag('Taxonomy', 'Endpoints for soft and technical skills taxonomy')
+    .addTag('Taxonomy', 'Endpoints for technical skills taxonomy')
     // JWT Bearer Auth
     .addBearerAuth(
       {
