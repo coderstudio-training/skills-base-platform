@@ -14,8 +14,24 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Settings } from 'lucide-react';
 import { signOut } from 'next-auth/react';
+import { useState } from 'react';
 
 export default function AdminDashboardHeader() {
+  const [lastSyncTime, setLastSyncTime] = useState('No sync data');
+
+  const handleLastNotificationDate = (date: string | null) => {
+    if (date) {
+      const formattedDate = new Date(date).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+      });
+      setLastSyncTime(`Last synced: ${formattedDate}`);
+    }
+  };
+
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
   };
@@ -25,11 +41,11 @@ export default function AdminDashboardHeader() {
       <div className="h-16 max-w-7xl mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
-          <Badge variant="secondary">Data synced: Today 8:00 AM</Badge>
+          <Badge variant="secondary">{lastSyncTime}</Badge>
         </div>
         <div className="flex items-center space-x-4">
           <ReportGenerator />
-          <NotificationCenter />
+          <NotificationCenter onLastNotificationDateChange={handleLastNotificationDate} />
           <Button variant="ghost" size="icon">
             <Settings className="h-5 w-5" />
           </Button>

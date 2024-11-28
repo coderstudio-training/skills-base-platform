@@ -11,6 +11,7 @@ export interface TopPerformersResponse {
 export interface Employee {
   employeeId: number;
   firstName: string;
+  picture?: string;
   lastName: string;
   email: string;
   businessUnit: string;
