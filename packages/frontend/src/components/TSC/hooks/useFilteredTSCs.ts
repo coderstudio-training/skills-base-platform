@@ -10,7 +10,9 @@ export const useFilteredTSCs = (
   return useMemo(
     () =>
       selectedBusinessUnit === getValueFromKey('ALL')
-        ? tscs
+        ? tscs.filter(tsc =>
+            tsc.title.toLowerCase().includes(searchQuery ? searchQuery.trim().toLowerCase() : ''),
+          )
         : searchQuery
           ? filterBU(tscs, selectedBusinessUnit).filter(tsc =>
               tsc.title.toLowerCase().includes(searchQuery.trim().toLowerCase()),
