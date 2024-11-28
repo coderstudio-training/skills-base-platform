@@ -3,7 +3,6 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
-  ApiProperty,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -13,21 +12,6 @@ import {
   BulkUpdateAssessmentsDto,
 } from '../dto/assessments.dto';
 import { AssessmentsService } from '../services/assessments.service';
-
-export class BulkUpdateRequestDto {
-  @ApiProperty({
-    description: 'Type of assessment being updated',
-    example: 'self',
-    enum: ['self', 'manager'],
-  })
-  assessmentType!: string;
-
-  @ApiProperty({
-    description: 'Array of assessment data to be updated',
-    type: [BaseAssessmentDto],
-  })
-  data!: BaseAssessmentDto[];
-}
 
 @ApiTags('Skills Assessments')
 @ApiBearerAuth()
@@ -44,7 +28,6 @@ export class AssessmentsController {
       'Update multiple skills assessments in a single operation. Requires admin privileges.',
   })
   @ApiBody({
-    type: BulkUpdateRequestDto,
     description: 'Bulk update request containing assessment type and data',
   })
   @ApiResponse({
@@ -62,7 +45,10 @@ export class AssessmentsController {
   })
   async bulkUpdate(
     @Body()
-    body: BulkUpdateRequestDto,
+    body: {
+      assessmentType: string;
+      data: BaseAssessmentDto[];
+    },
   ) {
     const { assessmentType, data } = body;
     console.log('Incoming body:', body);

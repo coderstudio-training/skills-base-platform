@@ -54,9 +54,6 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
-  logger.logger(
-    `User service is running on: http://localhost:${port}`,
-    'Bootstrap',
-  );
+  logger.info(`User service is running on: http://localhost:${port}`);
 }
 bootstrap();

@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // import { Progress } from "@/components/ui/progress"
 // import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 import ManagerSkillsView from '@/components/dashboard/manager/ManagerSkillsView';
@@ -15,12 +15,28 @@ import TeamCompositionChart from '@/components/dashboard/manager/TeamComposition
 import TeamMembersList from '@/components/dashboard/manager/TeamMembersList';
 import TeamStatsCard from '@/components/dashboard/manager/TeamStatsCards';
 import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAuth } from '@/lib/api/hooks';
 import { getUserPicture } from '@/lib/users/api';
 import { getTeamMembers } from '@/lib/users/employees/api';
 import { TeamMember } from '@/types/manager';
 // import { ManagerData } from '@/types/manager'
 // import { dummyManagerData } from '@/lib/dummyData'
+
+const topPerformers = [
+  { name: 'Alice Johnson', role: 'Senior QA Engineer', performanceScore: 95 },
+  { name: 'Bob Smith', role: 'QA Analyst', performanceScore: 92 },
+  { name: 'Charlie Davis', role: 'QA Engineer', performanceScore: 90 },
+  { name: 'Diana Miller', role: 'Senior QA Engineer', performanceScore: 89 },
+  { name: 'Edward Wilson', role: 'QA Analyst', performanceScore: 88 },
+];
 
 export default function ManagerDashboard() {
   const { user } = useAuth();
@@ -241,7 +257,76 @@ export default function ManagerDashboard() {
           {' '}
           <ManagerTrainingRecommendation />
         </TabsContent>
-        <TabsContent value="evaluation">{/* Evaluation content */}</TabsContent>
+        <TabsContent value="evaluation">
+          <Card>
+            <CardHeader>
+              <CardTitle>Team Evaluation</CardTitle>
+              <CardDescription>
+                Conduct performance evaluations for your team members
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">Select a team member to start their performance evaluation:</p>
+              <Select>
+                <SelectTrigger className="w-[280px]">
+                  <SelectValue placeholder="Select team member" />
+                </SelectTrigger>
+                <SelectContent>
+                  {topPerformers.map((member, index) => (
+                    <SelectItem key={index} value={member.name.toLowerCase().replace(' ', '-')}>
+                      {member.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Evaluation Criteria</h3>
+                <div className="space-y-4">
+                  {[
+                    'Technical Skills',
+                    'Communication',
+                    'Teamwork',
+                    'Problem Solving',
+                    'Initiative',
+                  ].map((criteria, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <span>{criteria}</span>
+                      <Select>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select rating" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5].map(rating => (
+                            <SelectItem key={rating} value={rating.toString()}>
+                              {rating} -{' '}
+                              {rating === 1
+                                ? 'Poor'
+                                : rating === 2
+                                  ? 'Fair'
+                                  : rating === 3
+                                    ? 'Good'
+                                    : rating === 4
+                                      ? 'Very Good'
+                                      : 'Excellent'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Comments</h3>
+                <textarea
+                  className="w-full h-32 p-2 border rounded-md"
+                  placeholder="Enter your comments here..."
+                ></textarea>
+              </div>
+              <Button className="mt-4">Submit Evaluation</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
