@@ -6,7 +6,13 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   JwtAuthGuard,
   LoggingInterceptor,
@@ -20,6 +26,7 @@ import { RecommendationService } from '../services/recommendation.service';
 
 @ApiTags('Learning')
 @Controller('api/learning')
+@ApiBearerAuth('JWT-Staff')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)
 export class RecommendationController {

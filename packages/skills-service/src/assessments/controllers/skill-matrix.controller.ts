@@ -13,7 +13,7 @@ import { EmployeeRankingsResponseDto } from '../dto/user-skills.dto';
 import { SkillsMatrixService } from '../services/skills-matrix.service';
 
 @ApiTags('Skill Matrix')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 @Controller('api/skills')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SkillMatrixController {

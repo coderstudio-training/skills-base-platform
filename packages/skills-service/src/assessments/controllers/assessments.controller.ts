@@ -14,7 +14,7 @@ import {
 import { AssessmentsService } from '../services/assessments.service';
 
 @ApiTags('Skills Assessments')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 @Controller('api/skills-assessments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AssessmentsController {

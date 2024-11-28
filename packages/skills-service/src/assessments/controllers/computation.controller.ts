@@ -17,7 +17,7 @@ import { BulkRequiredSkillsDto } from '../dto/required-skills.dto';
 import { PerformanceService } from '../services/computation.service';
 
 @ApiTags('Skills Assessments')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('api/skills-assessments')
 export class PerformanceController {

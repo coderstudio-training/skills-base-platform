@@ -34,7 +34,25 @@ export class SwaggerHelper {
           bearerFormat: 'JWT',
           description: 'Enter your JWT token',
         },
-        'JWT',
+        'JWT-Manager',
+      )
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter your JWT token',
+        },
+        'JWT-Staff',
+      )
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter your JWT token',
+        },
+        'JWT-Admin',
       )
       .addApiKey(
         {
