@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PaginationDto } from '@skills-base/shared';
+import { IsOptional, IsString } from 'class-validator';
 
 export class EmployeeSearchDto extends PaginationDto {
   @ApiProperty({
@@ -7,6 +8,8 @@ export class EmployeeSearchDto extends PaginationDto {
     required: true,
     example: 'john',
   })
+  @IsOptional()
+  @IsString()
   searchTerm!: string;
 
   @ApiProperty({
@@ -14,5 +17,7 @@ export class EmployeeSearchDto extends PaginationDto {
     required: false,
     example: 'Engineering',
   })
+  @IsOptional()
+  @IsString()
   businessUnit?: string;
 }
