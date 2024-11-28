@@ -33,7 +33,7 @@ import { Employee } from './entities/employee.entity';
 @Controller('employees')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)
-@ApiBearerAuth('JWT-auth')
+@ApiBearerAuth('JWT-Admin')
 export class EmployeesController {
   private readonly logger = new Logger(EmployeesController.name);
 
@@ -166,6 +166,7 @@ export class EmployeesController {
   @ApiParam({
     name: 'employeeId',
     description: 'Employee ID',
+    example: '680',
     type: 'number',
   })
   @ApiResponse({
@@ -185,6 +186,7 @@ export class EmployeesController {
   @ApiParam({
     name: 'email',
     description: 'Employee email address',
+    example: 'adrian.oraya@stratpoint.com',
     type: 'string',
   })
   @ApiResponse({
@@ -209,6 +211,7 @@ export class EmployeesController {
   @ApiParam({
     name: 'managerName',
     description: 'Manager full name',
+    example: 'Adrian Oraya',
     type: 'string',
   })
   @ApiResponse({

@@ -15,7 +15,7 @@ export class EmployeeSearchDto extends PaginationDto {
   @ApiProperty({
     description: 'Filter employees by business unit',
     required: false,
-    example: 'Engineering',
+    example: 'Software QA Services',
   })
   @IsOptional()
   @IsString()

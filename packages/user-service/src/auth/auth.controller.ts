@@ -1,18 +1,11 @@
 // packages/user-service/src/auth/auth.controller.ts
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';
 
 @ApiTags('auth')
 @Controller('auth')
-@ApiBearerAuth('JWT-auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
