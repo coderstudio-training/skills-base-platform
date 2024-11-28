@@ -5,7 +5,6 @@ import ProficiencyTable from '@/components/TSC/components/ProficiencyTable';
 import TSCForm from '@/components/TSC/components/TSCForm';
 import TSCManagerHeader from '@/components/TSC/components/TSCManagerHeader';
 import { BUSINESS_UNITS } from '@/components/TSC/constants';
-import { useFilteredTSCs } from '@/components/TSC/hooks/useFilteredTSCs';
 import { useTSCFormValidation } from '@/components/TSC/hooks/useTSCFormValidation';
 import { useTSCOperations } from '@/components/TSC/hooks/useTSCOperations';
 import { TSC } from '@/components/TSC/types';
@@ -20,15 +19,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { IBaseTaxonomy } from '@/lib/skills/types';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useMemo } from 'react';
 
 interface TSCManagerProps {
   selectedBusinessUnit?: string;
   data?: IBaseTaxonomy[];
+  searchQuery?: string;
 }
 
 export default function TSCManager({
   selectedBusinessUnit = BUSINESS_UNITS.ALL,
   data,
+  searchQuery = '',
 }: TSCManagerProps) {
   const newTSCs = data?.map(tsc => ({
     id: tsc.docId,
@@ -56,7 +58,24 @@ export default function TSCManager({
     handleSave,
     confirmDelete,
   } = useTSCOperations(selectedBusinessUnit, newTSCs || ([] as TSC[]), setFormErrors, validateForm);
-  const filteredTSCs = useFilteredTSCs(tscs, selectedBusinessUnit) ?? [];
+
+  // Memoized filtering of TSCs based on business unit and search query
+  const filteredTSCs = useMemo(() => {
+    let result = tscs;
+
+    // Filter by business unit
+    if (selectedBusinessUnit !== BUSINESS_UNITS.ALL) {
+      result = result.filter(tsc => tsc.businessUnit === selectedBusinessUnit.replace(' ', ''));
+    }
+
+    // Filter by search query
+    if (searchQuery) {
+      const normalizedQuery = searchQuery.toLowerCase().trim();
+      result = result.filter(tsc => tsc.title.toLowerCase().includes(normalizedQuery));
+    }
+
+    return result;
+  }, [tscs, selectedBusinessUnit, searchQuery]);
 
   return (
     <Card className="w-full">
@@ -69,7 +88,9 @@ export default function TSCManager({
         <div className="space-y-4">
           {filteredTSCs.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No TSCs found for this business unit
+              {searchQuery
+                ? `No TSCs found matching "${searchQuery}"`
+                : 'No TSCs found for this business unit'}
             </div>
           ) : (
             filteredTSCs.map(tsc => (

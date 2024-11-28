@@ -17,8 +17,6 @@ import { Employee } from '@/types/admin';
 import { Award, BarChart2, BookOpen, Loader2, Network, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-// const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
-
 export default function AdminDashboard() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -190,18 +188,16 @@ export default function AdminDashboard() {
 
           {/* Users Directory */}
           <TabsContent value="users">
-            <TabsContent value="users">
-              <EmployeeDirectory
-                employees={employees}
-                loading={loading}
-                totalItems={totalItems}
-                totalPages={totalPages}
-                page={page}
-                limit={limit}
-                onPageChange={handlePageChange}
-                onLimitChange={handleLimitChange}
-              />
-            </TabsContent>
+            <EmployeeDirectory
+              employees={employees}
+              loading={loading}
+              totalItems={totalItems}
+              totalPages={totalPages}
+              page={page}
+              limit={limit}
+              onPageChange={handlePageChange}
+              onLimitChange={handleLimitChange}
+            />
           </TabsContent>
 
           {/* Metrics */}
@@ -218,7 +214,11 @@ export default function AdminDashboard() {
                 refetch={refetch}
               />
             ) : !isLoading && QA_Tsc ? (
-              <TSCManager selectedBusinessUnit={selectedBusinessUnit} data={QA_Tsc} />
+              <TSCManager
+                selectedBusinessUnit={selectedBusinessUnit}
+                data={QA_Tsc}
+                searchQuery={debouncedSearchQuery}
+              />
             ) : (
               <div className="h-[350px] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
