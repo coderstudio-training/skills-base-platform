@@ -7,44 +7,6 @@
   },
   "item": [
     {
-      "name": "Compute Average",
-      "protocolProfileBehavior": {
-        "disableBodyPruning": true
-      },
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{authToken}}",
-            "type": "text"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"email\": \"pauleenjoy.costiniano@stratpoint.com\",\r\n  \"bu\": \"AI\"\r\n}\r\n",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "http://localhost:3002/required-skills/employee-skill-gaps",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3002",
-          "path": ["required-skills", "employee-skill-gaps"]
-        }
-      },
-      "response": []
-    },
-    {
       "name": "Bulk Compute Average",
       "protocolProfileBehavior": {
         "disableBodyPruning": true
@@ -65,7 +27,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"bu\": \"AI\"\r\n}\r\n",
+          "raw": "{\r\n    \"bu\": \"QA\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -94,11 +56,16 @@
             "key": "Content-Type",
             "value": "application/json",
             "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
           }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n    \"prefixBU\": \"AI\" \r\n}",
+          "raw": "",
           "options": {
             "raw": {
               "language": "json"
@@ -106,11 +73,17 @@
           }
         },
         "url": {
-          "raw": "http://localhost:3002/api/skills/required-skills",
+          "raw": "http://localhost:3002/api/skills-assessments/required-skills?capability=QA",
           "protocol": "http",
           "host": ["localhost"],
           "port": "3002",
-          "path": ["api", "skills", "required-skills"]
+          "path": ["api", "skills-assessments", "required-skills"],
+          "query": [
+            {
+              "key": "capability",
+              "value": "QA"
+            }
+          ]
         }
       },
       "response": []
@@ -140,7 +113,20 @@
       "name": "Get Organization Skill Matrix",
       "request": {
         "method": "GET",
-        "header": []
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3002/api/skills/skills-matrix",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["api", "skills", "skills-matrix"]
+        }
       },
       "response": []
     },
@@ -148,13 +134,61 @@
       "name": "Get Organization Skill Analytics",
       "request": {
         "method": "GET",
-        "header": [],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
         "url": {
-          "raw": "http://localhost:3002/api/skill-metrics/analytics",
+          "raw": "http://localhost:3002/api/skills/analytics",
           "protocol": "http",
           "host": ["localhost"],
           "port": "3002",
-          "path": ["api", "skill-metrics", "analytics"]
+          "path": ["api", "skills", "analytics"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Organization Distributions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3002/api/skills/distributions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["api", "skills", "distributions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Organization Rankings",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3002/api/skills/rankings",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["api", "skills", "rankings"]
         }
       },
       "response": []
