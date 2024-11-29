@@ -1,12 +1,24 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Logger, TrackMetric } from '@skills-base/shared';
+import {
+  JwtAuthGuard,
+  Logger,
+  Roles,
+  RolesGuard,
+  TrackMetric,
+  UserRole,
+} from '@skills-base/shared';
 import { GrafanaWebhookPayload } from '../interfaces/grafana-webhook.interface';
 import { EmailDto } from './dto/email.dto';
 import { EmailService } from './email.service';
 
 @ApiTags('Email Notifications')
-@ApiBearerAuth()
 @Controller('email')
 export class EmailController {
   constructor(
@@ -17,6 +29,7 @@ export class EmailController {
   }
 
   @Post('grafananotif')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @TrackMetric({
     name: 'grafana_webhook_received',
     eventType: 'grafana.webhook',
@@ -77,6 +90,8 @@ export class EmailController {
     }
   }
 
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth('JWT-Admin')
   @Post('send-success')
   @TrackMetric({
     name: 'email_workflow_success',
@@ -103,6 +118,8 @@ export class EmailController {
     return { message: 'Success email sent' };
   }
 
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth('JWT-Admin')
   @Post('send-error')
   @TrackMetric({
     name: 'email_workflow_error',
