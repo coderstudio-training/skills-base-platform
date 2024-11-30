@@ -72,7 +72,7 @@ export default function EmployeeDirectory({
         data.skills.map(async (skill: SkillDetail) => {
           try {
             const taxonomyResponse = await fetch(
-              `/api/taxonomy/title/${skill.skill}?businessUnit=QA`,
+              `/api/taxonomy/technical/title/${skill.skill}?businessUnit=QA`,
             );
 
             if (!taxonomyResponse.ok) {
