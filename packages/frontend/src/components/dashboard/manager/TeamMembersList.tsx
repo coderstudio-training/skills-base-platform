@@ -100,7 +100,7 @@ const TeamMembersList = ({
       <CardContent className="pt-6">
         <h3 className="font-bold mb-1">Team Members List</h3>
         <p className="text-sm text-gray-500 mb-4">List of your team members</p>
-        <ScrollArea className="h-[300px] w-full">
+        <ScrollArea className="h-[400px] w-full">
           {loading && renderLoadingState()}
           {error && renderErrorState()}
           {!loading && !error && members.length === 0 && renderEmptyState()}

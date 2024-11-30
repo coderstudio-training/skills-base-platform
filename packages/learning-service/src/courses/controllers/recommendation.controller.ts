@@ -39,6 +39,7 @@ export class RecommendationController {
     description: `
       Get personalized learning recommendations based on skill gaps for a specific user.
       
+      
       Authentication:
       - This endpoint requires Google OAuth authentication
       - Access through the frontend application for proper authentication flow
