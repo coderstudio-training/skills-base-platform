@@ -11,7 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class T_TaxonomyDTO extends BaseDto {
+export class Taxonomy extends BaseDto {
   @ApiProperty({
     description: 'Unique identifier pertaining to google document',
     example: '1FpwF_0S9w7RuZlpkFPK4f0rNIRSfAzGu5eqj38ME5NA',
@@ -67,7 +67,9 @@ export class T_TaxonomyDTO extends BaseDto {
   @IsString()
   @IsNotEmpty()
   description!: string;
+}
 
+export class T_TaxonomyDTO extends Taxonomy {
   @ApiProperty({
     description: 'Proficiency description as a key-value pair',
     example: {
@@ -83,7 +85,7 @@ export class T_TaxonomyDTO extends BaseDto {
   })
   @IsObject()
   @IsNotEmpty()
-  proficiencyDescription!: Record<string, any>;
+  proficiencyDescription!: Record<string, string[]>;
 
   @ApiProperty({
     description: 'Abilities description as a key-value pair',
@@ -112,7 +114,7 @@ export class T_TaxonomyDTO extends BaseDto {
   })
   @IsObject()
   @IsNotEmpty()
-  abilities!: Record<string, any>;
+  abilities!: Record<string, string[]>;
 
   @ApiProperty({
     description: 'Knowledge description as a key-value pair',
@@ -138,7 +140,7 @@ export class T_TaxonomyDTO extends BaseDto {
   })
   @IsObject()
   @IsNotEmpty()
-  knowledge!: Record<string, any>;
+  knowledge!: Record<string, string[]>;
 
   @ApiProperty({
     description: 'Associated business unit',
@@ -166,30 +168,10 @@ export class T_TaxonomyDTO extends BaseDto {
   rangeOfApplication?: string[];
 }
 
-export class S_TaxonomyDTO extends BaseDto {
-  @IsString()
-  @IsNotEmpty({ message: 'document id must not be empty!' })
-  docId!: string;
-
-  @IsString()
+export class S_TaxonomyDTO extends Taxonomy {
+  @IsArray()
   @IsNotEmpty()
-  docRevisionId!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  docTitle!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  title!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  category!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  description!: string;
+  rating!: string[];
 
   @IsObject()
   @IsNotEmptyObject()
@@ -198,11 +180,12 @@ export class S_TaxonomyDTO extends BaseDto {
   @IsObject()
   @IsNotEmptyObject()
   benchmark!: Record<string, string[]>;
+}
 
-  // Reserved for the collection name.
-  @IsString()
-  @IsNotEmpty()
-  businessUnit!: string;
+export class BulkUpsertTaxonomyDTO {
+  @ValidateNested({ each: true })
+  @Type(() => Taxonomy)
+  data!: Taxonomy[];
 }
 
 export class BulkUpsertTTaxonomyDTO {
