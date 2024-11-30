@@ -1,0 +1,222 @@
+{
+  "info": {
+    "_postman_id": "24c3a952-2bd5-4351-860a-b489b874bcb4",
+    "name": "Skills Base Learning Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "37343302"
+  },
+  "item": [
+    {
+      "name": "Learning Service",
+      "item": [
+        {
+          "name": "Admin Dashboard",
+          "item": [
+            {
+              "name": "Learning Resources",
+              "request": {
+                "method": "GET",
+                "header": []
+              },
+              "response": []
+            },
+            {
+              "name": "Resource Management",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "GET http://localhost:3003/api/courses/resources?Authorization=Bearer {{authToken}}",
+                  "protocol": "GET http",
+                  "host": ["localhost"],
+                  "port": "3003",
+                  "path": ["api", "courses", "resources"],
+                  "query": [
+                    {
+                      "key": "Authorization",
+                      "value": "Bearer {{authToken}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Staff and Manager Dashboard",
+          "item": [
+            {
+              "name": "Create Learning Recommendation",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{authToken}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:3003/api/learning/recommendations/pauleenjoy.costiniano@stratpoint.com",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3003",
+                  "path": [
+                    "api",
+                    "learning",
+                    "recommendations",
+                    "pauleenjoy.costiniano@stratpoint.com"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Register Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "var jsonData = pm.response.json();",
+                      "",
+                      "pm.test(\"Response has user data\", function () {",
+                      "    pm.expect(jsonData.email).to.eql(pm.environment.get(\"adminEmail\"));",
+                      "    pm.expect(jsonData.firstName).to.be.a('string');",
+                      "    pm.expect(jsonData.lastName).to.be.a('string');",
+                      "    pm.expect(jsonData.roles).to.include(\"admin\");",
+                      "});",
+                      "",
+                      "console.log(\"Admin user created:\", jsonData);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\",\n    \"firstName\": \"Admin\",\n    \"lastName\": \"User\",\n    \"roles\": [\"admin\"]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "register"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login Admin",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "var jsonData = pm.response.json();",
+                      "",
+                      "pm.test(\"Response has access_token\", function () {",
+                      "    pm.expect(jsonData.access_token).to.be.a('string');",
+                      "});",
+                      "",
+                      "if (jsonData.access_token) {",
+                      "    pm.environment.set(\"authToken\", jsonData.access_token);",
+                      "    console.log(\"Auth Token set:\", jsonData.access_token);",
+                      "} else {",
+                      "    console.error(\"No access_token in response\");",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"email\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Upsert Courses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"data\": [\r\n    {\r\n      \"skillCategory\": \"Technical\",\r\n      \"skillName\": \"Software Testing\",\r\n      \"requiredLevel\": 3,\r\n      \"careerLevel\": \"Professional III\",\r\n      \"courseLevel\": \"Intermediate\",\r\n      \"courseId\": \"COURSE-001\",\r\n      \"fields\": [\r\n        {\r\n          \"name\": \"courseName\",\r\n          \"value\": \"Advanced Test Analysis Techniques\"\r\n        },\r\n        {\r\n          \"name\": \"provider\",\r\n          \"value\": \"ISTQB\"\r\n        },\r\n        {\r\n          \"name\": \"duration\",\r\n          \"value\": \"8 weeks\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"collection\": \"QA_LEARNING_RESOURCES\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3003/api/courses/bulk-update",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3003",
+              "path": ["api", "courses", "bulk-update"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,14 +1,21 @@
 // lib/auth.ts
 
+import { authConfig, errorMessages, rolePermissions } from '@/lib/api/config';
+import {
+  AuthState,
+  Permission,
+  RolePermissions,
+  Roles,
+  ServerInterceptOptions,
+} from '@/lib/api/types';
 import { logger } from '@/lib/utils';
 import { AuthResponse, DecodedToken } from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
-import { NextAuthOptions } from 'next-auth';
+import { getServerSession, NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
-import { authConfig, errorMessages, rolePermissions } from './config';
-import { AuthState, Permission, RolePermissions, Roles } from './types';
+import { redirect } from 'next/navigation';
 logger.log('Starting to load auth options in lib/auth.ts...');
 
 export const authOptions: NextAuthOptions = {
@@ -154,21 +161,45 @@ export const authOptions: NextAuthOptions = {
 
 // Handles the auth headers instead of manually calling getSession() all the time.
 export async function getAuthHeaders(): Promise<HeadersInit> {
-  const session = await getSession();
+  let session;
 
+  // Check if running on the server or client
+  if (typeof window === 'undefined') {
+    // On the server-side, use getServerSession
+    logger.log('getting server side session');
+    session = await getServerSession(authOptions);
+  } else {
+    // On the client-side, use getSession
+    logger.log('getting client side session');
+    session = await getSession();
+  }
+
+  // If no session or accessToken, return empty headers
   if (!session?.user?.accessToken) {
-    logger.warn(errorMessages.UNAUTHORIZED);
+    logger.warn('Unauthorized: No session or accessToken');
     return {};
   }
 
+  // Return the authorization header with the token
   return { Authorization: `Bearer ${session.user.accessToken}` };
 }
 
 // Auth management, to be used in conjunction with hasPermission or canAccessRoutes
 export async function getAuthState(): Promise<AuthState> {
-  const session = await getSession();
+  let session;
 
-  if (!session) return { isAuthenticated: false, user: null, role: [] };
+  // Check if running on the server or client
+  if (typeof window === 'undefined') {
+    // On the server-side, use getServerSession
+    session = await getServerSession(authOptions);
+  } else {
+    // On the client-side, use getSession
+    session = await getSession();
+  }
+
+  if (!session) {
+    return { isAuthenticated: false, user: null, role: [] };
+  }
 
   return {
     isAuthenticated: !!session.user?.accessToken,
@@ -178,8 +209,18 @@ export async function getAuthState(): Promise<AuthState> {
 }
 
 // Helper function, gets logged in user's role
-export async function getRoles(): Promise<Roles[]> {
-  const session = await getSession();
+async function getRoles(): Promise<Roles[]> {
+  let session;
+
+  // Check if running on the server or client
+  if (typeof window === 'undefined') {
+    // On the server-side, use getServerSession
+    session = await getServerSession(authOptions);
+  } else {
+    // On the client-side, use getSession
+    session = await getSession();
+  }
+
   return session?.user?.role ? [session.user.role] : [];
 }
 
@@ -199,4 +240,59 @@ export async function canAccessRoutes(route: string): Promise<boolean> {
   if (!roles.length) return false;
 
   return roles.some(role => authConfig.routes[role].includes(route));
+}
+
+export async function isTokenExpired(token: string): Promise<boolean> {
+  try {
+    const [, payload] = token.split('.'); // Access the payload part of the JWT
+    if (!payload) return true;
+
+    const { exp } = JSON.parse(atob(payload)); // Decode the base64 payload
+    if (!exp) return true;
+
+    // Check if the token is expired
+    return Date.now() >= exp * 1000;
+  } catch (error) {
+    console.error('Error parsing token:', error);
+    return true; // Assume expired if parsing fails
+  }
+}
+
+export async function serverSideIntercept(option?: ServerInterceptOptions) {
+  const session = await getServerSession(authOptions);
+  logger.log('Server-side session:', session);
+
+  if (!session) {
+    logger.log(errorMessages.UNAUTHORIZED);
+    redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
+  } else {
+    const tokenExpired = await isTokenExpired(session?.user.accessToken);
+    if (tokenExpired) {
+      logger.log(errorMessages.TOKEN_EXPIRED);
+      redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
+    }
+  }
+
+  if (option?.role) {
+    if (session.user.role !== option.role) {
+      logger.log(errorMessages.UNAUTHORIZED);
+      redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
+    }
+  }
+
+  if (option?.permission) {
+    const isPermitted = await hasPermission(option.permission);
+    if (!isPermitted) {
+      logger.log(errorMessages.FORBIDDEN);
+      redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
+    }
+  }
+
+  if (option?.route) {
+    const canAccess = await canAccessRoutes(option.route);
+    if (!canAccess) {
+      logger.log(errorMessages.FORBIDDEN);
+      redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
+    }
+  }
 }

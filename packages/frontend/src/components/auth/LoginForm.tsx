@@ -9,16 +9,11 @@ import { userApi } from '@/lib/api/client';
 import { authConfig, errorMessages } from '@/lib/api/config';
 import { useMutation } from '@/lib/api/hooks';
 import { ApiResponse } from '@/lib/api/types';
+import { AuthResponse } from '@/lib/users/types';
 import { logger } from '@/lib/utils';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-
-interface AuthResponse {
-  access_token?: string;
-  message?: string;
-  status?: number;
-}
 
 export default function LoginForm() {
   // Changed from AdminLoginPage to LoginForm

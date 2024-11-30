@@ -1,4 +1,4 @@
-import { ApiConfig, RolePermissions } from './types';
+import { ApiConfig, RolePermissions } from '@/lib/api/types';
 
 const timeout = 10000;
 const version = 'v1';
@@ -63,6 +63,7 @@ export const errorMessages = {
   NOT_EMPLOYED: 'User is not registered as an employee.',
   VALIDATION_ERROR: 'Validation error occurred.',
   STREAM_ERROR: 'Error in data stream.',
+  TOKEN_EXPIRED: 'Token expired. Please login again.',
 };
 
 export const rolePermissions: RolePermissions = {

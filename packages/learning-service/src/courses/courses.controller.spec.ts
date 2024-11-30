@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CoursesController } from './courses.controller';
-import { CoursesService } from './courses.service';
+import { CoursesController } from './controllers/courses.controller';
+import { CoursesService } from './services/courses.service';
 
 describe('AppController', () => {
   let controller: CoursesController;
-  let service: CoursesService;
+  // let service: CoursesService;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({

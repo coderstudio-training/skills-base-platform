@@ -1,21 +1,48 @@
-// packages/user-service/src/auth/dto/register.dto.ts
-import { IsEmail, IsString, MinLength, IsArray } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '@skills-base/shared';
+import { IsArray, IsEmail, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
-  @IsEmail()
+  @ApiProperty({
+    description: 'User email address',
+    example: 'user@example.com',
+    type: String,
+  })
+  @IsEmail({}, { message: 'Please provide a valid email address' })
   email!: string;
 
-  @IsString()
-  @MinLength(8)
+  @ApiProperty({
+    description: 'User password (minimum 8 characters)',
+    example: 'strongpassword123',
+    type: String,
+    minLength: 8,
+  })
+  @IsString({ message: 'Password must be a string' })
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password!: string;
 
-  @IsString()
+  @ApiProperty({
+    description: 'User first name',
+    example: 'John',
+    type: String,
+  })
+  @IsString({ message: 'First name must be a string' })
   firstName!: string;
 
-  @IsString()
+  @ApiProperty({
+    description: 'User last name',
+    example: 'Doe',
+    type: String,
+  })
+  @IsString({ message: 'Last name must be a string' })
   lastName!: string;
 
-  @IsArray()
+  @ApiProperty({
+    description: 'User roles',
+    example: [UserRole.USER],
+    type: [String],
+    default: [UserRole.USER],
+  })
+  @IsArray({ message: 'Roles must be an array' })
   roles: UserRole[] = [UserRole.USER];
 }

@@ -1,0 +1,573 @@
+{
+  "name": "Learning-Service: Bulk Upsert",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.31.99.9:3001/auth/login",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "admin@example.com"
+            },
+            {
+              "name": "password",
+              "value": "AdminPassword123!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Login to API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-1020, 760],
+      "id": "90616df4-d006-443f-a4b2-3ae0e26f8242"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.31.99.9:3005/email/send-success",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"workflowName\": \"{{ $workflow.name }}\"}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "name": "Send Success Notification API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [460, 460],
+      "id": "2c821468-65e2-49c6-8f50-ce095a80fa9a",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.31.99.9:3005/email/send-error",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"workflowName\": \"{{ $workflow.name }}\", \"error\": \"{{ $json.error }}\" }",
+        "options": {}
+      },
+      "name": "Send Error Notification API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [460, 700],
+      "id": "3f74f5ee-bd30-4a85-8efe-1a9dd834cbae",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your-nestjs-api.com/api/error-logs/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Process and Validate Data\"].json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "errors",
+              "value": "={{ $json.errors }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Errors to API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [460, 940],
+      "id": "b001be74-dcb1-45b1-bb3e-d21eea85cff7",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.31.99.9:3003/api/courses/bulk-update",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node['Login to API'].json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ $json.data }}"
+            },
+            {
+              "name": "collection",
+              "value": "={{ $json.collectionName }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "name": "Upsert Courses",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [0, 540],
+      "id": "cf4c034f-a361-4a16-aea4-043591c975a3",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Learning Resources - Master List",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "e1a8df23-1218-4605-9ec5-e425496b7070",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [-400, 540],
+      "executeOnce": false,
+      "credentials": {
+        "googleApi": {
+          "id": "3PuX38P84dnj3WFT",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ed80d057-afd9-4f62-919b-d049b17a8b78",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 400,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "58828949-9335-42f4-bb9d-c6875244fb81",
+              "leftValue": "={{ $json.validationErrors }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c38c3f71-6f9c-4807-9c62-72921e8995d4",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 401,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "id": "8e0773db-8ae5-47c5-92ad-d29c67ad8b7f",
+      "name": "Check API Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [220, 640]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Constants Definition\nconst STATIC_HEADERS = [\n  'SkillCategory',\n  'SkillName',\n  'RequiredLevel',\n  'CareerLevel',\n  'CourseLevel'\n];\nconst NUMERIC_FIELDS = ['RequiredLevel'];\nconst EXCLUDED_FIELDS = ['row_number'];\n\n// 2. Data Structure Validation\nconst structureValidators = {\n  isPresent: (value) => value !== null && value !== undefined && value !== '',\n  hasCorrectType: (value, type) => {\n    switch(type) {\n      case 'number': return !isNaN(Number(value));\n      case 'string': return typeof value === 'string' || value instanceof String;\n      default: return true;\n    }\n  }\n};\n\n// 3. Helper Functions\nfunction toCamelCase(header) {\n  return header\n    .replace(/([a-z])([A-Z])/g, '$1 $2')\n    .split(/[\\s_-]+/)\n    .map((word, index) => {\n      if (index === 0) {\n        return word.toLowerCase();\n      }\n      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();\n    })\n    .join('');\n}\n\nfunction transformValue(header, value) {\n  if (NUMERIC_FIELDS.includes(header)) {\n    return Number(value);\n  }\n  return value || '';\n}\n\nfunction validateStructure(header, value) {\n  const errors = [];\n  \n  if (!structureValidators.isPresent(value)) {\n    errors.push(`${header} is missing or empty`);\n    return errors;\n  }\n  const expectedType = NUMERIC_FIELDS.includes(header) ? 'number' : 'string';\n  if (!structureValidators.hasCorrectType(value, expectedType)) {\n    errors.push(`${header} must be a ${expectedType}`);\n  }\n  return errors;\n}\n\n// New helper function to separate static and dynamic fields\nfunction processDynamicFields(row) {\n  const fields = [];\n  \n  Object.entries(row).forEach(([header, value]) => {\n    if (!STATIC_HEADERS.includes(header) && !EXCLUDED_FIELDS.includes(header)) {\n      fields.push({\n        name: toCamelCase(header),\n        value: value || ''\n      });\n    }\n  });\n  \n  return fields;\n}\n\n// 4. Main Processing Function\nfunction processData(items) {\n  if (!items?.length) {\n    throw new Error('No data to process');\n  }\n\n  const buInfo = $node['Get BU'].json;\n  if (!buInfo || !buInfo.prefixBU) {\n    throw new Error('Required BU information missing');\n  }\n  \n  const firstItem = items[0].json;\n  const structureErrors = [];\n  const processedItems = [];\n\n\n  \n  // Check required headers\n  const missingHeaders = STATIC_HEADERS.filter(header => !(header in firstItem));\n  if (missingHeaders.length) {\n    throw new Error(`Missing required headers: ${missingHeaders.join(', ')}`);\n  }\n\n  // Process items\n  items.forEach((item, index) => {\n    const row = item.json;\n    const rowErrors = [];\n    \n    // Initialize transformed item with courseId\n    const transformedItem = {\n      courseId: `COURSE${String(index + 1).padStart(3, '0')}`\n    };\n\n    // Process static fields\n    STATIC_HEADERS.forEach(header => {\n      const value = row[header];\n      if (STATIC_HEADERS.includes(header)) {\n        const fieldErrors = validateStructure(header, value);\n        rowErrors.push(...fieldErrors);\n      }\n      transformedItem[toCamelCase(header)] = transformValue(header, value);\n    });\n\n    // Add dynamic fields array\n    transformedItem.fields = processDynamicFields(row);\n\n    if (rowErrors.length) {\n      structureErrors.push({\n        rowIndex: index + 1,\n        courseId: transformedItem.courseId,\n        errors: rowErrors\n      });\n    }\n    \n    processedItems.push(transformedItem);\n  });\n\n  // Log validation issues\n  if (structureErrors.length > 0) {\n    console.log('Data structure issues found:', JSON.stringify(structureErrors, null, 2));\n  }\n\n  \n\n  return {\n    json: {\n      data: processedItems, \n      collectionName: buInfo.collectionName,\n      prefixBU: buInfo.prefixBU\n    }\n  };\n\n\n}\n\n// 5. Execution\ntry {\n  return processData($input.all());\n} catch (error) {\n  console.error('Processing failed:', error.message);\n  throw error;\n}"
+      },
+      "name": "Process and Validate Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [-200, 740],
+      "id": "ce004410-1772-43b3-8e05-fd606057fee6",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8b336542-c20c-4301-a44a-9419b21e1b38",
+              "leftValue": "={{ $json.structureErrors }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "id": "70e4a9e4-7519-450f-bbfe-14f090ea5f52",
+      "name": "Check for Validation",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [140, 920],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/drive/v3/files/{{$json.parents[0]}}?fields=id,createdTime,modifiedTime,name",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "options": {}
+      },
+      "id": "d5f97a94-1c67-4775-9c50-1165d43f1303",
+      "name": "Get Parent Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1220, 760],
+      "credentials": {
+        "googleApi": {
+          "id": "3PuX38P84dnj3WFT",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function getBUData(items) {\n  // Get parent folder details directly\n  const parentDetails = $node['Get Parent Details'].json;\n  \n  // Validate parent folder details\n  if (!parentDetails || !parentDetails.name) {\n    throw new Error('Parent folder details not found');\n  }\n\n  // Extract BU prefix from folder name (e.g., \"QA\" from \"QA_QUALITY_ASSURANCE\")\n  const folderName = parentDetails.name;\n  const prefixBU = folderName.split('_')[0];\n\n  // Return BU information\n  return {\n    json: {\n      prefixBU,\n      collectionName: `${prefixBU}_LEARNING_RESOURCES`,\n      metadata: {\n        folderId: parentDetails.id,\n        folderName: parentDetails.name,\n        createdTime: parentDetails.createdTime,\n        modifiedTime: parentDetails.modifiedTime\n      }\n    }\n  };\n}\n\n// Error handling wrapper\ntry {\n  return getBUData($input.all());\n} catch (error) {\n  return {\n    json: {\n      error: error.message,\n      timestamp: new Date().toISOString()\n    }\n  };\n}"
+      },
+      "id": "72a28796-4453-47ab-8295-4922bef8331b",
+      "name": "Get BU",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-820, 760],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "=name='Courses_Master_List' and '{{$node['Get BU'].json.metadata.folderId}}' in parents",
+        "filter": {},
+        "options": {}
+      },
+      "id": "4b7d0aae-a764-4c68-89e2-84e3fc3bb478",
+      "name": "Get Sheet",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [-600, 760],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3PuX38P84dnj3WFT",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1fxNSKPZssdbzzz_Gt04v3ZlQw-lRKrGB",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {
+          "fileType": "application/vnd.google-apps.spreadsheet"
+        }
+      },
+      "id": "d94c63aa-3dc2-41ad-b36d-8ac0537fb66a",
+      "name": "QA",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1480, 760],
+      "credentials": {
+        "googleApi": {
+          "id": "3PuX38P84dnj3WFT",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1ZJ9df2YQjLuTlQLOYnUPElXkGxzAsE7h",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {
+          "fileType": "application/vnd.google-apps.spreadsheet"
+        }
+      },
+      "id": "8d6c372a-32a2-4a62-8103-18f871d4fb69",
+      "name": "SW",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1480, 560],
+      "credentials": {
+        "googleApi": {
+          "id": "3PuX38P84dnj3WFT",
+          "name": "Google Service Account account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "serviceAccount",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1ADB6v0xbPFuAANVtugUr4JyJRjY4CjqD",
+          "mode": "id"
+        },
+        "event": "fileUpdated",
+        "options": {
+          "fileType": "application/vnd.google-apps.spreadsheet"
+        }
+      },
+      "id": "e406b501-b9d5-41d7-959e-a8d69ca8e053",
+      "name": "CLD",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [-1480, 980],
+      "credentials": {
+        "googleApi": {
+          "id": "3PuX38P84dnj3WFT",
+          "name": "Google Service Account account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Upsert Courses": {
+      "main": [
+        [
+          {
+            "node": "Check API Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Process and Validate Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Response": {
+      "main": [
+        [
+          {
+            "node": "Send Success Notification API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Notification API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login to API": {
+      "main": [
+        [
+          {
+            "node": "Get BU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process and Validate Data": {
+      "main": [
+        [
+          {
+            "node": "Check for Validation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upsert Courses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Validation": {
+      "main": [
+        [
+          {
+            "node": "Log Errors to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Parent Details": {
+      "main": [
+        [
+          {
+            "node": "Login to API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get BU": {
+      "main": [
+        [
+          {
+            "node": "Get Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sheet": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA": {
+      "main": [
+        [
+          {
+            "node": "Get Parent Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SW": {
+      "main": [
+        [
+          {
+            "node": "Get Parent Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLD": {
+      "main": [
+        [
+          {
+            "node": "Get Parent Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5bb12cfd-0246-4e15-985c-55eb3e083b42",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6b49c0dd8dbe4133996d503a773cc6207f08d6d570333699244b2af44c143b09"
+  },
+  "id": "3a3LhwsLc7DahOod",
+  "tags": []
+}

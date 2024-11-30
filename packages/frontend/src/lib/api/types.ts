@@ -19,8 +19,9 @@ export interface ApiConfig {
 }
 
 export interface FetchOptions {
-  cache?: RequestCache;
+  cache?: RequestCache | null;
   revalidate?: number;
+  tags?: string[];
   headers?: HeadersInit;
   requiresAuth?: boolean;
 }
@@ -28,7 +29,14 @@ export interface FetchOptions {
 export interface ApiClientOptions {
   cache?: RequestCache;
   revalidate?: number;
+  tags?: string[];
   requiresAuth?: boolean;
+}
+
+export interface ServerInterceptOptions {
+  route?: string;
+  permission?: Permission;
+  role?: Roles;
 }
 
 export interface GoogleUser {

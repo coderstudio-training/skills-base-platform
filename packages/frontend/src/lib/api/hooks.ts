@@ -1,10 +1,11 @@
 'use client';
 
-import { getSession } from 'next-auth/react';
+import { isTokenExpired } from '@/lib/api/auth';
+import { learningApi, skillsApi, userApi } from '@/lib/api/client';
+import { authConfig, rolePermissions } from '@/lib/api/config';
+import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
+import { getSession, signOut } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
-import { learningApi, skillsApi, userApi } from './client';
-import { authConfig, rolePermissions } from './config';
-import { ApiError, ApiResponse, AuthState, Permission } from './types';
 
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
@@ -16,14 +17,23 @@ export function useAuth() {
   useEffect(() => {
     const fetchAuthState = async () => {
       const session = await getSession();
-      if (session) {
+      if (session && session.user?.accessToken) {
+        const tokenExpired = await isTokenExpired(session.user.accessToken);
+
+        if (tokenExpired) {
+          console.warn('Access token is expired. Logging out...');
+          await signOut({ callbackUrl: '/' });
+          return;
+        }
+
         setAuthState({
-          isAuthenticated: !!session.user?.accessToken,
+          isAuthenticated: true,
           user: session.user || null,
           role: session.user ? [session.user.role] : [],
         });
       }
     };
+
     fetchAuthState();
   }, []);
 
@@ -63,7 +73,6 @@ export function useQuery<T>(
   options?: {
     enabled?: boolean;
     revalidate?: number;
-    tags?: string[];
     requiresAuth?: boolean;
     cacheStrategy?: RequestCache;
   },
@@ -114,7 +123,6 @@ export function useQuery<T>(
     enabled,
     isAuthenticated,
     options?.revalidate,
-    options?.tags,
     options?.requiresAuth,
     options?.cacheStrategy,
   ]);
@@ -217,7 +225,6 @@ export async function fetchServerData<T>(
   endpoint: string,
   options?: {
     revalidate?: number;
-    tags?: string[];
     requiresAuth?: boolean;
   },
 ): Promise<ApiResponse<T>> {

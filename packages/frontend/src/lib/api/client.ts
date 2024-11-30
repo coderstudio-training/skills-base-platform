@@ -1,7 +1,4 @@
-import { cache } from 'react';
-import { buildFetchOptions } from '../utils';
-import { getAuthHeaders } from './auth';
-import { errorMessages, serverActionsConfig, serviceConfigs } from './config';
+import { errorMessages, serverActionsConfig, serviceConfigs } from '@/lib/api/config';
 import type {
   ApiClientOptions,
   ApiConfig,
@@ -9,7 +6,10 @@ import type {
   ApiResponse,
   FetchOptions,
   RetryConfig,
-} from './types';
+} from '@/lib/api/types';
+import { buildFetchOptions } from '@/lib/utils';
+import { cache } from 'react';
+import { getAuthHeaders } from './auth';
 
 export class ApiClient {
   private config: ApiConfig;
@@ -21,6 +21,48 @@ export class ApiClient {
     this.baseUrl = this.config.baseUrl;
     this.retryConfig = serverActionsConfig.errorHandling;
   }
+
+  private sanitizeUrl(url: string): string {
+    try {
+      const sanitizedUrl = new URL(url);
+      return sanitizedUrl.toString();
+    } catch {
+      throw new Error(`Invalid URL: ${url}`);
+    }
+  }
+
+  private sanitizeHeaders(headers: HeadersInit): Record<string, string> {
+    const sanitizedHeaders: Record<string, string> = {};
+
+    if (headers instanceof Headers) {
+      // Convert Headers instance to Record<string, string>
+      headers.forEach((value, key) => {
+        sanitizedHeaders[key.trim()] = value.trim();
+      });
+    } else if (Array.isArray(headers)) {
+      // Handle array of tuples [string, string][]
+      headers.forEach(([key, value]) => {
+        sanitizedHeaders[key.trim()] = value.trim();
+      });
+    } else if (typeof headers === 'object' && headers !== null) {
+      // Handle plain object
+      Object.entries(headers).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          sanitizedHeaders[key.trim()] = value.trim();
+        }
+      });
+    }
+
+    return sanitizedHeaders;
+  }
+
+  // Might be useful for the bulk-upserts, as you retrieve __v and _id metadata.
+  // private sanitizeResponse<T>(data: T): T {
+  //   if (typeof data === 'object' && data !== null) {
+  //     delete (data as any).data.metadata;
+  //   }
+  //   return data;
+  // }
 
   private getErrorMessage(status: number): string {
     switch (status) {
@@ -61,11 +103,18 @@ export class ApiClient {
   }
 
   private async fetch(url: string, init?: RequestInit): Promise<Response> {
+    const sanitizedUrl = this.sanitizeUrl(url);
+    const sanitizedHeaders = this.sanitizeHeaders(init?.headers || {});
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
     try {
-      const response = await fetch(url, { ...init, signal: controller.signal });
+      const response = await fetch(sanitizedUrl, {
+        ...init,
+        headers: sanitizedHeaders,
+        signal: controller.signal,
+      });
       clearTimeout(timeoutId);
       return response;
     } catch (error) {
@@ -84,17 +133,30 @@ export class ApiClient {
 
       const finalOptions = buildFetchOptions(options);
       const authHeaders = requiresAuth ? await getAuthHeaders() : {};
-      const requestInit: RequestInit = {
-        headers: {
-          ...this.config.defaultHeaders,
-          ...authHeaders,
-          ...finalOptions.headers,
-        },
-        cache: finalOptions.cache,
-        next: {
-          revalidate: finalOptions.revalidate,
-        },
-      };
+
+      let requestInit: RequestInit;
+      if (finalOptions.cache === null || finalOptions.cache === undefined) {
+        requestInit = {
+          headers: {
+            ...this.config.defaultHeaders,
+            ...authHeaders,
+            ...finalOptions.headers,
+          },
+          next: {
+            revalidate: finalOptions.revalidate,
+            tags: options.tags || [],
+          },
+        };
+      } else {
+        requestInit = {
+          headers: {
+            ...this.config.defaultHeaders,
+            ...authHeaders,
+            ...finalOptions.headers,
+          },
+          cache: finalOptions.cache,
+        };
+      }
 
       try {
         const response = await this.retryRequest<T>(url.toString(), requestInit);
@@ -150,8 +212,9 @@ export class ApiClient {
     return this.cachedFetch<T>(
       endpoint,
       {
-        cache: options?.cache || 'force-cache',
+        cache: options?.cache,
         revalidate: options?.revalidate,
+        tags: options?.tags,
       },
       options?.requiresAuth !== false,
     );
