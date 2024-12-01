@@ -442,7 +442,7 @@
     },
     {
       "parameters": {
-        "url": "=http://192.168.203.84:3002/taxonomy?businessUnit={{ $('Get parent folder details').item.json.name.split('_')[0] }}",
+        "url": "=http://192.168.203.84:3002/taxonomy/technical/?businessUnit={{ $('Get parent folder details').item.json.name.split('_')[0] }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -535,7 +535,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://192.168.203.84:3002/taxonomy/bulk-upsert",
+        "url": "http://192.168.203.84:3002/taxonomy/technical/bulk-upsert",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -567,7 +567,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://192.168.203.84:3002/taxonomy/bulk-upsert",
+        "url": "http://192.168.203.84:3002/taxonomy/technical/bulk-upsert",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -1559,6 +1559,17 @@
       "typeVersion": 3,
       "position": [2500, 980],
       "id": "a6d3261f-e6a9-41fe-bf3a-e80d1154ad38"
+    },
+    {
+      "parameters": {
+        "content": "# Working",
+        "color": 4
+      },
+      "id": "b42507e4-2cf0-403d-8e80-5bec6fcfc6fe",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [140, 140]
     }
   ],
   "pinData": {},
@@ -2125,7 +2136,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "7270eeb7-722a-41c9-9cc9-73c81e4f2447",
+  "versionId": "773c6569-36de-447c-8aba-687c658ae392",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2175fb2beeee23872604eaa18d0ab71c7b17b5a998e8ae3224ce5ec4e5e3fb21"
