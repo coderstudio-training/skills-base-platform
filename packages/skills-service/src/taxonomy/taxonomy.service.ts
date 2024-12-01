@@ -120,7 +120,10 @@ export class TaxonomyService {
     );
     await this.ensureIndexes(
       model,
-      [{ field: 'docId', unique: true }],
+      [
+        { field: 'title', unique: true },
+        { field: 'docId', unique: true },
+      ],
       collectionName,
     ); // Ensure indexes for this collection
     return model;
