@@ -171,14 +171,62 @@ export class T_TaxonomyDTO extends Taxonomy {
 export class S_TaxonomyDTO extends Taxonomy {
   @IsArray()
   @IsNotEmpty()
+  @ApiProperty({
+    description: 'mapped to levels, example: career level 1 = novice',
+    example: [
+      'Novice',
+      'Beginner',
+      'Intermediate',
+      'Advanced',
+      'Expert',
+      'Guru',
+    ],
+  })
   rating!: string[];
 
   @IsObject()
   @IsNotEmptyObject()
+  @ApiProperty({
+    description: 'mapped to levels, example: career level 1 = novice',
+    example: {
+      'level 1': [
+        'Sometimes exercises self-awareness...',
+        'Sometimes identifies opportunities...',
+      ],
+      'level 2': [
+        'Always exercises self-awareness...',
+        'Always identifies opportunities...',
+      ],
+      'level 3': [
+        'Sometimes analyses own well-being...',
+        'Sometimes deploys various learning...',
+      ],
+      'level 4': [
+        'Always analyses own well-being...',
+        'Always deploys various learning...',
+      ],
+      'level 5': [
+        'Sometimes evaluates strategies...',
+        'Sometimes establishes...',
+      ],
+      'level 6': ['Always evaluates strategies...', 'Always establishes...'],
+    },
+  })
   proficiencyDescription!: Record<string, string[]>;
 
   @IsObject()
   @IsNotEmptyObject()
+  @ApiProperty({
+    description: 'career level benchmarks',
+    example: {
+      'level 1': [],
+      'level 2': ['Professional II'],
+      'level 3': ['Professional III'],
+      'level 4': ['Professional IV', 'Manager I'],
+      'level 5': ['Manager II', 'Manager III', 'Manager IV'],
+      'level 6': ['Director I', 'Director II', 'Director III', 'Director IV'],
+    },
+  })
   benchmark!: Record<string, string[]>;
 }
 
