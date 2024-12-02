@@ -103,7 +103,7 @@ export class SkillsMatrixService {
 
       // Assign continuous rankings and take only top 5
       const sortedScores = sortedEmployees
-        .slice(0, 5) // Take only the first 5 employees
+        .slice(0, 10)
         .map((employee, index) => ({
           name: employee.name,
           ranking: index + 1,

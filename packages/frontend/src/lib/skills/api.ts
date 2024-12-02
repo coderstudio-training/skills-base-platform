@@ -48,7 +48,7 @@ export function useQueryTechnicalTaxonomy(
   logger.log(`[TAXONOMY] querying technical taxonomy`);
   return useQuery<ApiTypes.IBaseTaxonomy[]>(
     skillsApi,
-    `${TAXONOMY_BASE_URL}?businessUnit=${businessUnit}`,
+    `${TAXONOMY_BASE_URL}/technical/?businessUnit=${businessUnit}`,
     options,
   );
 }

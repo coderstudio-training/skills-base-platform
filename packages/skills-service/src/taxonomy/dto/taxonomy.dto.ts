@@ -4,13 +4,14 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
+  IsNotEmptyObject,
   IsObject,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 
-export class TaxonomyDTO extends BaseDto {
+export class Taxonomy extends BaseDto {
   @ApiProperty({
     description: 'Unique identifier pertaining to google document',
     example: '1FpwF_0S9w7RuZlpkFPK4f0rNIRSfAzGu5eqj38ME5NA',
@@ -66,7 +67,9 @@ export class TaxonomyDTO extends BaseDto {
   @IsString()
   @IsNotEmpty()
   description!: string;
+}
 
+export class T_TaxonomyDTO extends Taxonomy {
   @ApiProperty({
     description: 'Proficiency description as a key-value pair',
     example: {
@@ -82,7 +85,7 @@ export class TaxonomyDTO extends BaseDto {
   })
   @IsObject()
   @IsNotEmpty()
-  proficiencyDescription!: Record<string, any>;
+  proficiencyDescription!: Record<string, string[]>;
 
   @ApiProperty({
     description: 'Abilities description as a key-value pair',
@@ -111,7 +114,7 @@ export class TaxonomyDTO extends BaseDto {
   })
   @IsObject()
   @IsNotEmpty()
-  abilities!: Record<string, any>;
+  abilities!: Record<string, string[]>;
 
   @ApiProperty({
     description: 'Knowledge description as a key-value pair',
@@ -137,7 +140,7 @@ export class TaxonomyDTO extends BaseDto {
   })
   @IsObject()
   @IsNotEmpty()
-  knowledge!: Record<string, any>;
+  knowledge!: Record<string, string[]>;
 
   @ApiProperty({
     description: 'Associated business unit',
@@ -165,12 +168,90 @@ export class TaxonomyDTO extends BaseDto {
   rangeOfApplication?: string[];
 }
 
-export class BulkUpsertTaxonomyDTO {
+export class S_TaxonomyDTO extends Taxonomy {
+  @IsArray()
+  @IsNotEmpty()
   @ApiProperty({
-    description: 'Array of taxonomy data to be upserted',
-    type: [TaxonomyDTO],
+    description: 'mapped to levels, example: career level 1 = novice',
+    example: [
+      'Novice',
+      'Beginner',
+      'Intermediate',
+      'Advanced',
+      'Expert',
+      'Guru',
+    ],
+  })
+  rating!: string[];
+
+  @IsObject()
+  @IsNotEmptyObject()
+  @ApiProperty({
+    description: 'mapped to levels, example: career level 1 = novice',
+    example: {
+      'level 1': [
+        'Sometimes exercises self-awareness...',
+        'Sometimes identifies opportunities...',
+      ],
+      'level 2': [
+        'Always exercises self-awareness...',
+        'Always identifies opportunities...',
+      ],
+      'level 3': [
+        'Sometimes analyses own well-being...',
+        'Sometimes deploys various learning...',
+      ],
+      'level 4': [
+        'Always analyses own well-being...',
+        'Always deploys various learning...',
+      ],
+      'level 5': [
+        'Sometimes evaluates strategies...',
+        'Sometimes establishes...',
+      ],
+      'level 6': ['Always evaluates strategies...', 'Always establishes...'],
+    },
+  })
+  proficiencyDescription!: Record<string, string[]>;
+
+  @IsObject()
+  @IsNotEmptyObject()
+  @ApiProperty({
+    description: 'career level benchmarks',
+    example: {
+      'level 1': [],
+      'level 2': ['Professional II'],
+      'level 3': ['Professional III'],
+      'level 4': ['Professional IV', 'Manager I'],
+      'level 5': ['Manager II', 'Manager III', 'Manager IV'],
+      'level 6': ['Director I', 'Director II', 'Director III', 'Director IV'],
+    },
+  })
+  benchmark!: Record<string, string[]>;
+}
+
+export class BulkUpsertTaxonomyDTO {
+  @ValidateNested({ each: true })
+  @Type(() => Taxonomy)
+  data!: Taxonomy[];
+}
+
+export class BulkUpsertTTaxonomyDTO {
+  @ApiProperty({
+    description: 'Array of technical taxonomy data to be upserted',
+    type: [T_TaxonomyDTO],
   })
   @ValidateNested({ each: true })
-  @Type(() => TaxonomyDTO)
-  data!: TaxonomyDTO[];
+  @Type(() => T_TaxonomyDTO)
+  data!: T_TaxonomyDTO[];
+}
+
+export class BulkUpsertSTaxonomyDTO {
+  @ApiProperty({
+    description: 'Array of soft skills taxonomy data to be upserted',
+    type: [S_TaxonomyDTO],
+  })
+  @ValidateNested({ each: true })
+  @Type(() => S_TaxonomyDTO)
+  data!: S_TaxonomyDTO[];
 }
