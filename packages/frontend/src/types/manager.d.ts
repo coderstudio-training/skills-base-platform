@@ -61,6 +61,7 @@ interface TeamMemberWithSkills {
   firstName: string;
   lastName: string;
   designation: string;
+  grade: string;
   picture?: string;
   skills: {
     skill: string;
