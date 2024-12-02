@@ -1,6 +1,6 @@
-import NextAuth from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/lib/api/auth';
 import { logger } from '@/lib/utils';
+import NextAuth from 'next-auth/next';
 
 logger.log('NextAuth API route hit:', new Date().toISOString());
 

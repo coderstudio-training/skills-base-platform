@@ -1,5 +1,7 @@
 'use client';
 
+import ErrorCard from '@/components/error/ErrorCard';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getDistributions, getSkillAnalytics } from '@/lib/api';
 import {
   BusinessUnitSkillDistribution,
@@ -8,9 +10,8 @@ import {
   SkillDistributionItem,
 } from '@/types/admin';
 import { DistributionResponse, SkillAnalyticsResponse } from '@/types/api';
-import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 
 interface LimitedItems<T> {
   displayed: T[];
@@ -74,8 +75,16 @@ export default function AnalysisView() {
     };
   }
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading)
+    return (
+      <div className="h-[350px] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading metrics...</p>
+        </div>
+      </div>
+    );
+  if (error) return <ErrorCard cardTitle={'Analytics'} message={error} />;
   if (!analyticsData || !distributionData) return null;
 
   return (

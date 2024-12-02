@@ -157,7 +157,7 @@ export class AuthService {
       const employedUser = await this.employeeService.findByEmail(email);
       if (!employedUser) {
         throw new UnauthorizedException(
-          'User is not employed/registered by the company',
+          `${email} is not employed/registered by the company`,
         );
       }
 

@@ -116,7 +116,7 @@ export class AssessmentsService {
       } else if (assessmentType === 'self') {
         filter = { emailAddress: item.emailAddress };
       } else if (assessmentType === 'gap') {
-        filter = { careerLevel: item.emailAddress };
+        filter = { emailAdress: item.emailAddress };
       } else {
         throw new Error('Invalid assessment type');
       }

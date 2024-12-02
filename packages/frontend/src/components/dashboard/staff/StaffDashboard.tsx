@@ -3,11 +3,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
 // import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import StaffSkillsView from './StaffSkillsView';
+import StaffSkillsView from '@/components/dashboard/staff/StaffSkillsView';
 // import { ScrollArea } from "@/components/ui/scroll-area";
+import Overview from '@/components/dashboard/staff/Overview';
+import StaffLearningRecommendations from '@/components/dashboard/staff/StaffLearningRecommendation';
 import StaffDashboardHeader from '@/components/shared/StaffDashboardHeader';
-import Overview from './Overview';
-import StaffLearningRecommendations from './StaffLearningRecommendation';
 
 export default function StaffDashboard() {
   const [activeTab, setActiveTab] = useState('overview');

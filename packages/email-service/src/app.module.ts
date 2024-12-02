@@ -1,6 +1,10 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { JwtStrategy, LoggerMiddleware } from '@skills-base/shared';
+import {
+  LoggingModule,
+  MonitoringModule,
+  SecurityModule,
+} from '@skills-base/shared';
 import { EmailModule } from './email/email.module';
 
 @Module({
@@ -8,12 +12,41 @@ import { EmailModule } from './email/email.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    LoggingModule.forRoot({
+      serviceName: 'email_service',
+      environment: 'development',
+    }),
+    MonitoringModule.forRoot({
+      serviceName: 'email_service',
+      enabled: true,
+      metrics: {
+        http: {
+          enabled: true,
+          excludePaths: ['/health', '/metrics'],
+        },
+        system: {
+          enabled: true,
+          collectInterval: 30000,
+        },
+      },
+      tags: {
+        environment: process.env.NODE_ENV || 'development',
+        service: 'email_service',
+      },
+    }),
+    SecurityModule.forRoot({
+      rateLimit: {
+        enabled: true,
+        windowMs: 15 * 60 * 1000,
+        max: 100,
+        skipPaths: ['/health', '/metrics'],
+      },
+      apiKey: {
+        enabled: false,
+        keys: [process.env.API_KEY],
+      },
+    }),
     EmailModule,
   ],
-  providers: [JwtStrategy],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}

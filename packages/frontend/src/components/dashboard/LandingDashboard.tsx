@@ -54,7 +54,7 @@ const isAdminEmail = (email: string): boolean => {
 };
 
 const isAllowedDomain = (email: string): boolean => {
-  const allowedDomain = process.env.NEXT_PUBLIC_ALLOWED_DOMAIN || `@gmail.com`;
+  const allowedDomain = process.env.NEXT_PUBLIC_ALLOWED_DOMAIN || `@stratpoint.com`;
   return email.toLowerCase().endsWith(allowedDomain);
 };
 

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
+import { BulkRequiredSkillsDto } from '../dto/required-skills.dto';
 import {
   ManagerAssessmentSchema,
   SelfAssessmentSchema,
@@ -173,6 +174,30 @@ export class PerformanceService {
         );
         throw new Error('An unknown error occurred.');
       }
+    }
+  }
+
+  async getRequiredSkillsByCapability(
+    capability: string,
+  ): Promise<BulkRequiredSkillsDto> {
+    try {
+      const results = await this.connection
+        .collection('capabilityRequiredSkills')
+        .find({ capability })
+        .toArray();
+
+      const data = results.map((result) => ({
+        capability: result.capability,
+        careerLevel: result.careerLevel,
+        requiredSkills: result.requiredSkills || {},
+      }));
+
+      return { data };
+    } catch (error) {
+      console.error('Error fetching required skills for capability:', error);
+      throw new Error(
+        `Failed to fetch required skills for capability: ${capability}`,
+      );
     }
   }
 }

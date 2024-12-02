@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { getTeamMembers } from '@/lib/users/employees/api';
 import { MemberRecommendations, TeamMember } from '@/types/manager';
 import { Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -22,20 +23,13 @@ const ManagerTrainingRecommendation = () => {
       try {
         setLoading(true);
         // Fetch team members
-        const teamResponse = await fetch(
-          `/api/employees/manager/${encodeURIComponent(session.user.name)}`,
-          {
-            headers: {
-              Authorization: `Bearer ${session.user.accessToken}`,
-            },
-          },
-        );
+        const { data: teamResponse } = await getTeamMembers(session?.user?.name);
 
-        if (!teamResponse.ok) {
+        if (!teamResponse) {
           throw new Error('Failed to fetch team members');
         }
 
-        const teamMembers = await teamResponse.json();
+        const teamMembers = await teamResponse;
 
         // Fetch recommendations for each team member
         const membersWithRecommendations = await Promise.all(

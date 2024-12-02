@@ -54,14 +54,20 @@
             "key": "Authorization",
             "value": "Bearer {{authToken}}",
             "type": "text"
+          },
+          {
+            "key": "",
+            "value": "",
+            "type": "text",
+            "disabled": true
           }
         ],
         "url": {
-          "raw": "http://localhost:3002/taxonomy/19UAx0dt4xJl3ee0MTmhrB1xUVsHxofaKGufpxucSA8Y?businessUnit=QA",
+          "raw": "http://localhost:3002/taxonomy/1FpwF_0S9w7RuZlpkFPK4f0rNIRSfAzGu5eqj38ME5NA?businessUnit=QA",
           "protocol": "http",
           "host": ["localhost"],
           "port": "3002",
-          "path": ["taxonomy", "19UAx0dt4xJl3ee0MTmhrB1xUVsHxofaKGufpxucSA8Y"],
+          "path": ["taxonomy", "1FpwF_0S9w7RuZlpkFPK4f0rNIRSfAzGu5eqj38ME5NA"],
           "query": [
             {
               "key": "businessUnit",
@@ -98,6 +104,33 @@
           "host": ["localhost"],
           "port": "3002",
           "path": ["taxonomy", "bulk-upsert"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Title",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3002/taxonomy/title/Test%20Planning?businessUnit=QA",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["taxonomy", "title", "Test%20Planning"],
+          "query": [
+            {
+              "key": "businessUnit",
+              "value": "QA"
+            }
+          ]
         }
       },
       "response": []

@@ -1,10 +1,32 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import {
+  HttpExceptionFilter,
+  Logger,
+  SecurityMiddleware,
+  SwaggerHelper,
+} from '@skills-base/shared';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Initialize logger
+  const logger = new Logger('Bootstrap');
+
+  // Apply global middleware
+  app.use(new SecurityMiddleware().use);
+
+  // Apply global pipes
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+    }),
+  );
+
+  // Apply global filters
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -14,44 +36,12 @@ async function bootstrap() {
     }),
   );
 
-  const config = new DocumentBuilder()
-    .setTitle('Learning Service API')
-    .setDescription(
-      `
-      API for managing learning resources and course recommendations.
-      
-      Authentication:
-      - Admin endpoints: Use JWT token from admin login
-      - Staff/Manager endpoints: Use Google OAuth token (from frontend)
-      
-      Note: For testing in Swagger UI:
-      1. Admin access: Get JWT token from /auth/login endpoint
-      2. Staff/Manager access: This requires Google OAuth authentication from the frontend
-    `,
-    )
-    .setVersion('1.0')
-    .addTag('Courses', 'Learning resources and course management endpoints')
-    .addTag('Learning', 'Course recommendations and learning path endpoints')
-    // Add JWT auth
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Enter admin JWT token here',
-      },
-      'JWT-auth',
-    )
-    // Add OAuth
-    .build();
-
-  const document = SwaggerModule.createDocument(app, config, {
-    extraModels: [
-      /* your models here */
-    ],
-  });
-
-  SwaggerModule.setup('api', app, document);
+  // Setup Swagger documentation
+  SwaggerHelper.setup(
+    app,
+    'Learning API Documentation',
+    'swagger', // Access swagger at /swagger
+  );
 
   app.enableCors({
     origin: ['http://localhost:3000'],
@@ -61,5 +51,6 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3003;
   await app.listen(port);
+  logger.info(`Application is running on: http://localhost:${port}`);
 }
 bootstrap();

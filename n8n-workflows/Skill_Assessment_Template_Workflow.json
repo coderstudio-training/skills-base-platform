@@ -202,40 +202,6 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://192.168.143.2:3001/auth/login",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "email",
-              "value": "ellis@sample.com"
-            },
-            {
-              "name": "password",
-              "value": "password123"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "name": "Login to API1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [3720, -240],
-      "id": "86ae1a32-d913-4e9b-a78d-cf91b3e03277"
-    },
-    {
-      "parameters": {
         "authentication": "serviceAccount",
         "resource": "fileFolder",
         "searchMethod": "query",
@@ -270,7 +236,7 @@
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a6NCn008077R0jbqtc3mkhcB1U4JexnVd2pUh--Ezhw/edit#gid=0"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ukDJwEH9Vza428y8XaKdDdv_2bld8-0xBGnXxpNnwZ4/edit#gid=0"
         },
         "options": {}
       },
@@ -278,7 +244,7 @@
       "name": "GET Sheets Data1",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [4880, -340],
+      "position": [4660, -240],
       "credentials": {
         "googleApi": {
           "id": "w27aj7tkRulsWxQB",
@@ -288,45 +254,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract access token from login response\nconst accessToken = $node['Login to API1'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nconst prefixBU = $node['GET Parent'].json.name.split('_')[0];\nconst assessmentType = $node['Find Sheets1'].json.name.toLowerCase().split('_')[1];\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\n// Determine required fields dynamically from the first row\nconst firstRow = sheetData[0];\nconst requiredFields = Object.keys(firstRow).filter(key => isNaN(firstRow[key]) || typeof firstRow[key] === 'string');\n\n// Process and validate data\nconst processedData = sheetData.map(row => {\n  // Separate non-numeric fields for basic info\n  const basicInfo = Object.fromEntries(\n    Object.entries(row).filter(([_, value]) => isNaN(value) || typeof value === 'string')\n  );\n\n  // Separate numeric fields for skills, excluding `row_number`\n  const skills = Object.fromEntries(\n    Object.entries(row)\n      .filter(([key, value]) => !isNaN(value) && key !== 'row_number')\n      .map(([key, value]) => [toCamelCase(key), parseInt(value) || 0]) // Use toCamelCase here\n  );\n\n  // Apply camel casing to basicInfo keys\n  const camelCasedBasicInfo = Object.fromEntries(\n    Object.entries(basicInfo).map(([key, value]) => [toCamelCase(key), value])\n  );\n\n  return { ...camelCasedBasicInfo, skills };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if required fields are present in basicInfo\n  requiredFields.forEach(field => {\n    const camelCasedField = toCamelCase(field); // Ensure the field is in camel case\n    if (!item[camelCasedField]) {\n      validationErrors.push(`Missing ${field}`);\n    }\n  });\n\n  // Additional validation for emailOfResource if assessment type is 'Manager'\n  if (assessmentType === 'manager' && !item['emailOfResource']) {\n    validationErrors.push('Missing Email of Resource');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item['nameOfRespondent'] || 'Unknown',\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
+        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract access token from login response\nconst accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nconst prefixBU = $node['GET Parent'].json.name.split('_')[0];\nconst assessmentType = $node['Find Sheets1'].json.name.toLowerCase().split('_')[1];\n\n// Process the data from Google Sheets\nconst sheetData = items.map(item => item.json);\n\n// Determine required fields dynamically from the first row\nconst firstRow = sheetData[0];\nconst requiredFields = Object.keys(firstRow).filter(key => isNaN(firstRow[key]) || typeof firstRow[key] === 'string');\n\n// Process and validate data\nconst processedData = sheetData.map(row => {\n  // Separate non-numeric fields for basic info\n  const basicInfo = Object.fromEntries(\n    Object.entries(row).filter(([_, value]) => isNaN(value) || typeof value === 'string')\n  );\n\n  // Separate numeric fields for skills, excluding `row_number`\n  const skills = Object.fromEntries(\n    Object.entries(row)\n      .filter(([key, value]) => !isNaN(value) && key !== 'row_number')\n      .map(([key, value]) => [toCamelCase(key), parseInt(value) || 0]) // Use toCamelCase here\n  );\n\n  // Apply camel casing to basicInfo keys\n  const camelCasedBasicInfo = Object.fromEntries(\n    Object.entries(basicInfo).map(([key, value]) => [toCamelCase(key), value])\n  );\n\n  return { ...camelCasedBasicInfo, skills };\n});\n\n// Validate the data\nconst validItems = [];\nconst errors = [];\n\nprocessedData.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if required fields are present in basicInfo\n  requiredFields.forEach(field => {\n    const camelCasedField = toCamelCase(field); // Ensure the field is in camel case\n    if (!item[camelCasedField]) {\n      validationErrors.push(`Missing ${field}`);\n    }\n  });\n\n  // Additional validation for emailOfResource if assessment type is 'Manager'\n  if (assessmentType === 'manager' && !item['emailOfResource']) {\n    validationErrors.push('Missing Email of Resource');\n  }\n\n  // Check skill levels dynamically\n  Object.entries(item.skills).forEach(([skillName, level]) => {\n    if (level < 0 || level > 6) {\n      validationErrors.push(`Invalid level for ${skillName}: must be between 0 and 6 (received: ${level})`);\n    }\n  });\n\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item['nameOfRespondent'] || 'Unknown',\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the results along with the access token\nreturn {\n  json: {\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: processedData.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
       },
       "id": "7c5de254-6735-48e1-8c12-078a6693b9f0",
       "name": "Process and Validate Data2",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [5080, -200]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "dc254c3b-de36-428f-9e97-fb65e352a836",
-              "leftValue": "={{ $json.errors }}",
-              "rightValue": "",
-              "operator": {
-                "type": "array",
-                "operation": "empty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "e88ee8a9-aa14-40a4-b15f-55078d4471a4",
-      "name": "Check for Validation Errors5",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [5260, -200]
+      "position": [4840, -60]
     },
     {
       "parameters": {
@@ -379,20 +313,20 @@
     {
       "parameters": {
         "content": "## Template\n**Google Drive Trigger on Manager and Self Folders per BU** ",
-        "height": 1251.7691700349885,
-        "width": 4500.549169831905,
+        "height": 948.7079402376605,
+        "width": 3127.984283959847,
         "color": 5
       },
       "id": "f02a6bf8-8924-4e67-85d3-585af11c63f4",
       "name": "Sticky Note4",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [3440, -560.013361499595]
+      "position": [3420, -440]
     },
     {
       "parameters": {
         "content": "## Triggers\n**Sample Drives**\n",
-        "height": 1953.3320241975362,
+        "height": 1483.8481971874348,
         "width": 565.508881533009
       },
       "id": "2c3de9ca-87a5-4f76-a39e-e4721ef97db8",
@@ -494,8 +428,7 @@
           "id": "w27aj7tkRulsWxQB",
           "name": "Stratpoint Google Service Account"
         }
-      },
-      "disabled": true
+      }
     },
     {
       "parameters": {
@@ -526,19 +459,18 @@
           "id": "w27aj7tkRulsWxQB",
           "name": "Stratpoint Google Service Account"
         }
-      },
-      "disabled": true
+      }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://172.22.156.50:3002/api/skills-assessments/bulk-update-assessments",
+        "url": "http://192.168.143.2:3002/api/skills-assessments/bulk-update-assessments",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $node['Login to API1'].json.access_token }}"
+              "value": "=Bearer {{ $node['Login to API'].json.access_token }}"
             }
           ]
         },
@@ -552,10 +484,6 @@
             {
               "name": "data",
               "value": "={{ $node['Process and Validate Data2'].json.validItems }}"
-            },
-            {
-              "name": "prefix",
-              "value": "={{ $node['Process and Validate Data2'].json.prefixBU }}"
             }
           ]
         },
@@ -564,19 +492,19 @@
       "name": "Update Skills Assessments",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [5480, -360],
+      "position": [5040, -60],
       "id": "e46c8c01-39b0-45eb-8c24-fb942b0d9bf5"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://172.22.156.50:3002/api/skills-assessments/bulk-update-assessments",
+        "url": "http://192.168.143.2:3002/api/skills-assessments/bulk-update-assessments",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $node['Login to API1'].json.access_token }}"
+              "value": "=Bearer {{ $node['Login to API'].json.access_token }}"
             }
           ]
         },
@@ -590,10 +518,6 @@
             {
               "name": "data",
               "value": "={{ $node['Compute Skills Gap'].json.validItems }}"
-            },
-            {
-              "name": "prefix",
-              "value": "={{ $node['Compute Skills Gap'].json.prefixBU }}"
             }
           ]
         },
@@ -602,18 +526,18 @@
       "name": "Update Skill Gaps API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [7140, -80],
+      "position": [5880, -60],
       "id": "cb6bcc42-1a6f-4e5e-9b72-ff4c6e7e3227"
     },
     {
       "parameters": {
-        "url": "http://172.22.156.50:3002/api/skills-assessments/bulk-performance",
+        "url": "http://192.168.143.2:3002/api/skills-assessments/bulk-performance",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $node['Login to API1'].json.access_token }}"
+              "value": "=Bearer {{ $node['Login to API'].json.access_token }}"
             }
           ]
         },
@@ -632,21 +556,17 @@
       "name": "GET Employee Performance Data API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [6020, -220]
+      "position": [5240, -240]
     },
     {
       "parameters": {
-        "url": "http://172.22.156.50:3002/required-skills",
+        "url": "=http://192.168.143.2:3002/api/skills-assessments/required-skills?capability={{ $node['Process and Validate Data2'].json.prefixBU }}",
         "sendHeaders": true,
         "headerParameters": {
-          "parameters": [{}]
-        },
-        "sendBody": true,
-        "bodyParameters": {
           "parameters": [
             {
-              "name": "prefixBU",
-              "value": "={{ $('Process and Validate Data2').item.json.prefixBU }}"
+              "name": "Authorization",
+              "value": "=Bearer {{ $node['Login to API'].json.access_token }}"
             }
           ]
         },
@@ -656,17 +576,17 @@
       "name": "GET Required Skill Levels API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [6000, 0]
+      "position": [5240, 120]
     },
     {
       "parameters": {
-        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract the prefix business unit and assessment type\nconst prefixBU = $node['GET Parent'].json.name.split('_')[0];\nconst assessmentType = 'gap'; // Set as 'gap' for this context\n\n// Initialize arrays for performance and required skills data\nlet performanceData = [];\nlet requiredSkillsData = [];\n\n// Iterate through each item from the previous node\nitems.forEach(item => {\n  // Check if `emailAddress` exists to differentiate performance data from required skills\n  if (item.json.emailAddress) {\n    // This is performance data\n    performanceData.push(item.json); // Push the performance data item\n  } else {\n    // This is required skills data\n    requiredSkillsData.push(item.json); // Push the required skills data item\n  }\n});\n\n// Now calculate the skills gap for each employee in the performanceData\nlet result = [];\n\n// Iterate through each employee in performanceData\nperformanceData.forEach(employee => {\n  // Find the corresponding required skills based on capability and career level\n  const requiredSkills = requiredSkillsData.find(skill => \n    skill.capability === employee.capability && \n    skill.careerLevel === employee.careerLevel\n  );\n\n  if (requiredSkills) {\n    let skillGaps = {\n      emailAddress: employee.emailAddress,\n      nameOfResource: employee.nameOfResource,\n      careerLevel: employee.careerLevel,\n      capability: employee.capability,\n      skillGaps: {}  // Using an object to store skills and their gaps directly\n    };\n\n    // Calculate the gap for each skill\n    Object.keys(employee.averageOfSkills).forEach(skill => {\n      const performanceLevel = employee.averageOfSkills[skill];\n      const requiredLevel = requiredSkills.requiredSkills[skill] || 0; // Default to 0 if not found\n\n      // Calculate the gap\n      const gap = performanceLevel - requiredLevel;\n\n      // Add the skill gap directly as a key-value pair to the skillGaps object\n      skillGaps.skillGaps[skill] = gap;\n    });\n\n    // Add the skill gaps to the result\n    result.push(skillGaps);\n  }\n});\n\n// Validation: Check if all required fields are present in the performance data\nconst validItems = [];\nconst errors = [];\n\nresult.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if all required fields are present (emailAddress, nameOfResource, etc.)\n  if (!item.emailAddress) {\n    validationErrors.push('Missing emailAddress');\n  }\n  if (!item.nameOfResource) {\n    validationErrors.push('Missing nameOfResource');\n  }\n  if (!item.careerLevel) {\n    validationErrors.push('Missing careerLevel');\n  }\n  if (!item.capability) {\n    validationErrors.push('Missing capability');\n  }\n  if (!item.skillGaps || Object.keys(item.skillGaps).length === 0) {\n    validationErrors.push('Missing skill gaps');\n  }\n\n  // If there are validation errors, push them to the errors array\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.nameOfResource || 'Unknown',\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the result along with the access token and validation summary\nreturn {\n  json: {\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: result.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
+        "jsCode": "// Helper function to convert strings to camelCase\nfunction toCamelCase(str) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());\n}\n\n// Extract the prefix business unit and assessment type\nconst prefixBU = $node['GET Parent'].json.name.split('_')[0];\nconst assessmentType = 'gap'; \n\n// Initialize arrays for performance and required skills data\nlet performanceData = [];\nlet requiredSkillsData = [];\n\n// Iterate through each item from the previous node\nitems.forEach(item => {\n  // Check if `emailAddress` exists to differentiate performance data from required skills\n  if (item.json.emailAddress) {\n    // This is performance data\n    performanceData.push(item.json); // Push the performance data item\n  } else {\n    // This is required skills data\n    requiredSkillsData.push(item.json); // Push the required skills data item\n  }\n});\n\n// Now calculate the skills gap for each employee in the performanceData\nlet result = [];\n\n// Iterate through each employee in performanceData\nperformanceData.forEach(employee => {\n  // Find the corresponding required skills based on capability and career level\n  const requiredSkills = requiredSkillsData.find(skill => \n    skill.capability === employee.capability && \n    skill.careerLevel === employee.careerLevel\n  );\n\n  if (requiredSkills) {\n    let skillGaps = {\n      emailAddress: employee.emailAddress,\n      nameOfResource: employee.nameOfResource,\n      careerLevel: employee.careerLevel,\n      capability: employee.capability,\n      skillAverages: employee.averageOfSkills, // Include the average skills directly\n      skillGaps: {},  // Using an object to store skills and their gaps directly\n    };\n\n    // Calculate the gap for each skill\n    Object.keys(employee.averageOfSkills).forEach(skill => {\n      const performanceLevel = employee.averageOfSkills[skill];\n      const requiredLevel = requiredSkills.requiredSkills[skill] || 0; // Default to 0 if not found\n\n      // Calculate the gap\n      const gap = performanceLevel - requiredLevel;\n\n      // Add the skill gap directly as a key-value pair to the skillGaps object\n      skillGaps.skillGaps[skill] = gap;\n    });\n\n    // Add the skill gaps to the result\n    result.push(skillGaps);\n  }\n});\n\n// Validation: Check if all required fields are present in the performance data\nconst validItems = [];\nconst errors = [];\n\nresult.forEach((item, index) => {\n  const validationErrors = [];\n\n  // Check if all required fields are present (emailAddress, nameOfResource, etc.)\n  if (!item.emailAddress) {\n    validationErrors.push('Missing emailAddress');\n  }\n  if (!item.nameOfResource) {\n    validationErrors.push('Missing nameOfResource');\n  }\n  if (!item.careerLevel) {\n    validationErrors.push('Missing careerLevel');\n  }\n  if (!item.capability) {\n    validationErrors.push('Missing capability');\n  }\n  if (!item.skillGaps || Object.keys(item.skillGaps).length === 0) {\n    validationErrors.push('Missing skill gaps');\n  }\n\n  // If there are validation errors, push them to the errors array\n  if (validationErrors.length > 0) {\n    errors.push({\n      index,\n      name: item.nameOfResource || 'Unknown',\n      errors: validationErrors\n    });\n  } else {\n    validItems.push(item);\n  }\n});\n\n// Return the result along with the access token and validation summary\nreturn {\n  json: {\n    prefixBU,\n    assessmentType,\n    validItems,\n    errors,\n    summary: {\n      totalProcessed: result.length,\n      validCount: validItems.length,\n      errorCount: errors.length\n    }\n  }\n};\n"
       },
       "id": "61a2710b-cf37-4f01-bec9-41a0238c5c46",
       "name": "Compute Skills Gap",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [6980, -240]
+      "position": [5660, -60]
     },
     {
       "parameters": {
@@ -761,7 +681,8 @@
           "id": "w27aj7tkRulsWxQB",
           "name": "Stratpoint Google Service Account"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -792,17 +713,7 @@
           "id": "w27aj7tkRulsWxQB",
           "name": "Stratpoint Google Service Account"
         }
-      }
-    },
-    {
-      "parameters": {
-        "options": {}
       },
-      "id": "ada5f9e2-ae2c-44c1-9c0f-71634330aed6",
-      "name": "Send Error Message API",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [4660, 80],
       "disabled": true
     },
     {
@@ -848,238 +759,6 @@
           },
           "conditions": [
             {
-              "id": "888f2df9-8419-4775-8e93-39929e63c84d",
-              "leftValue": "={{ $json.name.toLowerCase() }}",
-              "rightValue": "manager",
-              "operator": {
-                "type": "string",
-                "operation": "contains"
-              }
-            },
-            {
-              "id": "c630173a-6db6-4e61-aba9-4e7daf2bf04a",
-              "leftValue": "={{ $json.name.toLowerCase() }}",
-              "rightValue": "self",
-              "operator": {
-                "type": "string",
-                "operation": "contains"
-              }
-            }
-          ],
-          "combinator": "or"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "58a530e9-897d-46a6-abe5-ccfb68442aad",
-      "name": "Check Assessment Type",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [4660, -200]
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "edad52dc-1751-4db2-9bab-da067d900dc5",
-      "name": "Send Error Message API1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [4880, -20],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "987fb555-c7e0-442b-b5ec-0b3a4386d47f",
-      "name": "Send Error Message API2",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [5480, -100],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "e1f4f4fc-c15a-4897-b3eb-76c0084daf68",
-      "name": "Send Error Message API3",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [5880, 220],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "4a2c185c-5aaa-4cdb-a242-5a55aec1ecef",
-              "leftValue": "={{ $json.updatedCount }}",
-              "rightValue": "",
-              "operator": {
-                "type": "number",
-                "operation": "notEmpty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "42fe9348-16b7-455c-8329-1bb6029adf16",
-      "name": "Check API Response1",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [5700, -200]
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "01a6ac73-ed81-4971-88e3-4894b0603f83",
-      "name": "Send Success Message API",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [5920, -440],
-      "disabled": true
-    },
-    {
-      "parameters": {},
-      "id": "c03ba5b9-0e55-49e5-8ee8-a5544d719a0c",
-      "name": "Merge Data",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3,
-      "position": [6800, -60]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "4a2c185c-5aaa-4cdb-a242-5a55aec1ecef",
-              "leftValue": "={{ $json }}",
-              "rightValue": "",
-              "operator": {
-                "type": "object",
-                "operation": "notEmpty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "d0d481ab-9466-4b80-a56f-25fd65775cc2",
-      "name": "Check API Response2",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [6240, -220]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "4a2c185c-5aaa-4cdb-a242-5a55aec1ecef",
-              "leftValue": "={{ $json }}",
-              "rightValue": "",
-              "operator": {
-                "type": "object",
-                "operation": "notEmpty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "950fac25-f7a6-4550-99ef-b740eb937c33",
-      "name": "Check API Response3",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [6260, 100]
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "40761c8c-2039-460b-a50c-78564dcaca05",
-      "name": "Send Success Message API1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [6420, -420],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "67625e51-07b8-4ae8-9967-1ac5e8727a3d",
-      "name": "Send Success Message API2",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [6620, 160],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "342d79ca-0da2-40a1-acba-c7ec007dc2f6",
-      "name": "Send Error Message API4",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [6420, -100],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "b4f4d24b-f67e-40c7-9307-c3e227e31725",
-      "name": "Send Error Message API5",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [6620, 400],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
               "id": "4a2c185c-5aaa-4cdb-a242-5a55aec1ecef",
               "leftValue": "={{ $json.updatedCount }}",
               "rightValue": "",
@@ -1099,28 +778,122 @@
       "name": "Check API Response4",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [7340, -80]
+      "position": [6120, -60]
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "http://172.22.156.50:3005/email/send-success",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Login to API\"].json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \n  \"workflowName\": \"{{ $workflow.name }}\"\n}",
         "options": {}
       },
       "id": "2cdd41f9-8125-4861-8224-418203af5bbc",
       "name": "Send Success Message API3",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [7620, -240],
+      "position": [6320, -240],
       "disabled": true
     },
     {
+      "parameters": {},
+      "id": "c03ba5b9-0e55-49e5-8ee8-a5544d719a0c",
+      "name": "Merge Data",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [5440, -60]
+    },
+    {
       "parameters": {
+        "method": "POST",
+        "url": "http://192.168.143.2:3001/auth/login",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "admin@example.com"
+            },
+            {
+              "name": "password",
+              "value": "AdminPassword123!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Login to API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [3720, -240],
+      "id": "86ae1a32-d913-4e9b-a78d-cf91b3e03277"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.22.156.50:3005/email/send-error",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node['Login to API'].json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \n  \"workflowName\": \"{{ $workflow.name }}\"\n}",
         "options": {}
       },
       "id": "f779adfa-c85c-452c-b549-3f7bc37063af",
-      "name": "Send Error Message API6",
+      "name": "Send Error Message API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [7620, 60],
+      "position": [4660, 120]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.22.156.50:3005/email/send-error",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node['Login to API'].json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \n  \"workflowName\": \"{{ $workflow.name }}\"\n}",
+        "options": {}
+      },
+      "id": "cf8d9b30-7c3f-42ff-a15d-b26e3de97cb0",
+      "name": "Send Error Message API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [6340, 100],
       "disabled": true
     }
   ],
@@ -1193,17 +966,6 @@
         ]
       ]
     },
-    "Login to API1": {
-      "main": [
-        [
-          {
-            "node": "GET Watched Folder",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Find Sheets1": {
       "main": [
         [
@@ -1230,25 +992,7 @@
       "main": [
         [
           {
-            "node": "Check for Validation Errors5",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check for Validation Errors5": {
-      "main": [
-        [
-          {
             "node": "Update Skills Assessments",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send Error Message API2",
             "type": "main",
             "index": 0
           }
@@ -1270,7 +1014,7 @@
       "main": [
         [
           {
-            "node": "Login to API1",
+            "node": "Login to API",
             "type": "main",
             "index": 0
           }
@@ -1292,7 +1036,12 @@
       "main": [
         [
           {
-            "node": "Check API Response1",
+            "node": "GET Employee Performance Data API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET Required Skill Levels API",
             "type": "main",
             "index": 0
           }
@@ -1303,7 +1052,7 @@
       "main": [
         [
           {
-            "node": "Check API Response2",
+            "node": "Merge Data",
             "type": "main",
             "index": 0
           }
@@ -1314,9 +1063,9 @@
       "main": [
         [
           {
-            "node": "Check API Response3",
+            "node": "Merge Data",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -1332,47 +1081,7 @@
         ]
       ]
     },
-    "SLS Self Assessment Drive Trigger": {
-      "main": [
-        [
-          {
-            "node": "Return Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "SLS Manager Assessment Drive Trigger": {
-      "main": [
-        [
-          {
-            "node": "Return Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Check File Type": {
-      "main": [
-        [
-          {
-            "node": "Check Assessment Type",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send Error Message API",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Assessment Type": {
       "main": [
         [
           {
@@ -1383,92 +1092,7 @@
         ],
         [
           {
-            "node": "Send Error Message API1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check API Response1": {
-      "main": [
-        [
-          {
-            "node": "GET Employee Performance Data API",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "GET Required Skill Levels API",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Send Success Message API",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send Error Message API3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge Data": {
-      "main": [
-        [
-          {
-            "node": "Compute Skills Gap",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check API Response2": {
-      "main": [
-        [
-          {
-            "node": "Send Success Message API1",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge Data",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Send Error Message API4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check API Response3": {
-      "main": [
-        [
-          {
-            "node": "Send Success Message API2",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge Data",
-            "type": "main",
-            "index": 1
-          }
-        ],
-        [
-          {
-            "node": "Send Error Message API5",
+            "node": "Send Error Message API",
             "type": "main",
             "index": 0
           }
@@ -1497,7 +1121,51 @@
         ],
         [
           {
-            "node": "Send Error Message API6",
+            "node": "Send Error Message API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA Self Assessment Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Return Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Data": {
+      "main": [
+        [
+          {
+            "node": "Compute Skills Gap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login to API": {
+      "main": [
+        [
+          {
+            "node": "GET Watched Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA Manager Assessments Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Return Data",
             "type": "main",
             "index": 0
           }
@@ -1509,7 +1177,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "824be8d8-20fd-44f3-be24-179b116d7350",
+  "versionId": "876cd3f9-1dca-4870-b3f3-409de4cd6134",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "a31f8c9eb797a311bc289ce7bafeb2442b7772146dd18635dc019f72cb5829a0"
