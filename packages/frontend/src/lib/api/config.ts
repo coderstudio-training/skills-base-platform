@@ -1,4 +1,4 @@
-import { ApiConfig, RolePermissions } from './types';
+import { ApiConfig, RolePermissions } from '@/lib/api/types';
 
 const timeout = 10000;
 const version = 'v1';

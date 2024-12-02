@@ -1,7 +1,7 @@
-import { userApi } from '../api/client';
-import { ApiClientOptions } from '../api/types';
-import { logger } from '../utils';
-import { Picture } from './types';
+import { userApi } from '@/lib/api/client';
+import { ApiClientOptions } from '@/lib/api/types';
+import { Picture } from '@/lib/users/types';
+import { logger } from '@/lib/utils';
 
 const USER_BASE_URL = '/users';
 

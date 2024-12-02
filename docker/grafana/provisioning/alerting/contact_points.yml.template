@@ -13,5 +13,5 @@ contactPoints:
               "value": "test",
               "description": "test"
             }
-          url: http://${SERVICE_HOST}:3005/email/grafananotif
+          url: http://192.168.203.84:3005/email/grafananotif
           disableResolveMessage: false

@@ -1,27 +1,49 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { HttpExceptionFilter, TransformInterceptor } from '@skills-base/shared';
+import {
+  HttpExceptionFilter,
+  SecurityMiddleware,
+  SwaggerHelper,
+  TransformInterceptor,
+} from '@skills-base/shared';
 import * as bodyParser from 'body-parser';
-import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Body parser configuration for handling large requests
   app.use(bodyParser.json({ limit: '100mb' }));
   app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
 
-  app.useGlobalPipes(new ValidationPipe());
+  // Global pipes and filters
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
+  // Apply global middleware
+  app.use(new SecurityMiddleware().use);
 
+  // CORS configuration
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000', 'http://localhost:3002'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   });
-  app.use(helmet());
 
+  // Setup Swagger documentation
+  SwaggerHelper.setup(
+    app,
+    'Skills API Documentation',
+    'swagger', // Access swagger at /swagger
+  );
+
+  // Start server
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
@@ -29,5 +51,10 @@ async function bootstrap() {
     `Skills service is running on: http://localhost:${port}`,
     'Bootstrap',
   );
+  Logger.log(
+    `Swagger documentation is available at: http://localhost:${port}/api-docs`,
+    'Bootstrap',
+  );
 }
+
 bootstrap();

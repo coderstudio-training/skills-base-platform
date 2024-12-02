@@ -1,0 +1,232 @@
+{
+  "info": {
+    "_postman_id": "310090f9-8035-4c7f-bd2a-24aca64a86b8",
+    "name": "Skills Base Skill Service (Taxonomy)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "38787826"
+  },
+  "item": [
+    {
+      "name": "Get All Technical Taxonomy",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3002/taxonomy/technical?businessUnit=QA",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["taxonomy", "technical"],
+          "query": [
+            {
+              "key": "businessUnit",
+              "value": "QA"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Technical Taxonomy by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          },
+          {
+            "key": "",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3002/taxonomy/technical/1FpwF_0S9w7RuZlpkFPK4f0rNIRSfAzGu5eqj38ME5NA?businessUnit=QA",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["taxonomy", "technical", "1FpwF_0S9w7RuZlpkFPK4f0rNIRSfAzGu5eqj38ME5NA"],
+          "query": [
+            {
+              "key": "businessUnit",
+              "value": "QA"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Bulk Request Technical Skill",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"data\": [\r\n        {\r\n            \"docTitle\":\"TEST_BAR\",\r\n            \"docId\":\"TEST_FOO\",\r\n            \"docRevisionId\":\"FOOBAR\",\r\n            \"category\":\"Tests\",\r\n            \"title\":\"TEST_BAR\",\r\n            \"description\":\"Preparing for testing\",\r\n            \"proficiencyDescription\":{\r\n                \"Level 1\":[\"N/A\",\"N/A\"]\r\n                },\r\n            \"knowledge\":{\r\n                \"Level 1\":[\"\"]\r\n                },\r\n            \"abilities\":{\r\n                \"Level 1\":[\"\"]\r\n                },\r\n            \"rangeOfApplication\":[\"\"],\r\n            \"businessUnit\":\"TESTING\"}\r\n    ]\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3002/taxonomy/technical/bulk-upsert",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["taxonomy", "technical", "bulk-upsert"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Technical Taxonomy byTitle",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3002/taxonomy/technical/title/Test%20Planning?businessUnit=QA",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["taxonomy", "technical", "title", "Test%20Planning"],
+          "query": [
+            {
+              "key": "businessUnit",
+              "value": "QA"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Soft Skills",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3002/taxonomy/soft",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["taxonomy", "soft"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Soft Taxonomy by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3002/taxonomy/soft/S12345",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["taxonomy", "soft", "S12345"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Bulk Request Soft Skill",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"data\": [\r\n        {\r\n            \"docTitle\":\"Softie\",\r\n            \"docId\":\"S12345\",\r\n            \"docRevisionId\":\"1\",\r\n            \"category\":\"Staying Relevant\",\r\n            \"title\":\"Softie\",\r\n            \"description\":\"Being a softie\",\r\n            \"proficiencyDescription\":{\r\n                \"Level 1\":[\"N/A\",\"N/A\"],\r\n                \"Level 2\":[\"Softie\", \"Hardie\", \"Normie\"]\r\n                },\r\n            \"benchmark\":{\r\n                \"Level 1\":[],\r\n                \"Level 2\":[\"Professional II\"],\r\n                \"Level 3\":[\"Professional III\"],\r\n                \"level 4\": [\"Professional IV\",\"Manager I\"],\r\n                \"level 5\": [\"Manager II\",\"Manager III\",\"Manager IV\"],\r\n                \"level 6\": [\"Director I\",\"Director II\",\"Director III\",\"Director IV\"]\r\n                },\r\n            \"rating\": [\r\n                \"Novice\",\r\n                \"Beginner\",\r\n                \"Intermediate\",\r\n                \"Advanced\",\r\n                \"Expert\",\r\n                \"Guru\"\r\n            ]\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3002/taxonomy/soft/bulk-upsert",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["taxonomy", "soft", "bulk-upsert"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Soft Taxonomy by Title",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3002/taxonomy/soft/title/Softie",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3002",
+          "path": ["taxonomy", "soft", "title", "Softie"]
+        }
+      },
+      "response": []
+    }
+  ]
+}

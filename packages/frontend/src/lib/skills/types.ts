@@ -9,9 +9,9 @@ export interface IBaseTaxonomy {
   category: string;
   title: string;
   description: string;
-  proficiencyDescription: object;
-  abilities: object;
-  knowledge: object;
+  proficiencyDescription: Record<string, string[]>;
+  abilities: Record<string, string[]>;
+  knowledge: Record<string, string[]>;
   rangeOfApplication?: string[];
 }
 

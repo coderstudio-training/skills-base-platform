@@ -1,5 +1,13 @@
 // lib/auth.ts
 
+import { authConfig, errorMessages, rolePermissions } from '@/lib/api/config';
+import {
+  AuthState,
+  Permission,
+  RolePermissions,
+  Roles,
+  ServerInterceptOptions,
+} from '@/lib/api/types';
 import { logger } from '@/lib/utils';
 import { AuthResponse, DecodedToken } from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
@@ -8,8 +16,6 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import { authConfig, errorMessages, rolePermissions } from './config';
-import { AuthState, Permission, RolePermissions, Roles, ServerInterceptOptions } from './types';
 logger.log('Starting to load auth options in lib/auth.ts...');
 
 export const authOptions: NextAuthOptions = {
@@ -258,19 +264,19 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
 
   if (!session) {
     logger.log(errorMessages.UNAUTHORIZED);
-    redirect('/error/unauthorized');
+    redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
   } else {
     const tokenExpired = await isTokenExpired(session?.user.accessToken);
     if (tokenExpired) {
       logger.log(errorMessages.TOKEN_EXPIRED);
-      redirect('error/unauthorized');
+      redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
     }
   }
 
   if (option?.role) {
     if (session.user.role !== option.role) {
       logger.log(errorMessages.UNAUTHORIZED);
-      redirect('/error/unauthorized');
+      redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
     }
   }
 
@@ -278,7 +284,7 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
     const isPermitted = await hasPermission(option.permission);
     if (!isPermitted) {
       logger.log(errorMessages.FORBIDDEN);
-      redirect('/error/forbidden');
+      redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
     }
   }
 
@@ -286,7 +292,7 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
     const canAccess = await canAccessRoutes(option.route);
     if (!canAccess) {
       logger.log(errorMessages.FORBIDDEN);
-      redirect('/error/forbidden');
+      redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
     }
   }
 }

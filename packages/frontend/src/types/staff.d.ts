@@ -1,6 +1,11 @@
-export interface Skill {
-  name: string;
-  level: number;
+export interface StaffSkill {
+  skill: string;
+  category: string;
+  selfRating: number;
+  managerRating: number;
+  requiredRating: number;
+  gap: number;
+  average: number;
 }
 
 export interface Qualification {
@@ -18,6 +23,12 @@ export interface PerformanceMetrics {
   trend: { month: string; score: number }[];
 }
 
+export interface SkillMetrics {
+  technicalSkillsAverage: number;
+  softSkillsAverage: number;
+  skillsAssessed: number;
+}
+
 export interface NetworkConnection {
   name: string;
   role: string;
@@ -26,6 +37,49 @@ export interface NetworkConnection {
 export interface CareerPath {
   role: string;
   requiredSkills: string[];
+}
+
+interface CourseDetails {
+  name: string;
+  provider: string;
+  duration: string;
+  format: string;
+  learningPath: string;
+  learningObjectives: string[];
+  prerequisites: string;
+  businessValue: string;
+}
+
+interface Recommendation {
+  skillName: string;
+  currentLevel: number;
+  targetLevel: number;
+  gap: number;
+  type: 'skillGap' | 'promotion';
+  course: CourseDetails;
+}
+
+interface LearningRecommendation {
+  skillName: string;
+  currentLevel: number;
+  targetLevel: number;
+  gap: number;
+}
+
+interface ApiResponse {
+  success: boolean;
+  careerLevel: string;
+  recommendations: LearningRecommendation[];
+  generatedDate: string;
+}
+
+export interface RecommendationResponse {
+  success: boolean;
+  employeeName: string;
+  careerLevel: string;
+  recommendations: Recommendation[];
+  generatedDate: Date;
+  message?: string;
 }
 
 export interface StaffData {
