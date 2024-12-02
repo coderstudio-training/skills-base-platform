@@ -1,123 +1,194 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Logger } from '@skills-base/shared';
 import { readFileSync } from 'fs';
 import * as handlebars from 'handlebars';
 import { createTransport, Transporter } from 'nodemailer';
 import { join } from 'path';
+import { EmailDto } from './dto/email.dto';
 
 @Injectable()
 export class EmailService {
   private transporter: Transporter;
   private adminEmails: string[];
-  private readonly logger = new Logger(EmailService.name);
 
-  constructor(private configService: ConfigService) {
-    this.transporter = this.createTransporter();
-    this.adminEmails = this.getAdminEmails();
+  constructor(
+    private configService: ConfigService,
+    private readonly logger: Logger,
+  ) {
+    this.logger = new Logger(EmailService.name);
+    this.initializeService();
   }
 
-  private createTransporter(): Transporter {
-    return createTransport({
-      host: 'localhost',
-      port: 1025,
-      secure: false,
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
-  }
+  private initializeService(): void {
+    this.logger.info('Initializing email service');
 
-  private getAdminEmails(): string[] {
-    const emails = this.configService.get<string>('ADMIN_EMAILS');
-    if (!emails) {
-      throw new Error('Admin email/s not found');
+    try {
+      this.transporter = createTransport({
+        host: 'localhost',
+        port: 1025,
+        secure: false,
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
+
+      this.adminEmails = this.configService
+        .get<string>('ADMIN_EMAILS')
+        ?.split(',') || ['admin@example.com'];
+
+      this.logger.info('Email service initialized', {
+        recipientCount: this.adminEmails.length,
+        smtpConfig: { host: 'localhost', port: 1025 },
+      });
+    } catch (error) {
+      this.logger.error('Failed to initialize email service', { error });
+      throw error;
     }
-    return emails.split(',').map((email) => email.trim());
+  }
+
+  async sendWorkflowSuccess(data: EmailDto): Promise<void> {
+    this.logger.info('Sending workflow success email', {
+      workflowName: data.workflowName,
+    });
+
+    try {
+      const html = await this.getEmailTemplate('success-email-template', data);
+
+      await this.transporter.sendMail({
+        from:
+          this.configService.get<string>('EMAIL_SENDER') ||
+          'noreply@example.com',
+        to: this.adminEmails.join(','),
+        subject: `Workflow Success: ${data.workflowName}`,
+        html,
+      });
+
+      this.logger.info('Workflow success email sent', {
+        workflowName: data.workflowName,
+        recipients: this.adminEmails.length,
+      });
+    } catch (error) {
+      this.logger.error('Failed to send workflow success email', {
+        error,
+        workflowName: data.workflowName,
+      });
+      throw new InternalServerErrorException('Failed to send success email');
+    }
+  }
+
+  async sendWorkflowError(data: EmailDto): Promise<void> {
+    this.logger.info('Sending workflow error email', {
+      workflowName: data.workflowName,
+    });
+
+    try {
+      const html = await this.getEmailTemplate('error-email-template', data);
+
+      await this.transporter.sendMail({
+        from:
+          this.configService.get<string>('EMAIL_SENDER') ||
+          'noreply@example.com',
+        to: this.adminEmails.join(','),
+        subject: `Workflow Error: ${data.workflowName}`,
+        html,
+      });
+
+      this.logger.info('Workflow error email sent', {
+        workflowName: data.workflowName,
+        recipients: this.adminEmails.length,
+      });
+    } catch (error) {
+      this.logger.error('Failed to send workflow error email', {
+        error,
+        workflowName: data.workflowName,
+      });
+      throw new InternalServerErrorException('Failed to send error email');
+    }
   }
 
   private async getEmailTemplate(
     templateName: string,
-    data: string,
+    data: any,
   ): Promise<string> {
-    this.logger.log('Loading email templates...');
+    this.logger.debug('Loading email template', { templateName });
+
     try {
       const templatePath = join(
-        __dirname,
-        '..',
-        'src/templates',
+        process.cwd(),
+        'dist',
+        'src',
+        'templates',
         `${templateName}.html`,
       );
+
       const templateSource = readFileSync(templatePath, 'utf-8');
       const template = handlebars.compile(templateSource);
-      return template(JSON.parse(data));
+      return template(data);
     } catch (error) {
-      this.logger.error(
-        `Failed to load email template: ${templateName}`,
-        error.stack,
-      );
+      this.logger.error('Failed to load email template', {
+        error,
+        templateName,
+      });
       throw new InternalServerErrorException(
         `Error loading template: ${templateName}`,
       );
     }
   }
 
-  async sendEmail(
-    to: string,
-    subject: string,
-    templateName: string,
-    data: string,
-  ): Promise<void> {
-    const html = await this.getEmailTemplate(templateName, data);
-    const mailOptions = {
-      from: this.configService.get<string>('EMAIL_SENDER'),
-      to: to,
-      subject: subject,
-      html: html,
-    };
-    await this.transporter.sendMail(mailOptions);
-  }
+  async sendGrafanaAlert(alertData: any): Promise<void> {
+    const correlationId = Math.random().toString(36).substring(7);
 
-  async sendSuccessEmail(workflowName: string): Promise<void> {
-    this.logger.log('Sending success email...');
+    this.logger.info('Preparing to send Grafana alert email', {
+      correlationId,
+      alertTitle: alertData.alert,
+      recipients: this.adminEmails.length,
+    });
+
     try {
-      const data = JSON.stringify({ workflowName });
-      await this.sendEmail(
-        this.adminEmails.join(','),
-        'Workflow Successful!',
-        'success-email-template',
-        data,
+      const templateData = {
+        ...alertData,
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+      };
+
+      const html = await this.getEmailTemplate(
+        'grafana-alert-template',
+        templateData,
       );
-      this.logger.log('Success email sent successfully');
+
+      const mailOptions = {
+        from:
+          this.configService.get<string>('EMAIL_SENDER') ||
+          'alerts@example.com',
+        to: this.adminEmails.join(','),
+        subject: `Grafana Alert: ${alertData.alert}`,
+        html: html,
+      };
+
+      this.logger.debug('Sending email', {
+        correlationId,
+        subject: mailOptions.subject,
+        recipientCount: this.adminEmails.length,
+      });
+
+      await this.transporter.sendMail(mailOptions);
+
+      this.logger.info('Grafana alert email sent successfully', {
+        correlationId,
+        alertId: alertData.alert,
+      });
     } catch (error) {
-      this.logger.error(
-        `Failed to send success email for workflow: ${workflowName}`,
-        error.stack,
-      );
-      throw new InternalServerErrorException('Failed to send success email.');
-    }
-  }
+      this.logger.error('Failed to send Grafana alert email', {
+        correlationId,
+        error: error instanceof Error ? error.message : String(error),
+        alertData,
+        template: 'grafana-alert-template',
+      });
 
-  async sendErrorEmail(workflowName: string): Promise<void> {
-    this.logger.log('Sending error email...');
-    try {
-      const data = JSON.stringify({ workflowName });
-      await this.sendEmail(
-        this.adminEmails.join(','),
-        'Workflow Failed!',
-        'error-email-template',
-        data,
+      throw new InternalServerErrorException(
+        'Failed to send Grafana alert email',
       );
-      this.logger.log('Error email sent successfully');
-    } catch (sendError) {
-      this.logger.error(
-        `Failed to send failure email for workflow: ${workflowName}`,
-        sendError.stack,
-      );
-      throw new InternalServerErrorException('Failed to send fail email.');
     }
   }
 }

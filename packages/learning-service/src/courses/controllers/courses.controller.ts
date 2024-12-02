@@ -34,7 +34,7 @@ import { CoursesService } from '../services/courses.service';
 @Controller('api/courses')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)
-@ApiBearerAuth('JWT-auth')
+@ApiBearerAuth('JWT-Admin')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 

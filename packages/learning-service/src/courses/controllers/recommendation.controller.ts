@@ -7,7 +7,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import {
-  ApiOAuth2,
+  ApiBearerAuth,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -26,9 +26,9 @@ import { RecommendationService } from '../services/recommendation.service';
 
 @ApiTags('Learning')
 @Controller('api/learning')
+@ApiBearerAuth('JWT-Staff')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)
-@ApiOAuth2(['email', 'profile'], 'google-oauth2') // Specify OAuth2 for staff/manager endpoints
 export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
@@ -38,6 +38,7 @@ export class RecommendationController {
     summary: 'Get learning recommendations',
     description: `
       Get personalized learning recommendations based on skill gaps for a specific user.
+      
       
       Authentication:
       - This endpoint requires Google OAuth authentication

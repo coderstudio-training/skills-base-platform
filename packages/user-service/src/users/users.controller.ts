@@ -12,6 +12,7 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -33,7 +34,7 @@ import { UsersService } from './users.service';
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)
-@ApiBearerAuth('JWT-auth')
+@ApiBearerAuth('JWT-Admin')
 export class UsersController extends BaseController<User> {
   constructor(private readonly usersService: UsersService) {
     super(usersService);
@@ -82,6 +83,12 @@ export class UsersController extends BaseController<User> {
   @Get('picture/:email')
   @Roles(UserRole.MANAGER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Get user picture by email' })
+  @ApiParam({
+    name: 'email',
+    example: 'adrian.oraya@stratpoint.com',
+    required: true,
+    type: 'string',
+  })
   @ApiResponse({
     status: 200,
     description: 'Returns the user picture URL',

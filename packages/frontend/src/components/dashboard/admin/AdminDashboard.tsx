@@ -1,21 +1,21 @@
 'use client';
 
+import AnalysisView from '@/components/dashboard/admin/AnalysisView';
+import BusinessUnitDistribution from '@/components/dashboard/admin/BusinessUnitDistribution';
+import { LearningManagement } from '@/components/dashboard/admin/learning/LearningManagement';
+import SearchAndFilter from '@/components/dashboard/admin/SearchAndFilter';
+import SkillGapOverview from '@/components/dashboard/admin/SkillGapOverview';
+import StatsCards from '@/components/dashboard/admin/StatsCards';
+import TopPerformers from '@/components/dashboard/admin/TopPerformers';
+import EmployeeDirectory from '@/components/dashboard/admin/UserDirectory';
+import ErrorCard from '@/components/error/ErrorCard';
 import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
+import TSCManager from '@/components/TSC/TSCManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useQueryTechnicalTaxonomy } from '@/lib/skills/api';
 import { Employee } from '@/types/admin';
-import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
+import { Award, BarChart2, BookOpen, Loader2, Network, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import AnalysisView from './AnalysisView';
-import BusinessUnitDistribution from './BusinessUnitDistribution';
-import DataManagementActions from './DataManagementActions';
-import { LearningManagement } from './learning/LearningManagement';
-import SearchAndFilter from './SearchAndFilter';
-import SkillGapOverview from './SkillGapOverview';
-import StatsCards from './StatsCards';
-import TopPerformers from './TopPerformers';
-import EmployeeDirectory from './UserDirectory';
-
-// const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
 export default function AdminDashboard() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -30,6 +30,7 @@ export default function AdminDashboard() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [businessUnits, setBusinessUnits] = useState<string[]>([]);
   const [businessUnitsLoading, setBusinessUnitsLoading] = useState(true);
+  const { data: QA_Tsc, isLoading, error: queryError, refetch } = useQueryTechnicalTaxonomy('QA');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -48,6 +49,7 @@ export default function AdminDashboard() {
           throw new Error('Failed to fetch business units');
         }
         const data = await response.json();
+        console.log('Business units call: ', data, ' | Business units:', businessUnits);
         setBusinessUnits(['All Business Units', ...data.businessUnits]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch business units');
@@ -127,9 +129,6 @@ export default function AdminDashboard() {
       <AdminDashboardHeader />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Import, Export, Sync Data */}
-        <DataManagementActions />
-
         {/* Search and Filter */}
         <SearchAndFilter
           selectedBusinessUnit={selectedBusinessUnit}
@@ -181,7 +180,7 @@ export default function AdminDashboard() {
               <BookOpen className="h-4 w-4" />
               Learning
             </TabsTrigger>
-            <TabsTrigger value="taxonomy" className="flex items-center gap-2">
+            <TabsTrigger value="taxonomy" className="flex iutems-center gap-2">
               <BookOpen className="h-4 w-4" />
               Taxonomy
             </TabsTrigger>
@@ -189,25 +188,46 @@ export default function AdminDashboard() {
 
           {/* Users Directory */}
           <TabsContent value="users">
-            <TabsContent value="users">
-              <EmployeeDirectory
-                employees={employees}
-                loading={loading}
-                totalItems={totalItems}
-                totalPages={totalPages}
-                page={page}
-                limit={limit}
-                onPageChange={handlePageChange}
-                onLimitChange={handleLimitChange}
-              />
-            </TabsContent>
+            <EmployeeDirectory
+              employees={employees}
+              loading={loading}
+              totalItems={totalItems}
+              totalPages={totalPages}
+              page={page}
+              limit={limit}
+              onPageChange={handlePageChange}
+              onLimitChange={handleLimitChange}
+            />
           </TabsContent>
 
           {/* Metrics */}
           <TabsContent value="metrics">
             <AnalysisView />
           </TabsContent>
-
+          <TabsContent value="taxonomy">
+            {queryError ? (
+              <ErrorCard
+                cardTitle="TSC Manager"
+                status={queryError.status}
+                message={queryError.message}
+                error_code={queryError.code}
+                refetch={refetch}
+              />
+            ) : !isLoading && QA_Tsc ? (
+              <TSCManager
+                selectedBusinessUnit={selectedBusinessUnit}
+                data={QA_Tsc}
+                searchQuery={debouncedSearchQuery}
+              />
+            ) : (
+              <div className="h-[350px] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                  <p className="text-sm text-muted-foreground">Loading taxonomy...</p>
+                </div>
+              </div>
+            )}
+          </TabsContent>
           {/* Learning */}
           <TabsContent value="learning">
             <LearningManagement />

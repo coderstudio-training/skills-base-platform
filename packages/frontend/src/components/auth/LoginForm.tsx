@@ -1,20 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { userApi } from '@/lib/api/client';
+import { authConfig, errorMessages } from '@/lib/api/config';
+import { useMutation } from '@/lib/api/hooks';
+import { ApiResponse } from '@/lib/api/types';
+import { AuthResponse } from '@/lib/users/types';
 import { logger } from '@/lib/utils';
-
-interface AuthResponse {
-  access_token?: string;
-  message?: string;
-  status?: number;
-}
+import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 
 export default function LoginForm() {
   // Changed from AdminLoginPage to LoginForm
@@ -23,8 +22,13 @@ export default function LoginForm() {
   const [formState, setFormState] = useState({
     email: searchParams.get('email') || '',
     password: '',
-    error: '',
-    isLoading: false,
+  });
+
+  const { mutate, error, isLoading } = useMutation<
+    AuthResponse,
+    { email: string; password: string }
+  >(userApi, `${authConfig.endpoints.login}`, 'POST', {
+    requiresAuth: false,
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -32,7 +36,7 @@ export default function LoginForm() {
     setFormState(prev => ({ ...prev, isLoading: true, error: '' }));
 
     try {
-      const result = await authenticateUser(formState.email, formState.password);
+      const result = await authenticateUser(mutate, formState.email, formState.password);
       if (result.success) {
         router.push('/dashboard/admin');
       } else {
@@ -89,13 +93,13 @@ export default function LoginForm() {
                 required
               />
             </div>
-            {formState.error && (
+            {error && (
               <Alert variant="destructive">
-                <AlertDescription>{formState.error}</AlertDescription>
+                <AlertDescription>{error.message}</AlertDescription>
               </Alert>
             )}
-            <Button type="submit" className="w-full" disabled={formState.isLoading}>
-              {formState.isLoading ? 'Logging in...' : 'Log in'}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Logging in...' : 'Log in'}
             </Button>
           </form>
         </CardContent>
@@ -105,6 +109,9 @@ export default function LoginForm() {
 }
 
 async function authenticateUser(
+  mutate: (
+    data?: { email: string; password: string } | undefined,
+  ) => Promise<ApiResponse<AuthResponse>>,
   email: string,
   password: string,
 ): Promise<{ success: boolean; error?: string }> {
@@ -121,22 +128,16 @@ async function authenticateUser(
 
   try {
     // First step: Get token from user service
-    const apiResponse = await fetch(`${userServiceUrl}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data: AuthResponse = await apiResponse.json();
-
-    if (!apiResponse.ok || !data.access_token) {
+    const apiResponse = await mutate({ email, password });
+    console.log('Api response:', apiResponse);
+    if (!apiResponse.data?.access_token || apiResponse.error) {
       logger.error('Authentication failed:', {
         status: apiResponse.status,
-        message: data.message,
+        message: apiResponse.error?.message,
       });
       return {
         success: false,
-        error: data.message || 'Authentication failed',
+        error: apiResponse.error?.message || errorMessages.INVALID_CREDENTIALS,
       };
     }
 
@@ -145,7 +146,7 @@ async function authenticateUser(
       redirect: false,
       email,
       password,
-      access_token: data.access_token,
+      access_token: apiResponse.data.access_token,
       callbackUrl: `${window.location.origin}/dashboard/admin`,
     });
 

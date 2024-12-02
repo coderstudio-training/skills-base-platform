@@ -3,30 +3,23 @@ import {
   Controller,
   Get,
   NotFoundException,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
-  ApiProperty,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
+import { Request } from 'express';
+import { BulkRequiredSkillsDto } from '../dto/required-skills.dto';
 import { PerformanceService } from '../services/computation.service';
 
-export class BulkPerformanceRequestDto {
-  @ApiProperty({
-    description: 'Business unit to calculate performance for',
-    example: 'Digital Engineering',
-    required: true,
-  })
-  bu!: string;
-}
-
 @ApiTags('Skills Assessments')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-Admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('api/skills-assessments')
 export class PerformanceController {
@@ -40,14 +33,21 @@ export class PerformanceController {
       'Calculate performance metrics for all employees in a specific business unit',
   })
   @ApiBody({
-    type: BulkPerformanceRequestDto,
-    description: 'Business unit for performance calculation',
+    schema: {
+      type: 'object',
+      properties: {
+        bu: {
+          type: 'string',
+          description: 'Business unit to calculate performance for',
+          example: 'Digital Engineering',
+        },
+      },
+      required: ['bu'],
+    },
   })
   @ApiResponse({
     status: 200,
     description: 'Performance metrics successfully calculated',
-    // Assuming you have a response DTO, you should add it here
-    // type: PerformanceResponseDto
   })
   @ApiResponse({
     status: 401,
@@ -61,7 +61,7 @@ export class PerformanceController {
     status: 500,
     description: 'Internal server error while calculating performance',
   })
-  async bulkCalculatePerformance(@Body() body: BulkPerformanceRequestDto) {
+  async bulkCalculatePerformance(@Body() body: { bu: string }) {
     try {
       const { bu } = body;
       if (!bu) {
@@ -77,6 +77,46 @@ export class PerformanceController {
         throw new Error(
           'An error occurred while calculating bulk performance.',
         );
+      }
+    }
+  }
+
+  @Get('required-skills')
+  @ApiOperation({
+    summary: 'Get required skills by capability',
+    description: 'Get all required skills for a specific capability',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Required skills successfully retrieved',
+    type: BulkRequiredSkillsDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - User is not authenticated',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Not Found - Capability does not exist',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error while retrieving skills',
+  })
+  async getRequiredSkillsByCapability(@Req() req: Request) {
+    try {
+      const capability = req.query.capability as string;
+      if (!capability) {
+        throw new Error('Capability is required.');
+      }
+      const skills =
+        await this.assessmentsService.getRequiredSkillsByCapability(capability);
+      return skills;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      } else {
+        throw new Error('An error occurred while retrieving required skills.');
       }
     }
   }

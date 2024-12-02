@@ -1,0 +1,17 @@
+apiVersion: 1
+contactPoints:
+  - orgId: 1
+    name: skills_base_email_service
+    receivers:
+      - uid: fe3vzamss1iipf
+        type: webhook
+        settings:
+          httpMethod: POST
+          message: |-
+            {
+              "alert": "Test",
+              "value": "test",
+              "description": "test"
+            }
+          url: http://192.168.203.84:3005/email/grafananotif
+          disableResolveMessage: false

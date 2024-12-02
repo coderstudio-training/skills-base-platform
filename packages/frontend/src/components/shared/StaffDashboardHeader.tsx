@@ -57,7 +57,7 @@ export default function StaffDashboardHeader() {
     <div className="flex justify-between items-center mb-6">
       <div className="flex items-center space-x-4">
         <Avatar className="h-20 w-20">
-          {session?.user?.image ? (
+          {userProfile?.picture ? (
             <AvatarImage
               src={userProfile?.picture}
               alt={fullName}

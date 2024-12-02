@@ -11,7 +11,7 @@ export async function GET(request: NextRequest, { params }: { params: { title: s
     const title = params.title;
 
     const response = await fetch(
-      `${API_BASE_URL}/taxonomy/title/${encodeURIComponent(title)}?businessUnit=QA`,
+      `${API_BASE_URL}/taxonomy/technical/title/${encodeURIComponent(title)}?businessUnit=QA`,
       {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,

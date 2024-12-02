@@ -1,3 +1,4 @@
+import { ReportData } from '@/components/ReportGenerator';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -17,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ReportData } from './ReportGenerator';
 
 export interface EmployeeSkillsReportData extends ReportData {
   employees: Employee[];

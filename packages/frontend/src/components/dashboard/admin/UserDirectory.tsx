@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -71,7 +72,7 @@ export default function EmployeeDirectory({
         data.skills.map(async (skill: SkillDetail) => {
           try {
             const taxonomyResponse = await fetch(
-              `/api/taxonomy/title/${skill.skill}?businessUnit=QA`,
+              `/api/taxonomy/technical/title/${skill.skill}?businessUnit=QA`,
             );
 
             if (!taxonomyResponse.ok) {
@@ -171,9 +172,24 @@ export default function EmployeeDirectory({
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                    {`${employee.firstName[0]}${employee.lastName[0]}`}
-                  </div>
+                  <Avatar className="h-10 w-10">
+                    {employee.picture ? (
+                      <AvatarImage
+                        src={employee.picture}
+                        alt={`${employee.firstName} ${employee.lastName}`}
+                        width={40}
+                        height={40}
+                        onError={e => {
+                          const imgElement = e.target as HTMLImageElement;
+                          imgElement.style.display = 'none';
+                        }}
+                      />
+                    ) : null}
+                    <AvatarFallback className="uppercase bg-gray-100 text-gray-600">
+                      {employee.firstName?.[0]}
+                      {employee.lastName?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
                   <div>
                     <p className="font-medium">{`${employee.firstName} ${employee.lastName}`}</p>
                     <p className="text-sm text-gray-500">{employee.email}</p>

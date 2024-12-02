@@ -12,7 +12,7 @@ export class LoginDto {
 
   @ApiProperty({
     description: 'User password',
-    example: 'password123',
+    example: 'strongpassword123',
     type: String,
   })
   @IsString({ message: 'Password must be a string' })

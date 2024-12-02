@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { PaginationDto } from '@skills-base/shared';
 import { BulkWriteResult } from 'mongodb';
 import { Model } from 'mongoose';
+import { User } from 'src/users/entities/user.entity';
 import { EmployeeSearchDto } from './dto/search-employee.dto';
 import { Employee } from './entities/employee.entity';
 
@@ -14,6 +15,8 @@ export class EmployeesService {
   constructor(
     @InjectModel(Employee.name)
     private readonly employeeModel: Model<Employee>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
   ) {
     this.ensureIndexes();
   }
@@ -136,15 +139,43 @@ export class EmployeesService {
     const skip = (page - 1) * limit;
 
     try {
-      const [items, total] = await Promise.all([
-        this.employeeModel.find().skip(skip).limit(limit).exec(),
+      const [employees, total] = await Promise.all([
+        this.employeeModel.find().skip(skip).limit(limit).lean().exec(),
         this.employeeModel.countDocuments(),
       ]);
+
+      // Fetch user profiles for these employees
+      const employeeEmails = employees.map((emp) => emp.email);
+      const userProfiles = await this.userModel
+        .find({ email: { $in: employeeEmails } })
+        .select('-__v -createdAt -updatedAt -password -_id')
+        .lean()
+        .transform((docs) =>
+          docs.map((doc) => ({
+            ...doc,
+            _id: doc?._id?.toString(),
+          })),
+        );
+
+      // Merge employee and user profiles
+      const mergedProfiles = employees.map((employee) => {
+        const userProfile = userProfiles.find(
+          (user) => user.email === employee.email,
+        );
+
+        // Merge profiles and remove any undefined values
+        return Object.fromEntries(
+          Object.entries({
+            ...employee,
+            ...userProfile,
+          }).filter(([, v]) => v != null),
+        );
+      });
 
       const totalPages = Math.ceil(total / limit);
 
       return {
-        items,
+        items: mergedProfiles,
         total,
         page,
         limit,
@@ -175,32 +206,43 @@ export class EmployeesService {
         query.businessUnit = searchDto.businessUnit;
       }
 
-      const fields = {
-        employeeId: 1,
-        firstName: 1,
-        lastName: 1,
-        email: 1,
-        businessUnit: 1,
-        employmentStatus: 1,
-        grade: 1,
-        skill: 1,
-        _id: 0,
-      };
-
-      const [items, total] = await Promise.all([
-        this.employeeModel
-          .find(query)
-          .select(fields)
-          .skip(skip)
-          .limit(limit)
-          .exec(),
+      const [employees, total] = await Promise.all([
+        this.employeeModel.find(query).skip(skip).limit(limit).lean().exec(),
         this.employeeModel.countDocuments(query),
       ]);
+
+      // Fetch user profiles for these employees
+      const employeeEmails = employees.map((emp) => emp.email);
+      const userProfiles = await this.userModel
+        .find({ email: { $in: employeeEmails } })
+        .select('-__v -createdAt -updatedAt -password -_id')
+        .lean()
+        .transform((docs) =>
+          docs.map((doc) => ({
+            ...doc,
+            _id: doc?._id?.toString(),
+          })),
+        );
+
+      // Merge employee and user profiles
+      const mergedProfiles = employees.map((employee) => {
+        const userProfile = userProfiles.find(
+          (user) => user.email === employee.email,
+        );
+
+        // Merge profiles and remove any undefined values
+        return Object.fromEntries(
+          Object.entries({
+            ...employee,
+            ...userProfile,
+          }).filter(([, v]) => v != null),
+        );
+      });
 
       const totalPages = Math.ceil(total / limit);
 
       return {
-        items,
+        items: mergedProfiles,
         total,
         page,
         limit,
@@ -287,7 +329,60 @@ export class EmployeesService {
     return this.employeeModel.findOne({ email: email }).exec();
   }
 
-  async findByManager(managerName: string): Promise<Employee[]> {
-    return this.employeeModel.find({ managerName: managerName }).exec();
+  async findByManager(managerName: string): Promise<any[]> {
+    try {
+      // Find employees by manager name
+      const employees = await this.employeeModel
+        .find({ managerName })
+        .select('-__v -createdAt -updatedAt -_id')
+        .lean()
+        .transform((docs) =>
+          docs.map((doc) => ({
+            ...doc,
+            employeeId: doc?._id?.toString(),
+          })),
+        );
+
+      // If no employees found, return empty array
+      if (!employees || employees.length === 0) {
+        return [];
+      }
+
+      // Fetch user profiles for these employees
+      const employeeEmails = employees.map((emp) => emp.email);
+      const userProfiles = await this.userModel
+        .find({ email: { $in: employeeEmails } })
+        .select('-__v -createdAt -updatedAt -password -_id')
+        .lean()
+        .transform((docs) =>
+          docs.map((doc) => ({
+            ...doc,
+            _id: doc?._id?.toString(),
+          })),
+        );
+
+      // Merge employee and user profiles
+      const mergedProfiles = employees.map((employee) => {
+        const userProfile = userProfiles.find(
+          (user) => user.email === employee.email,
+        );
+
+        // Merge profiles and remove any undefined values
+        return Object.fromEntries(
+          Object.entries({
+            ...employee,
+            ...userProfile,
+          }).filter(([, v]) => v != null),
+        );
+      });
+
+      return mergedProfiles;
+    } catch (error) {
+      this.logger.error(
+        `Error finding employees by manager ${managerName}:`,
+        error,
+      );
+      throw error;
+    }
   }
 }

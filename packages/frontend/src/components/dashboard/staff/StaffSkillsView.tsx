@@ -1,3 +1,4 @@
+import { CustomBarChart } from '@/components/ui/barchart';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -7,7 +8,6 @@ import { StaffSkill } from '@/types/staff';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { ResponsiveContainer } from 'recharts';
-import { CustomBarChart } from '../../ui/barchart';
 
 const calculateSummaryMetrics = (skills: StaffSkill[]) => {
   const averageGap = Number(
