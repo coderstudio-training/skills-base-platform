@@ -20,7 +20,7 @@ interface SearchAndFilterProps {
   isLoading?: boolean;
 }
 
-export default function SearchAndFilter({
+export function SearchAndFilter({
   selectedBusinessUnit,
   businessUnits,
   searchQuery,

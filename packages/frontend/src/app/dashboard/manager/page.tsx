@@ -1,4 +1,4 @@
-import ManagerDashboard from '@/components/dashboard/manager/ManagerDashboard';
+import ManagerDashboard from '@/components/dashboard/components/manager/ManagerDashboard';
 import { serverSideIntercept } from '@/lib/api/auth';
 
 export default async function ManagerDashboardPage() {
