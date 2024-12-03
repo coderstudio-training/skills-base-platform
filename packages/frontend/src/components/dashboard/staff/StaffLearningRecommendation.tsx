@@ -1,58 +1,19 @@
 'use client';
 
+import { useRecommendations } from '@/components/TSC/hooks/useRecommendation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { learningRecommendationAPI } from '@/lib/api';
-import { Recommendation } from '@/types/staff';
 import { X } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import React, { useEffect, useState } from 'react';
 
-const StaffLearningRecommendations: React.FC = () => {
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCourse, setSelectedCourse] = useState<Recommendation | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const { data: session } = useSession();
-
-  useEffect(() => {
-    async function fetchRecommendations() {
-      if (status === 'loading') return;
-
-      if (!session?.user?.email) {
-        setError('No user session found');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        const data = await learningRecommendationAPI(session.user.email);
-        if (data.recommendations) {
-          setRecommendations(data.recommendations);
-        }
-      } catch (err) {
-        console.error('Error fetching recommendations:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch recommendations');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchRecommendations();
-  }, [session?.user?.email]);
-
-  const handleCourseClick = (course: Recommendation) => {
-    setSelectedCourse(course);
-    setIsDialogOpen(true);
-  };
-
-  const getGapStyle = (gap: number) => {
-    if (gap < 0) return 'bg-red-500 text-white-10000';
-    return 'bg-blue-400 text-white-800';
-  };
+function StaffLearningRecommendations() {
+  const {
+    recommendations,
+    loading,
+    error,
+    selectedCourse,
+    isDialogOpen,
+    setIsDialogOpen,
+    handleCourseClick,
+  } = useRecommendations();
 
   return (
     <>
@@ -91,7 +52,15 @@ const StaffLearningRecommendations: React.FC = () => {
                       <td className="p-4 text-sm">{rec.currentLevel}</td>
                       <td className="p-4 text-sm">{rec.targetLevel}</td>
                       <td className="p-4 text-sm">
-                        <span className={`px-3 py-1 rounded-md ${getGapStyle(rec.gap)}`}>
+                        <span
+                          className={`px-3 py-1 rounded-md ${
+                            rec.gap < 0
+                              ? 'bg-red-500 text-white'
+                              : rec.gap === 0
+                                ? 'bg-green-500 text-white'
+                                : 'bg-blue-400 text-white'
+                          }`}
+                        >
                           {rec.gap}
                         </span>
                       </td>
@@ -198,6 +167,6 @@ const StaffLearningRecommendations: React.FC = () => {
       )}
     </>
   );
-};
+}
 
 export default StaffLearningRecommendations;
