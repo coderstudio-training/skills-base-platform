@@ -75,4 +75,16 @@
 
 ## Additional Notes:
 
-1. In `app/blocks`, **YOUR** access should only be limited to `app/blocks/dashboard`. Everything else should **NOT BE MODIFIED OR TAMPERED**, only one _assigned member_ would handle the other components. The _assigned member_ would be the only one to initiate the final change **(Step 9)**. Therefore the _assigned member_ would oversee the branch and ensure that everything is updated and working as intended.
+1. The `root` as referred in steps 8 & 9 would be the Landing Page, Admin Dashboard, Manager Dashboard, & Staff Dashboard.
+2. In `app/blocks`, **YOUR** access should only be limited to `app/blocks/dashboard`. Everything else should **NOT BE MODIFIED OR TAMPERED**, only one _assigned member_ would handle the other components. The _assigned member_ would be the only one to initiate the final change **(Step 9)**. Therefore the _assigned member_ would oversee the branch and ensure that everything is updated and working as intended.
+3. Each error alternative and loading of a component is placed inside the specific component Folder. For example, ErrorCard can be found inside `Dashboard/components/Cards/`.
+
+<br />
+
+## Reuseable Component Requests:
+
+### List down properly any requests for a reuseable component here! Kindly follow the example
+
+Example: `ErrorCard - props(error: Type, message: String, refetech: ()=>Promise<void>) - description for additional context & use case.`
+
+1.
