@@ -2,6 +2,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -9,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
-  BruteForceGuard,
   GoogleAuthSecurityService,
   Logger,
   RateLimit,
@@ -23,7 +23,6 @@ import { LoginDto, RegisterDto } from './dto';
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private bruteForceGuard: BruteForceGuard,
     private logger: Logger = new Logger(AuthController.name),
     private googleAuthSecurityService: GoogleAuthSecurityService,
   ) {}
@@ -171,5 +170,16 @@ export class AuthController {
     );
     this.logger.info(`Verified Google token for email: ${payload.email}`);
     return this.authService.handleGoogleUser(payload);
+  }
+
+  @Get('test')
+  @RateLimit({
+    keyPrefix: 'test',
+    windowMs: 60 * 1000, // 1 minute
+    max: 3, // Only 3 requests per minute
+    message: 'Too many requests, please try again later',
+  })
+  test() {
+    return { message: 'Rate limit test endpoint' };
   }
 }
