@@ -1,7 +1,7 @@
-import { SkillDetail } from '@/blocks/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 import { useState } from 'react';
+import { SkillDetail } from '../types';
 
 interface SkillsResponse {
   skills: SkillDetail[];

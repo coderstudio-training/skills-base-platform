@@ -1,9 +1,10 @@
 // src/app/dashboard/admin/components/LearningManagement.tsx
-import { CareerProgressionPaths } from '@/components/dashboard/components/admin/learning/CareerProgressionPaths';
-import { LearningResources } from '@/components/dashboard/components/admin/learning/LearningResources';
-import { PathProgressTracking } from '@/components/dashboard/components/admin/learning/PathProgressTracking';
-import { ResourceManagement } from '@/components/dashboard/components/admin/learning/ResourceManagement';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CareerProgressionPaths } from './CareerProgressionPaths';
+import { LearningResources } from './LearningResources';
+import { PathProgressTracking } from './PathProgressTracking';
+import { ResourceManagement } from './ResourceManagement';
 
 export function LearningManagement() {
   return (

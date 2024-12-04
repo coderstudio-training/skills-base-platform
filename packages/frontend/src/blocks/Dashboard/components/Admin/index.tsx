@@ -1,13 +1,15 @@
 'use client';
 
 import { useBusinessUnits } from '@/blocks/Dashboard/hooks/useBusinessUnits';
+import AnalysisView from '@/components/dashboard/admin/AnalysisView';
+import { LearningManagement } from '@/components/dashboard/admin/learning/LearningManagement';
 import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { useAdminData } from '../../hooks/useAdminData';
+import { AdminMetricCards } from '../Cards/AdminMetricCards';
 import { BusinessUnitDistribution } from '../Cards/BusinessUnitDistributionCard';
 import { SkillGapOverview } from '../Cards/SkillGapOverviewCard';
-import { StatsCards } from '../Cards/StatsCard';
 import { TopPerformers } from '../Cards/TopPerformersCard';
 import { SearchAndFilter } from './SearchAndFilter';
 import { UserDirectory } from './UserDirectory';
@@ -42,7 +44,7 @@ export function AdminDashboard() {
           isLoading={employeesLoading || businessUnitsLoading}
         />
 
-        <StatsCards />
+        <AdminMetricCards />
 
         <div className="grid grid-cols-3 gap-4 mb-6">
           <TopPerformers />
@@ -93,6 +95,16 @@ export function AdminDashboard() {
               onPageChange={handlePageChange}
               onLimitChange={handleLimitChange}
             />
+          </TabsContent>
+
+          {/* Metrics */}
+          <TabsContent value="metrics">
+            <AnalysisView />
+          </TabsContent>
+
+          {/* Learning */}
+          <TabsContent value="learning">
+            <LearningManagement />
           </TabsContent>
         </Tabs>
       </main>
