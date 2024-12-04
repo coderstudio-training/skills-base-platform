@@ -1,5 +1,4 @@
-'use client';
-
+import { SearchAndFilterProps } from '@/components/dashboard/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -11,14 +10,7 @@ import {
 } from '@/components/ui/select';
 import { Building2, Filter, Search } from 'lucide-react';
 
-interface SearchAndFilterProps {
-  selectedBusinessUnit: string;
-  businessUnits: string[];
-  searchQuery: string;
-  onBusinessUnitChange: (unit: string) => void;
-  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  isLoading?: boolean;
-}
+const ALL_BUSINESS_UNITS = 'All Business Units';
 
 export function SearchAndFilter({
   selectedBusinessUnit,
@@ -28,6 +20,11 @@ export function SearchAndFilter({
   onSearchChange,
   isLoading = false,
 }: SearchAndFilterProps) {
+  const allUnits = [
+    'All Business Units',
+    ...businessUnits.filter(unit => unit !== ALL_BUSINESS_UNITS),
+  ];
+
   return (
     <div className="flex gap-4 mb-6">
       <div className="flex-1 flex gap-2">
@@ -45,7 +42,7 @@ export function SearchAndFilter({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {businessUnits.map(unit => (
+            {allUnits.map(unit => (
               <SelectItem key={unit} value={unit}>
                 <div className="flex items-center">
                   <Building2 className="h-4 w-4 mr-2" />
@@ -55,20 +52,24 @@ export function SearchAndFilter({
             ))}
           </SelectContent>
         </Select>
-        <div className="relative">
+
+        <div className="relative flex-1 max-w-[300px]">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search by users or skills..."
-            className="pl-8 w-[300px]"
+            placeholder="Search by name or email..."
+            className="pl-8"
             value={searchQuery}
             onChange={onSearchChange}
             disabled={isLoading}
           />
         </div>
       </div>
-      <Button variant="outline" size="icon" disabled={isLoading}>
-        <Filter className="h-4 w-4" />
-      </Button>
+
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="icon" disabled={isLoading}>
+          <Filter className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,36 +1,10 @@
+import { useBusinessUnits } from '@/components/dashboard/hooks/useBusinessUnits';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
-interface BusinessUnitStat {
-  name: string;
-  count: number;
-}
-
-export default function BusinessUnitDistribution() {
-  const [businessUnitStats, setBusinessUnitStats] = useState<BusinessUnitStat[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBusinessUnits = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch('/api/employees/business-units');
-        if (!response.ok) {
-          throw new Error('Failed to fetch business units');
-        }
-        const data = await response.json();
-        setBusinessUnitStats(data.distribution);
-      } catch (err) {
-        console.error('Error fetching business units:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBusinessUnits();
-  }, []);
+export function BusinessUnitDistribution() {
+  const { distribution: businessUnitStats, loading } = useBusinessUnits();
 
   return (
     <Card>

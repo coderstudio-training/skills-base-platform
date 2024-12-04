@@ -1,31 +1,11 @@
+import { useTopPerformers } from '@/components/dashboard/hooks/useTopPerformers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { TopPerformer, TopPerformersResponse } from '@/types/admin';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
-export default function TopPerformers() {
-  const [topPerformers, setTopPerformers] = useState<TopPerformer[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchTopPerformers = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch('/api/skills/rankings');
-        if (!response.ok) throw new Error('Failed to fetch top performers');
-        const data: TopPerformersResponse = await response.json();
-        setTopPerformers(data.rankings.slice(0, 10));
-      } catch (error) {
-        console.error('Error fetching top performers:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTopPerformers();
-  }, []);
+export function TopPerformers() {
+  const { rankings, loading } = useTopPerformers();
 
   return (
     <Card>
@@ -52,7 +32,7 @@ export default function TopPerformers() {
 
             <ScrollArea className="h-[350px]">
               <div className="divide-y">
-                {topPerformers.map(performer => (
+                {rankings.map(performer => (
                   <div
                     key={performer.ranking}
                     className={cn(

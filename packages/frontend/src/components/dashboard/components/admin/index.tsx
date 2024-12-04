@@ -1,43 +1,54 @@
 'use client';
 
-import { useAdminDashboard } from '@/components/dashboard/components/hooks/useAdminDashboard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart2, BookOpen, Users } from 'lucide-react';
-// import { AdminHeader } from './AdminHeader';
-// import { AnalysisView } from './AnalysisView';
-// import { BusinessUnitDistribution } from './BusinessUnitDistribution';
-// import { SearchAndFilter } from './SearchAndFilter';
-// import { SkillGapOverview } from './SkillGapOverview';
-import { StatsCards } from './StatsCards';
-// import { TopPerformers } from './TopPerformers';
-// import { EmployeeDirectory } from './UserDirectory';
+import { useBusinessUnits } from '@/components/dashboard/hooks/useBusinessUnits';
 import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
+import { useAdminData } from '../../hooks/useAdminData';
+import { BusinessUnitDistribution } from '../cards/BusinessUnitDistributionCard';
+import { SkillGapOverview } from '../cards/SkillGapOverviewCard';
+import { StatsCards } from '../cards/StatsCard';
+import { TopPerformers } from '../cards/TopPerformersCard';
 import { LearningManagement } from './learning/LearningManagement';
+import { SearchAndFilter } from './SearchAndFilter';
+import { UserDirectory } from './UserDirectory';
 
 export function AdminDashboard() {
-  // const [searchQuery, setSearchQuery] = useState('');
-  // const [selectedBusinessUnit, setSelectedBusinessUnit] = useState('All Business Units');
-  useAdminDashboard();
+  const { distribution: businessUnits, loading: businessUnitsLoading } = useBusinessUnits();
+  const {
+    employees,
+    loading: employeesLoading,
+    page,
+    limit,
+    totalItems,
+    totalPages,
+    selectedBusinessUnit,
+    searchQuery,
+    handlePageChange,
+    handleLimitChange,
+    handleSearch,
+    handleBusinessUnitChange,
+  } = useAdminData();
 
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminDashboardHeader />
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* <SearchAndFilter
+        <SearchAndFilter
           selectedBusinessUnit={selectedBusinessUnit}
-          businessUnits={businessUnits}
+          businessUnits={businessUnits.map(bu => bu.name)}
           searchQuery={searchQuery}
           onBusinessUnitChange={handleBusinessUnitChange}
           onSearchChange={handleSearch}
-          isLoading={loading}
-        /> */}
+          isLoading={employeesLoading || businessUnitsLoading}
+        />
 
         <StatsCards />
 
         <div className="grid grid-cols-3 gap-4 mb-6">
-          {/* <TopPerformers />
+          <TopPerformers />
           <SkillGapOverview />
-          <BusinessUnitDistribution /> */}
+          <BusinessUnitDistribution />
         </div>
 
         <Tabs defaultValue="users" className="space-y-4">
@@ -50,6 +61,14 @@ export function AdminDashboard() {
               <BookOpen className="h-4 w-4" />
               Skills
             </TabsTrigger>
+            <TabsTrigger value="required-skills" className="flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              Required Skills
+            </TabsTrigger>
+            <TabsTrigger value="organization" className="flex items-center gap-2">
+              <Network className="h-4 w-4" />
+              Organization
+            </TabsTrigger>
             <TabsTrigger value="metrics" className="flex items-center gap-2">
               <BarChart2 className="h-4 w-4" />
               Metrics
@@ -58,19 +77,23 @@ export function AdminDashboard() {
               <BookOpen className="h-4 w-4" />
               Learning
             </TabsTrigger>
+            <TabsTrigger value="taxonomy" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Taxonomy
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
-            {/* <EmployeeDirectory
+            <UserDirectory
               employees={employees}
-              loading={loading}
+              loading={employeesLoading}
               totalItems={totalItems}
               totalPages={totalPages}
               page={page}
               limit={limit}
               onPageChange={handlePageChange}
               onLimitChange={handleLimitChange}
-            /> */}
+            />
           </TabsContent>
 
           <TabsContent value="metrics">{/* <AnalysisView /> */}</TabsContent>

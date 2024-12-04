@@ -55,3 +55,35 @@ export interface SkillGap {
   requiredLevel: number;
   gap: number;
 }
+
+export interface SkillDetail {
+  skill: string;
+  average: number;
+  requiredRating: number;
+  gap: number;
+  description?: string;
+  proficiencyDescription?: string;
+  currentLevel: number;
+  selfRating: number;
+  managerRating: number;
+}
+
+export interface UserDirectoryProps {
+  employees: Employee[];
+  loading: boolean;
+  totalItems: number;
+  totalPages: number;
+  page: number;
+  limit: number;
+  onPageChange: (page: number) => void;
+  onLimitChange: (limit: string) => void;
+}
+
+export interface SearchAndFilterProps {
+  selectedBusinessUnit: string;
+  businessUnits: string[];
+  searchQuery: string;
+  onBusinessUnitChange: (unit: string) => void;
+  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  isLoading?: boolean;
+}

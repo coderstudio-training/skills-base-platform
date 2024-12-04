@@ -1,38 +1,10 @@
+import { useSkillGaps } from '@/components/dashboard/hooks/useSkillGaps';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
-interface SkillGap {
-  name: string;
-  currentLevel: number;
-  requiredLevel: number;
-  gap: number;
-}
-
-export default function SkillGapOverview() {
-  const [skillGaps, setSkillGaps] = useState<SkillGap[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchSkillAnalytics = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch('/api/skills/analytics');
-        if (!response.ok) {
-          throw new Error('Failed to fetch skill analytics');
-        }
-        const data = await response.json();
-        setSkillGaps(data.skillGaps);
-      } catch (err) {
-        console.error('Error fetching skill analytics:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSkillAnalytics();
-  }, []);
+export function SkillGapOverview() {
+  const { skillGaps, loading } = useSkillGaps();
 
   return (
     <Card>
