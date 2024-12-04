@@ -1,6 +1,6 @@
 'use client';
 
-import { useRecommendations } from '@/components/TSC/hooks/useRecommendation';
+import { useRecommendations } from '@/components/TSC/hooks/learning/useRecommendation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { X } from 'lucide-react';
 
