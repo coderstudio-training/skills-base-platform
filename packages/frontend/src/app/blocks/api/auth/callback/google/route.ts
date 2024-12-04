@@ -2,10 +2,12 @@ import { getToken } from 'next-auth/jwt';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Redirect users to the corresponding dashboard based on their role.
+ * Redirects to the correct dashboard page based on the user's role.
  *
- * @param req - The NextRequest object.
- * @returns A redirect response to the corresponding dashboard.
+ * If the role is not found, redirects to the error page.
+ *
+ * @param req NextRequest
+ * @returns NextResponse
  */
 export async function GET(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
