@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from '@skills-base/shared';
+import { GoogleAuthSecurityService, JwtStrategy } from '@skills-base/shared';
 import { EmployeesModule } from '../employees/employees.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
@@ -24,7 +24,7 @@ import { AuthService } from './auth.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, GoogleAuthSecurityService],
   exports: [AuthService],
 })
 export class AuthModule {}

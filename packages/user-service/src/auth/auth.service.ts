@@ -143,7 +143,7 @@ export class AuthService {
     }
   }
 
-  private async handleGoogleUser(payload: TokenPayload) {
+  public async handleGoogleUser(payload: TokenPayload) {
     const { email, sub: googleId, given_name, family_name, picture } = payload;
 
     if (!email) {

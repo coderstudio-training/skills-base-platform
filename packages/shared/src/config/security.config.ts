@@ -75,6 +75,11 @@ export class SecurityConfigurationManager {
         ...envOverrides.payload,
         ...customConfig.payload,
       },
+      bruteForce: {
+        ...envConfig.bruteForce,
+        ...envOverrides.bruteForce,
+        ...customConfig.bruteForce,
+      },
     };
   }
 

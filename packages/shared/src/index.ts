@@ -31,6 +31,7 @@ export * from './interfaces/logging.interfaces';
 export * from './middlewares/logger.middleware';
 export * from './modules/logging.module';
 export * from './services/logger.service';
+export * from './utils/string.utils';
 
 // monitoring
 export * from './controllers/metrics.controller';
@@ -46,11 +47,13 @@ export * from './decorators/rate-limit.decorator';
 export * from './decorators/require-api-key.decorator';
 export * from './exceptions/rate-limit.exception';
 export * from './guards/api-key.guard';
+export * from './guards/brute-force.guard';
 export * from './guards/ip.guard';
 export * from './guards/rate-limit.guard';
 export * from './interfaces/security.interfaces';
 export * from './middlewares/security.middleware';
 export * from './modules/security.module';
+export * from './services/google-auth-security.service';
 export * from './services/security-monitoring.service';
 export * from './validators/security.validator';
 

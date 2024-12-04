@@ -16,6 +16,12 @@ export enum SecurityEventType {
   // Request Events
   INVALID_REQUEST = 'threat.request.invalid',
   SUSPICIOUS_REQUEST_PATTERN = 'threat.request.suspicious',
+
+  // Brute Force Events
+  BRUTE_FORCE_DETECTED = 'threat.bruteforce.detected',
+
+  // Other Events
+  UNKNOWN = 'threat.unknown',
 }
 
 export interface SecurityEventContext {

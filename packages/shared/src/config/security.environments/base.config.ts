@@ -8,7 +8,7 @@ export const createBaseConfig = (): SecurityConfig => ({
     skipPaths: ['/health', '/metrics'],
   },
   apiKey: {
-    enabled: true,
+    enabled: false,
     keys: [],
     excludePaths: ['/health', '/metrics'],
   },
@@ -25,5 +25,11 @@ export const createBaseConfig = (): SecurityConfig => ({
       'application/x-www-form-urlencoded',
       'multipart/form-data',
     ],
+  },
+  bruteForce: {
+    enabled: false,
+    maxAttempts: 5,
+    blockDuration: 30 * 60 * 1000, // 30 minutes
+    windowMs: 5 * 60 * 1000, // 5 minutes
   },
 });

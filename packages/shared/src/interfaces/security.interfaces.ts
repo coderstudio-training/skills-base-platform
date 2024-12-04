@@ -42,24 +42,36 @@ export interface PayloadConfig {
   allowedContentTypes: string[];
 }
 
+export interface BruteForceConfig {
+  enabled: boolean;
+  maxAttempts: number;
+  blockDuration: number;
+  windowMs: number;
+  excludePaths?: string[];
+}
+
 export interface SecurityConfig {
   rateLimit: RateLimitConfig;
   apiKey: ApiKeyConfig;
   ipWhitelist: IpWhitelistConfig;
   payload: PayloadConfig;
+  bruteForce: BruteForceConfig;
 }
 
 export type PartialRateLimitConfig = Partial<RateLimitConfig>;
 export type PartialApiKeyConfig = Partial<ApiKeyConfig>;
 export type PartialIpWhitelistConfig = Partial<IpWhitelistConfig>;
 export type PartialPayloadConfig = Partial<PayloadConfig>;
+export type PartialBruteForceConfig = Partial<BruteForceConfig>;
 
 export interface PartialSecurityConfig {
   rateLimit?: PartialRateLimitConfig;
   apiKey?: PartialApiKeyConfig;
   ipWhitelist?: PartialIpWhitelistConfig;
   payload?: PartialPayloadConfig;
+  bruteForce?: PartialBruteForceConfig;
 }
+
 export interface ValidationConfig {
   payload: {
     maxSize: number;

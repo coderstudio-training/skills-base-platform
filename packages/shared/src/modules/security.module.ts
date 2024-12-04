@@ -1,6 +1,7 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { BruteForceGuard } from 'src/guards/brute-force.guard';
 import { SecurityConfigurationManager } from '../config/security.config';
 import { ApiKeyGuard } from '../guards/api-key.guard';
 import { IpWhitelistGuard } from '../guards/ip.guard';
@@ -20,46 +21,63 @@ export class SecurityModule {
     }
 
     const securityConfig = configManager.getConfig();
-    const monitoringService = new SecurityMonitoringService();
 
     const securityConfigProvider: Provider = {
       provide: 'SECURITY_CONFIG',
       useValue: securityConfig,
     };
 
+    // Configure cache with longer TTL
+    const cacheModule = CacheModule.register({
+      ttl: Math.max(securityConfig.rateLimit.windowMs / 1000, 300), // At least 5 minutes
+      max: 10000,
+      isGlobal: true,
+    });
+
     const providers: Provider[] = [
       securityConfigProvider,
-      {
-        provide: SecurityMonitoringService,
-        useValue: monitoringService,
-      },
+      SecurityMonitoringService,
       RateLimiter,
-      {
-        provide: APP_GUARD,
-        useClass: ApiKeyGuard,
-      },
+      RateLimitGuard,
       {
         provide: APP_GUARD,
         useClass: RateLimitGuard,
       },
-      {
-        provide: APP_GUARD,
-        useClass: IpWhitelistGuard,
-      },
+      BruteForceGuard,
       SecurityMiddleware,
       SecurityValidationMiddleware,
     ];
 
+    // Only add API Key guard if enabled
+    if (securityConfig.apiKey.enabled) {
+      providers.push({
+        provide: APP_GUARD,
+        useClass: ApiKeyGuard,
+      });
+    }
+
+    // Only add IP Whitelist guard if enabled
+    if (securityConfig.ipWhitelist.enabled) {
+      providers.push({
+        provide: APP_GUARD,
+        useClass: IpWhitelistGuard,
+      });
+    }
+
     return {
       module: SecurityModule,
-      imports: [
-        CacheModule.register({
-          ttl: securityConfig.rateLimit.windowMs / 1000,
-          max: 10000,
-        }),
-      ],
+      imports: [cacheModule],
       providers,
-      exports: [...providers, SecurityMonitoringService],
+      exports: [
+        cacheModule,
+        securityConfigProvider,
+        SecurityMonitoringService,
+        RateLimiter,
+        RateLimitGuard,
+        BruteForceGuard,
+        SecurityMiddleware,
+        SecurityValidationMiddleware,
+      ],
       global: true,
     };
   }
