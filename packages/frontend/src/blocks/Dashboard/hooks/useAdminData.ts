@@ -1,4 +1,4 @@
-import { EmployeesResponse } from '@/components/dashboard/types';
+import { EmployeesResponse } from '@/blocks/Dashboard/types';
 import { userApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 import { useCallback, useEffect, useState } from 'react';

@@ -1,4 +1,4 @@
-import { useBusinessUnits } from '@/components/dashboard/hooks/useBusinessUnits';
+import { useBusinessUnits } from '@/blocks/Dashboard/hooks/useBusinessUnits';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';

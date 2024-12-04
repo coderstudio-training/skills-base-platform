@@ -1,4 +1,4 @@
-import { SkillDetail } from '@/components/dashboard/types';
+import { SkillDetail } from '@/blocks/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 import { useState } from 'react';

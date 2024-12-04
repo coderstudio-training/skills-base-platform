@@ -1,5 +1,5 @@
-import { useEmployeeSkills } from '@/components/dashboard/hooks/useEmployeeSkills';
-import { UserDirectoryProps } from '@/components/dashboard/types';
+import { useEmployeeSkills } from '@/blocks/Dashboard/hooks/useEmployeeSkills';
+import { UserDirectoryProps } from '@/blocks/Dashboard/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

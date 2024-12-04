@@ -3,10 +3,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
 // import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import StaffSkillsView from '@/components/dashboard/components/staff/StaffSkillsView';
+import StaffSkillsView from '@/components/dashboard/staff/StaffSkillsView';
 // import { ScrollArea } from "@/components/ui/scroll-area";
-import Overview from '@/components/dashboard/components/staff/Overview';
-import StaffLearningRecommendations from '@/components/dashboard/components/staff/StaffLearningRecommendation';
+import Overview from '@/components/dashboard/staff/Overview';
+import StaffLearningRecommendations from '@/components/dashboard/staff/StaffLearningRecommendation';
 import StaffDashboardHeader from '@/components/shared/StaffDashboardHeader';
 
 export default function StaffDashboard() {

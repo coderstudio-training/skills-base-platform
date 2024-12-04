@@ -1,4 +1,4 @@
-import { useSkillGaps } from '@/components/dashboard/hooks/useSkillGaps';
+import { useSkillGaps } from '@/blocks/Dashboard/hooks/useSkillGaps';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Loader2 } from 'lucide-react';

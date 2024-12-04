@@ -1,6 +1,6 @@
 'use client';
 
-import { useStatsData } from '@/components/dashboard/hooks/useStatData';
+import { useStatsData } from '@/blocks/Dashboard/hooks/useStatData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function StatsCards() {

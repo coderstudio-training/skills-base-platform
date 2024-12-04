@@ -1,4 +1,4 @@
-import { useTopPerformers } from '@/components/dashboard/hooks/useTopPerformers';
+import { useTopPerformers } from '@/blocks/Dashboard/hooks/useTopPerformers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';

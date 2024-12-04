@@ -1,4 +1,4 @@
-import { BusinessUnitStat } from '@/components/dashboard/types';
+import { BusinessUnitStat } from '@/blocks/Dashboard/types';
 import { userApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 

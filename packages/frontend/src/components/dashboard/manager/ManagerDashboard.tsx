@@ -9,11 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import ManagerSkillsView from '@/components/dashboard/components/manager/ManagerSkillsView';
-import ManagerTrainingRecommendation from '@/components/dashboard/components/manager/ManagerTrainingRecommendation';
-import TeamCompositionChart from '@/components/dashboard/components/manager/TeamCompositionChart';
-import TeamMembersList from '@/components/dashboard/components/manager/TeamMembersList';
-import TeamStatsCard from '@/components/dashboard/components/manager/TeamStatsCards';
+import ManagerSkillsView from '@/components/dashboard/manager/ManagerSkillsView';
+import ManagerTrainingRecommendation from '@/components/dashboard/manager/ManagerTrainingRecommendation';
+import TeamCompositionChart from '@/components/dashboard/manager/TeamCompositionChart';
+import TeamMembersList from '@/components/dashboard/manager/TeamMembersList';
+import TeamStatsCard from '@/components/dashboard/manager/TeamStatsCards';
 import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import { Button } from '@/components/ui/button';
 import {

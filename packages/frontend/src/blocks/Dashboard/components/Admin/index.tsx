@@ -1,15 +1,14 @@
 'use client';
 
-import { useBusinessUnits } from '@/components/dashboard/hooks/useBusinessUnits';
+import { useBusinessUnits } from '@/blocks/Dashboard/hooks/useBusinessUnits';
 import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { useAdminData } from '../../hooks/useAdminData';
-import { BusinessUnitDistribution } from '../cards/BusinessUnitDistributionCard';
-import { SkillGapOverview } from '../cards/SkillGapOverviewCard';
-import { StatsCards } from '../cards/StatsCard';
-import { TopPerformers } from '../cards/TopPerformersCard';
-import { LearningManagement } from './learning/LearningManagement';
+import { BusinessUnitDistribution } from '../Cards/BusinessUnitDistributionCard';
+import { SkillGapOverview } from '../Cards/SkillGapOverviewCard';
+import { StatsCards } from '../Cards/StatsCard';
+import { TopPerformers } from '../Cards/TopPerformersCard';
 import { SearchAndFilter } from './SearchAndFilter';
 import { UserDirectory } from './UserDirectory';
 
@@ -94,12 +93,6 @@ export function AdminDashboard() {
               onPageChange={handlePageChange}
               onLimitChange={handleLimitChange}
             />
-          </TabsContent>
-
-          <TabsContent value="metrics">{/* <AnalysisView /> */}</TabsContent>
-
-          <TabsContent value="learning">
-            <LearningManagement />
           </TabsContent>
         </Tabs>
       </main>

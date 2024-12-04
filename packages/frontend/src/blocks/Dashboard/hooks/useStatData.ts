@@ -1,6 +1,6 @@
 'use client';
 
-import { EmployeeStats } from '@/components/dashboard/types';
+import { EmployeeStats } from '@/blocks/Dashboard/types';
 import { userApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 

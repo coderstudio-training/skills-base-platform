@@ -1,4 +1,4 @@
-import StaffDashboard from '@/components/dashboard/components/staff/StaffDashboard';
+import StaffDashboard from '@/components/dashboard/staff/StaffDashboard';
 import { serverSideIntercept } from '@/lib/api/auth';
 
 export default async function StaffDashboardPage() {

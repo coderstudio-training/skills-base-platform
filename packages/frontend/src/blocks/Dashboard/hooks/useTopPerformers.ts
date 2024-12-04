@@ -1,4 +1,4 @@
-import { TopPerformer } from '@/components/dashboard/types';
+import { TopPerformer } from '@/blocks/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 

@@ -1,4 +1,4 @@
-import { SkillGap } from '@/components/dashboard/types';
+import { SkillGap } from '@/blocks/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 
