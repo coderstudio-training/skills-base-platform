@@ -1,6 +1,7 @@
 // packages/user-service/src/auth/auth.controller.ts
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { RateLimit } from '@skills-base/shared';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';
 
@@ -38,6 +39,11 @@ export class AuthController {
       },
     },
   })
+  @RateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10,
+    message: 'Too many requests, please try again later',
+  })
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
@@ -71,6 +77,11 @@ export class AuthController {
         message: 'Invalid email or password',
       },
     },
+  })
+  @RateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10,
+    message: 'Too many requests, please try again later',
   })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
@@ -117,6 +128,11 @@ export class AuthController {
         message: 'Invalid Google token',
       },
     },
+  })
+  @RateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10,
+    message: 'Too many requests, please try again later',
   })
   async googleAuth(@Body('token') token: string) {
     return this.authService.verifyGoogleToken(token);

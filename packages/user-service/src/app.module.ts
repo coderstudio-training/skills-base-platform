@@ -39,8 +39,8 @@ import { UsersModule } from './users/users.module';
         max: 100, // limit each IP to 100 requests per windowMs
       },
       ipWhitelist: {
-        enabled: false, // Enable if you want IP whitelisting
-        allowedIps: [],
+        enabled: true, // Enable if you want IP whitelisting
+        allowedIps: ['0.0.0.0'],
       },
       payload: {
         maxSize: 10 * 1024 * 1024, // 10MB

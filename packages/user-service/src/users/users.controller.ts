@@ -21,11 +21,13 @@ import {
   JwtAuthGuard,
   LoggingInterceptor,
   PaginationDto,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
   UserRole,
 } from '@skills-base/shared';
+import { Permission } from '../../../shared/dist/constants/permissions.constant';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -40,6 +42,7 @@ export class UsersController extends BaseController<User> {
     super(usersService);
   }
 
+  @RequirePermissions(Permission.MANAGE_USERS)
   @Post()
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Create a new user' })

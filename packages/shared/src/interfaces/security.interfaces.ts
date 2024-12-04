@@ -81,3 +81,10 @@ export interface ValidationConfig {
     allowedAttributes: Record<string, string[]>;
   };
 }
+
+export interface RouteRateLimitConfig extends Partial<RateLimitConfig> {
+  keyPrefix?: string;
+  keyGenerator?: (request: ExpressRequest) => string;
+  skipIf?: (request: ExpressRequest) => boolean;
+  weight?: number | ((request: ExpressRequest) => number);
+}

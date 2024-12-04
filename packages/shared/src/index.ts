@@ -54,5 +54,8 @@ export * from './modules/security.module';
 export * from './services/security-monitoring.service';
 export * from './validators/security.validator';
 
+// permissions
+export * from './decorators/require-permissions.decorator';
+
 // swagger
 export * from './utils/swagger.utils';

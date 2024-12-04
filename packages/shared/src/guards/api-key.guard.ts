@@ -1,4 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+  Inject,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { SecurityConfig } from '../interfaces/security.interfaces';
 import {
@@ -7,22 +14,33 @@ import {
 } from '../services/security-monitoring.service';
 
 @Injectable()
-export class ApiKeyGuard {
+export class ApiKeyGuard implements CanActivate {
   constructor(
     private readonly securityMonitoring: SecurityMonitoringService,
     @Inject('SECURITY_CONFIG') private readonly config: SecurityConfig,
+    private readonly reflector: Reflector,
   ) {}
 
-  async handleRequest(req: Request): Promise<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Skip if API key validation is disabled globally
     if (!this.config.apiKey.enabled) {
       return true;
     }
 
-    const { headers, ip, path, method } = req;
+    const request = context.switchToHttp().getRequest<Request>();
+    const { headers, ip, path, method } = request;
+
+    // Check if the path should be excluded
+    if (this.shouldSkipPath(path)) {
+      return true;
+    }
+
     const apiKey = headers['x-api-key'];
 
+    // If no API key is provided or the key is invalid
     if (
-      typeof apiKey === 'string' &&
+      !apiKey ||
+      typeof apiKey !== 'string' ||
       !this.config.apiKey.keys.includes(apiKey)
     ) {
       await this.securityMonitoring.trackThreatEvent(
@@ -37,9 +55,17 @@ export class ApiKeyGuard {
         },
       );
 
-      return false;
+      throw new UnauthorizedException('Invalid or missing API key');
     }
 
     return true;
+  }
+
+  private shouldSkipPath(path: string): boolean {
+    return (
+      this.config.apiKey.excludePaths?.some((excludePath) =>
+        path.startsWith(excludePath),
+      ) ?? false
+    );
   }
 }

@@ -1,5 +1,6 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { SecurityConfigurationManager } from '../config/security.config';
 import { ApiKeyGuard } from '../guards/api-key.guard';
 import { IpWhitelistGuard } from '../guards/ip.guard';
@@ -33,9 +34,18 @@ export class SecurityModule {
         useValue: monitoringService,
       },
       RateLimiter,
-      RateLimitGuard,
-      ApiKeyGuard,
-      IpWhitelistGuard,
+      {
+        provide: APP_GUARD,
+        useClass: ApiKeyGuard,
+      },
+      {
+        provide: APP_GUARD,
+        useClass: RateLimitGuard,
+      },
+      {
+        provide: APP_GUARD,
+        useClass: IpWhitelistGuard,
+      },
       SecurityMiddleware,
       SecurityValidationMiddleware,
     ];
