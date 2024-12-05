@@ -19,6 +19,11 @@ export class JwtStrategy
   }
 
   async validate(payload: any) {
-    return { userId: payload.sub, email: payload.email, roles: payload.roles };
+    return {
+      userId: payload.sub,
+      email: payload.email,
+      roles: payload.roles,
+      permissions: payload.permissions,
+    };
   }
 }
