@@ -45,6 +45,9 @@ import { EmailModule } from './email/email.module';
         enabled: false,
         keys: [process.env.API_KEY],
       },
+      ipWhitelist: {
+        enabled: false,
+      },
     }),
     EmailModule,
   ],
