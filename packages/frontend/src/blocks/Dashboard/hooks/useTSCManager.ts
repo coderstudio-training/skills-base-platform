@@ -1,14 +1,14 @@
-import type { BusinessUnit, TSC } from '@/blocks/Dashboard/types';
+import type { TSC } from '@/blocks/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useMutation, useQuery } from '@/lib/api/hooks';
 import { IBaseTaxonomy, IBulkUpsertDTO } from '@/lib/skills/types';
 
-export function useTSCManager(businessUnit: BusinessUnit) {
-  const TAXONOMY_BASE_URL = '/taxonomy';
+export function useTSCManager() {
+  const TAXONOMY_BASE_URL = '/taxonomy/technical';
 
   const { data, error, isLoading, refetch } = useQuery<IBaseTaxonomy[]>(
     skillsApi,
-    `${TAXONOMY_BASE_URL}?businessUnit=${businessUnit}`,
+    `${TAXONOMY_BASE_URL}?businessUnit=QA`,
     {
       requiresAuth: true,
       revalidate: 3600,

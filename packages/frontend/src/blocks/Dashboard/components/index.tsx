@@ -19,6 +19,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { LandingPageCard } from './Cards/LandingPageCard';
 
 export default function LandingDashboard() {
   const {
@@ -42,46 +43,30 @@ export default function LandingDashboard() {
       </header>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Skill Tracking</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Comprehensive</div>
-            <p className="text-xs text-muted-foreground">Monitor and develop skills</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Learning Paths</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Personalized</div>
-            <p className="text-xs text-muted-foreground">Tailored growth journeys</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Team Management</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Efficient</div>
-            <p className="text-xs text-muted-foreground">Streamlined team oversight</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Performance Boost</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Measurable</div>
-            <p className="text-xs text-muted-foreground">Track improvement over time</p>
-          </CardContent>
-        </Card>
+        <LandingPageCard
+          title="Skill Tracking"
+          contentHeader="Comprehensive"
+          content="Monitor and develop skills"
+          icon={Award}
+        />
+        <LandingPageCard
+          title="Learning Paths"
+          contentHeader="Personalized"
+          content="Tailored growth journeys"
+          icon={BookOpen}
+        />
+        <LandingPageCard
+          title="Collaboration"
+          contentHeader="Connected"
+          content="Collaborate with peers"
+          icon={Users}
+        />
+        <LandingPageCard
+          title="Analytics"
+          contentHeader="Insights"
+          content="Gain valuable insights"
+          icon={TrendingUp}
+        />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">

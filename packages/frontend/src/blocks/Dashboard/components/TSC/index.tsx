@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/blocks/ui/card';
 import { buildProficiency, getKeyFromValue } from '@/lib/utils';
 import TSCContent from './TSCContent';
 
-export default function TSCManager({
+export default function TaxonomyManager({
   selectedBusinessUnit = BUSINESS_UNITS.ALL,
   data,
   searchQuery = '',

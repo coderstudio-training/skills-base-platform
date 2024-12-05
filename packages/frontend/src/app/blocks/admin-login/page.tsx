@@ -1,4 +1,4 @@
-import LoginForm from '@/blocks/auth/LoginForm';
+import LoginForm from '@/blocks/auth';
 import { Suspense } from 'react';
 
 export default function AdminLoginPage() {

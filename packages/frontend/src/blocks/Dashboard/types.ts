@@ -1,3 +1,26 @@
+import { BUSINESS_UNITS } from '@/blocks/Dashboard/constants';
+import { ApiError } from '@/lib/api/types';
+import { IBaseTaxonomy } from '@/lib/skills/types';
+import { LucideIcon } from 'lucide-react';
+import { Dispatch, SetStateAction } from 'react';
+
+export interface LandingPageCardProps {
+  title: string;
+  description?: string;
+  contentHeader: string;
+  content?: string;
+  icon?: LucideIcon;
+}
+export interface LoginFormCardProps {
+  title?: string;
+  description?: string;
+  className?: string;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  formState: { email: string; password: string };
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  adminLoginError: ApiError | null;
+  adminLoginLoading: boolean;
+}
 export interface AdminDashboardProps {
   filters?: DashboardFilters;
 }
@@ -122,9 +145,6 @@ export interface SkillSummaryResponse {
   metrics: UserMetrics;
   skills: Skill[];
 }
-import { BUSINESS_UNITS } from '@/blocks/Dashboard/constants';
-import { IBaseTaxonomy } from '@/lib/skills/types';
-import { Dispatch, SetStateAction } from 'react';
 
 export interface TSCManagerProps {
   selectedBusinessUnit?: string;

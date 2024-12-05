@@ -7,10 +7,12 @@ import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { useAdminData } from '../../hooks/useAdminData';
+import { useTSCManager } from '../../hooks/useTSCManager';
 import { AdminMetricCards } from '../Cards/AdminMetricCards';
 import { BusinessUnitDistribution } from '../Cards/BusinessUnitDistributionCard';
 import { SkillGapOverview } from '../Cards/SkillGapOverviewCard';
 import { TopPerformers } from '../Cards/TopPerformersCard';
+import TaxonomyManager from '../TSC';
 import { SearchAndFilter } from './SearchAndFilter';
 import { UserDirectory } from './UserDirectory';
 
@@ -30,7 +32,7 @@ export function AdminDashboard() {
     handleSearch,
     handleBusinessUnitChange,
   } = useAdminData();
-
+  const { data: tscData } = useTSCManager();
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminDashboardHeader />
@@ -105,6 +107,14 @@ export function AdminDashboard() {
           {/* Learning */}
           <TabsContent value="learning">
             <LearningManagement />
+          </TabsContent>
+
+          <TabsContent value="taxonomy">
+            <TaxonomyManager
+              searchQuery={searchQuery}
+              data={tscData ? tscData : []}
+              selectedBusinessUnit={selectedBusinessUnit}
+            />
           </TabsContent>
         </Tabs>
       </main>
