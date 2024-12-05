@@ -1,4 +1,4 @@
-// blocks/Manager/components/Charts/TeamCompositionCard.tsx
+import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
 import { TeamMember } from '@/types/manager';
 import { useMemo } from 'react';
 import { BaseBarChart, ChartSeries } from '../Charts/BaseBarChart';
@@ -12,7 +12,6 @@ const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00ced1'];
 
 export function TeamCompositionCard({ teamMembers, loading = false }: TeamCompositionCardProps) {
   const { chartData, chartSeries } = useMemo(() => {
-    // Get unique levels and designations
     const levels = Array.from(new Set(teamMembers.map(member => member.jobLevel))).filter(
       level => level && level.trim() !== '',
     );
@@ -20,7 +19,6 @@ export function TeamCompositionCard({ teamMembers, loading = false }: TeamCompos
       designation => designation && designation.trim() !== '',
     );
 
-    // Create a dynamic data structure
     const composition = designations
       .map(designation => {
         const rowData: Record<string, number | string> = { skill: designation };
@@ -41,12 +39,10 @@ export function TeamCompositionCard({ teamMembers, loading = false }: TeamCompos
       })
       .filter((item): item is Record<string, number | string> => item !== null);
 
-    // Filter out levels with no data
     const filteredLevels = levels.filter(level =>
       composition.some(row => row[level] !== undefined),
     );
 
-    // Create series configuration
     const series: ChartSeries[] = filteredLevels.map((level, index) => ({
       key: level,
       name: level,
@@ -60,17 +56,22 @@ export function TeamCompositionCard({ teamMembers, loading = false }: TeamCompos
   }, [teamMembers]);
 
   return (
-    <BaseBarChart
-      data={chartData}
+    <BaseCard
       title="Team Composition"
       description="Distribution of roles across experience levels"
       loading={loading}
-      xAxisKey="skill"
-      series={chartSeries}
-      height={400}
-      stacked={true}
       loadingMessage="Loading team composition..."
-      noDataMessage="No team data available"
-    />
+    >
+      <BaseBarChart
+        data={chartData}
+        loading={loading}
+        xAxisKey="skill"
+        series={chartSeries}
+        height={400}
+        stacked={true}
+        loadingMessage="Loading team composition..."
+        noDataMessage="No team data available"
+      />
+    </BaseCard>
   );
 }
