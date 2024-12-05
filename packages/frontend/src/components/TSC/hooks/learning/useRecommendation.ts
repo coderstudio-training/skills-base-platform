@@ -1,42 +1,27 @@
-import { learningRecommendationAPI } from '@/lib/api';
+import { learningApi } from '@/lib/api/client';
+import { useQuery } from '@/lib/api/hooks';
 import { Recommendation } from '@/types/staff';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export function useRecommendations() {
   const { data: session } = useSession();
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<Recommendation | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
-    async function fetchRecommendations() {
-      if (!session?.user?.email) {
-        setError('No user session found');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null); //Reset error state
-        const data = await learningRecommendationAPI(session.user.email);
-        if (data.recommendations) {
-          setRecommendations(data.recommendations);
-        }
-      } catch (err) {
-        console.error('Error fetching recommendations:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch recommendations');
-        setRecommendations([]); // Reset recommendations on error
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchRecommendations();
-  }, [session?.user?.email]);
+  const {
+    data: recommendationData,
+    error,
+    isLoading,
+  } = useQuery<{ recommendations: Recommendation[] }>(
+    learningApi,
+    `/api/learning/recommendations/${session?.user?.email}`,
+    {
+      enabled: !!session?.user?.email,
+      revalidate: 300, // Cache for 5 minutes
+      requiresAuth: true,
+    },
+  );
 
   const handleCourseClick = (course: Recommendation) => {
     setSelectedCourse(course);
@@ -44,8 +29,8 @@ export function useRecommendations() {
   };
 
   return {
-    recommendations,
-    loading,
+    recommendations: recommendationData?.recommendations || [],
+    loading: isLoading,
     error,
     selectedCourse,
     setSelectedCourse,

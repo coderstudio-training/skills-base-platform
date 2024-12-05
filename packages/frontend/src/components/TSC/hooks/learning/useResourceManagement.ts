@@ -1,28 +1,24 @@
-import { getResourceManagement } from '@/lib/api';
+import { learningApi } from '@/lib/api/client';
+import { useQuery } from '@/lib/api/hooks';
 import type { ResourcesResponse } from '@/types/admin';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-export function useResourceManagement() {
-  const [resourceStats, setResourceStats] = useState<ResourcesResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function useResourceManagement(category?: string) {
+  // Use useQuery for fetching resource stats
+  const {
+    data: resourceStats,
+    isLoading: loading,
+    error,
+  } = useQuery<ResourcesResponse>(
+    learningApi,
+    `api/courses/resources${category ? `?category=${category}` : ''}`,
+    {
+      requiresAuth: true,
+      revalidate: 300, // Cache for 5 minutes
+    },
+  );
 
-  useEffect(() => {
-    async function fetchResourceStats() {
-      try {
-        setLoading(true);
-        const data = await getResourceManagement();
-        setResourceStats(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch resource stats');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchResourceStats();
-  }, []);
-
+  // Calculate category stats using memo
   const categoryStats = useMemo(() => {
     if (!resourceStats?.resources) return [];
 
@@ -37,7 +33,7 @@ export function useResourceManagement() {
 
   return {
     loading,
-    error,
+    error: error?.message || null,
     categoryStats,
   };
 }

@@ -1,31 +1,38 @@
-// hooks/learning/useLearningResources.ts
-import { getLearningResources } from '@/lib/api';
+import { learningApi } from '@/lib/api/client';
+import { useQuery } from '@/lib/api/hooks';
 import { Course } from '@/types/admin';
 import { useEffect, useMemo, useState } from 'react';
 
 export function useLearningResources() {
-  const [allResources, setAllResources] = useState<Course[]>([]); // Store all resources
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [allResources, setAllResources] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
 
-  useEffect(() => {
-    async function fetchResources() {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getLearningResources();
-        setAllResources(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch resources');
-      } finally {
-        setLoading(false);
-      }
-    }
+  // Prepare query parameters
+  const queryParams = new URLSearchParams();
+  if (selectedCategory !== 'all') queryParams.append('category', selectedCategory);
+  if (selectedLevel !== 'all') queryParams.append('level', selectedLevel);
 
-    fetchResources();
-  }, []); // Only fetch once at component mount
+  // Use useQuery for fetching resources
+  const {
+    data,
+    isLoading: loading,
+    error,
+  } = useQuery<Course[]>(
+    learningApi,
+    `/api/courses${queryParams.toString() ? `?${queryParams.toString()}` : ''}`,
+    {
+      requiresAuth: true,
+      revalidate: 300,
+    },
+  );
+
+  // Update allResources when data changes
+  useEffect(() => {
+    if (data) {
+      setAllResources(data);
+    }
+  }, [data]);
 
   // Get unique categories from all resources
   const categories = useMemo(() => {
@@ -41,21 +48,10 @@ export function useLearningResources() {
     return ['all', ...uniqueLevels];
   }, [allResources]);
 
-  // Filter resources based on selected category and level
-  const filteredResources = useMemo(() => {
-    return allResources.filter(resource => {
-      const matchesCategory =
-        selectedCategory === 'all' || resource.skillCategory === selectedCategory;
-      const matchesLevel =
-        selectedLevel === 'all' || resource.requiredLevel.toString() === selectedLevel;
-      return matchesCategory && matchesLevel;
-    });
-  }, [allResources, selectedCategory, selectedLevel]);
-
   return {
-    resources: filteredResources,
+    resources: allResources,
     loading,
-    error,
+    error: error?.message || null,
     categories,
     levels,
     selectedCategory,

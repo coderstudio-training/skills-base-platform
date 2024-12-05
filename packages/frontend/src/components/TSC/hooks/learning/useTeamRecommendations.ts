@@ -1,19 +1,23 @@
-import { learningRecommendationAPI } from '@/lib/api';
+import { learningApi } from '@/lib/api/client';
+import { useQuery } from '@/lib/api/hooks';
 import { getTeamMembers } from '@/lib/users/employees/api';
 import { MemberRecommendations, TeamMember } from '@/types/manager';
+import { RecommendationResponse } from '@/types/staff';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
 export function useTeamRecommendations() {
   const { data: session } = useSession();
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [teamData, setTeamData] = useState<
     Array<TeamMember & { recommendations?: MemberRecommendations }>
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch team members the old way since it works
   useEffect(() => {
-    const fetchTeamData = async () => {
+    const fetchTeamMembers = async () => {
       if (!session?.user?.name) {
         setError('No user session found');
         setLoading(false);
@@ -21,48 +25,49 @@ export function useTeamRecommendations() {
       }
 
       try {
-        setLoading(true);
-        setError(null);
-
         const { data: teamResponse } = await getTeamMembers(session.user.name);
-
         if (!teamResponse) {
           throw new Error('Failed to fetch team members');
         }
-
-        const teamMembers = await teamResponse;
-
-        const membersWithRecommendations = await Promise.all(
-          teamMembers.map(async (member: TeamMember) => {
-            try {
-              const recommendations = await learningRecommendationAPI(member.email || '');
-              return {
-                ...member,
-                recommendations,
-              };
-            } catch (err) {
-              console.error(`Error fetching recommendations for ${member.email}:`, err);
-              return member;
-            }
-          }),
-        );
-
-        setTeamData(membersWithRecommendations);
+        setTeamMembers(teamResponse);
       } catch (err) {
-        console.error('Error fetching team data:', err);
+        console.error('Error fetching team members:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
-        setTeamData([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTeamData();
+    fetchTeamMembers();
   }, [session?.user?.name]);
+
+  // Use useQuery for recommendations once we have team members
+  const { data: recommendationsData, isLoading: recommendationsLoading } =
+    useQuery<RecommendationResponse>(
+      learningApi,
+      `/api/learning/recommendations/${teamMembers[0]?.email}`,
+      {
+        enabled: teamMembers.length > 0 && !!teamMembers[0]?.email,
+        requiresAuth: true,
+        revalidate: 300,
+      },
+    );
+
+  // Combine data when either changes
+  useEffect(() => {
+    if (teamMembers.length > 0 && recommendationsData) {
+      setTeamData(
+        teamMembers.map(member => ({
+          ...member,
+          recommendations: recommendationsData,
+        })),
+      );
+    }
+  }, [teamMembers, recommendationsData]);
 
   return {
     teamData,
-    loading,
+    loading: loading || recommendationsLoading,
     error,
   };
 }

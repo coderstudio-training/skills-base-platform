@@ -26,7 +26,7 @@ function StaffLearningRecommendations() {
           {loading ? (
             <div className="p-4 text-center">Loading...</div>
           ) : error ? (
-            <div className="p-4 text-center text-red-500">{error}</div>
+            <div className="p-4 text-center text-red-500">{error.message}</div>
           ) : recommendations && recommendations.length > 0 ? (
             <div className="w-full">
               <table className="w-full">
