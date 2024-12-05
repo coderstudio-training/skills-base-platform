@@ -1,4 +1,4 @@
-import type { BusinessUnit, TSC } from '@/components/TSC/types';
+import type { BusinessUnit, TSC } from '@/blocks/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useMutation, useQuery } from '@/lib/api/hooks';
 import { IBaseTaxonomy, IBulkUpsertDTO } from '@/lib/skills/types';
