@@ -1,3 +1,5 @@
+// packages/user-service/src/app.module.ts
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import {
@@ -5,7 +7,6 @@ import {
   LoggingModule,
   MonitoringModule,
   SecurityModule,
-  StringUtils,
 } from '@skills-base/shared';
 import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './employees/employees.module';
@@ -73,9 +74,7 @@ import { UsersModule } from './users/users.module';
 
     // Monitoring Configuration
     MonitoringModule.forRoot({
-      serviceName: StringUtils.validateServiceName(
-        process.env.SERVICE_NAME || 'user-service',
-      ),
+      serviceName: 'user-service',
       enabled: process.env.ENABLE_METRICS === 'true',
       sampleRate: parseFloat(process.env.MONITOR_SAMPLE_RATE || '1.0'),
       metrics: {

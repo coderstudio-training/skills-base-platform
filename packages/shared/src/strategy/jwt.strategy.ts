@@ -21,7 +21,7 @@ export class JwtStrategy
   async validate(payload: any) {
     return {
       userId: payload.sub,
-      username: payload.username,
+      email: payload.email,
       roles: payload.roles,
       permissions: payload.permissions,
     };

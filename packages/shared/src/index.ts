@@ -58,3 +58,8 @@ export * from './validators/security.validator';
 
 // swagger
 export * from './utils/swagger.utils';
+
+// permissions
+export * from './constants/permissions.constant';
+export * from './decorators/require-permissions.decorator';
+export * from './guards/permissions.guard';

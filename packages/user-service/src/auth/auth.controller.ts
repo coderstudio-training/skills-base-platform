@@ -9,11 +9,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import {
-  GoogleAuthSecurityService,
-  Logger,
-  RateLimit,
-} from '@skills-base/shared';
+import { Logger, RateLimit } from '@skills-base/shared';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';
@@ -158,7 +154,6 @@ export class AuthController {
     },
   })
   @RateLimit({
-    keyPrefix: 'google',
     windowMs: 60 * 1000, // 1 minute
     max: 3,
     message: 'Too many requests, please try again later',
@@ -174,7 +169,6 @@ export class AuthController {
 
   @Get('test')
   @RateLimit({
-    keyPrefix: 'test',
     windowMs: 60 * 1000, // 1 minute
     max: 10,
     message: 'Too many requests, please try again later',
