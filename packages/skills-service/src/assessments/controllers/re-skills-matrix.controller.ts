@@ -23,7 +23,7 @@ import { SkillsMatrixService } from '../services/re-skills-matrix.service';
 import { EmailValidationPipe } from '../utils/skills.util';
 
 @ApiTags('Skills Matrix')
-@Controller('api/skills-matrix')
+@Controller('skills-matrix')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth('JWT-auth')
 export class SkillsMatrixController {

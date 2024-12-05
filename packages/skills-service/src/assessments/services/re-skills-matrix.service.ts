@@ -7,6 +7,7 @@ import {
   SkillDetailsDto,
   SkillsSummaryDto,
 } from '../dto/re-skills-matrix.dto';
+import { transformToReadableKeys } from '../utils/skills.util';
 
 @Injectable()
 export class SkillsMatrixService {
@@ -28,8 +29,10 @@ export class SkillsMatrixService {
       'process',
     ];
 
+    // Convert the transformed name back to lowercase for comparison
+    const lowercaseSkillName = skillName.toLowerCase();
     return technicalKeywords.some((keyword) =>
-      skillName.toLowerCase().includes(keyword.toLowerCase()),
+      lowercaseSkillName.includes(keyword.toLowerCase()),
     )
       ? SkillCategory.TECHNICAL
       : SkillCategory.SOFT;
@@ -111,7 +114,6 @@ export class SkillsMatrixService {
     email: string,
   ): Promise<EmployeeSkillsResponseDto> {
     try {
-      // Fetch all relevant assessments in parallel
       const [gapAssessment, selfAssessment, managerAssessment] =
         await Promise.all([
           this.connection
@@ -129,7 +131,15 @@ export class SkillsMatrixService {
         throw new NotFoundException(`No assessment found for email: ${email}`);
       }
 
-      // Fetch required skills based on capability and career level
+      // Get skills from original data without transformation for values
+      const skillNames = new Set([
+        ...Object.keys(gapAssessment.skillAverages || {}),
+        ...Object.keys(gapAssessment.skillGaps || {}),
+        ...Object.keys(selfAssessment?.skills || {}),
+        ...Object.keys(managerAssessment?.skills || {}),
+      ]);
+
+      // Fetch required skills
       const requiredSkills = await this.connection
         .collection('capabilityRequiredSkills')
         .findOne({
@@ -137,32 +147,28 @@ export class SkillsMatrixService {
           careerLevel: gapAssessment.careerLevel,
         });
 
-      this.logger.debug(
-        `Found required skills for ${gapAssessment.capability} - ${gapAssessment.careerLevel}`,
-        requiredSkills?.requiredSkills || {},
-      );
+      if (requiredSkills?.requiredSkills) {
+        Object.keys(requiredSkills.requiredSkills).forEach((key) =>
+          skillNames.add(key),
+        );
+      }
 
-      // Extract skills from each assessment
-      const skillNames = new Set([
-        ...Object.keys(gapAssessment.skillAverages || {}),
-        ...Object.keys(gapAssessment.skillGaps || {}),
-        ...Object.keys(selfAssessment?.skills || {}),
-        ...Object.keys(managerAssessment?.skills || {}),
-        ...Object.keys(requiredSkills?.requiredSkills || {}),
-      ]);
+      // Create skills array with transformed names but original values
+      const skills = Array.from(skillNames).map((originalSkillName) => {
+        const transformedName = transformToReadableKeys({
+          [originalSkillName]: 0,
+        });
+        const readableName = Object.keys(transformedName)[0];
 
-      // Create and populate skills array
-      const skills = Array.from(skillNames).map((skillName) =>
-        this.createSkillDetails(
-          skillName,
-          selfAssessment?.skills?.[skillName] ?? 0,
-          managerAssessment?.skills?.[skillName] ?? 0,
-          gapAssessment.skillGaps?.[skillName] ?? 0,
-          requiredSkills?.requiredSkills?.[skillName] ?? 0,
-        ),
-      );
+        return this.createSkillDetails(
+          readableName, // Use transformed name
+          selfAssessment?.skills?.[originalSkillName] ?? 0,
+          managerAssessment?.skills?.[originalSkillName] ?? 0,
+          gapAssessment.skillGaps?.[originalSkillName] ?? 0,
+          requiredSkills?.requiredSkills?.[originalSkillName] ?? 0,
+        );
+      });
 
-      // Create response DTO
       const response = new EmployeeSkillsResponseDto();
       response.email = gapAssessment.emailAddress;
       response.name = gapAssessment.nameOfResource;

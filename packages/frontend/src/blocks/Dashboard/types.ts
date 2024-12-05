@@ -1,5 +1,18 @@
-export interface SkillSummaryResponse {
-  metrics: UserMetrics;
+export interface Skill {
+  name: string;
+  category: 'Technical Skills' | 'Soft Skills';
+  selfRating: number;
+  managerRating: number;
+  average: number;
+  gap: number;
+  required: number;
+}
+
+export interface SkillsResponse {
+  email: string;
+  name: string;
+  careerLevel: string;
+  capability: string;
   skills: Skill[];
 }
 
@@ -10,13 +23,10 @@ export interface UserMetrics {
   largestGap: number;
   softSkillsAverage: number;
   technicalSkillsAverage: number;
-  skillsAssessed: number;
+  totalSkillsAssessed: number;
 }
 
-export interface Skill {
-  skill: string;
-  category: 'Technical Skills' | 'Soft Skills';
-  average: number;
-  requiredRating: number;
-  gap: number;
+export interface SkillSummaryResponse {
+  metrics: UserMetrics;
+  skills: Skill[];
 }
