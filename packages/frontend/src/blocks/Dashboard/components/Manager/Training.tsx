@@ -1,11 +1,11 @@
-import { useTeamRecommendations } from '@/components/TSC/hooks/learning/useTeamRecommendations';
+import { useTeamRecommendations } from '@/blocks/Dashboard/hooks/learning/useTeamRecommendations';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2 } from 'lucide-react';
 
-const ManagerTrainingRecommendation = () => {
+const Training = () => {
   const { teamData, loading, error } = useTeamRecommendations();
 
   return (
@@ -105,4 +105,4 @@ const ManagerTrainingRecommendation = () => {
   );
 };
 
-export default ManagerTrainingRecommendation;
+export default Training;

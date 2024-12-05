@@ -8,7 +8,7 @@ import { BUSINESS_UNITS } from '@/components/TSC/constants';
 import { useTSCFormValidation } from '@/components/TSC/hooks/useTSCFormValidation';
 import { useTSCOperations } from '@/components/TSC/hooks/useTSCOperations';
 import { TSC } from '@/components/TSC/types';
-import { buildProficiency, getKeyFromValue, validateTaxonomyData } from '@/components/TSC/utils';
+import { buildProficiency, getKeyFromValue, validateTextData } from '@/components/TSC/utils';
 import {
   Accordion,
   AccordionContent,
@@ -149,7 +149,7 @@ export default function TSCManager({
                       <div>
                         <h3 className="text-lg font-semibold mb-2">Range of Application</h3>
                         {tsc.rangeOfApplication.length > 0 &&
-                        !validateTaxonomyData(tsc.rangeOfApplication[0]) ? (
+                        !validateTextData(tsc.rangeOfApplication[0]) ? (
                           <ul className="list-disc pl-5 space-y-1">
                             {tsc.rangeOfApplication.map((item, index) => (
                               <li key={index}>{item}</li>

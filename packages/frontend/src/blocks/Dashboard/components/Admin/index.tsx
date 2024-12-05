@@ -1,8 +1,8 @@
 'use client';
 
+import { LearningManagement } from '@/blocks/Dashboard/components/Admin/learning/LearningManagement';
 import { useBusinessUnits } from '@/blocks/Dashboard/hooks/useBusinessUnits';
 import AnalysisView from '@/components/dashboard/admin/AnalysisView';
-import { LearningManagement } from '@/components/dashboard/admin/learning/LearningManagement';
 import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';

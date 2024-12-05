@@ -1,10 +1,10 @@
 'use client';
 
-import { useRecommendations } from '@/components/TSC/hooks/learning/useRecommendation';
+import { useRecommendations } from '@/blocks/Dashboard/hooks/learning/useRecommendation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { X } from 'lucide-react';
 
-function StaffLearningRecommendations() {
+function GrowthPlan() {
   const {
     recommendations,
     loading,
@@ -169,4 +169,4 @@ function StaffLearningRecommendations() {
   );
 }
 
-export default StaffLearningRecommendations;
+export default GrowthPlan;

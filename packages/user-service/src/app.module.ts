@@ -1,10 +1,9 @@
 // packages/user-service/src/app.module.ts
 
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import {
   DatabaseModule,
-  LoggerMiddleware,
   LoggingModule,
   MonitoringModule,
   SecurityModule,
@@ -64,8 +63,4 @@ import { UsersModule } from './users/users.module';
     }),
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}
