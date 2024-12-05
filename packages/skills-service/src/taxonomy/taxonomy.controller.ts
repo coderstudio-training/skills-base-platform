@@ -20,6 +20,9 @@ import {
 import {
   JwtAuthGuard,
   LoggingInterceptor,
+  Permission,
+  PermissionsGuard,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -34,7 +37,7 @@ import { TaxonomyService } from './taxonomy.service';
 @ApiTags('Taxonomy')
 @ApiBearerAuth('JWT-Admin')
 @Controller('taxonomy')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)
 export class TaxonomyController {
   private readonly logger = new Logger(TaxonomyController.name);
@@ -44,6 +47,7 @@ export class TaxonomyController {
   // Bulk Upsert for Technical Taxonomy
   @Post('technical/bulk-upsert')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.EDIT_ALL_SKILLS)
   @ApiOperation({
     summary: 'Bulk upsert taxonomy records for a specific business unit',
   })
@@ -77,6 +81,7 @@ export class TaxonomyController {
   // Bulk Upsert for Soft Taxonomy
   @Post('soft/bulk-upsert')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.EDIT_ALL_SKILLS)
   @ApiOperation({
     summary: 'Bulk upsert soft skill taxonomy records',
   })
@@ -170,6 +175,7 @@ export class TaxonomyController {
     status: 400,
     description: 'Business unit is required',
   })
+  @RequirePermissions(Permission.VIEW_SKILLS)
   async findAllTechnical(@Query('businessUnit') businessUnit: string) {
     if (!businessUnit) {
       throw new Error('Business unit is required to find technical records.');
@@ -195,6 +201,7 @@ export class TaxonomyController {
     status: 403,
     description: 'Forbidden',
   })
+  @RequirePermissions(Permission.VIEW_SKILLS)
   async findAllSoft() {
     return this.taxonomyService.findAllSoft();
   }
@@ -243,6 +250,7 @@ export class TaxonomyController {
       updatedAt: '2024-11-06T19:11:58.141Z',
     },
   })
+  @RequirePermissions(Permission.VIEW_SKILLS)
   async findOneTechnical(
     @Param('docId') docId: string,
     @Query('businessUnit') businessUnit: string,
@@ -270,6 +278,7 @@ export class TaxonomyController {
     description: 'Returns a soft skill taxonomy record',
     example: {},
   })
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @Get('soft/:docId')
   async findOneSoft(@Param('docId') docId: string) {
     return this.taxonomyService.findSoftById(docId);
@@ -343,6 +352,7 @@ export class TaxonomyController {
       },
     ],
   })
+  @RequirePermissions(Permission.VIEW_SKILLS)
   async findByTitleTechnical(
     @Param('title') title: string,
     @Query('businessUnit') businessUnit: string,
@@ -360,6 +370,7 @@ export class TaxonomyController {
 
   // Find Soft Taxonomy by title
   @Get('soft/title/:title')
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({
     summary: 'Get all matching title for soft skills taxonomy',
   })

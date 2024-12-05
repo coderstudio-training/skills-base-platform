@@ -21,6 +21,9 @@ import {
   JwtAuthGuard,
   LoggingInterceptor,
   PaginationDto,
+  Permission,
+  PermissionsGuard,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -32,7 +35,7 @@ import { UsersService } from './users.service';
 
 @ApiTags('users')
 @Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)
 @ApiBearerAuth('JWT-Admin')
 export class UsersController extends BaseController<User> {
@@ -63,12 +66,14 @@ export class UsersController extends BaseController<User> {
     type: User,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @RequirePermissions(Permission.MANAGE_USERS)
   async getProfile(@Request() req: { user: { userId: string } }) {
     return this.usersService.findUserProfileById(req.user.userId);
   }
 
   @Get()
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: 200,
@@ -82,6 +87,7 @@ export class UsersController extends BaseController<User> {
 
   @Get('picture/:email')
   @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Get user picture by email' })
   @ApiParam({
     name: 'email',

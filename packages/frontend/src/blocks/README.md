@@ -6,12 +6,12 @@
 - Any changes would now be saved and implemented inside `src/blocks` for smooth transistion.
 - The `src/blocks` folder implements the structure & hierarchy displayed in `~/docs/Optimization Guide/NextJS14`
 
-2. `app/block/` route would now be main testing or sandbox for changes made in `src/blocks`. `app/block/page.tsx` should be the initial landing page.
+2. `app/block/` would only serve as a storage for changes made in `src/blocks`. `app/block/page.tsx` is the initial landing page. It would not be used for testing the actual components.
 3. The restructuring & refactoring approach would be broken down into these steps:
 4. Implement redundant components, with the use of the `src/blocks` folder.
 5. The structure of the `src/blocks` will be treated as a Tree Structure (in Programming).
 6. Changes should start on the Leaves or Leaf nodes. These are sub/child components who doesn't have sub components of their own.
-7. Changes should be tested in `app/blocks`. The structure for `app/blocks` should eventually mimic the entire `src/app`.
+7. Changes should be tested in `app/`, switching out the imports from `@/components` to `@/blocks` as most if not all components would retain their original name. Once verified that it is working as intended, it would then be stored inside `app/block` in their respective designations.
    Use this as a reference:
 
 ```
