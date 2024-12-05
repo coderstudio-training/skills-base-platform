@@ -1,9 +1,6 @@
 'use client';
 
-import { TeamMetricCards } from '@/blocks/Dashboard/components/Cards/TeamMetricCards';
 import { useTeamData } from '@/blocks/Dashboard/hooks/useTeamData';
-import TeamCompositionChart from '@/components/dashboard/manager/TeamCompositionChart';
-import TeamMembersList from '@/components/dashboard/manager/TeamMembersList';
 import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
+import { ManagerOverview } from './ManagerOverview';
 
 export function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -36,34 +34,18 @@ export function ManagerDashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          {/* Team Stats */}
-          <TeamMetricCards
-            teamSize={teamMembers.length}
-            averagePerformance={97}
-            skillGrowth={35}
-            loading={loading}
-            error={error}
-          />
-
-          {/* Team Charts and Lists */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <TeamCompositionChart teamMembers={teamMembers} loading={loading} />
-            <TeamMembersList
-              loading={loading}
-              error={error?.toString() || null}
-              members={teamMembers}
-            />
-          </div>
+          {/* Manager Overview*/}
+          <ManagerOverview teamMembers={teamMembers} loading={loading} error={error} />
         </TabsContent>
 
         <TabsContent value="performance">
           <div className="space-y-4">
-            <TeamMembersList
+            {/* <TeamMembersList
               loading={loading}
               error={error?.toString() || null}
               members={teamMembers}
               showPerformance
-            />
+            /> */}
           </div>
         </TabsContent>
 

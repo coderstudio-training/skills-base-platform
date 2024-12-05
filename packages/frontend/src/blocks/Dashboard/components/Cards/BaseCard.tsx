@@ -1,3 +1,4 @@
+// blocks/Dashboard/components/Cards/BaseCard.tsx
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ApiError } from '@/lib/api/types';
 import { Loader2 } from 'lucide-react';
@@ -12,17 +13,19 @@ export type BaseCardProps = {
   errorMessage?: string;
   height?: 'auto' | 'fixed';
   children: React.ReactNode;
+  headerExtra?: React.ReactNode;
 };
 
 const BaseCard = ({
   title,
   description,
   loading = false,
-  error,
+  error = null,
   loadingMessage = 'Loading...',
   errorMessage = 'Error loading data.',
   height = 'fixed',
   children,
+  headerExtra,
 }: BaseCardProps) => {
   const renderContent = () => {
     if (loading) {
@@ -54,10 +57,17 @@ const BaseCard = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-semibold leading-none tracking-tight">{title}</CardTitle>
-        {description && (
-          <CardDescription className="text-sm text-muted-foreground">{description}</CardDescription>
-        )}
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="font-semibold leading-none tracking-tight">{title}</CardTitle>
+            {description && (
+              <CardDescription className="text-sm text-muted-foreground">
+                {description}
+              </CardDescription>
+            )}
+          </div>
+          {headerExtra && <div className="ml-2">{headerExtra}</div>}
+        </div>
       </CardHeader>
       <CardContent>{renderContent()}</CardContent>
     </Card>
