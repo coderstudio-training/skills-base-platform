@@ -17,7 +17,7 @@ import { useState } from 'react';
 import { ManagerOverview } from './ManagerOverview';
 import Training from './Training';
 
-export function ManagerDashboard() {
+export default function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const { teamMembers, loading, error } = useTeamData();
 

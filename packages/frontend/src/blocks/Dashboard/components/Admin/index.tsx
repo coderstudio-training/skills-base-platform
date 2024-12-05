@@ -14,7 +14,7 @@ import { TopPerformers } from '../Cards/TopPerformersCard';
 import { SearchAndFilter } from './SearchAndFilter';
 import { UserDirectory } from './UserDirectory';
 
-export function AdminDashboard() {
+export default function AdminDashboard() {
   const { distribution: businessUnits, loading: businessUnitsLoading } = useBusinessUnits();
   const {
     employees,
