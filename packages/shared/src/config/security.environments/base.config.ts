@@ -1,6 +1,7 @@
 import { SecurityConfig } from '../../interfaces/security.interfaces';
 
 export const createBaseConfig = (): SecurityConfig => ({
+  adminEmail: 'admin@example.com',
   rateLimit: {
     enabled: true,
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -8,12 +9,12 @@ export const createBaseConfig = (): SecurityConfig => ({
     skipPaths: ['/health', '/metrics'],
   },
   apiKey: {
-    enabled: false,
+    enabled: true,
     keys: [],
     excludePaths: ['/health', '/metrics'],
   },
   ipWhitelist: {
-    enabled: false,
+    enabled: true,
     allowedIps: [],
     maxFailedAttempts: 5,
     blockDuration: 30 * 60 * 1000, // 30 minutes
@@ -25,11 +26,5 @@ export const createBaseConfig = (): SecurityConfig => ({
       'application/x-www-form-urlencoded',
       'multipart/form-data',
     ],
-  },
-  bruteForce: {
-    enabled: false,
-    maxAttempts: 5,
-    blockDuration: 30 * 60 * 1000, // 30 minutes
-    windowMs: 5 * 60 * 1000, // 5 minutes
   },
 });

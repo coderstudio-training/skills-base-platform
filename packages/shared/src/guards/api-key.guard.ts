@@ -1,9 +1,9 @@
 import {
-  Injectable,
   CanActivate,
   ExecutionContext,
-  UnauthorizedException,
   Inject,
+  Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
@@ -22,21 +22,16 @@ export class ApiKeyGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Skip if API key validation is disabled globally
-    if (!this.config.apiKey.enabled) {
-      return true;
-    }
-
     const request = context.switchToHttp().getRequest<Request>();
     const { headers, ip, path, method } = request;
 
-    // Check if the path should be excluded
-    if (this.shouldSkipPath(path)) {
+    // Debug path exclusion
+    const shouldSkip = this.shouldSkipPath(path);
+    if (shouldSkip) {
       return true;
     }
 
     const apiKey = headers['x-api-key'];
-
     // If no API key is provided or the key is invalid
     if (
       !apiKey ||
@@ -62,10 +57,11 @@ export class ApiKeyGuard implements CanActivate {
   }
 
   private shouldSkipPath(path: string): boolean {
-    return (
-      this.config.apiKey.excludePaths?.some((excludePath) =>
-        path.startsWith(excludePath),
-      ) ?? false
+    const excludePaths = this.config.apiKey.excludePaths ?? [];
+
+    const should = excludePaths.some((excludePath) =>
+      path.startsWith(excludePath),
     );
+    return should;
   }
 }

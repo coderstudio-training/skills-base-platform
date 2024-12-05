@@ -34,8 +34,9 @@ import { UsersModule } from './users/users.module';
 
     // Security Configuration
     SecurityModule.forRoot({
+      adminEmail: process.env.ADMIN_EMAIL,
       rateLimit: {
-        enabled: process.env.RATE_LIMIT_ENABLED !== 'false',
+        enabled: process.env.RATE_LIMIT_ENABLED === 'true',
         windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes default
         max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
         skipPaths: (

@@ -11,7 +11,6 @@ import { Request } from 'express';
 import { RATE_LIMIT_KEY } from '../decorators/rate-limit.decorator';
 import { RateLimitException } from '../exceptions/rate-limit.exception';
 import { SecurityConfig } from '../interfaces/security.interfaces';
-import { Logger } from '../services/logger.service';
 import {
   SecurityEventType,
   SecurityMonitoringService,
@@ -19,8 +18,6 @@ import {
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
-  private readonly logger = new Logger(RateLimitGuard.name);
-
   constructor(
     private readonly reflector: Reflector,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -59,27 +56,10 @@ export class RateLimitGuard implements CanActivate {
       const windowStart = await this.cacheManager.get<number>(windowKey);
       const currentCount = (await this.cacheManager.get<number>(countKey)) || 0;
 
-      this.logger.debug('Processing rate limit', {
-        ip: request.ip,
-        path: request.path,
-        method: request.method,
-        currentCount,
-        limit,
-        windowStart,
-        currentTimestamp,
-      });
-
       // If window doesn't exist or has expired, start a new window
       if (!windowStart || currentTimestamp - windowStart >= windowMs) {
         await this.cacheManager.set(windowKey, currentTimestamp, windowMs);
         await this.cacheManager.set(countKey, 1, windowMs);
-
-        this.logger.debug('Started new rate limit window', {
-          ip: request.ip,
-          path: request.path,
-          method: request.method,
-          windowMs,
-        });
 
         return true;
       }
@@ -88,28 +68,8 @@ export class RateLimitGuard implements CanActivate {
       if (currentCount < limit) {
         await this.cacheManager.set(countKey, currentCount + 1, windowMs);
 
-        this.logger.debug('Incremented request counter', {
-          ip: request.ip,
-          path: request.path,
-          method: request.method,
-          newCount: currentCount + 1,
-          limit,
-        });
-
         return true;
       }
-
-      // Log rate limit violation
-      this.logger.warn('Rate limit exceeded', {
-        ip: request.ip,
-        path: request.path,
-        method: request.method,
-        currentCount,
-        limit,
-        windowMs,
-        timeRemaining: windowMs - (currentTimestamp - windowStart),
-      });
-
       // Track security event
       await this.securityMonitoring.trackThreatEvent(
         SecurityEventType.RATE_LIMIT_EXCEEDED,
@@ -130,15 +90,6 @@ export class RateLimitGuard implements CanActivate {
     } catch (error) {
       if (error instanceof RateLimitException) throw error;
 
-      // On cache errors, allow request but log the issue
-      this.logger.error('Rate limit cache error', {
-        error,
-        ip: request.ip,
-        path: request.path,
-        method: request.method,
-        key,
-      });
-
       return true;
     }
   }
@@ -149,26 +100,11 @@ export class RateLimitGuard implements CanActivate {
         request.path.startsWith(path),
       ) ?? false;
 
-    if (should) {
-      this.logger.debug('Skipping rate limit for path', {
-        path: request.path,
-        ip: request.ip,
-        method: request.method,
-      });
-    }
-
     return should;
   }
 
   private generateKey(request: Request): string {
     const key = `rate-limit:${request.ip}:${request.method}:${request.path}`;
-
-    this.logger.debug('Generated rate limit key', {
-      key,
-      ip: request.ip,
-      path: request.path,
-      method: request.method,
-    });
 
     return key;
   }

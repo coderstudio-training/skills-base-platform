@@ -47,7 +47,6 @@ export * from './decorators/rate-limit.decorator';
 export * from './decorators/require-api-key.decorator';
 export * from './exceptions/rate-limit.exception';
 export * from './guards/api-key.guard';
-export * from './guards/brute-force.guard';
 export * from './guards/ip.guard';
 export * from './guards/rate-limit.guard';
 export * from './interfaces/security.interfaces';

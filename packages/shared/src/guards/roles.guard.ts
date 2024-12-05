@@ -1,12 +1,22 @@
 // src/guards/roles.guard.ts
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '../constants/roles.constant';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+import { SecurityConfig } from '../interfaces/security.interfaces';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    @Inject('SECURITY_CONFIG')
+    private readonly config: SecurityConfig,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
@@ -17,6 +27,13 @@ export class RolesGuard implements CanActivate {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
+
+    if (requiredRoles.includes(UserRole.ADMIN)) {
+      return (
+        user.roles?.includes(UserRole.ADMIN) &&
+        user.email === this.config.adminEmail
+      );
+    }
     return requiredRoles.some((role) => user.roles?.includes(role));
   }
 }

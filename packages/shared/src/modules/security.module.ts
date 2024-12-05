@@ -3,7 +3,6 @@ import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { SecurityConfigurationManager } from '../config/security.config';
 import { ApiKeyGuard } from '../guards/api-key.guard';
-import { BruteForceGuard } from '../guards/brute-force.guard';
 import { IpWhitelistGuard } from '../guards/ip.guard';
 import { RateLimitGuard } from '../guards/rate-limit.guard';
 import {
@@ -16,7 +15,6 @@ import { SecurityMonitoringService } from '../services/security-monitoring.servi
 @Module({})
 export class SecurityModule {
   static forRoot(config?: PartialSecurityConfig): DynamicModule {
-    // Initialize configuration
     const configManager = SecurityConfigurationManager.getInstance();
     if (config) {
       configManager.updateConfig(config);
@@ -41,7 +39,6 @@ export class SecurityModule {
       store: 'memory',
     });
 
-    // Add enabled guards
     const guards = this.getEnabledGuards(securityConfig);
     providers.push(...guards);
 
@@ -83,14 +80,6 @@ export class SecurityModule {
       guards.push({
         provide: APP_GUARD,
         useClass: IpWhitelistGuard,
-      });
-    }
-
-    // Brute Force Protection
-    if (config.bruteForce.enabled) {
-      guards.push({
-        provide: APP_GUARD,
-        useClass: BruteForceGuard,
       });
     }
 

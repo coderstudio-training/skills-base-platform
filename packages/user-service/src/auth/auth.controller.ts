@@ -176,10 +176,10 @@ export class AuthController {
   @RateLimit({
     keyPrefix: 'test',
     windowMs: 60 * 1000, // 1 minute
-    max: 3, // Only 3 requests per minute
+    max: 30,
     message: 'Too many requests, please try again later',
   })
   test() {
-    return { message: 'Rate limit test endpoint' };
+    return { message: 'Security test endpoint' };
   }
 }
