@@ -47,6 +47,14 @@ export class User extends BaseEntity {
   })
   @Prop({ required: false })
   picture?: string;
+
+  @ApiProperty({
+    required: false,
+    example: ['canViewDashboard', 'canManageUsers'],
+    description: 'User permissions',
+  })
+  @Prop({ required: false })
+  permissions?: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

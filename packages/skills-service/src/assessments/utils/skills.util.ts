@@ -1,3 +1,5 @@
+import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
+
 interface SkillMap {
   [key: string]: number | SkillMap;
 }
@@ -28,4 +30,31 @@ export function transformToReadableKeys<T extends SkillMap>(
   }
 
   return transformedObj;
+}
+
+@Injectable()
+export class EmailValidationPipe implements PipeTransform<string> {
+  transform(value: string): string {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(value)) {
+      throw new BadRequestException('Invalid email format');
+    }
+    return value;
+  }
+}
+
+/**
+ * Email validation utility functions
+ */
+export class EmailValidation {
+  static validate(email: string): boolean {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  }
+
+  static validateOrThrow(email: string): void {
+    if (!this.validate(email)) {
+      throw new BadRequestException('Invalid email format');
+    }
+  }
 }

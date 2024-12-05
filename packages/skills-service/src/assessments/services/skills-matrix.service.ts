@@ -15,7 +15,7 @@ import {
   EmployeeRankingsResponseDto,
   SkillGapsDto,
 } from '../dto/user-skills.dto';
-import { transformToReadableKeys } from '../utils/transform-keys.util';
+import { transformToReadableKeys } from '../utils/skills.util';
 
 export enum SkillCategory {
   TECHNICAL = 'Technical Skills',

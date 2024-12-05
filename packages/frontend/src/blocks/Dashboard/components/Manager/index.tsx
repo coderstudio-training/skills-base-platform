@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { ManagerOverview } from './ManagerOverview';
+import Training from './Training';
 
 export function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -51,7 +52,9 @@ export function ManagerDashboard() {
 
         <TabsContent value="skills">{/* <ManagerSkillsView /> */}</TabsContent>
 
-        <TabsContent value="training">{/* <TrainingRecommendation /> */}</TabsContent>
+        <TabsContent value="training">
+          <Training />
+        </TabsContent>
 
         <TabsContent value="evaluation">
           {loading ? (

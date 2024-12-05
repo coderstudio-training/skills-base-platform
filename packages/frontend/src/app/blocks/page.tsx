@@ -1,4 +1,4 @@
-import LandingDashboard from '@/blocks/Dashboard/components/Misc/LandingDashboard';
+import LandingDashboard from '@/blocks/Dashboard/components/LandingDashboard';
 
 export default function Home() {
   return <LandingDashboard />;
