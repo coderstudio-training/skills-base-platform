@@ -28,11 +28,11 @@ export class RolesGuard implements CanActivate {
     }
     const { user } = context.switchToHttp().getRequest();
 
+    console.log(user);
+    console.log(this.config.adminEmail);
+
     if (requiredRoles.includes(UserRole.ADMIN)) {
-      return (
-        user.roles?.includes(UserRole.ADMIN) &&
-        user.email === this.config.adminEmail
-      );
+      return user.email === this.config.adminEmail;
     }
     return requiredRoles.some((role) => user.roles?.includes(role));
   }

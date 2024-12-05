@@ -56,8 +56,5 @@ export * from './services/google-auth-security.service';
 export * from './services/security-monitoring.service';
 export * from './validators/security.validator';
 
-// permissions
-export * from './decorators/require-permissions.decorator';
-
 // swagger
 export * from './utils/swagger.utils';
