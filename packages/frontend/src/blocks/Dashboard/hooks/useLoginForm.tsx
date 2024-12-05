@@ -96,14 +96,12 @@ export function useLoginForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const abortController = new AbortController();
     try {
       const result = await authenticateUser(adminLoginPost, formState.email, formState.password);
       if (result.success) {
         router.push('/dashboard/admin');
       }
     } catch (err) {
-      if (abortController.signal.aborted) return; // Ignore if aborted
       logger.error('Login Error:', err);
     }
   };
