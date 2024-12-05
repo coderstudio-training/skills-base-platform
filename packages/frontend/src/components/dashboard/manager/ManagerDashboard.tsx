@@ -27,8 +27,6 @@ import { useAuth } from '@/lib/api/hooks';
 import { getUserPicture } from '@/lib/users/api';
 import { getTeamMembers } from '@/lib/users/employees/api';
 import { TeamMember } from '@/types/manager';
-// import { ManagerData } from '@/types/manager'
-// import { dummyManagerData } from '@/lib/dummyData'
 
 const topPerformers = [
   { name: 'Alice Johnson', role: 'Senior QA Engineer', performanceScore: 95 },

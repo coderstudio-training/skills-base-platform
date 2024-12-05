@@ -25,6 +25,7 @@ export class RecommendationService {
   private courseModel: Model<Course>;
   private skillGapsModel: Model<SkillGap>;
   private requiredSkillsModel: Model<RequiredSkills>;
+  private requiredSkillsCache = new Map<string, RequiredSkills>();
 
   /**
    * Initializes the service with connections to multiple MongoDB databases
@@ -137,17 +138,24 @@ export class RecommendationService {
   private async findRequiredSkills(
     careerLevel: string,
   ): Promise<RequiredSkills | null> {
+    const cacheKey = `${careerLevel}-QA`;
+    if (this.requiredSkillsCache.has(cacheKey)) {
+      return this.requiredSkillsCache.get(cacheKey)!;
+    }
+
     this.logger.debug(
       `Finding required skills for career level: ${careerLevel}`,
     );
+
     const requiredSkills = await this.requiredSkillsModel
       .findOne({
         careerLevel,
-        capability: 'QA', //  make this configurable
+        capability: 'QA',
       })
       .exec();
 
     if (requiredSkills) {
+      this.requiredSkillsCache.set(cacheKey, requiredSkills);
       this.logger.debug(
         `Found required skills: ${JSON.stringify(requiredSkills.requiredSkills)}`,
       );
@@ -170,18 +178,47 @@ export class RecommendationService {
    * @returns Promise resolving to array of recommendations
    */
   private async processSkillGaps(
-    skillGaps: Record<string, number>, // Current Skills
-    careerLevel: string, // Career Level
-    requiredSkills: Record<string, number>, // Required Skills
+    skillGaps: Record<string, number>,
+    careerLevel: string,
+    requiredSkills: Record<string, number>,
   ): Promise<RecommendationDto[]> {
     const recommendations: RecommendationDto[] = [];
+
+    const formattedSkillNames = Object.keys(skillGaps).map((skillName) =>
+      this.formatSkillName(skillName),
+    );
+
+    const matchingCourses = await this.courseModel
+      .find({
+        $and: [
+          {
+            skillName: {
+              $in: formattedSkillNames.map(
+                (name) =>
+                  new RegExp(
+                    name
+                      .replace(/([A-Z])/g, ' $1')
+                      .trim()
+                      .replace(/\s+/g, '\\s+'),
+                    'i',
+                  ),
+              ),
+            },
+          },
+          { careerLevel },
+        ],
+      })
+      .exec();
+
+    const courseMap = new Map(
+      matchingCourses.map((course) => [course.skillName.toLowerCase(), course]),
+    );
 
     for (const [skillName, gap] of Object.entries(skillGaps)) {
       try {
         const formattedSkillName = this.formatSkillName(skillName);
         this.logger.debug(`Processing ${formattedSkillName} with gap ${gap}`);
 
-        // Get required level for this skill
         const requiredLevel = requiredSkills[skillName];
 
         if (requiredLevel !== undefined) {
@@ -189,12 +226,7 @@ export class RecommendationService {
             `Required level for ${skillName}: ${requiredLevel}`,
           );
 
-          // Find matching course
-          const course = await this.findMatchingCourse(
-            formattedSkillName,
-            careerLevel,
-            requiredLevel,
-          );
+          const course = courseMap.get(formattedSkillName.toLowerCase());
 
           if (course) {
             const recommendation = await this.createRecommendation(
@@ -219,88 +251,6 @@ export class RecommendationService {
     }
 
     return recommendations.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap));
-  }
-
-  /**
-   * Finds a matching course for a skill, first trying exact match,
-   * then falling back to loose match if necessary.
-   *
-   * @param skillName - Name of the skill
-   * @param careerLevel - Career level to match
-   * @param requiredLevel - Required skill level
-   * @returns Promise resolving to matching course or null
-   */
-  private async findMatchingCourse(
-    skillName: string,
-    careerLevel: string,
-    requiredLevel: number,
-  ): Promise<Course | null> {
-    // Step 1: Try exact match with required level
-    const exactMatch = await this.findExactMatchCourse(
-      skillName,
-      careerLevel,
-      requiredLevel,
-    );
-    if (exactMatch) {
-      return exactMatch;
-    }
-
-    // Step 2: Try loose match if exact match fails
-    return this.findLooseMatchCourse(skillName, careerLevel);
-  }
-
-  /**
-   * Attempts to find a course matching exact criteria.
-   * Uses regex to handle variations in skill name formatting.
-   */
-  private async findExactMatchCourse(
-    skillName: string,
-    careerLevel: string,
-    requiredLevel: number,
-  ): Promise<Course | null> {
-    return this.courseModel
-      .findOne({
-        $and: [
-          {
-            skillName: {
-              $regex: skillName
-                .replace(/([A-Z])/g, ' $1')
-                .trim()
-                .replace(/\s+/g, '\\s+'),
-              $options: 'i',
-            },
-          },
-          { careerLevel },
-          { requiredLevel },
-        ],
-      })
-      .exec();
-  }
-  //Stil optional
-  /**
-   * Attempts to find a course with looser matching criteria.
-   * Used as fallback when exact match fails.
-   */
-  private async findLooseMatchCourse(
-    skillName: string,
-    careerLevel: string,
-  ): Promise<Course | null> {
-    return this.courseModel
-      .findOne({
-        $and: [
-          {
-            skillName: {
-              $regex: skillName
-                .replace(/([A-Z])/g, ' $1')
-                .trim()
-                .replace(/\s+/g, '.*'),
-              $options: 'i',
-            },
-          },
-          { careerLevel },
-        ],
-      })
-      .exec();
   }
   /**
    * Creates a recommendation based on skill gap and matching course.
