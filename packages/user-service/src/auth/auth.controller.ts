@@ -9,7 +9,11 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Logger, RateLimit } from '@skills-base/shared';
+import {
+  GoogleAuthSecurityService,
+  Logger,
+  RateLimit,
+} from '@skills-base/shared';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';

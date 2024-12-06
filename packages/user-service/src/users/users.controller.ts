@@ -73,7 +73,6 @@ export class UsersController extends BaseController<User> {
 
   @Get()
   @Roles(UserRole.ADMIN)
-  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: 200,
@@ -87,7 +86,6 @@ export class UsersController extends BaseController<User> {
 
   @Get('picture/:email')
   @Roles(UserRole.MANAGER, UserRole.ADMIN)
-  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Get user picture by email' })
   @ApiParam({
     name: 'email',

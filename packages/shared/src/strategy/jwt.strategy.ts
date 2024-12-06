@@ -23,7 +23,6 @@ export class JwtStrategy
       userId: payload.sub,
       email: payload.email,
       roles: payload.roles,
-      permissions: payload.permissions,
     };
   }
 }
