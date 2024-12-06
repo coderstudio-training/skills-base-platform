@@ -52,6 +52,47 @@ export interface DashboardFilters {
   status?: string;
 }
 
+export interface ReportSkill {
+  name: string;
+  currentLevel: number;
+  requiredLevel: number;
+  gap: number;
+}
+
+export interface ReportEmployee {
+  name: string;
+  department: string;
+  skills: ReportSkill[];
+}
+
+export interface ReportData {
+  title: string;
+  description: string;
+  date: string;
+  summary?: {
+    label: string;
+    value: string | number;
+  }[];
+  details?: {
+    label: string;
+    value: string | number;
+    change?: number;
+  }[];
+  employees?: ReportEmployee[];
+}
+
+export interface EmployeeSkillsReportData extends ReportData {
+  employees: ReportEmployee[];
+}
+
+export interface ReportTemplateProps {
+  data: ReportData;
+}
+
+export interface EmployeeSkillsReportProps {
+  data: EmployeeSkillsReportData;
+}
+
 export interface Employee {
   employeeId: string;
   firstName: string;
