@@ -16,7 +16,7 @@ import { useAdminReportManager } from '../../hooks/useAdminReportManager';
 import { EmployeeSkillsReportData } from '../../types';
 import { EmployeeSkillsReport } from './EmployeeSkillsReport';
 
-export function AdminReportManager() {
+export function ReportManager() {
   const {
     isOpen,
     isReportReady,
