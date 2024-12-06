@@ -1,4 +1,5 @@
 import { Request as ExpressRequest } from 'express';
+import { Permission } from '../constants/permissions.constant';
 
 export interface RateLimitStore {
   increment(key: string): Promise<number>;
@@ -23,9 +24,17 @@ export interface RateLimitConfig {
   skipPaths?: string[];
 }
 
+export interface ApiKeyData {
+  key: string;
+  name: string;
+  permissions: Permission[];
+  isActive: boolean;
+  expiresAt?: Date;
+}
+
 export interface ApiKeyConfig {
   enabled: boolean;
-  keys: string[];
+  keys: ApiKeyData[];
   excludePaths?: string[];
 }
 

@@ -1,3 +1,4 @@
+import { Permission } from '../constants/permissions.constant';
 import {
   PartialSecurityConfig,
   SecurityConfig,
@@ -104,7 +105,16 @@ export class SecurityConfigurationManager {
           enabled: process.env.API_KEY_ENABLED === 'true',
         }),
         ...(process.env.API_KEYS && {
-          keys: process.env.API_KEYS.split(','),
+          keys: process.env.API_KEYS.split(',').map((key) => ({
+            key,
+            name: key,
+            permissions: process.env.API_KEY_PERMISSIONS
+              ? process.env.API_KEY_PERMISSIONS.split(',').map(
+                  (perm) => Permission[perm as keyof typeof Permission],
+                )
+              : [],
+            isActive: true,
+          })),
         }),
       },
       ipWhitelist: {

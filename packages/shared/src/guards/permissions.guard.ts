@@ -2,18 +2,23 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Permission } from '../constants/permissions.constant';
 import { PERMISSIONS_KEY } from '../decorators/require-permissions.decorator';
-import { PermissionContext } from '../interfaces/permissions.inteface';
+import { SecurityConfig } from '../interfaces/security.interfaces';
 import { Logger } from '../services/logger.service';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   private logger = new Logger(PermissionsGuard.name);
-  constructor(private reflector: Reflector) {}
+
+  constructor(
+    private reflector: Reflector,
+    @Inject('SECURITY_CONFIG') private readonly config: SecurityConfig,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(
@@ -26,31 +31,27 @@ export class PermissionsGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const user = request.user;
+    const apiKey = request.headers['x-api-key'];
 
-    this.logger.debug(
-      `Checking permissions for user with ID ${user?.id} and permissions: ${user?.permissions}`,
-    );
-
-    if (!user?.permissions?.length) {
-      throw new ForbiddenException('User has no permissions');
+    if (!apiKey) {
+      this.logger.debug('No API key found in request headers');
+      throw new ForbiddenException('Missing API key');
     }
 
-    // Create permission context with additional metadata
-    const permContext: PermissionContext = {
-      userId: user.id,
-      targetId: request.params?.id,
-      teamId: user.teamId,
-      permissions: user.permissions,
-    };
+    const keyData = this.config.apiKey.keys.find((k) => k.key === apiKey);
 
-    this.logger.debug(
-      `User with ID ${permContext.userId} has permissions: ${permContext.permissions}`,
-    );
+    if (!keyData) {
+      this.logger.debug('Invalid API key');
+      throw new ForbiddenException('Invalid API key');
+    }
+
+    if (!keyData.permissions?.length) {
+      throw new ForbiddenException('API key has no permissions');
+    }
 
     const hasPermission = this.validatePermissions(
       requiredPermissions,
-      permContext,
+      keyData.permissions,
     );
 
     if (!hasPermission) {
@@ -62,39 +63,8 @@ export class PermissionsGuard implements CanActivate {
 
   private validatePermissions(
     required: Permission[],
-    context: PermissionContext,
+    available: Permission[],
   ): boolean {
-    return required.every((permission) => {
-      // Direct permission check
-      if (context.permissions.includes(permission)) {
-        return true;
-      }
-
-      // Hierarchical permission check
-      if (this.hasHierarchicalPermission(permission, context)) {
-        return true;
-      }
-
-      return false;
-    });
-  }
-
-  private hasHierarchicalPermission(
-    permission: Permission,
-    context: PermissionContext,
-  ): boolean {
-    // Example hierarchical checks
-    switch (permission) {
-      case Permission.EDIT_TEAM_SKILLS:
-        return context.permissions.includes(Permission.EDIT_ALL_SKILLS);
-      case Permission.EDIT_OWN_SKILLS:
-        return (
-          context.permissions.includes(Permission.EDIT_TEAM_SKILLS) ||
-          context.permissions.includes(Permission.EDIT_ALL_SKILLS)
-        );
-      // Add other hierarchical cases
-      default:
-        return false;
-    }
+    return required.every((permission) => available.includes(permission));
   }
 }

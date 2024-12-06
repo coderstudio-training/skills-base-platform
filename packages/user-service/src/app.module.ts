@@ -7,6 +7,7 @@ import {
   LoggingModule,
   MonitoringModule,
   SecurityModule,
+  StringUtils,
 } from '@skills-base/shared';
 import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './employees/employees.module';
@@ -46,7 +47,7 @@ import { UsersModule } from './users/users.module';
       },
       apiKey: {
         enabled: process.env.API_KEY_ENABLED === 'true',
-        keys: (process.env.API_KEYS || '').split(',').filter(Boolean),
+        keys: StringUtils.parseApiKeys(process.env.API_KEYS),
         excludePaths: (
           process.env.API_KEY_EXCLUDE_PATHS || '/health,/metrics'
         ).split(','),

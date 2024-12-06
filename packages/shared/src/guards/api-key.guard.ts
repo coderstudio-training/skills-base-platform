@@ -1,3 +1,4 @@
+// guards/api-key.guard.ts
 import {
   CanActivate,
   ExecutionContext,
@@ -5,7 +6,6 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { SecurityConfig } from '../interfaces/security.interfaces';
 import {
@@ -18,50 +18,65 @@ export class ApiKeyGuard implements CanActivate {
   constructor(
     private readonly securityMonitoring: SecurityMonitoringService,
     @Inject('SECURITY_CONFIG') private readonly config: SecurityConfig,
-    private readonly reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const { headers, ip, path, method } = request;
+    const { headers, ip = 'UNKNOWN_IP', path, method } = request;
 
-    // Debug path exclusion
-    const shouldSkip = this.shouldSkipPath(path);
-    if (shouldSkip) {
+    // Check if path should be skipped
+    if (this.shouldSkipPath(path)) {
       return true;
     }
 
     const apiKey = headers['x-api-key'];
-    // If no API key is provided or the key is invalid
-    if (
-      !apiKey ||
-      typeof apiKey !== 'string' ||
-      !this.config.apiKey.keys.includes(apiKey)
-    ) {
-      await this.securityMonitoring.trackThreatEvent(
-        SecurityEventType.INVALID_API_KEY,
-        {
-          ipAddress: ip ?? 'UNKNOWN IP',
-          path,
-          method,
-          metadata: {
-            providedKey: apiKey ? 'invalid' : 'missing',
-          },
-        },
-      );
-
-      throw new UnauthorizedException('Invalid or missing API key');
+    if (!apiKey || typeof apiKey !== 'string') {
+      await this.handleUnauthorized('missing', ip, path, method);
+      throw new UnauthorizedException('Missing API key');
     }
 
+    // Find the API key in configuration
+    const keyData = this.config.apiKey.keys.find((k) => k.key === apiKey);
+    if (!keyData || !keyData.isActive) {
+      await this.handleUnauthorized('invalid', ip, path, method);
+      throw new UnauthorizedException('Invalid API key');
+    }
+
+    // Check expiration
+    if (keyData.expiresAt && new Date() > new Date(keyData.expiresAt)) {
+      await this.handleUnauthorized('expired', ip, path, method);
+      throw new UnauthorizedException('API key has expired');
+    }
+
+    // Attach API key data to request for use in permissions guard
+    // request['apiKeyData'] = keyData;
     return true;
   }
 
   private shouldSkipPath(path: string): boolean {
-    const excludePaths = this.config.apiKey.excludePaths ?? [];
-
-    const should = excludePaths.some((excludePath) =>
-      path.startsWith(excludePath),
+    return (
+      this.config.apiKey.excludePaths?.some((excludePath) =>
+        path.startsWith(excludePath),
+      ) ?? false
     );
-    return should;
+  }
+
+  private async handleUnauthorized(
+    reason: string,
+    ip: string,
+    path: string,
+    method: string,
+  ): Promise<void> {
+    await this.securityMonitoring.trackThreatEvent(
+      SecurityEventType.INVALID_API_KEY,
+      {
+        ipAddress: ip ?? 'UNKNOWN IP',
+        path,
+        method,
+        metadata: {
+          reason,
+        },
+      },
+    );
   }
 }
