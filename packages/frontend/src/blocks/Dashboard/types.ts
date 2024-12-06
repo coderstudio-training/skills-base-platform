@@ -21,6 +21,26 @@ export interface LoginFormCardProps {
   adminLoginError: ApiError | null;
   adminLoginLoading: boolean;
 }
+
+export interface Notification {
+  _id: string;
+  workflow: {
+    id: string;
+    name: string;
+  };
+  execution: {
+    status: 'success' | 'error' | 'running';
+    startedAt: string;
+    finishedAt?: string;
+  };
+  read: boolean;
+  readAt?: string;
+}
+
+export interface NotificationCenterProps {
+  onLastNotificationDateChange?: (date: string | null) => void;
+}
+
 export interface AdminDashboardProps {
   filters?: DashboardFilters;
 }
