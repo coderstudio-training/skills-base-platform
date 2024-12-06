@@ -1,7 +1,7 @@
 'use client';
 
+import { UserHeader } from '@/blocks/Dashboard/components/Header/UserHeader';
 import { useTeamData } from '@/blocks/Dashboard/hooks/useTeamData';
-import ManagerDashboardHeader from '@/components/shared/ManagerDashboardHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -23,7 +23,7 @@ export default function ManagerDashboard() {
 
   return (
     <div className="container mx-auto p-4 max-w-[80%]">
-      <ManagerDashboardHeader />
+      <UserHeader />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
