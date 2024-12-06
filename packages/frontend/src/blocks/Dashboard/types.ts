@@ -1,3 +1,46 @@
+import { BUSINESS_UNITS } from '@/blocks/Dashboard/constants';
+import { ApiError } from '@/lib/api/types';
+import { IBaseTaxonomy } from '@/lib/skills/types';
+import { LucideIcon } from 'lucide-react';
+import { Dispatch, SetStateAction } from 'react';
+
+export interface LandingPageCardProps {
+  title: string;
+  description?: string;
+  contentHeader: string;
+  content?: string;
+  icon?: LucideIcon;
+}
+export interface LoginFormCardProps {
+  title?: string;
+  description?: string;
+  className?: string;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  formState: { email: string; password: string };
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  adminLoginError: ApiError | null;
+  adminLoginLoading: boolean;
+}
+
+export interface Notification {
+  _id: string;
+  workflow: {
+    id: string;
+    name: string;
+  };
+  execution: {
+    status: 'success' | 'error' | 'running';
+    startedAt: string;
+    finishedAt?: string;
+  };
+  read: boolean;
+  readAt?: string;
+}
+
+export interface NotificationCenterProps {
+  onLastNotificationDateChange?: (date: string | null) => void;
+}
+
 export interface AdminDashboardProps {
   filters?: DashboardFilters;
 }
@@ -7,6 +50,47 @@ export interface DashboardFilters {
   skillCategory?: string;
   timeRange?: string;
   status?: string;
+}
+
+export interface ReportSkill {
+  name: string;
+  currentLevel: number;
+  requiredLevel: number;
+  gap: number;
+}
+
+export interface ReportEmployee {
+  name: string;
+  department: string;
+  skills: ReportSkill[];
+}
+
+export interface ReportData {
+  title: string;
+  description: string;
+  date: string;
+  summary?: {
+    label: string;
+    value: string | number;
+  }[];
+  details?: {
+    label: string;
+    value: string | number;
+    change?: number;
+  }[];
+  employees?: ReportEmployee[];
+}
+
+export interface EmployeeSkillsReportData extends ReportData {
+  employees: ReportEmployee[];
+}
+
+export interface ReportTemplateProps {
+  data: ReportData;
+}
+
+export interface EmployeeSkillsReportProps {
+  data: EmployeeSkillsReportData;
 }
 
 export interface Employee {
@@ -122,9 +206,6 @@ export interface SkillSummaryResponse {
   metrics: UserMetrics;
   skills: Skill[];
 }
-import { BUSINESS_UNITS } from '@/blocks/Dashboard/constants';
-import { IBaseTaxonomy } from '@/lib/skills/types';
-import { Dispatch, SetStateAction } from 'react';
 
 export interface TSCManagerProps {
   selectedBusinessUnit?: string;

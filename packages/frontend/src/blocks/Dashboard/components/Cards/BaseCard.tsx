@@ -10,7 +10,7 @@ export type BaseCardProps = {
   error?: ApiError | null;
   loadingMessage?: string;
   errorMessage?: string;
-  height?: 'auto' | 'fixed';
+  height?: 'auto' | 'fixed' | string;
   children: React.ReactNode;
   headerExtra?: React.ReactNode;
 };

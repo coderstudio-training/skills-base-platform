@@ -1,9 +1,6 @@
 'use client';
-
-import { NotificationCenter } from '@/components/NotificationCenter';
-import { ReportGenerator } from '@/components/ReportGenerator';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@/blocks/ui/badge';
+import { Button } from '@/blocks/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,40 +8,23 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/blocks/ui/dropdown-menu';
 import { Settings } from 'lucide-react';
-import { signOut } from 'next-auth/react';
-import { useState } from 'react';
-
-export function AdminDashboardHeader() {
-  const [lastSyncTime, setLastSyncTime] = useState('No sync data');
-
-  const handleLastNotificationDate = (date: string | null) => {
-    if (date) {
-      const formattedDate = new Date(date).toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true,
-      });
-      setLastSyncTime(`Last synced: ${formattedDate}`);
-    }
-  };
-
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
+import { useAdminDashboardHeader } from '../../hooks/useAdminDashboardHeader';
+import { ReportManager } from '../Reports/ReportManager';
+import { NotificationCenter } from './AdminNotifications';
+export default function AdminDashboardHeader() {
+  const { lastSyncTime, handleLastNotificationDate, handleLogout } = useAdminDashboardHeader();
 
   return (
     <header className="bg-white border-b">
       <div className="h-16 max-w-7xl mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
+          <h1 className="text-xl font-bold text-gray-800">Admin Dashboard v2</h1>
           <Badge variant="secondary">{lastSyncTime}</Badge>
         </div>
         <div className="flex items-center space-x-4">
-          <ReportGenerator />
+          <ReportManager />
           <NotificationCenter onLastNotificationDateChange={handleLastNotificationDate} />
           <Button variant="ghost" size="icon">
             <Settings className="h-5 w-5" />
