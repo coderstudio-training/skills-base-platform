@@ -11,7 +11,6 @@ export function useStatsData() {
     isLoading: loading,
   } = useQuery<EmployeeStats>(userApi, '/employees/stats', {
     revalidate: 3600,
-    // tags: ['employeeStats'],
   });
 
   return {

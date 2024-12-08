@@ -1,19 +1,6 @@
+import { BaseCardProps } from '@/blocks/Dashboard/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ApiError } from '@/lib/api/types';
 import { Loader2 } from 'lucide-react';
-import React from 'react';
-
-export type BaseCardProps = {
-  title: string;
-  description?: string;
-  loading?: boolean;
-  error?: ApiError | null;
-  loadingMessage?: string;
-  errorMessage?: string;
-  height?: 'auto' | 'fixed' | string;
-  children: React.ReactNode;
-  headerExtra?: React.ReactNode;
-};
 
 const BaseCard = ({
   title,

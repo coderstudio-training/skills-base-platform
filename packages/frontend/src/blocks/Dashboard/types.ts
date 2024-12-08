@@ -1,6 +1,7 @@
 import { BUSINESS_UNITS } from '@/blocks/Dashboard/constants';
 import { ApiError } from '@/lib/api/types';
 import { IBaseTaxonomy } from '@/lib/skills/types';
+import { TeamMember } from '@/types/manager';
 import { LucideIcon } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -264,3 +265,88 @@ export const emptyProficiency: TSCProficiency = {
 };
 
 export type BusinessUnit = keyof typeof BUSINESS_UNITS;
+
+export interface BaseCardProps {
+  title: string;
+  description?: string;
+  loading?: boolean;
+  error?: ApiError | null;
+  loadingMessage?: string;
+  errorMessage?: string;
+  height?: 'auto' | 'fixed' | string;
+  children: React.ReactNode;
+  headerExtra?: React.ReactNode;
+}
+
+export interface MetricCardProps {
+  title: string;
+  description?: string;
+  value: number | string;
+  loading?: boolean;
+  error?: ApiError | null;
+  icon?: LucideIcon;
+  subtitle?: string;
+  valuePrefix?: string;
+  valueSuffix?: string;
+}
+
+export interface TeamCompositionCardProps {
+  teamMembers: TeamMember[];
+  loading?: boolean;
+}
+
+export interface TeamMembersListProps {
+  members: TeamMember[];
+  loading: boolean;
+  error: ApiError | null;
+  showPerformance?: boolean;
+}
+
+export interface TeamMetricCardsProps {
+  teamSize: number;
+  averagePerformance?: number;
+  skillGrowth?: number;
+  loading?: boolean;
+  error?: ApiError | null;
+}
+
+export interface ManagerOverviewProps {
+  teamMembers: TeamMember[];
+  loading: boolean;
+  error: ApiError | null;
+}
+
+export interface ChartSeries {
+  key: string;
+  name: string;
+  color?: string;
+}
+
+export interface BaseBarChartProps {
+  data: Record<string, number | string>[];
+  loading?: boolean;
+  xAxisKey: string;
+  series: ChartSeries[];
+  height?: number;
+  stacked?: boolean;
+  noDataMessage?: string;
+  loadingMessage?: string;
+}
+
+export interface BusinessUnitsResponse {
+  distribution?: BusinessUnitStat[];
+}
+
+export interface TopPerformersResponse {
+  rankings: TopPerformer[];
+}
+
+export interface UserProfile {
+  firstName: string;
+  lastName: string;
+  designation: string;
+  businessUnit: string;
+  grade: string;
+  roles: string[];
+  picture?: string;
+}

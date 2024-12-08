@@ -1,12 +1,7 @@
 import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
-import { TeamMember } from '@/types/manager';
+import { ChartSeries, TeamCompositionCardProps } from '@/blocks/Dashboard/types';
 import { useMemo } from 'react';
-import { BaseBarChart, ChartSeries } from '../Charts/BaseBarChart';
-
-interface TeamCompositionCardProps {
-  teamMembers: TeamMember[];
-  loading?: boolean;
-}
+import { BaseBarChart } from '../Charts/BaseBarChart';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00ced1'];
 

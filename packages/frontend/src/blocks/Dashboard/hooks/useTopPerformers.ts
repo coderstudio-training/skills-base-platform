@@ -1,10 +1,6 @@
-import { TopPerformer } from '@/blocks/Dashboard/types';
+import { TopPerformersResponse } from '@/blocks/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
-
-interface TopPerformersResponse {
-  rankings: TopPerformer[];
-}
 
 export function useTopPerformers() {
   const {
@@ -13,7 +9,6 @@ export function useTopPerformers() {
     isLoading: loading,
   } = useQuery<TopPerformersResponse>(skillsApi, '/api/skills/rankings', {
     revalidate: 3600,
-    // tags: ['rankings'],
   });
 
   return {
