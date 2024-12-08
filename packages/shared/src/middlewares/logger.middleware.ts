@@ -31,8 +31,7 @@ export class LoggerMiddleware implements NestMiddleware {
     this.logger.info(`Incoming ${context.method} ${context.path}`, {
       type: 'request.incoming',
       correlationId: context.correlationId,
-      userAgent: context.userAgent,
-      ip: context.ip,
+      incoming_from: `${context.ip} - ${context.userAgent}`,
     });
   }
 
@@ -83,15 +82,23 @@ export class LoggerMiddleware implements NestMiddleware {
     const logLevel =
       statusCode >= 500 ? 'error' : statusCode >= 400 ? 'warn' : 'info';
 
-    this.logger[logLevel](
-      `Completed ${context.method} ${context.path} ${statusCode} ${duration}ms`,
-      {
-        type: 'request.complete',
-        correlationId: context.correlationId,
-        statusCode: context.statusCode,
-        duration: context.duration,
-        responseSize: context.responseSize,
-      },
-    );
+    let message: string;
+    if (statusCode >= 500) {
+      message = `Failed ${context.method} ${context.path} with server error`;
+    } else if (statusCode >= 400) {
+      message = `Failed ${context.method} ${context.path} with client error`;
+    } else if (statusCode >= 300) {
+      message = `Redirected ${context.method} ${context.path}`;
+    } else {
+      message = `Successful ${context.method} ${context.path}`;
+    }
+
+    this.logger[logLevel](`${message} ${statusCode} ${duration}ms`, {
+      type: 'request.complete',
+      correlationId: context.correlationId,
+      statusCode: context.statusCode,
+      duration: context.duration,
+      responseSize: context.responseSize,
+    });
   }
 }

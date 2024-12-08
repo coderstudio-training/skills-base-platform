@@ -26,6 +26,7 @@ export * from './utils/date.util';
 export * from './utils/validation.util';
 
 // logging
+export * from './filters/global-exception.filter';
 export * from './interceptors/logging.interceptor';
 export * from './interfaces/logging.interfaces';
 export * from './middlewares/logger.middleware';
