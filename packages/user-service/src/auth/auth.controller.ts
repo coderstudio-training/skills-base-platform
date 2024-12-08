@@ -2,21 +2,16 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Post,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   GoogleAuthSecurityService,
   Logger,
-  Permission,
-  PermissionsGuard,
   RateLimit,
-  RequirePermissions,
 } from '@skills-base/shared';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
@@ -24,7 +19,6 @@ import { LoginDto, RegisterDto } from './dto';
 
 @ApiTags('auth')
 @Controller('auth')
-@UseGuards(PermissionsGuard)
 export class AuthController {
   constructor(
     private authService: AuthService,
@@ -174,16 +168,5 @@ export class AuthController {
     );
     this.logger.info(`Verified Google token for email: ${payload.email}`);
     return this.authService.handleGoogleUser(payload);
-  }
-
-  @Get('test')
-  @RateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 10,
-    message: 'Too many requests, please try again later',
-  })
-  @RequirePermissions(Permission.MANAGE_SYSTEM)
-  test() {
-    return { message: 'Security test endpoint' };
   }
 }

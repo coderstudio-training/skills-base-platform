@@ -55,7 +55,6 @@ export class IpWhitelistGuard implements CanActivate {
     // Check X-Forwarded-For header first (for proxied requests)
     const forwardedFor = request.headers['x-forwarded-for'];
     if (forwardedFor) {
-      // Always split and trim, regardless of array or string
       const firstIp = Array.isArray(forwardedFor)
         ? forwardedFor[0].split(',')[0].trim()
         : forwardedFor.split(',')[0].trim();
@@ -74,12 +73,22 @@ export class IpWhitelistGuard implements CanActivate {
       }
     }
 
-    // Fallback to request.ip
-    return request.ip && this.isValidIp(request.ip) ? request.ip : 'unknown';
+    // Handle IPv4-mapped IPv6 addresses
+    let ip = request.ip;
+    if (ip && ip.startsWith('::ffff:')) {
+      ip = ip.substring(7);
+    }
+
+    return ip && this.isValidIp(ip) ? ip : 'unknown';
   }
 
   private isValidIp(ip: string): boolean {
     if (!ip) return false;
+
+    // Handle IPv4-mapped IPv6 addresses
+    if (ip.startsWith('::ffff:')) {
+      ip = ip.substring(7);
+    }
 
     const octets = ip.split('.');
     if (octets.length !== 4) return false;

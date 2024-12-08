@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { GoogleAuthSecurityService, JwtStrategy } from '@skills-base/shared';
+import { PermissionsModule } from 'src/permissions/permissions.module';
 import { EmployeesModule } from '../employees/employees.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
@@ -14,6 +15,7 @@ import { AuthService } from './auth.service';
     UsersModule,
     PassportModule,
     EmployeesModule,
+    PermissionsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

@@ -11,6 +11,7 @@ import {
 } from '@skills-base/shared';
 import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './employees/employees.module';
+import { PermissionsModule } from './permissions/permissions.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -107,6 +108,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     UsersModule,
     EmployeesModule,
+    PermissionsModule,
   ],
 })
 export class AppModule {}

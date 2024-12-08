@@ -1,6 +1,7 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { PermissionDecryptionService } from 'src/services/permission-decryption.service';
 import { SecurityConfigurationManager } from '../config/security.config';
 import { ApiKeyGuard } from '../guards/api-key.guard';
 import { IpWhitelistGuard } from '../guards/ip.guard';
@@ -29,6 +30,7 @@ export class SecurityModule {
       },
       SecurityMonitoringService,
       SecurityMiddleware,
+      PermissionDecryptionService,
     ];
 
     // Initialize core cache module
@@ -50,6 +52,7 @@ export class SecurityModule {
         'SECURITY_CONFIG',
         SecurityMonitoringService,
         SecurityMiddleware,
+        PermissionDecryptionService,
         cacheModule,
       ],
       global: true,

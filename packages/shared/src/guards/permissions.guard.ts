@@ -2,25 +2,27 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  Inject,
   Injectable,
+  Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Permission } from '../constants/permissions.constant';
 import { PERMISSIONS_KEY } from '../decorators/require-permissions.decorator';
-import { SecurityConfig } from '../interfaces/security.interfaces';
-import { Logger } from '../services/logger.service';
+import { PermissionDecryptionService } from '../services/permission-decryption.service';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-  private logger = new Logger(PermissionsGuard.name);
+  private readonly logger = new Logger(PermissionsGuard.name);
+  private readonly permissionCache = new Map<string, Permission[]>();
+  private readonly cacheTTL = 60000; // 1 minute cache
 
   constructor(
-    private reflector: Reflector,
-    @Inject('SECURITY_CONFIG') private readonly config: SecurityConfig,
+    private readonly reflector: Reflector,
+    private readonly decryptionService: PermissionDecryptionService,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(
       PERMISSIONS_KEY,
       [context.getHandler(), context.getClass()],
@@ -31,40 +33,55 @@ export class PermissionsGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const apiKey = request.headers['x-api-key'];
+    const user = request.user;
 
-    if (!apiKey) {
-      this.logger.debug('No API key found in request headers');
-      throw new ForbiddenException('Missing API key');
+    if (!user?.permissions?.length) {
+      throw new UnauthorizedException('No permissions found');
     }
 
-    const keyData = this.config.apiKey.keys.find((k) => k.key === apiKey);
+    try {
+      // Check memory cache first
+      const cacheKey = this.getCacheKey(user);
+      let userPermissions = this.permissionCache.get(cacheKey);
 
-    if (!keyData) {
-      this.logger.debug('Invalid API key');
-      throw new ForbiddenException('Invalid API key');
+      if (!userPermissions) {
+        // Process permissions in parallel with minimal batch size
+        userPermissions = await this.decryptionService.decryptPermissions(
+          user.permissions,
+        );
+
+        // Update cache
+        this.permissionCache.set(cacheKey, userPermissions);
+        setTimeout(() => this.permissionCache.delete(cacheKey), this.cacheTTL);
+      }
+
+      // Fast permission check using Set
+      const permissionSet = new Set(userPermissions);
+      const hasAllPermissions = requiredPermissions.every((p) =>
+        permissionSet.has(p),
+      );
+
+      if (!hasAllPermissions) {
+        const missing = requiredPermissions.filter(
+          (p) => !permissionSet.has(p),
+        );
+        throw new ForbiddenException(
+          `Missing permissions: ${missing.join(', ')}`,
+        );
+      }
+
+      // Store decoded permissions for downstream use
+      request.user.decodedPermissions = userPermissions;
+      return true;
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+      throw new ForbiddenException('Permission validation failed');
     }
-
-    if (!keyData.permissions?.length) {
-      throw new ForbiddenException('API key has no permissions');
-    }
-
-    const hasPermission = this.validatePermissions(
-      requiredPermissions,
-      keyData.permissions,
-    );
-
-    if (!hasPermission) {
-      throw new ForbiddenException('Insufficient permissions');
-    }
-
-    return true;
   }
 
-  private validatePermissions(
-    required: Permission[],
-    available: Permission[],
-  ): boolean {
-    return required.every((permission) => available.includes(permission));
+  private getCacheKey(user: any): string {
+    return `${user.id}:${user.permissions.join(',')}`;
   }
 }
