@@ -100,6 +100,11 @@ export class IpWhitelistGuard implements CanActivate {
   }
 
   private isIpAllowed(ip: string): boolean {
+    // Special case: 0.0.0.0 allows all IPs
+    if (this.config.ipWhitelist.allowedIps.includes('0.0.0.0')) {
+      return true;
+    }
+
     if (!this.isValidIp(ip)) {
       return false;
     }
