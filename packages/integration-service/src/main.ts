@@ -35,7 +35,7 @@ async function bootstrap() {
 
   logger.info(`Integration service is running on: http://localhost:${port}`);
   logger.info(
-    `Swagger documentation is available at: http://localhost:${port}/api`,
+    `Swagger documentation is available at: http://localhost:${port}/swagger`,
   );
 }
 bootstrap();
