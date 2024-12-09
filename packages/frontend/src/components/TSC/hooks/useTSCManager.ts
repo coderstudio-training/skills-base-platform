@@ -36,7 +36,6 @@ export function useTSCManager(businessUnit: BusinessUnit) {
     'DELETE',
   );
 
-  // data?.filter(tsc => (businessUnit === 'ALL' ? true : tsc.businessUnit === businessUnit)),
   return {
     data,
     error,
