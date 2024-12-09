@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -21,7 +22,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Loader2,
+  XCircle,
+} from 'lucide-react';
 import { useState } from 'react';
 
 export function UserDirectory({
@@ -38,16 +48,16 @@ export function UserDirectory({
     null,
   );
   const [goToPage, setGoToPage] = useState<string>('');
-
-  const {
-    skills,
-    loading: skillsLoading,
-    fetchSkills,
-  } = useEmployeeSkills(selectedEmployee?.email || '');
+  const { skills, loading: skillsLoading, fetchSkills, clearSkills } = useEmployeeSkills();
 
   const handleViewSkills = async (email: string, name: string) => {
     setSelectedEmployee({ email, name });
-    await fetchSkills();
+    await fetchSkills(email);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedEmployee(null);
+    clearSkills();
   };
 
   const handleGoToPage = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -67,7 +77,17 @@ export function UserDirectory({
     if (average <= 2) return 'Beginner';
     if (average <= 3) return 'Intermediate';
     if (average <= 4) return 'Advanced';
-    return 'Expert';
+    if (average <= 5) return 'Expert';
+    return 'Guru';
+  };
+
+  const getSkillStatusIcon = (currentLevel: number, requiredLevel: number) => {
+    if (currentLevel >= requiredLevel) {
+      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+    } else if (currentLevel === requiredLevel - 1) {
+      return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+    }
+    return <XCircle className="h-5 w-5 text-red-500" />;
   };
 
   return (
@@ -113,7 +133,7 @@ export function UserDirectory({
                 <Badge variant={employee.employmentStatus === 'Active' ? 'success' : 'destructive'}>
                   {employee.employmentStatus}
                 </Badge>
-                <Dialog>
+                <Dialog onOpenChange={open => !open && handleCloseDialog()}>
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
@@ -132,6 +152,7 @@ export function UserDirectory({
                     <DialogContent className="max-w-4xl">
                       <DialogHeader>
                         <DialogTitle>{`${selectedEmployee.name}'s Skills`}</DialogTitle>
+                        <DialogDescription>Skill levels and proficiencies</DialogDescription>
                       </DialogHeader>
                       {skillsLoading ? (
                         <div className="flex flex-col items-center justify-center h-[500px] gap-2">
@@ -154,8 +175,17 @@ export function UserDirectory({
                                       <span className="text-sm text-gray-500">
                                         {getSkillLevelLabel(skill.average)}
                                       </span>
+                                      {getSkillStatusIcon(skill.average, skill.requiredRating)}
                                     </div>
                                   </div>
+                                  <p className="text-sm text-gray-600">
+                                    {skill.description || 'No description available'}
+                                  </p>
+                                  <p className="text-sm font-medium">
+                                    Current Level:{' '}
+                                    {skill.proficiencyDescription ||
+                                      'No proficiency description available'}
+                                  </p>
                                   <div className="flex justify-between text-sm">
                                     <span>
                                       Self Assessment: {getSkillLevelLabel(skill.selfRating)}
@@ -189,7 +219,7 @@ export function UserDirectory({
               value={limit === totalItems ? 'all' : limit.toString()}
               onValueChange={onLimitChange}
             >
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="w-32">
                 <SelectValue placeholder="Items per page" />
               </SelectTrigger>
               <SelectContent>
