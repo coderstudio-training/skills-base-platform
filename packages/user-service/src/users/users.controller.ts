@@ -120,6 +120,7 @@ export class UsersController extends BaseController<User> {
     message: 'Too many requests, please try again later',
   })
   @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @Roles(UserRole.ADMIN)
   test() {
     return { message: 'Security test endpoint' };
   }

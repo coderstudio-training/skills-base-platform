@@ -64,4 +64,3 @@ export * from './utils/swagger.utils';
 export * from './constants/permissions.constant';
 export * from './decorators/require-permissions.decorator';
 export * from './guards/permissions.guard';
-export * from './services/permission-decryption.service';

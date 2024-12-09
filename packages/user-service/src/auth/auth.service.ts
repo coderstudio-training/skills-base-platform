@@ -7,11 +7,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Logger, Permission, UserRole } from '@skills-base/shared';
+import { Logger, UserRole } from '@skills-base/shared';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
+import { PermissionsService } from 'src/permissions/permissions.service';
 import { EmployeesService } from '../employees/employees.service';
-import { PermissionEncryptionService } from '../permissions/permission-encryption.service';
 import { UsersService } from '../users/users.service';
 import { LoginDto, RegisterDto } from './dto';
 
@@ -25,7 +25,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private employeeService: EmployeesService,
-    private permissionEncryptionService: PermissionEncryptionService,
+    private permissionsService: PermissionsService,
   ) {
     const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
     if (!clientId) {
@@ -79,7 +79,6 @@ export class AuthService {
 
     try {
       const user = await this.usersService.findByEmail(email);
-
       if (!user) {
         throw new UnauthorizedException('Invalid credentials');
       }
@@ -91,73 +90,32 @@ export class AuthService {
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
-
       if (!isPasswordValid) {
         throw new UnauthorizedException('Invalid credentials');
       }
 
-      // Define permissions based on roles
-      const permissions = await this.getPermissionsForRoles(user.roles);
-      const encryptedPermissions =
-        await this.permissionEncryptionService.encryptPermissions(permissions);
+      // Get permission codes from the roles
+      const permissionCodes =
+        await this.permissionsService.getPermissionCodesForRoles(user.roles);
 
+      // Create JWT payload
       const payload = {
-        email: user.email,
-        sub: user.id,
-        roles: user.roles,
-        permissions: encryptedPermissions,
+        sub: user.id, // required
+        email: user.email, // required
+        roles: user.roles, // required
+        perms: permissionCodes, // required
+        iss: 'skills-base-platform',
+        aud: this.configService.get('JWT_AUDIENCE'),
       };
-
-      this.logger.debug(
-        `Logging in user with ID ${user.id} and roles: ${user.roles.join(', ')}`,
-      );
 
       return {
         access_token: this.jwtService.sign(payload),
         roles: user.roles,
       };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'An unknown error occurred';
-      // const errorStack = error instanceof Error ? error.stack : undefined;
-      this.logger.error(`Failed to login user: ${errorMessage}`);
+      this.logger.error(`Failed to login user: ${(error as Error).message}`);
       throw error;
     }
-  }
-
-  private getPermissionsForRoles(roles: UserRole[]): Permission[] {
-    const permissionMap: Record<UserRole, Permission[]> = {
-      [UserRole.ADMIN]: [
-        Permission.MANAGE_SYSTEM,
-        Permission.MANAGE_USERS,
-        Permission.VIEW_DASHBOARD,
-        Permission.VIEW_SKILLS,
-        Permission.EDIT_ALL_SKILLS,
-        Permission.VIEW_LEARNING,
-        Permission.EDIT_ALL_LEARNING,
-        Permission.VIEW_REPORTS,
-        Permission.MANAGE_TEAM,
-      ],
-      [UserRole.MANAGER]: [
-        Permission.VIEW_DASHBOARD,
-        Permission.VIEW_SKILLS,
-        Permission.EDIT_TEAM_SKILLS,
-        Permission.VIEW_LEARNING,
-        Permission.EDIT_TEAM_LEARNING,
-        Permission.VIEW_REPORTS,
-        Permission.MANAGE_TEAM,
-      ],
-      [UserRole.USER]: [
-        Permission.VIEW_DASHBOARD,
-        Permission.VIEW_SKILLS,
-        Permission.EDIT_OWN_SKILLS,
-        Permission.VIEW_LEARNING,
-        Permission.EDIT_OWN_LEARNING,
-      ],
-    };
-
-    // Combine and deduplicate permissions from all roles
-    return [...new Set(roles.flatMap((role) => permissionMap[role] || []))];
   }
 
   async verifyGoogleToken(token: string) {
@@ -226,13 +184,22 @@ export class AuthService {
         this.logger.info(`Updated existing user with Google ID: ${email}`);
       }
 
-      const jwtPayload = {
-        email: user.email,
-        sub: user.id,
-        roles: user.roles,
+      // Get permission codes from the roles
+      const permissionCodes =
+        await this.permissionsService.getPermissionCodesForRoles(user.roles);
+
+      // Create JWT payload
+      const payload = {
+        sub: user.id, // required
+        email: user.email, // required
+        roles: user.roles, // required
+        perms: permissionCodes, // required
+        iss: 'skills-base-platform',
+        aud: this.configService.get('JWT_AUDIENCE'),
       };
+
       return {
-        access_token: this.jwtService.sign(jwtPayload),
+        access_token: this.jwtService.sign(payload),
         roles: user.roles,
       };
     } catch (error) {

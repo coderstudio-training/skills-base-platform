@@ -1,21 +1,19 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PermissionDecryptionService } from '@skills-base/shared';
-import {
-  PermissionKey,
-  PermissionKeySchema,
-} from './entities/permission.schema';
-import { PermissionController } from './permisions.controller';
-import { PermissionEncryptionService } from './permission-encryption.service';
+import { Permission, PermissionSchema } from './entities/permission.schema';
+import { Roles, RolesSchema } from './entities/roles.schema';
+import { PermissionsController } from './permisions.controller';
+import { PermissionsService } from './permissions.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: PermissionKey.name, schema: PermissionKeySchema },
+      { name: Permission.name, schema: PermissionSchema },
+      { name: Roles.name, schema: RolesSchema },
     ]),
   ],
-  controllers: [PermissionController],
-  providers: [PermissionEncryptionService, PermissionDecryptionService],
-  exports: [PermissionEncryptionService, PermissionDecryptionService],
+  controllers: [PermissionsController],
+  providers: [PermissionsService],
+  exports: [PermissionsService, PermissionsModule],
 })
 export class PermissionsModule {}

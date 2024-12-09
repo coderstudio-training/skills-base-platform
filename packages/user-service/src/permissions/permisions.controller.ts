@@ -1,48 +1,110 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { Permission, PermissionDecryptionService } from '@skills-base/shared';
-import { PermissionEncryptionService } from './permission-encryption.service';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  JwtAuthGuard,
+  Permission,
+  RequirePermissions,
+  Roles,
+  RolesGuard,
+  UserRole,
+} from '@skills-base/shared';
+import { PermissionsService } from './permissions.service';
 
+@ApiTags('permissions')
 @Controller('permissions')
-export class PermissionController {
-  constructor(
-    private readonly encryptionService: PermissionEncryptionService,
-    private readonly decryptionService: PermissionDecryptionService,
-  ) {}
+@UseGuards(JwtAuthGuard, RolesGuard)
+@ApiBearerAuth('JWT-Admin')
+export class PermissionsController {
+  constructor(private readonly permissionsService: PermissionsService) {}
 
   @Get()
+  @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @ApiOperation({ summary: 'Get all permissions' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns all available permissions',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          code: { type: 'number' },
+          description: { type: 'string' },
+        },
+      },
+    },
+  })
   getAllPermissions() {
-    return Object.values(Permission);
+    return this.permissionsService.getAllPermissions();
   }
 
-  @Post('encrypt')
-  async encryptPermissions(@Body('permissions') permissions: Permission[]) {
-    return this.encryptionService.encryptPermissions(permissions);
+  @Get('roles/:role')
+  @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @ApiOperation({ summary: 'Get permissions for a specific role' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns permission codes for the specified role',
+    schema: {
+      type: 'array',
+      items: { type: 'number' },
+    },
+  })
+  async getRolePermissions(@Param('role') role: UserRole) {
+    return this.permissionsService.getPermissionCodesForRoles([role]);
   }
 
-  @Post('decrypt')
-  async decryptPermissions(
-    @Body('encryptedPermissions') encryptedPermissions: string[],
-  ) {
-    return this.decryptionService.decryptPermissions(encryptedPermissions);
-  }
-
-  @Post('rotate/:permission')
-  async rotatePermissionKey(@Param('permission') permission: Permission) {
-    await this.encryptionService.generateKeyForPermission(permission);
-    return { message: `Key rotated for: ${permission}` };
-  }
-
-  @Get('test/:permission')
-  async testPermissionEncryption(@Param('permission') permission: Permission) {
-    const encrypted =
-      await this.encryptionService.encryptPermission(permission);
-    const decrypted = this.decryptionService.decryptPermission(encrypted);
-
+  @Post('verify')
+  @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @ApiOperation({ summary: 'Verify permissions' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns verification result for permissions',
+    schema: {
+      type: 'object',
+      properties: {
+        permissionName: { type: 'string' },
+        code: { type: 'number' },
+        valid: { type: 'boolean' },
+      },
+    },
+  })
+  async verifyPermission(@Body('permissionName') permissionName: string) {
+    const code =
+      await this.permissionsService.getPermissionCode(permissionName);
     return {
-      original: permission,
-      encrypted,
-      decrypted,
-      valid: permission === decrypted,
+      permissionName,
+      code,
+      valid: code !== undefined,
     };
+  }
+
+  @Get('codes/:permissionName')
+  @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @ApiOperation({ summary: 'Get code for specific permission' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the code for the specified permission',
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        code: { type: 'number' },
+      },
+    },
+  })
+  async getPermissionCode(@Param('permissionName') permissionName: string) {
+    const code =
+      await this.permissionsService.getPermissionCode(permissionName);
+    return { name: permissionName, code };
   }
 }
