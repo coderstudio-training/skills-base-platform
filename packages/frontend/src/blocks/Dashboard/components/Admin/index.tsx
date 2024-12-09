@@ -1,6 +1,6 @@
 'use client';
 
-import { LearningManagement } from '@/blocks/Dashboard/components/Admin/learning/LearningManagement';
+import { LearningManagement } from '@/blocks/Dashboard/components/Admin/LearningManagement';
 import AdminDashboardHeader from '@/blocks/Dashboard/components/Header/AdminHeader';
 import { useBusinessUnits } from '@/blocks/Dashboard/hooks/useBusinessUnits';
 import AnalysisView from '@/components/dashboard/admin/AnalysisView';
