@@ -11,10 +11,12 @@ import {
 } from '@/blocks/ui/dropdown-menu';
 import { Settings } from 'lucide-react';
 import { useAdminDashboardHeader } from '../../hooks/useAdminDashboardHeader';
+import { useLogout } from '../../hooks/useLogout';
 import { ReportManager } from '../Reports/ReportManager';
 import { NotificationCenter } from './AdminNotifications';
 export default function AdminDashboardHeader() {
-  const { lastSyncTime, handleLastNotificationDate, handleLogout } = useAdminDashboardHeader();
+  const { lastSyncTime, handleLastNotificationDate } = useAdminDashboardHeader();
+  const { handleLogout } = useLogout();
 
   return (
     <header className="bg-white border-b">

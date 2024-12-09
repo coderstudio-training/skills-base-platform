@@ -3,15 +3,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
-import { signOut } from 'next-auth/react';
+import { useLogout } from '../../hooks/useLogout';
 
 export function UserHeader() {
   const { userProfile, isManager, fullName, getInitials } = useUserProfile();
-
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
-
+  const { handleLogout } = useLogout();
   return (
     <div className="flex justify-between items-center mb-6">
       <div className="flex items-center space-x-4">
