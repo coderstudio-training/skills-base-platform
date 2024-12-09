@@ -8,19 +8,22 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 # Service configurations
 declare -A SERVICES
 SERVICES=(
-    # ["user-service"]="http://192.168.100.70:3001"
-    # ["skills-service"]="http://192.168.100.70:3002"
-    # ["learning-service"]="http://192.168.100.70:3003"
-    # ["integration-service"]="http://192.168.100.70:3004"
-    # ["email-service"]="http://192.168.100.70:3005"
-    # ["frontend"]="http://192.168.100.70:3000"
+    # ["user-service"]="http://172.31.220.111:3001"
+    ["skills-service"]="http://172.31.220.111:3002"
+    ["learning-service"]="http://172.31.220.111:3003"
+    ["integration-service"]="http://172.31.220.111:3004"
+    ["email-service"]="http://172.31.220.111:3005"
+    # ["frontend"]="http://172.31.220.111:3000"
 )
 
 # OpenAPI/Swagger endpoints
-declare -A SWAGGER_ENDPOINTS
+declare -A SWAGGER_ENDPOINTS f
 SWAGGER_ENDPOINTS=(
     ["user-service"]="/swagger/json"
     ["email-service"]="/swagger/json"
+    ["learning-service"]="/swagger/json"
+    ["skills-service"]="/swagger/json"
+    ["integration-service"]="/swagger/json"
 )
 
 # ZAP configurations
@@ -33,9 +36,9 @@ ZAP_LOG_LEVEL="INFO"
 # Scan types configuration
 declare -A SCAN_TYPES
 SCAN_TYPES=(
-    ["baseline"]="Basic baseline scan"
+    # ["baseline"]="Basic baseline scan"
     ["api"]="API-specific scan"
-    ["full"]="Full security scan"
+    # ["full"]="Full security scan"
 )
 
 # Create necessary directories
