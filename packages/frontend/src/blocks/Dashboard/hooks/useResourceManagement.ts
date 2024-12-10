@@ -1,7 +1,7 @@
 import { learningApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
-import type { ResourcesResponse } from '@/types/admin';
 import { useMemo } from 'react';
+import type { ResourcesResponse } from '../types';
 
 export function useResourceManagement(category?: string) {
   // Use useQuery for fetching resource stats

@@ -1,8 +1,7 @@
-// src/blocks/Dashboard/hooks/useLearningResources.ts
 import { learningApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
-import { Course } from '@/types/admin';
 import { useEffect, useMemo, useState } from 'react';
+import { Course } from '../types';
 
 export function useLearningResources() {
   const [allResources, setAllResources] = useState<Course[]>([]);
