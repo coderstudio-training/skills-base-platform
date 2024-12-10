@@ -10,13 +10,13 @@ import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
 import { AdminSkillAnalyticsDto } from '../dto/computation.dto';
 import { DistributionsResponseDto } from '../dto/distributions.dto';
 import { EmployeeRankingsResponseDto } from '../dto/user-skills.dto';
-import { SkillsMatrixService } from '../services/skills-matrix.service';
+import { SkillsMatrixxService } from '../services/skills-matrix.service';
 
 @ApiTags('Skill Matrix')
 @Controller('api/skills')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SkillMatrixController {
-  constructor(private readonly skillMatrixService: SkillsMatrixService) {}
+  constructor(private readonly skillMatrixService: SkillsMatrixxService) {}
 
   @Get('skills-matrix')
   @ApiBearerAuth('JWT-Admin')

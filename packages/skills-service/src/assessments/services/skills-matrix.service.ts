@@ -52,8 +52,8 @@ interface EmployeeScore {
 }
 
 @Injectable()
-export class SkillsMatrixService {
-  private readonly logger = new Logger(SkillsMatrixService.name);
+export class SkillsMatrixxService {
+  private readonly logger = new Logger(SkillsMatrixxService.name);
 
   constructor(@InjectConnection() private readonly connection: Connection) {}
 
