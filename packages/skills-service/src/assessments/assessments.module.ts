@@ -4,9 +4,11 @@ import { CacheModule } from '@skills-base/shared';
 import { AssessmentsController } from './controllers/assessments.controller';
 import { PerformanceController } from './controllers/computation.controller';
 import { SkillsMatrixController } from './controllers/re-skills-matrix.controller';
+import { SkillMatrixController } from './controllers/skill-matrix.controller';
 import { AssessmentsService } from './services/assessments.service';
 import { PerformanceService } from './services/computation.service';
 import { SkillsMatrixService } from './services/re-skills-matrix.service';
+import { SkillsMatrixxService } from './services/skills-matrix.service';
 import { SkillsMatrixRepository } from './skills-matrix.repository';
 
 @Module({
@@ -22,13 +24,20 @@ import { SkillsMatrixRepository } from './skills-matrix.repository';
     AssessmentsController,
     PerformanceController,
     SkillsMatrixController,
+    SkillMatrixController,
   ],
   providers: [
     AssessmentsService,
     PerformanceService,
     SkillsMatrixService,
+    SkillsMatrixxService,
     SkillsMatrixRepository,
   ],
-  exports: [AssessmentsService, PerformanceService, SkillsMatrixService],
+  exports: [
+    AssessmentsService,
+    PerformanceService,
+    SkillsMatrixService,
+    SkillsMatrixxService,
+  ],
 })
 export class AssessmentsModule {}

@@ -1,20 +1,6 @@
-// blocks/Dashboard/components/Cards/BaseCard.tsx
+import { BaseCardProps } from '@/blocks/Dashboard/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ApiError } from '@/lib/api/types';
 import { Loader2 } from 'lucide-react';
-import React from 'react';
-
-export type BaseCardProps = {
-  title: string;
-  description?: string;
-  loading?: boolean;
-  error?: ApiError | null;
-  loadingMessage?: string;
-  errorMessage?: string;
-  height?: 'auto' | 'fixed';
-  children: React.ReactNode;
-  headerExtra?: React.ReactNode;
-};
 
 const BaseCard = ({
   title,
@@ -58,8 +44,8 @@ const BaseCard = ({
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="font-semibold leading-none tracking-tight">{title}</CardTitle>
+          <div className="space-y-1.5">
+            <CardTitle className="font-semibold tracking-tight">{title}</CardTitle>
             {description && (
               <CardDescription className="text-sm text-muted-foreground">
                 {description}

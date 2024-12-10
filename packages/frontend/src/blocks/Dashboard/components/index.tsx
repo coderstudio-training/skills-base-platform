@@ -1,16 +1,11 @@
 'use client';
-
+import { useHome } from '@/blocks/Dashboard/hooks/useHome';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { logger } from '@/lib/utils';
 import { Award, BookOpen, ChevronRight, TrendingUp, Users } from 'lucide-react';
-import { Session } from 'next-auth';
-import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -24,148 +19,54 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-
-const featuresData = [
-  { name: 'Skill Assessment', value: 30 },
-  { name: 'Learning Paths', value: 25 },
-  { name: 'Performance Tracking', value: 20 },
-  { name: 'Team Management', value: 15 },
-  { name: 'Reporting', value: 10 },
-];
-
-const benefitsData = [
-  { name: 'Productivity', increase: 25 },
-  { name: 'Staff Satisfaction', increase: 30 },
-  { name: 'Skill Gaps Reduced', increase: 40 },
-  { name: 'Training Efficiency', increase: 35 },
-];
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-
-// Utility functions for email validation
-const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-const isAdminEmail = (email: string): boolean => {
-  const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',') || [];
-  return adminEmails.includes(email.toLowerCase());
-};
-
-const isAllowedDomain = (email: string): boolean => {
-  const allowedDomain = process.env.NEXT_PUBLIC_ALLOWED_DOMAIN || `@stratpoint.com`;
-  return email.toLowerCase().endsWith(allowedDomain);
-};
+import { LandingPageCard } from './Cards/LandingPageCard';
 
 export default function LandingDashboard() {
-  const { data: session, status } = useSession() as {
-    data: Session | null;
-    status: 'loading' | 'authenticated' | 'unauthenticated';
-  };
-  const [activeTab, setActiveTab] = useState('overview');
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const router = useRouter();
-
-  useEffect(() => {
-    const handleInitialRouting = async () => {
-      if (status === 'loading') return;
-
-      if (status === 'authenticated' && session?.user?.role) {
-        const baseRoute = '/dashboard';
-        const role = session.user.role.toLowerCase();
-        router.push(`${baseRoute}/${role}`);
-      } else if (status === 'unauthenticated') {
-        const userEmail = session?.user?.email || '';
-        if (isAllowedDomain(userEmail) && !isAdminEmail(userEmail)) {
-          await signIn('google', { callbackUrl: '/api/auth/callback/google' });
-        }
-      }
-    };
-
-    handleInitialRouting();
-  }, [session, status, router]);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    if (!isValidEmail(email)) {
-      setError('Please enter a valid email address.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (isAdminEmail(email)) {
-      router.push(`/admin-login?email=${encodeURIComponent(email)}`);
-    } else if (isAllowedDomain(email)) {
-      try {
-        await signIn('google', {
-          callbackUrl: '/',
-          loginHint: email,
-        });
-      } catch (err) {
-        logger.error(err);
-        setError('An unexpected error occurred. Please try again.');
-      }
-    } else {
-      setError('Your email domain is not authorized to access this application.');
-    }
-
-    setIsLoading(false);
-  };
+  const {
+    featuresData,
+    benefitsData,
+    COLORS,
+    email,
+    setEmail,
+    activeTab,
+    setActiveTab,
+    isLoading,
+    error,
+    handleSubmit,
+  } = useHome();
 
   return (
     <div className="container mx-auto p-4">
       <header className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2">Welcome to SkillBase</h1>
+        <h1 className="text-4xl font-bold mb-2">Welcome to SkillBase v2</h1>
         <p className="text-xl text-muted-foreground">Empower Your Team, Elevate Your Business</p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Skill Tracking</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Comprehensive</div>
-            <p className="text-xs text-muted-foreground">Monitor and develop skills</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Learning Paths</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Personalized</div>
-            <p className="text-xs text-muted-foreground">Tailored growth journeys</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Team Management</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Efficient</div>
-            <p className="text-xs text-muted-foreground">Streamlined team oversight</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Performance Boost</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">Measurable</div>
-            <p className="text-xs text-muted-foreground">Track improvement over time</p>
-          </CardContent>
-        </Card>
+        <LandingPageCard
+          title="Skill Tracking"
+          contentHeader="Comprehensive"
+          content="Monitor and develop skills"
+          icon={Award}
+        />
+        <LandingPageCard
+          title="Learning Paths"
+          contentHeader="Personalized"
+          content="Tailored growth journeys"
+          icon={BookOpen}
+        />
+        <LandingPageCard
+          title="Collaboration"
+          contentHeader="Connected"
+          content="Collaborate with peers"
+          icon={Users}
+        />
+        <LandingPageCard
+          title="Analytics"
+          contentHeader="Insights"
+          content="Gain valuable insights"
+          icon={TrendingUp}
+        />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">

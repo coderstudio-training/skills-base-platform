@@ -1,16 +1,8 @@
 import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
+import { TeamMembersListProps } from '@/blocks/Dashboard/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ApiError } from '@/lib/api/types';
-import { TeamMember } from '@/types/manager';
-
-interface TeamMembersListProps {
-  members: TeamMember[];
-  loading: boolean;
-  error: ApiError | null;
-  showPerformance?: boolean;
-}
 
 export function TeamMembersListCard({
   members,

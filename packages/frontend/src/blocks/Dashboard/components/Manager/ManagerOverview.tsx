@@ -2,14 +2,7 @@
 import { TeamCompositionCard } from '@/blocks/Dashboard/components/Cards/TeamCompositionCard';
 import { TeamMembersListCard } from '@/blocks/Dashboard/components/Cards/TeamMembersListCard';
 import { TeamMetricCards } from '@/blocks/Dashboard/components/Cards/TeamMetricCards';
-import { ApiError } from '@/lib/api/types';
-import { TeamMember } from '@/types/manager';
-
-interface ManagerOverviewProps {
-  teamMembers: TeamMember[];
-  loading: boolean;
-  error: ApiError | null;
-}
+import { ManagerOverviewProps } from '@/blocks/Dashboard/types';
 
 export function ManagerOverview({ teamMembers, loading, error }: ManagerOverviewProps) {
   return (

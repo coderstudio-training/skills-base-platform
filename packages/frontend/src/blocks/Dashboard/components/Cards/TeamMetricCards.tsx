@@ -1,15 +1,6 @@
-// blocks/Manager/components/Cards/TeamStatsCard.tsx
 import { MetricCard } from '@/blocks/Dashboard/components/Cards/MetricCard';
-import { ApiError } from '@/lib/api/types';
+import { TeamMetricCardsProps } from '@/blocks/Dashboard/types';
 import { Award, TrendingUp, Users } from 'lucide-react';
-
-interface TeamMetricCardsProps {
-  teamSize: number;
-  averagePerformance?: number;
-  skillGrowth?: number;
-  loading?: boolean;
-  error?: ApiError | null;
-}
 
 export function TeamMetricCards({
   teamSize,
