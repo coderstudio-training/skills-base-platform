@@ -4,5 +4,6 @@ import { serverSideIntercept } from '@/lib/api/auth';
 
 export default async function AdminDashboardPage() {
   await serverSideIntercept({ permission: 'canViewDashboard' });
+
   return <AdminDashboard />;
 }

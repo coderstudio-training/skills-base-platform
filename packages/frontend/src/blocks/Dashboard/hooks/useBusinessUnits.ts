@@ -7,17 +7,12 @@ interface BusinessUnitsResponse {
 }
 
 export function useBusinessUnits() {
-  const {
-    data,
-    error,
-    isLoading: loading,
-  } = useQuery<BusinessUnitsResponse>(userApi, '/employees/business-units', {
+  const { data, error } = useQuery<BusinessUnitsResponse>(userApi, '/employees/business-units', {
     revalidate: 3600,
   });
 
   return {
     distribution: data?.distribution || [],
-    loading,
     error,
   };
 }

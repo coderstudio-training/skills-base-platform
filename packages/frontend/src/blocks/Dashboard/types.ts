@@ -41,17 +41,6 @@ export interface NotificationCenterProps {
   onLastNotificationDateChange?: (date: string | null) => void;
 }
 
-export interface AdminDashboardProps {
-  filters?: DashboardFilters;
-}
-
-export interface DashboardFilters {
-  department?: string;
-  skillCategory?: string;
-  timeRange?: string;
-  status?: string;
-}
-
 export interface ReportSkill {
   name: string;
   currentLevel: number;

@@ -4,10 +4,10 @@ import { cn } from '@/lib/utils';
 import BaseCard from './BaseCard';
 
 export function TopPerformers() {
-  const { rankings, loading } = useTopPerformers();
+  const { rankings } = useTopPerformers();
 
   return (
-    <BaseCard title="Top Performers" loading={loading} loadingMessage="Loading top performers...">
+    <BaseCard title="Top Performers">
       <div className="bg-muted/50 rounded-t-lg">
         <div className="grid grid-cols-12 px-4 py-2 text-sm font-medium text-muted-foreground">
           <div className="col-span-2">Rank</div>

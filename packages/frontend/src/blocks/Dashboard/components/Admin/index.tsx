@@ -3,8 +3,8 @@
 import { LearningManagement } from '@/blocks/Dashboard/components/Admin/learning/LearningManagement';
 import AdminDashboardHeader from '@/blocks/Dashboard/components/Header/AdminHeader';
 import { useBusinessUnits } from '@/blocks/Dashboard/hooks/useBusinessUnits';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/blocks/ui/tabs';
 import AnalysisView from '@/components/dashboard/admin/AnalysisView';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { useAdminData } from '../../hooks/useAdminData';
 import { useTSCManager } from '../../hooks/useTSCManager';
@@ -17,7 +17,7 @@ import { SearchAndFilter } from './SearchAndFilter';
 import { UserDirectory } from './UserDirectory';
 
 export default function AdminDashboard() {
-  const { distribution: businessUnits, loading: businessUnitsLoading } = useBusinessUnits();
+  const { distribution: businessUnits } = useBusinessUnits();
   const {
     employees,
     loading: employeesLoading,
@@ -43,7 +43,6 @@ export default function AdminDashboard() {
           searchQuery={searchQuery}
           onBusinessUnitChange={handleBusinessUnitChange}
           onSearchChange={handleSearch}
-          isLoading={employeesLoading || businessUnitsLoading}
         />
 
         <AdminMetricCards />

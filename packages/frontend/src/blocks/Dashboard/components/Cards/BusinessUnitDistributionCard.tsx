@@ -3,14 +3,10 @@ import { Badge } from '@/components/ui/badge';
 import BaseCard from './BaseCard';
 
 export function BusinessUnitDistribution() {
-  const { distribution: businessUnitStats, loading } = useBusinessUnits();
+  const { distribution: businessUnitStats } = useBusinessUnits();
 
   return (
-    <BaseCard
-      title="Business Unit Distribution"
-      loading={loading}
-      loadingMessage="Loading business units..."
-    >
+    <BaseCard title="Business Unit Distribution">
       <div className="space-y-2">
         {businessUnitStats.map(bu => (
           <div key={bu.name} className="flex justify-between items-center">

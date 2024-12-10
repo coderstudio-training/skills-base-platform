@@ -3,10 +3,10 @@ import { Progress } from '@/components/ui/progress';
 import BaseCard from './BaseCard';
 
 export function SkillGapOverview() {
-  const { skillGaps, loading } = useSkillGaps();
+  const { skillGaps } = useSkillGaps();
 
   return (
-    <BaseCard title="Skill Gap Overview" loading={loading} loadingMessage="Loading skill gaps...">
+    <BaseCard title="Skill Gap Overview">
       <div className="space-y-4">
         {skillGaps.map(skill => (
           <div key={skill.name} className="space-y-1">
