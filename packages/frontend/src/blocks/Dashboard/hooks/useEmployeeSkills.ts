@@ -1,4 +1,4 @@
-import { SkillDetail } from '@/types/admin';
+import { SkillDetail } from '@/blocks/Dashboard/types';
 import { useState } from 'react';
 
 export function useEmployeeSkills() {

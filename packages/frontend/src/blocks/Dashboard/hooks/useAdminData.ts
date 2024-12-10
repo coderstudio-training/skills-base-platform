@@ -2,16 +2,12 @@ import {
   BusinessUnitsResponse,
   EmployeeStats,
   EmployeesResponse,
-  SkillGap,
+  SkillGapsResponse,
   TopPerformersResponse,
 } from '@/blocks/Dashboard/types';
 import { skillsApi, userApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 import { useCallback, useEffect, useState } from 'react';
-
-interface SkillGapsResponse {
-  skillGaps: SkillGap[];
-}
 
 export function useAdminData() {
   const [page, setPage] = useState(1);

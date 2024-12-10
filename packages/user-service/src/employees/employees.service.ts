@@ -240,7 +240,15 @@ export class EmployeesService {
       const skip = (page - 1) * limit;
 
       const [employees, total] = await Promise.all([
-        this.employeeModel.find().skip(skip).limit(limit).lean().exec(),
+        this.employeeModel
+          .find()
+          .select(
+            '-_id employeeId firstName lastName email grade designation employmentStatus businessUnit picture',
+          )
+          .skip(skip)
+          .limit(limit)
+          .lean()
+          .exec(),
         this.employeeModel.countDocuments(),
       ]);
 
@@ -248,7 +256,7 @@ export class EmployeesService {
       const employeeEmails = employees.map((emp) => emp.email);
       const userProfiles = await this.userModel
         .find({ email: { $in: employeeEmails } })
-        .select('-__v -createdAt -updatedAt -password -_id')
+        .select('-__v -createdAt -updatedAt -password -_id -googleId')
         .lean()
         .transform((docs) =>
           docs.map((doc) => ({
@@ -312,7 +320,15 @@ export class EmployeesService {
       }
 
       const [employees, total] = await Promise.all([
-        this.employeeModel.find(query).skip(skip).limit(limit).lean().exec(),
+        this.employeeModel
+          .find(query)
+          .skip(skip)
+          .select(
+            '-_id employeeId firstName lastName email grade designation employmentStatus businessUnit picture',
+          )
+          .limit(limit)
+          .lean()
+          .exec(),
         this.employeeModel.countDocuments(query),
       ]);
 
@@ -320,7 +336,7 @@ export class EmployeesService {
       const employeeEmails = employees.map((emp) => emp.email);
       const userProfiles = await this.userModel
         .find({ email: { $in: employeeEmails } })
-        .select('-__v -createdAt -updatedAt -password -_id')
+        .select('-__v -createdAt -updatedAt -password -_id -googleId')
         .lean()
         .transform((docs) =>
           docs.map((doc) => ({
@@ -479,7 +495,9 @@ export class EmployeesService {
       // Find employees by manager name
       const employees = await this.employeeModel
         .find({ managerName })
-        .select('-__v -createdAt -updatedAt -_id')
+        .select(
+          'employeeId grade firstName lastName jobLevel designation email managerName',
+        )
         .lean()
         .transform((docs) =>
           docs.map((doc) => ({
@@ -498,7 +516,7 @@ export class EmployeesService {
       const employeeEmails = employees.map((emp) => emp.email);
       const userProfiles = await this.userModel
         .find({ email: { $in: employeeEmails } })
-        .select('-__v -createdAt -updatedAt -password -_id')
+        .select('-__v -createdAt -updatedAt -password -_id -googleId')
         .lean()
         .transform((docs) =>
           docs.map((doc) => ({
