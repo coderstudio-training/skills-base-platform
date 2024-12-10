@@ -22,6 +22,7 @@ export function useTeamData() {
   );
 
   return {
+    session,
     teamMembers: data || [],
     loading,
     error,

@@ -1,8 +1,7 @@
 'use client';
 
 import { LearningManagement } from '@/blocks/Dashboard/components/Admin/learning/LearningManagement';
-import AdminDashboardHeader from '@/blocks/Dashboard/components/Header/AdminHeader';
-import AnalysisView from '@/components/dashboard/admin/AnalysisView';
+import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { useAdminData } from '../../hooks/useAdminData';
@@ -12,6 +11,7 @@ import { BusinessUnitDistribution } from '../Cards/BusinessUnitDistributionCard'
 import { SkillGapOverview } from '../Cards/SkillGapOverviewCard';
 import { TopPerformers } from '../Cards/TopPerformersCard';
 import TaxonomyManager from '../TSC';
+import AnalysisView from './AnalysisView';
 import { SearchAndFilter } from './SearchAndFilter';
 import { UserDirectory } from './UserDirectory';
 

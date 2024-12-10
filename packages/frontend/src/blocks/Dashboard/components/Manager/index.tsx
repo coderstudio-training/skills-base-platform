@@ -15,11 +15,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { ManagerOverview } from './ManagerOverview';
+import SkillsView from './SkillsView';
 import Training from './Training';
 
 export default function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
-  const { teamMembers, loading, error } = useTeamData();
+  const { session, teamMembers, loading, error } = useTeamData();
 
   return (
     <div className="container mx-auto p-4 max-w-[80%]">
@@ -50,7 +51,9 @@ export default function ManagerDashboard() {
           </div>
         </TabsContent>
 
-        <TabsContent value="skills">{/* <ManagerSkillsView /> */}</TabsContent>
+        <TabsContent value="skills">
+          <SkillsView name={session?.user?.name || ''} />
+        </TabsContent>
 
         <TabsContent value="training">
           <Training />
