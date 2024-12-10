@@ -82,7 +82,7 @@ export function useAdminData() {
     data: topPerformersData,
     error: topPerformersError,
     isLoading: topPerformersLoading,
-  } = useQuery<TopPerformersResponse>(skillsApi, '/api/skills/rankings', {
+  } = useQuery<TopPerformersResponse>(skillsApi, '/skills-matrix/rankings', {
     revalidate: 3600,
   });
 
