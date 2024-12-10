@@ -90,6 +90,11 @@ export interface SearchAndFilterProps {
 
 // staff
 
+export enum SkillStatus {
+  PROFICIENT = 'Proficient',
+  DEVELOPING = 'Developing',
+}
+
 export interface Skill {
   name: string;
   category: 'Technical Skills' | 'Soft Skills';
@@ -98,9 +103,25 @@ export interface Skill {
   average: number;
   gap: number;
   required: number;
+  status: SkillStatus;
 }
 
-export interface SkillsResponse {
+export interface CategoryMetrics {
+  averageGap: number;
+  skillsMeetingRequired: number;
+  skillsNeedingImprovement: number;
+  largestGap: number;
+  averageRating: number;
+  totalSkills: number;
+}
+
+export interface UserMetrics {
+  overall: CategoryMetrics;
+  softSkills: CategoryMetrics;
+  technicalSkills: CategoryMetrics;
+}
+
+export interface StaffSkills {
   email: string;
   name: string;
   careerLevel: string;
@@ -108,17 +129,71 @@ export interface SkillsResponse {
   skills: Skill[];
 }
 
-export interface UserMetrics {
-  averageGap: number;
-  skillsMeetingRequired: number;
-  skillsNeedingImprovement: number;
-  largestGap: number;
-  softSkillsAverage: number;
-  technicalSkillsAverage: number;
-  totalSkillsAssessed: number;
-}
-
-export interface SkillSummaryResponse {
+export interface StaffData {
   metrics: UserMetrics;
   skills: Skill[];
+}
+
+// Manager
+
+export interface TeamData {
+  members: StaffSkills[];
+}
+
+// Admin
+
+export interface TopSkill {
+  name: string;
+  prevalence: number;
+}
+
+export interface SkillGap {
+  name: string;
+  currentAvg: number;
+  requiredLevel: number;
+  gap: number;
+}
+
+export interface OrganizationSkillsAnalysis {
+  capabilities: {
+    capability: string;
+    topSkills: TopSkill[];
+    skillGaps: SkillGap[];
+  }[];
+}
+
+export interface SkillDistributionItem {
+  name: string;
+  userCount: number;
+  status: 'CRITICAL' | 'WARNING' | 'NORMAL';
+}
+
+export interface SkillDistributionCategory {
+  category: string;
+  skills: SkillDistributionItem[];
+}
+
+export interface BusinessUnitDistribution {
+  businessUnit: string;
+  categories: SkillDistributionCategory[];
+}
+
+export interface GradeDistribution {
+  grade: string;
+  userCount: number;
+}
+
+export interface DistributionsResponse {
+  skillDistribution: BusinessUnitDistribution[];
+  gradeDistribution: GradeDistribution[];
+}
+
+export interface EmployeeRanking {
+  name: string;
+  ranking: number;
+  score: number;
+}
+
+export interface EmployeeRankingsResponse {
+  rankings: EmployeeRanking[];
 }

@@ -2,7 +2,6 @@
 
 import { LearningManagement } from '@/blocks/Dashboard/components/Admin/learning/LearningManagement';
 import { useBusinessUnits } from '@/blocks/Dashboard/hooks/useBusinessUnits';
-import AnalysisView from '@/components/dashboard/admin/AnalysisView';
 import AdminDashboardHeader from '@/components/shared/AdminDashboardHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
@@ -11,6 +10,7 @@ import { AdminMetricCards } from '../Cards/AdminMetricCards';
 import { BusinessUnitDistribution } from '../Cards/BusinessUnitDistributionCard';
 import { SkillGapOverview } from '../Cards/SkillGapOverviewCard';
 import { TopPerformers } from '../Cards/TopPerformersCard';
+import AnalysisView from './AnalysisView';
 import { SearchAndFilter } from './SearchAndFilter';
 import { UserDirectory } from './UserDirectory';
 

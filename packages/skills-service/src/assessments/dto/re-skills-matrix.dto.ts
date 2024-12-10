@@ -13,6 +13,11 @@ export enum SkillCategory {
   SOFT = 'Soft Skills',
 }
 
+export enum SkillStatus {
+  PROFICIENT = 'Proficient',
+  DEVELOPING = 'Developing',
+}
+
 export class SkillDetailsDto {
   @ApiProperty({
     description: 'Name of the skill',
@@ -76,59 +81,80 @@ export class SkillDetailsDto {
   @Min(0)
   @Max(5)
   required!: number;
-}
-export class SkillsSummaryDto {
   @ApiProperty({
-    description: 'Average of all skill gaps',
+    description: 'Status of skill proficiency',
+    enum: SkillStatus,
+    example: SkillStatus.PROFICIENT,
+  })
+  @IsEnum(SkillStatus)
+  status!: SkillStatus;
+}
+
+export class CategorySkillsSummaryDto {
+  @ApiProperty({
+    description: 'Average gap for skills in this category',
     example: 0.5,
   })
   @IsNumber()
   averageGap!: number;
 
   @ApiProperty({
-    description: 'Count of skills meeting required levels',
-    example: 10,
+    description: 'Count of skills meeting required levels in this category',
+    example: 5,
   })
   @IsNumber()
   @Min(0)
   skillsMeetingRequired!: number;
 
   @ApiProperty({
-    description: 'Count of skills needing improvement',
-    example: 5,
+    description: 'Count of skills needing improvement in this category',
+    example: 2,
   })
   @IsNumber()
   @Min(0)
   skillsNeedingImprovement!: number;
 
   @ApiProperty({
-    description: 'Largest gap among all skills',
+    description: 'Largest gap in this category',
     example: -2,
   })
   @IsNumber()
   largestGap!: number;
 
   @ApiProperty({
-    description: 'Average rating for soft skills',
+    description: 'Average rating for skills in this category',
     example: 4.2,
   })
   @IsNumber()
-  softSkillsAverage!: number;
+  averageRating!: number;
 
   @ApiProperty({
-    description: 'Average rating for technical skills',
-    example: 3.8,
-  })
-  @IsNumber()
-  technicalSkillsAverage!: number;
-
-  @ApiProperty({
-    description: 'Total number of skills assessed',
-    example: 15,
+    description: 'Total number of skills assessed in this category',
+    example: 7,
   })
   @IsNumber()
   @Min(0)
-  totalSkillsAssessed!: number;
+  totalSkills!: number;
+}
+
+export class SkillsSummaryDto {
+  @ApiProperty({
+    description: 'Overall skills summary',
+    type: CategorySkillsSummaryDto,
+  })
+  overall!: CategorySkillsSummaryDto;
+
+  @ApiProperty({
+    description: 'Technical skills summary',
+    type: CategorySkillsSummaryDto,
+  })
+  technicalSkills!: CategorySkillsSummaryDto;
+
+  @ApiProperty({
+    description: 'Soft skills summary',
+    type: CategorySkillsSummaryDto,
+  })
+  softSkills!: CategorySkillsSummaryDto;
 }
 
 export class EmployeeSkillsResponseDto {
@@ -177,4 +203,5 @@ export class EmployeeSkillsResponseDto {
   })
   @IsNotEmpty()
   summary!: SkillsSummaryDto;
+  metrics: any;
 }
