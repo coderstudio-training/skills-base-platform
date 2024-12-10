@@ -2,7 +2,6 @@
 
 import { LearningManagement } from '@/blocks/Dashboard/components/Admin/learning/LearningManagement';
 import AdminDashboardHeader from '@/blocks/Dashboard/components/Header/AdminHeader';
-import { useBusinessUnits } from '@/blocks/Dashboard/hooks/useBusinessUnits';
 import AnalysisView from '@/components/dashboard/admin/AnalysisView';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
@@ -17,25 +16,52 @@ import { SearchAndFilter } from './SearchAndFilter';
 import { UserDirectory } from './UserDirectory';
 
 export default function AdminDashboard() {
-  const { distribution: businessUnits, loading: businessUnitsLoading } = useBusinessUnits();
   const {
+    // Employee data
     employees,
-    loading: employeesLoading,
-    page,
-    limit,
     totalItems,
     totalPages,
-    selectedBusinessUnit,
+    employeesLoading,
+
+    // Business units data
+    businessUnits,
+    businessUnitsLoading,
+    businessUnitsError,
+
+    // Stats data
+    stats,
+    statsLoading,
+    statsError,
+
+    // Skill gaps data
+    skillGaps,
+    skillGapsLoading,
+    skillGapsError,
+
+    // Top performers data
+    topPerformers,
+    topPerformersLoading,
+    topPerformersError,
+
+    // Pagination and filter state
+    page,
+    limit,
     searchQuery,
+    selectedBusinessUnit,
+
+    // Handlers
     handlePageChange,
     handleLimitChange,
     handleSearch,
     handleBusinessUnitChange,
   } = useAdminData();
+
   const { data: tscData } = useTSCManager();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminDashboardHeader />
+
       <main className="max-w-7xl mx-auto px-4 py-8">
         <SearchAndFilter
           selectedBusinessUnit={selectedBusinessUnit}
@@ -46,12 +72,24 @@ export default function AdminDashboard() {
           isLoading={employeesLoading || businessUnitsLoading}
         />
 
-        <AdminMetricCards />
+        <AdminMetricCards stats={stats} loading={statsLoading} error={statsError} />
 
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <TopPerformers />
-          <SkillGapOverview />
-          <BusinessUnitDistribution />
+          <TopPerformers
+            rankings={topPerformers}
+            loading={topPerformersLoading}
+            error={topPerformersError}
+          />
+          <SkillGapOverview
+            skillGaps={skillGaps}
+            loading={skillGapsLoading}
+            error={skillGapsError}
+          />
+          <BusinessUnitDistribution
+            businessUnits={businessUnits}
+            loading={businessUnitsLoading}
+            error={businessUnitsError}
+          />
         </div>
 
         <Tabs defaultValue="users" className="space-y-4">

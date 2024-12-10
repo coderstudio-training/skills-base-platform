@@ -350,3 +350,27 @@ export interface UserProfile {
   roles: string[];
   picture?: string;
 }
+
+export interface AdminMetricCardsProps {
+  stats: EmployeeStats;
+  loading: boolean;
+  error: ApiError | null;
+}
+
+export interface BusinessUnitDistributionProps {
+  businessUnits: BusinessUnitStat[];
+  loading: boolean;
+  error: ApiError | null;
+}
+
+export interface SkillGapOverviewProps {
+  skillGaps: SkillGap[];
+  loading: boolean;
+  error: ApiError | null;
+}
+
+export interface TopPerformersProps {
+  rankings: TopPerformer[];
+  loading: boolean;
+  error: ApiError | null;
+}

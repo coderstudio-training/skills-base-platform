@@ -1,7 +1,17 @@
-import { EmployeesResponse } from '@/blocks/Dashboard/types';
-import { userApi } from '@/lib/api/client';
+import {
+  BusinessUnitsResponse,
+  EmployeeStats,
+  EmployeesResponse,
+  SkillGap,
+  TopPerformersResponse,
+} from '@/blocks/Dashboard/types';
+import { skillsApi, userApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 import { useCallback, useEffect, useState } from 'react';
+
+interface SkillGapsResponse {
+  skillGaps: SkillGap[];
+}
 
 export function useAdminData() {
   const [page, setPage] = useState(1);
@@ -14,7 +24,6 @@ export function useAdminData() {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
     }, 800);
-
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -22,6 +31,7 @@ export function useAdminData() {
     setPage(1);
   }, [debouncedSearchQuery, selectedBusinessUnit]);
 
+  // Employees data query
   const endpoint =
     debouncedSearchQuery || selectedBusinessUnit !== 'All Business Units'
       ? '/employees/search'
@@ -38,12 +48,49 @@ export function useAdminData() {
 
   const {
     data: employeesData,
-    error,
-    isLoading,
+    error: employeesError,
+    isLoading: employeesLoading,
   } = useQuery<EmployeesResponse>(userApi, `${endpoint}?${queryParams}`, {
     revalidate: 3600,
   });
 
+  // Business units query
+  const {
+    data: businessUnitsData,
+    error: businessUnitsError,
+    isLoading: businessUnitsLoading,
+  } = useQuery<BusinessUnitsResponse>(userApi, '/employees/business-units', {
+    revalidate: 3600,
+  });
+
+  // Stats query
+  const {
+    data: statsData,
+    error: statsError,
+    isLoading: statsLoading,
+  } = useQuery<EmployeeStats>(userApi, '/employees/stats', {
+    revalidate: 3600,
+  });
+
+  // Skill gaps query
+  const {
+    data: skillGapsData,
+    error: skillGapsError,
+    isLoading: skillGapsLoading,
+  } = useQuery<SkillGapsResponse>(skillsApi, '/api/skills/analytics', {
+    revalidate: 3600,
+  });
+
+  // Top performers query
+  const {
+    data: topPerformersData,
+    error: topPerformersError,
+    isLoading: topPerformersLoading,
+  } = useQuery<TopPerformersResponse>(skillsApi, '/api/skills/rankings', {
+    revalidate: 3600,
+  });
+
+  // Handlers
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
   }, []);
@@ -69,15 +116,44 @@ export function useAdminData() {
   }, []);
 
   return {
+    // Employees data
     employees: employeesData?.items || [],
     totalItems: employeesData?.total || 0,
     totalPages: employeesData?.totalPages || 0,
+    employeesLoading,
+    employeesError,
+
+    // Business units data
+    businessUnits: businessUnitsData?.distribution || [],
+    businessUnitsLoading,
+    businessUnitsError,
+
+    // Stats data
+    stats: statsData || {
+      totalEmployeesCount: 0,
+      businessUnitsCount: 0,
+      activeEmployeesCount: 0,
+    },
+    statsLoading,
+    statsError,
+
+    // Skill gaps data
+    skillGaps: skillGapsData?.skillGaps || [],
+    skillGapsLoading,
+    skillGapsError,
+
+    // Top performers data
+    topPerformers: topPerformersData?.rankings.slice(0, 10) || [],
+    topPerformersLoading,
+    topPerformersError,
+
+    // Pagination and filter state
     page,
     limit,
     searchQuery,
     selectedBusinessUnit,
-    loading: isLoading,
-    error,
+
+    // Handlers
     handlePageChange,
     handleLimitChange,
     handleSearch,
