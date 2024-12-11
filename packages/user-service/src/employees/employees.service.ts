@@ -12,6 +12,32 @@ export class EmployeesService {
   private readonly logger = new Logger(EmployeesService.name);
   private readonly BATCH_SIZE = 1000;
 
+  private defaultEmployeesCache: {
+    data: any;
+  } | null = null;
+
+  private businessUnitsCache: {
+    data: {
+      businessUnits: string[];
+      distribution: { name: string; count: number }[];
+    };
+  } | null = null;
+
+  private employeeStatsCache: {
+    data: {
+      totalEmployeesCount: number;
+      businessUnitsCount: number;
+      activeEmployeesCount: number;
+    };
+  } | null = null;
+
+  private managerEmployeesCache: Map<
+    string,
+    {
+      data: any[];
+    }
+  > = new Map();
+
   constructor(
     @InjectModel(Employee.name)
     private readonly employeeModel: Model<Employee>,
@@ -19,6 +45,64 @@ export class EmployeesService {
     private readonly userModel: Model<User>,
   ) {
     this.ensureIndexes();
+  }
+
+  private isValidCache(): boolean {
+    return this.defaultEmployeesCache !== null;
+  }
+
+  private isValidBusinessUnitsCache(): boolean {
+    return this.businessUnitsCache !== null;
+  }
+
+  private isValidEmployeeStatsCache(): boolean {
+    return this.employeeStatsCache !== null;
+  }
+
+  private isValidManagerCache(managerName: string): boolean {
+    return this.managerEmployeesCache.has(managerName);
+  }
+
+  private async updateCache(data: any): Promise<void> {
+    this.defaultEmployeesCache = {
+      data,
+    };
+  }
+
+  private async updateBusinessUnitsCache(data: {
+    businessUnits: string[];
+    distribution: { name: string; count: number }[];
+  }): Promise<void> {
+    this.businessUnitsCache = {
+      data,
+    };
+  }
+
+  private async updateEmployeeStatsCache(data: {
+    totalEmployeesCount: number;
+    businessUnitsCount: number;
+    activeEmployeesCount: number;
+  }): Promise<void> {
+    this.employeeStatsCache = {
+      data,
+    };
+  }
+
+  private async updateManagerCache(
+    managerName: string,
+    data: any[],
+  ): Promise<void> {
+    this.managerEmployeesCache.set(managerName, {
+      data,
+    });
+  }
+
+  clearCache(): void {
+    this.defaultEmployeesCache = null;
+    this.businessUnitsCache = null;
+    this.employeeStatsCache = null;
+    this.managerEmployeesCache.clear();
+    this.logger.debug('All caches cleared');
   }
 
   private async ensureIndexes(): Promise<void> {
@@ -101,6 +185,8 @@ export class EmployeesService {
       }
     }
 
+    this.clearCache();
+
     return {
       summary: {
         total: employees.length,
@@ -136,11 +222,33 @@ export class EmployeesService {
   async findAll(paginationDto: PaginationDto) {
     const page = paginationDto.page || 1;
     const limit = paginationDto.limit || 10;
-    const skip = (page - 1) * limit;
+    const isDefaultPagination = page === 1 && limit === 10;
 
     try {
+      // Only check cache for default pagination
+      if (isDefaultPagination && this.isValidCache()) {
+        this.logger.debug('Cache hit for default pagination');
+        return this.defaultEmployeesCache!.data;
+      }
+
+      if (isDefaultPagination) {
+        this.logger.debug(
+          'Cache miss for default pagination, fetching from database',
+        );
+      }
+
+      const skip = (page - 1) * limit;
+
       const [employees, total] = await Promise.all([
-        this.employeeModel.find().skip(skip).limit(limit).lean().exec(),
+        this.employeeModel
+          .find()
+          .select(
+            '-_id employeeId firstName lastName email grade designation employmentStatus businessUnit picture',
+          )
+          .skip(skip)
+          .limit(limit)
+          .lean()
+          .exec(),
         this.employeeModel.countDocuments(),
       ]);
 
@@ -148,7 +256,7 @@ export class EmployeesService {
       const employeeEmails = employees.map((emp) => emp.email);
       const userProfiles = await this.userModel
         .find({ email: { $in: employeeEmails } })
-        .select('-__v -createdAt -updatedAt -password -_id')
+        .select('-__v -createdAt -updatedAt -password -_id -googleId')
         .lean()
         .transform((docs) =>
           docs.map((doc) => ({
@@ -163,7 +271,6 @@ export class EmployeesService {
           (user) => user.email === employee.email,
         );
 
-        // Merge profiles and remove any undefined values
         return Object.fromEntries(
           Object.entries({
             ...employee,
@@ -173,14 +280,20 @@ export class EmployeesService {
       });
 
       const totalPages = Math.ceil(total / limit);
-
-      return {
+      const result = {
         items: mergedProfiles,
         total,
         page,
         limit,
         totalPages,
       };
+
+      // Update cache only for default pagination
+      if (isDefaultPagination) {
+        await this.updateCache(result);
+      }
+
+      return result;
     } catch (error) {
       this.logger.error('Error fetching employees:', error);
       throw error;
@@ -207,7 +320,15 @@ export class EmployeesService {
       }
 
       const [employees, total] = await Promise.all([
-        this.employeeModel.find(query).skip(skip).limit(limit).lean().exec(),
+        this.employeeModel
+          .find(query)
+          .skip(skip)
+          .select(
+            '-_id employeeId firstName lastName email grade designation employmentStatus businessUnit picture',
+          )
+          .limit(limit)
+          .lean()
+          .exec(),
         this.employeeModel.countDocuments(query),
       ]);
 
@@ -215,7 +336,7 @@ export class EmployeesService {
       const employeeEmails = employees.map((emp) => emp.email);
       const userProfiles = await this.userModel
         .find({ email: { $in: employeeEmails } })
-        .select('-__v -createdAt -updatedAt -password -_id')
+        .select('-__v -createdAt -updatedAt -password -_id -googleId')
         .lean()
         .transform((docs) =>
           docs.map((doc) => ({
@@ -259,6 +380,16 @@ export class EmployeesService {
     distribution: { name: string; count: number }[];
   }> {
     try {
+      // Check if valid cache exists
+      if (this.isValidBusinessUnitsCache()) {
+        this.logger.debug('Cache hit for business units');
+        return this.businessUnitsCache!.data;
+      }
+
+      this.logger.debug(
+        'Cache miss for business units, fetching from database',
+      );
+
       const [businessUnits, distribution] = await Promise.all([
         this.employeeModel
           .distinct('businessUnit')
@@ -288,7 +419,12 @@ export class EmployeesService {
           .exec(),
       ]);
 
-      return { businessUnits, distribution };
+      const result = { businessUnits, distribution };
+
+      // Update cache with new data
+      await this.updateBusinessUnitsCache(result);
+
+      return result;
     } catch (error) {
       this.logger.error('Error fetching business units:', error);
       throw error;
@@ -301,6 +437,16 @@ export class EmployeesService {
     activeEmployeesCount: number;
   }> {
     try {
+      // Check if valid cache exists
+      if (this.isValidEmployeeStatsCache()) {
+        this.logger.debug('Cache hit for employee stats');
+        return this.employeeStatsCache!.data;
+      }
+
+      this.logger.debug(
+        'Cache miss for employee stats, fetching from database',
+      );
+
       const [totalEmployeesCount, businessUnitsCount, activeEmployeesCount] =
         await Promise.all([
           this.employeeModel.countDocuments(),
@@ -310,11 +456,16 @@ export class EmployeesService {
           this.employeeModel.countDocuments({ employmentStatus: 'Active' }),
         ]);
 
-      return {
+      const result = {
         totalEmployeesCount,
         businessUnitsCount,
         activeEmployeesCount,
       };
+
+      // Update cache with new data
+      await this.updateEmployeeStatsCache(result);
+
+      return result;
     } catch (error) {
       this.logger.error('Error fetching employee statistics:', error);
       throw error;
@@ -331,10 +482,22 @@ export class EmployeesService {
 
   async findByManager(managerName: string): Promise<any[]> {
     try {
+      // Check if valid cache exists for this manager
+      if (this.isValidManagerCache(managerName)) {
+        this.logger.debug(`Cache hit for manager ${managerName}`);
+        return this.managerEmployeesCache.get(managerName)!.data;
+      }
+
+      this.logger.debug(
+        `Cache miss for manager ${managerName}, fetching from database`,
+      );
+
       // Find employees by manager name
       const employees = await this.employeeModel
         .find({ managerName })
-        .select('-__v -createdAt -updatedAt -_id')
+        .select(
+          'employeeId grade firstName lastName jobLevel designation email managerName',
+        )
         .lean()
         .transform((docs) =>
           docs.map((doc) => ({
@@ -343,8 +506,9 @@ export class EmployeesService {
           })),
         );
 
-      // If no employees found, return empty array
+      // If no employees found, cache empty array and return
       if (!employees || employees.length === 0) {
+        await this.updateManagerCache(managerName, []);
         return [];
       }
 
@@ -352,7 +516,7 @@ export class EmployeesService {
       const employeeEmails = employees.map((emp) => emp.email);
       const userProfiles = await this.userModel
         .find({ email: { $in: employeeEmails } })
-        .select('-__v -createdAt -updatedAt -password -_id')
+        .select('-__v -createdAt -updatedAt -password -_id -googleId')
         .lean()
         .transform((docs) =>
           docs.map((doc) => ({
@@ -375,6 +539,9 @@ export class EmployeesService {
           }).filter(([, v]) => v != null),
         );
       });
+
+      // Update cache with the merged profiles
+      await this.updateManagerCache(managerName, mergedProfiles);
 
       return mergedProfiles;
     } catch (error) {

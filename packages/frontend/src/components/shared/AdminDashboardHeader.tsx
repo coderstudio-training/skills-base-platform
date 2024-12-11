@@ -1,5 +1,6 @@
 'use client';
 
+import { useLogout } from '@/blocks/Dashboard/hooks/useLogout';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { ReportGenerator } from '@/components/ReportGenerator';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +14,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Settings } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import { useState } from 'react';
 
 export default function AdminDashboardHeader() {
@@ -32,9 +32,7 @@ export default function AdminDashboardHeader() {
     }
   };
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
+  const { handleLogout } = useLogout();
 
   return (
     <header className="bg-white border-b">

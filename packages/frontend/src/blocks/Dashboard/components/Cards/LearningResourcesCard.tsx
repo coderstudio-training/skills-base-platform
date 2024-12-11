@@ -1,6 +1,6 @@
 'use client';
 
-import { useLearningResources } from '@/blocks/Dashboard/hooks/learning/useLearningResources';
+import { useLearningResources } from '@/blocks/Dashboard/hooks/useLearningResources';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';

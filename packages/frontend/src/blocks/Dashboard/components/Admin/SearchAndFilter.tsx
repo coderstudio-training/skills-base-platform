@@ -1,3 +1,4 @@
+import { BUSINESS_UNITS } from '@/blocks/Dashboard/constants';
 import { SearchAndFilterProps } from '@/blocks/Dashboard/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,8 +11,6 @@ import {
 } from '@/components/ui/select';
 import { Building2, Filter, Search } from 'lucide-react';
 
-const ALL_BUSINESS_UNITS = 'All Business Units';
-
 export function SearchAndFilter({
   selectedBusinessUnit,
   businessUnits,
@@ -22,7 +21,7 @@ export function SearchAndFilter({
 }: SearchAndFilterProps) {
   const allUnits = [
     'All Business Units',
-    ...businessUnits.filter(unit => unit !== ALL_BUSINESS_UNITS),
+    ...businessUnits.filter(unit => unit !== BUSINESS_UNITS.ALL),
   ];
 
   return (

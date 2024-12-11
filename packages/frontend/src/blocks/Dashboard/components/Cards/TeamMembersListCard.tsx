@@ -1,23 +1,9 @@
 import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
+import { TeamMembersListProps } from '@/blocks/Dashboard/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ApiError } from '@/lib/api/types';
-import { TeamMember } from '@/types/manager';
 
-interface TeamMembersListProps {
-  members: TeamMember[];
-  loading: boolean;
-  error: ApiError | null;
-  showPerformance?: boolean;
-}
-
-export function TeamMembersListCard({
-  members,
-  loading,
-  error,
-  showPerformance = false,
-}: TeamMembersListProps) {
+export function TeamMembersListCard({ members, loading, error }: TeamMembersListProps) {
   return (
     <BaseCard
       title="Team Members"
@@ -58,14 +44,6 @@ export function TeamMembersListCard({
                   <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
                 </div>
               </div>
-              {showPerformance && member.performanceScore && (
-                <div className="flex items-center gap-4">
-                  <Progress value={member.performanceScore} className="w-24" />
-                  <span className="text-sm font-medium w-12 text-right">
-                    {member.performanceScore}%
-                  </span>
-                </div>
-              )}
             </div>
           ))}
           {members.length === 0 && (

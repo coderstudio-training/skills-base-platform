@@ -1,8 +1,8 @@
 import { learningApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
-import { Recommendation } from '@/types/staff';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
+import { Recommendation } from '../types';
 
 export function useRecommendations() {
   const { data: session } = useSession();

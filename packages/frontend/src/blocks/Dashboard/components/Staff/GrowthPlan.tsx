@@ -1,8 +1,10 @@
 'use client';
 
-import { useRecommendations } from '@/blocks/Dashboard/hooks/learning/useRecommendation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRecommendations } from '@/blocks/Dashboard/hooks/useRecommendation';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { X } from 'lucide-react';
+import BaseCard from '../Cards/BaseCard';
 
 function GrowthPlan() {
   const {
@@ -17,17 +19,17 @@ function GrowthPlan() {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Growth Plan</CardTitle>
-          <CardDescription>Skill gaps and recommended training courses</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="p-4 text-center">Loading...</div>
-          ) : error ? (
-            <div className="p-4 text-center text-red-500">{error.message}</div>
-          ) : recommendations && recommendations.length > 0 ? (
+      <BaseCard
+        title="Growth Plan"
+        description="Skill gaps and recommended training courses"
+        loading={loading}
+      >
+        {error ? (
+          <Alert variant="destructive">
+            <AlertDescription>{error.message}</AlertDescription>
+          </Alert>
+        ) : (
+          <ScrollArea className="h-[600px]">
             <div className="w-full">
               <table className="w-full">
                 <thead>
@@ -77,11 +79,9 @@ function GrowthPlan() {
                 </tbody>
               </table>
             </div>
-          ) : (
-            <div className="p-4 text-center text-gray-500">No recommendations available</div>
-          )}
-        </CardContent>
-      </Card>
+          </ScrollArea>
+        )}
+      </BaseCard>
 
       {isDialogOpen && selectedCourse && (
         <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4">

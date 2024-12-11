@@ -1,37 +1,84 @@
-import { skillsApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { SkillDetail } from '@/blocks/Dashboard/types';
 import { useState } from 'react';
-import { SkillDetail } from '../types';
 
-interface SkillsResponse {
-  skills: SkillDetail[];
-}
+export function useEmployeeSkills() {
+  const [skills, setSkills] = useState<SkillDetail[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-export function useEmployeeSkills(employeeEmail: string) {
-  const [isLoading, setIsLoading] = useState(false);
+  const fetchSkills = async (email: string) => {
+    setLoading(true);
+    setError(null);
 
-  const { data, error, refetch } = useQuery<SkillsResponse>(
-    skillsApi,
-    `/api/skills/employee/${employeeEmail}`,
-    {
-      enabled: false,
-      revalidate: 3600,
-    },
-  );
-
-  const fetchSkills = async () => {
-    setIsLoading(true);
     try {
-      await refetch();
+      const response = await fetch(`/api/skills/employee/${email}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch employee skills');
+      }
+      const data = await response.json();
+
+      // Fetch descriptions for each skill using taxonomy find by title
+      const skillsWithDescriptions = await Promise.all(
+        data.skills.map(async (skill: SkillDetail) => {
+          try {
+            const taxonomyResponse = await fetch(
+              `/api/taxonomy/technical/title/${skill.skill}?businessUnit=QA`,
+            );
+
+            if (!taxonomyResponse.ok) {
+              console.warn(`No taxonomy found for skill: ${skill.skill}`);
+              return {
+                ...skill,
+                description: 'No description available',
+                proficiencyDescription: 'No proficiency description available',
+              };
+            }
+
+            const taxonomyData = await taxonomyResponse.json();
+
+            // Use Math.floor to get the exact level key
+            const levelKey = `Level ${Math.floor(skill.average)}`;
+            const proficiencyDescription =
+              taxonomyData[0]?.proficiencyDescription?.[levelKey]?.[1] ||
+              'No proficiency description available';
+
+            return {
+              ...skill,
+              description:
+                taxonomyData.length > 0 ? taxonomyData[0].description : 'No description available',
+              proficiencyDescription,
+            };
+          } catch (error) {
+            console.error(`Error fetching description for ${skill.skill}:`, error);
+            return {
+              ...skill,
+              description: 'No description available',
+              proficiencyDescription: 'No proficiency description available',
+            };
+          }
+        }),
+      );
+
+      setSkills(skillsWithDescriptions);
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error('An error occurred');
+      setError(err);
+      setSkills([]);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
+  const clearSkills = () => {
+    setSkills([]);
+    setError(null);
+  };
+
   return {
-    skills: data?.skills || [],
-    loading: isLoading,
+    skills,
+    loading,
     error,
     fetchSkills,
+    clearSkills,
   };
 }

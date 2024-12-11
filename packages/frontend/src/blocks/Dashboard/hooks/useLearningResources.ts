@@ -1,36 +1,29 @@
 import { learningApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
-import { Course } from '@/types/admin';
 import { useEffect, useMemo, useState } from 'react';
+import { Course } from '../types';
 
 export function useLearningResources() {
   const [allResources, setAllResources] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
+  const [filteredResources, setFilteredResources] = useState<Course[]>([]);
 
-  // Prepare query parameters
-  const queryParams = new URLSearchParams();
-  if (selectedCategory !== 'all') queryParams.append('category', selectedCategory);
-  if (selectedLevel !== 'all') queryParams.append('level', selectedLevel);
-
-  // Use useQuery for fetching resources
+  // Fetch resources
   const {
     data,
     isLoading: loading,
     error,
-  } = useQuery<Course[]>(
-    learningApi,
-    `/api/courses${queryParams.toString() ? `?${queryParams.toString()}` : ''}`,
-    {
-      requiresAuth: true,
-      revalidate: 300,
-    },
-  );
+  } = useQuery<Course[]>(learningApi, '/api/courses', {
+    requiresAuth: true,
+    revalidate: 300,
+  });
 
   // Update allResources when data changes
   useEffect(() => {
     if (data) {
       setAllResources(data);
+      setFilteredResources(data);
     }
   }, [data]);
 
@@ -48,15 +41,38 @@ export function useLearningResources() {
     return ['all', ...uniqueLevels];
   }, [allResources]);
 
+  // Apply filters whenever selection changes
+  useEffect(() => {
+    let result = [...allResources];
+
+    if (selectedCategory !== 'all') {
+      result = result.filter(r => r.skillCategory === selectedCategory);
+    }
+
+    if (selectedLevel !== 'all') {
+      result = result.filter(r => r.requiredLevel.toString() === selectedLevel);
+    }
+
+    setFilteredResources(result);
+  }, [selectedCategory, selectedLevel, allResources]);
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
+
+  const handleLevelChange = (level: string) => {
+    setSelectedLevel(level);
+  };
+
   return {
-    resources: allResources,
+    resources: filteredResources,
     loading,
     error: error?.message || null,
     categories,
     levels,
     selectedCategory,
-    setSelectedCategory,
     selectedLevel,
-    setSelectedLevel,
+    setSelectedCategory: handleCategoryChange,
+    setSelectedLevel: handleLevelChange,
   };
 }

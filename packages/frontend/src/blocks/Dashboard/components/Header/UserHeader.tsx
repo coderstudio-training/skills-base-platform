@@ -2,12 +2,15 @@ import { useUserProfile } from '@/blocks/Dashboard/hooks/useUserProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { getInitials } from '@/lib/utils/string-utils';
 import { LogOut } from 'lucide-react';
 import { useLogout } from '../../hooks/useLogout';
 
 export function UserHeader() {
-  const { userProfile, isManager, fullName, getInitials } = useUserProfile();
+  const { userProfile, isManager, fullName } = useUserProfile();
+
   const { handleLogout } = useLogout();
+
   return (
     <div className="flex justify-between items-center mb-6">
       <div className="flex items-center space-x-4">

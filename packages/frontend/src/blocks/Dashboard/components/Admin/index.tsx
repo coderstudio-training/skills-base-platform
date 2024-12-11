@@ -1,41 +1,67 @@
 'use client';
 
-import { LearningManagement } from '@/blocks/Dashboard/components/Admin/learning/LearningManagement';
+import { LearningManagement } from '@/blocks/Dashboard/components/Admin/LearningManagement';
+import { SearchAndFilter } from '@/blocks/Dashboard/components/Admin/SearchAndFilter';
+import { UserDirectory } from '@/blocks/Dashboard/components/Admin/UserDirectory';
+import { AdminMetricCards } from '@/blocks/Dashboard/components/Cards/AdminMetricCards';
+import { BusinessUnitDistribution } from '@/blocks/Dashboard/components/Cards/BusinessUnitDistributionCard';
+import { SkillGapOverview } from '@/blocks/Dashboard/components/Cards/SkillGapOverviewCard';
+import { TopPerformers } from '@/blocks/Dashboard/components/Cards/TopPerformersCard';
 import AdminDashboardHeader from '@/blocks/Dashboard/components/Header/AdminHeader';
-import { useBusinessUnits } from '@/blocks/Dashboard/hooks/useBusinessUnits';
+import { useAdminData } from '@/blocks/Dashboard/hooks/useAdminData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/blocks/ui/tabs';
-import AnalysisView from '@/components/dashboard/admin/AnalysisView';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
-import { useAdminData } from '../../hooks/useAdminData';
 import { useTSCManager } from '../../hooks/useTSCManager';
-import { AdminMetricCards } from '../Cards/AdminMetricCards';
-import { BusinessUnitDistribution } from '../Cards/BusinessUnitDistributionCard';
-import { SkillGapOverview } from '../Cards/SkillGapOverviewCard';
-import { TopPerformers } from '../Cards/TopPerformersCard';
 import TaxonomyManager from '../TSC';
-import { SearchAndFilter } from './SearchAndFilter';
-import { UserDirectory } from './UserDirectory';
+import AnalysisView from './AnalysisView';
 
 export default function AdminDashboard() {
-  const { distribution: businessUnits } = useBusinessUnits();
   const {
+    // Employee data
     employees,
-    loading: employeesLoading,
-    page,
-    limit,
     totalItems,
     totalPages,
-    selectedBusinessUnit,
+    employeesLoading,
+
+    // Business units data
+    businessUnits,
+    businessUnitsLoading,
+    businessUnitsError,
+
+    // Stats data
+    stats,
+    statsLoading,
+    statsError,
+
+    // Skill gaps data
+    skillGaps,
+    skillGapsLoading,
+    skillGapsError,
+
+    // Top performers data
+    topPerformers,
+    topPerformersLoading,
+    topPerformersError,
+
+    // Pagination and filter state
+    page,
+    limit,
     searchQuery,
+    selectedBusinessUnit,
+
+    // Handlers
     handlePageChange,
     handleLimitChange,
     handleSearch,
     handleBusinessUnitChange,
   } = useAdminData();
+
   const { data: tscData } = useTSCManager();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminDashboardHeader />
+
       <main className="max-w-7xl mx-auto px-4 py-8">
         <SearchAndFilter
           selectedBusinessUnit={selectedBusinessUnit}
@@ -45,12 +71,24 @@ export default function AdminDashboard() {
           onSearchChange={handleSearch}
         />
 
-        <AdminMetricCards />
+        <AdminMetricCards stats={stats} loading={statsLoading} error={statsError} />
 
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <TopPerformers />
-          <SkillGapOverview />
-          <BusinessUnitDistribution />
+          <TopPerformers
+            rankings={topPerformers}
+            loading={topPerformersLoading}
+            error={topPerformersError}
+          />
+          <SkillGapOverview
+            skillGaps={skillGaps}
+            loading={skillGapsLoading}
+            error={skillGapsError}
+          />
+          <BusinessUnitDistribution
+            businessUnits={businessUnits}
+            loading={businessUnitsLoading}
+            error={businessUnitsError}
+          />
         </div>
 
         <Tabs defaultValue="users" className="space-y-4">

@@ -1,3 +1,4 @@
+import { BaseBarChartProps } from '@/blocks/Dashboard/types';
 import { Loader2 } from 'lucide-react';
 import {
   Bar,
@@ -9,27 +10,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { COLORS } from '../../constants';
 
-export interface ChartSeries {
-  key: string;
-  name: string;
-  color?: string;
-}
-
-interface BaseBarChartProps {
-  data: Record<string, number | string>[];
-  loading?: boolean;
-  xAxisKey: string;
-  series: ChartSeries[];
-  height?: number;
-  stacked?: boolean;
-  noDataMessage?: string;
-  loadingMessage?: string;
-}
-
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00ced1'];
-
-export function BaseBarChart({
+export function TeamCompositionBarChart({
   data,
   loading = false,
   xAxisKey,

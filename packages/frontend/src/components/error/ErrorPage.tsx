@@ -1,10 +1,10 @@
 // components/ErrorPage.tsx
 'use client';
 
+import { useLogout } from '@/blocks/Dashboard/hooks/useLogout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 
 interface ErrorPageProps {
   statusCode: number | string;
@@ -12,9 +12,7 @@ interface ErrorPageProps {
 }
 
 export default function ErrorPage({ statusCode, message }: ErrorPageProps) {
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
+  const { handleLogout } = useLogout();
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">

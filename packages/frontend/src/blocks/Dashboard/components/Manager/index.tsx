@@ -1,6 +1,7 @@
 'use client';
 
 import { UserHeader } from '@/blocks/Dashboard/components/Header/UserHeader';
+import { ManagerOverview } from '@/blocks/Dashboard/components/Manager/ManagerOverview';
 import { useTeamData } from '@/blocks/Dashboard/hooks/useTeamData';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,12 +15,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
-import { ManagerOverview } from './ManagerOverview';
+import { IndividualPerformanceCard } from '../Cards/IndividualPerformanceCard';
+import SkillsView from './SkillsView';
 import Training from './Training';
 
 export default function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
-  const { teamMembers, loading, error } = useTeamData();
+  const { session, teamMembers, loading, error } = useTeamData();
 
   return (
     <div className="container mx-auto p-4 max-w-[80%]">
@@ -40,17 +42,12 @@ export default function ManagerDashboard() {
         </TabsContent>
 
         <TabsContent value="performance">
-          <div className="space-y-4">
-            {/* <TeamMembersList
-              loading={loading}
-              error={error?.toString() || null}
-              members={teamMembers}
-              showPerformance
-            /> */}
-          </div>
+          <IndividualPerformanceCard members={teamMembers} loading={loading} error={error} />
         </TabsContent>
 
-        <TabsContent value="skills">{/* <ManagerSkillsView /> */}</TabsContent>
+        <TabsContent value="skills">
+          <SkillsView name={session?.user?.name || ''} />
+        </TabsContent>
 
         <TabsContent value="training">
           <Training />

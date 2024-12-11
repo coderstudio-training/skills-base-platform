@@ -7,42 +7,164 @@
   },
   "item": [
     {
-      "name": "Bulk Compute Average",
-      "protocolProfileBehavior": {
-        "disableBodyPruning": true
-      },
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json",
-            "type": "text"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{authToken}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"bu\": \"QA\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+      "name": "User",
+      "item": [
+        {
+          "name": "Get Employee Skill Matrix",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3002/skills-matrix/user?email=generellis.david@stratpoint.com",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["skills-matrix", "user"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "generellis.david@stratpoint.com"
+                }
+              ]
             }
-          }
+          },
+          "response": []
         },
-        "url": {
-          "raw": "http://localhost:3002/api/skills-assessments/bulk-performance",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3002",
-          "path": ["api", "skills-assessments", "bulk-performance"]
+        {
+          "name": "Get Employee Skills Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3002/skills-matrix/user/summary?email=generellis.david@stratpoint.com",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["skills-matrix", "user", "summary"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "generellis.david@stratpoint.com"
+                }
+              ]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
+    },
+    {
+      "name": "Manager",
+      "item": [
+        {
+          "name": "Get Team Skills",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3002/skills-matrix/manager/Gener Ellis David",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["skills-matrix", "manager", "Gener Ellis David"],
+              "query": [
+                {
+                  "key": null,
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get Organization Skill Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3002/skills-matrix/admin/analysis",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["skills-matrix", "admin", "analysis"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Organization Distributions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3002/skills-matrix/distributions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["skills-matrix", "distributions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Organization Rankings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3002/skills-matrix/rankings",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["skills-matrix", "rankings"]
+            }
+          },
+          "response": []
+        }
+      ]
     },
     {
       "name": "Get Required Skills",
@@ -89,106 +211,39 @@
       "response": []
     },
     {
-      "name": "Get Employee Skill Matrix",
+      "name": "Bulk Compute Average",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
       "request": {
         "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:3002/api/skills/skill-matrix/?email=augustcristopher.tela@stratpoint.com",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3002",
-          "path": ["api", "skills", "skill-matrix", ""],
-          "query": [
-            {
-              "key": "email",
-              "value": "augustcristopher.tela@stratpoint.com"
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"bu\": \"QA\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
             }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get Organization Skill Matrix",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{authToken}}",
-            "type": "text"
           }
-        ],
+        },
         "url": {
-          "raw": "http://localhost:3002/api/skills/skills-matrix",
+          "raw": "http://localhost:3002/api/skills-assessments/bulk-performance",
           "protocol": "http",
           "host": ["localhost"],
           "port": "3002",
-          "path": ["api", "skills", "skills-matrix"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get Organization Skill Analytics",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{authToken}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "http://localhost:3002/api/skills/analytics",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3002",
-          "path": ["api", "skills", "analytics"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get Organization Distributions",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{authToken}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "http://localhost:3002/api/skills/distributions",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3002",
-          "path": ["api", "skills", "distributions"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get Organization Rankings",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{authToken}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "http://localhost:3002/api/skills/rankings",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3002",
-          "path": ["api", "skills", "rankings"]
+          "path": ["api", "skills-assessments", "bulk-performance"]
         }
       },
       "response": []

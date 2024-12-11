@@ -1,19 +1,6 @@
 // blocks/Dashboard/components/Cards/StatCard.tsx
-import { ApiError } from '@/lib/api/types';
-import { LucideIcon } from 'lucide-react';
-import BaseCard from './BaseCard';
-
-export type MetricCardProps = {
-  title: string;
-  description?: string;
-  value: number | string;
-  loading?: boolean;
-  error?: ApiError | null;
-  icon?: LucideIcon;
-  subtitle?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-};
+import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
+import { MetricCardProps } from '@/blocks/Dashboard/types';
 
 export function MetricCard({
   title,

@@ -1,63 +1,65 @@
+// components/Staff/Overview.tsx
 'use client';
 
+import { ApiError } from '@/lib/api/types';
 import { Blocks, BrainCircuit, User2 } from 'lucide-react';
-import { useState } from 'react';
-import { SkillSummaryResponse } from '../../types';
-import { MetricsCard } from '../Cards/MetricsCard';
+import { StaffData } from '../../types';
+import { MetricCard } from '../Cards/MetricCard';
 import { SkillsOverviewCard } from '../Cards/SkillsOverviewCard';
 
 interface OverviewProps {
-  skillsData: SkillSummaryResponse | null;
+  skillsData: StaffData | null;
+  selectedCategory: 'Technical Skills' | 'Soft Skills';
+  onCategoryChange: (category: 'Technical Skills' | 'Soft Skills') => void;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
-export default function Overview({ skillsData }: OverviewProps) {
-  const [selectedCategory, setSelectedCategory] = useState<'Technical Skills' | 'Soft Skills'>(
-    'Technical Skills',
-  );
-
-  if (!skillsData) {
-    console.log('No skills data available');
-    return <div>No skills data available</div>;
-  }
-
-  const { metrics, skills } = skillsData;
-
-  if (!metrics || !skills) {
-    console.log('Invalid data structure:', skillsData);
-    return <div>Invalid data structure received</div>;
-  }
-
+export default function Overview({
+  skillsData,
+  selectedCategory,
+  onCategoryChange,
+  loading,
+  error,
+}: OverviewProps) {
   const safeMetrics = {
-    softSkillsAverage: metrics.softSkillsAverage ?? 0,
-    technicalSkillsAverage: metrics.technicalSkillsAverage ?? 0,
-    skillsAssessed: metrics.totalSkillsAssessed ?? 0, // Updated field name
+    softSkillsAverage: skillsData?.metrics?.softSkills.averageRating ?? 0,
+    technicalSkillsAverage: skillsData?.metrics?.technicalSkills.averageRating ?? 0,
+    skillsAssessed: skillsData?.metrics?.overall.totalSkills ?? 0,
   };
 
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-3">
-        <MetricsCard
+        <MetricCard
           icon={User2}
           title="Soft Skills Average"
           value={safeMetrics.softSkillsAverage}
+          loading={loading}
+          error={error}
         />
-        <MetricsCard
+        <MetricCard
           icon={BrainCircuit}
           title="Technical Skills Average"
           value={safeMetrics.technicalSkillsAverage}
+          loading={loading}
+          error={error}
         />
-        <MetricsCard
+        <MetricCard
           icon={Blocks}
           title="Skills Assessed"
           value={safeMetrics.skillsAssessed}
-          decimals={0}
+          loading={loading}
+          error={error}
         />
       </div>
 
       <SkillsOverviewCard
-        skills={skills}
+        skills={skillsData?.skills ?? []}
         selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        onCategoryChange={onCategoryChange}
+        loading={loading}
+        error={error}
       />
     </div>
   );

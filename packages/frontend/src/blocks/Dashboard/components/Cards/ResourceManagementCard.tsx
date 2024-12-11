@@ -1,6 +1,6 @@
 'use client';
 
-import { useResourceManagement } from '@/blocks/Dashboard/hooks/learning/useResourceManagement';
+import { useResourceManagement } from '@/blocks/Dashboard/hooks/useResourceManagement';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
