@@ -152,7 +152,7 @@ export interface SkillDetail {
 //in use
 export interface UserDirectoryProps {
   employees: Employee[];
-  loading: boolean;
+  loading?: boolean;
   totalItems: number;
   totalPages: number;
   page: number;
@@ -441,29 +441,29 @@ export interface UserProfile {
 //in use
 export interface AdminMetricCardsProps {
   stats: EmployeeStats;
-  loading: boolean;
-  error: ApiError | null;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
 //in use
 export interface BusinessUnitDistributionProps {
   businessUnits: BusinessUnitStat[];
-  loading: boolean;
-  error: ApiError | null;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
 //in use
 export interface SkillGapOverviewProps {
   skillGaps: SkillGap[];
-  loading: boolean;
-  error: ApiError | null;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
 //in use
 export interface TopPerformersProps {
   rankings: TopPerformer[];
-  loading: boolean;
-  error: ApiError | null;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
 //in use

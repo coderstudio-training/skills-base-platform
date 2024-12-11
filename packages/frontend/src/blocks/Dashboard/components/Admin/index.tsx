@@ -21,27 +21,18 @@ export default function AdminDashboard() {
     employees,
     totalItems,
     totalPages,
-    employeesLoading,
 
     // Business units data
     businessUnits,
-    businessUnitsLoading,
-    businessUnitsError,
 
     // Stats data
     stats,
-    statsLoading,
-    statsError,
 
     // Skill gaps data
     skillGaps,
-    skillGapsLoading,
-    skillGapsError,
 
     // Top performers data
     topPerformers,
-    topPerformersLoading,
-    topPerformersError,
 
     // Pagination and filter state
     page,
@@ -71,24 +62,12 @@ export default function AdminDashboard() {
           onSearchChange={handleSearch}
         />
 
-        <AdminMetricCards stats={stats} loading={statsLoading} error={statsError} />
+        <AdminMetricCards stats={stats} />
 
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <TopPerformers
-            rankings={topPerformers}
-            loading={topPerformersLoading}
-            error={topPerformersError}
-          />
-          <SkillGapOverview
-            skillGaps={skillGaps}
-            loading={skillGapsLoading}
-            error={skillGapsError}
-          />
-          <BusinessUnitDistribution
-            businessUnits={businessUnits}
-            loading={businessUnitsLoading}
-            error={businessUnitsError}
-          />
+          <TopPerformers rankings={topPerformers} />
+          <SkillGapOverview skillGaps={skillGaps} />
+          <BusinessUnitDistribution businessUnits={businessUnits} />
         </div>
 
         <Tabs defaultValue="users" className="space-y-4">
@@ -126,7 +105,6 @@ export default function AdminDashboard() {
           <TabsContent value="users">
             <UserDirectory
               employees={employees}
-              loading={employeesLoading}
               totalItems={totalItems}
               totalPages={totalPages}
               page={page}
