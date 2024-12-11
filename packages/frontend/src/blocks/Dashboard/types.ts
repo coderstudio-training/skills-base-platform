@@ -509,3 +509,86 @@ export interface SkillsDialogProps {
 export interface ViewSkillsButtonProps {
   onClick: () => void;
 }
+
+// in use
+export interface CourseDetails {
+  name: string;
+  provider: string;
+  duration: string;
+  format: string;
+  learningPath: string;
+  learningObjectives: string[];
+  prerequisites: string;
+  businessValue: string;
+}
+// in use
+export interface Recommendation {
+  skillName: string;
+  currentLevel: number;
+  targetLevel: number;
+  gap: number;
+  type: 'skillGap' | 'promotion';
+  course: CourseDetails;
+}
+
+// in use
+export interface RecommendationResponse {
+  success: boolean;
+  employeeName: string;
+  careerLevel: string;
+  recommendations: Recommendation[];
+  generatedDate: Date;
+  message?: string;
+}
+
+//in use
+export interface MemberRecommendations {
+  success: boolean;
+  recommendations: Recommendation[];
+  employeeName: string;
+  careerLevel: string;
+}
+
+// in use
+export interface TeamRecommendations {
+  member: TeamMember;
+  recommendations: RecommendationResponse;
+}
+
+// in use
+export interface Course {
+  _id: string;
+  courseId: string;
+  skillCategory: string;
+  skillName: string;
+  requiredLevel: number;
+  careerLevel: string;
+  courseLevel: string;
+  fields: {
+    name: string;
+    value: string;
+  }[];
+  lastUpdated: string;
+}
+
+// in use
+export interface LearningResourceParams {
+  category?: string;
+  level?: string;
+}
+
+// in use
+export interface ResourcesResponse {
+  resources: Course[];
+  totalCount: number;
+}
+
+//in use
+export interface LearningPath {
+  id: string;
+  name: string;
+  description: string;
+  courseIds: string[];
+  skillIds: string[];
+  estimatedDuration: number; // in hours
+}
