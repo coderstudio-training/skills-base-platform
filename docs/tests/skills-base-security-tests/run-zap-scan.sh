@@ -8,12 +8,12 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 # Service configurations
 declare -A SERVICES
 SERVICES=(
-    # ["user-service"]="http://172.31.220.111:3001"
-    # ["skills-service"]="http://172.31.220.111:3002"
-    # ["learning-service"]="http://172.31.220.111:3003"
-    # ["integration-service"]="http://172.31.220.111:3004"
-    # ["email-service"]="http://172.31.220.111:3005"
-    ["frontend"]="http://172.31.220.111:3000"
+    ["user-service"]="http://192.168.100.70:3001"
+    ["skills-service"]="http://192.168.100.70:3002"
+    ["learning-service"]="http://192.168.100.70:3003"
+    ["integration-service"]="http://192.168.100.70:3004"
+    ["email-service"]="http://192.168.100.70:3005"
+    # ["frontend"]="http://192.168.100.70:3000"
 )
 
 # OpenAPI/Swagger endpoints
@@ -39,8 +39,8 @@ WKHTMLTOPDF_IMAGE="surnet/alpine-wkhtmltopdf:3.20.2-0.12.6-small"
 # Scan types configuration
 declare -A SCAN_TYPES
 SCAN_TYPES=(
-    ["baseline"]="Basic baseline scan"
-    # ["api"]="API-specific scan"
+    # ["baseline"]="Basic baseline scan"
+    ["api"]="API-specific scan"
     # ["full"]="Full security scan"
 )
 
