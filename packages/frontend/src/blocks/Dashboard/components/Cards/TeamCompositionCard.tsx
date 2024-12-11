@@ -1,9 +1,8 @@
 import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
+import { TeamCompositionBarChart } from '@/blocks/Dashboard/components/Charts/TeamCompositionBarChart';
+import { COLORS } from '@/blocks/Dashboard/constants';
 import { ChartSeries, TeamCompositionCardProps } from '@/blocks/Dashboard/types';
 import { useMemo } from 'react';
-import { BaseBarChart } from '../Charts/BaseBarChart';
-
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00ced1'];
 
 export function TeamCompositionCard({ teamMembers, loading = false }: TeamCompositionCardProps) {
   const { chartData, chartSeries } = useMemo(() => {
@@ -57,7 +56,7 @@ export function TeamCompositionCard({ teamMembers, loading = false }: TeamCompos
       loading={loading}
       loadingMessage="Loading team composition..."
     >
-      <BaseBarChart
+      <TeamCompositionBarChart
         data={chartData}
         loading={loading}
         xAxisKey="skill"

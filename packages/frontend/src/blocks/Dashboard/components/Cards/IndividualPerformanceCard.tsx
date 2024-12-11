@@ -3,15 +3,15 @@ import { TeamMembersListProps } from '@/blocks/Dashboard/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-export function TeamMembersListCard({ members, loading, error }: TeamMembersListProps) {
+export function IndividualPerformanceCard({ members, loading, error }: TeamMembersListProps) {
   return (
     <BaseCard
-      title="Team Members"
-      description="List of your team members"
+      title="Individual Performance"
+      description="Average team performance over the last 6 months"
       loading={loading}
       error={error}
-      errorMessage={'Error loading team members'}
-      loadingMessage="Loading team members..."
+      errorMessage={'Error loading individual performance'}
+      loadingMessage="Loading team members performance..."
     >
       <ScrollArea className="h-[400px]">
         <div className="space-y-4 pr-4">
@@ -43,6 +43,12 @@ export function TeamMembersListCard({ members, loading, error }: TeamMembersList
                   </p>
                   <p className="text-sm text-gray-500">{`${member.jobLevel} ${member.designation}`}</p>
                 </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-48 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-black rounded-full" style={{ width: `90%` }} />
+                </div>
+                <span className="font-medium w-12 text-right">90%</span>
               </div>
             </div>
           ))}

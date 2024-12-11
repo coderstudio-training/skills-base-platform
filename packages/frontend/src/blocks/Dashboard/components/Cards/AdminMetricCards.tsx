@@ -1,5 +1,5 @@
+import { MetricCard } from '@/blocks/Dashboard/components/Cards/MetricCard';
 import { AdminMetricCardsProps } from '@/blocks/Dashboard/types';
-import { MetricCard } from './MetricCard';
 
 export function AdminMetricCards({ stats, loading, error }: AdminMetricCardsProps) {
   return (

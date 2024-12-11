@@ -1,20 +1,11 @@
 import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
+import { SkillsDialog } from '@/blocks/Dashboard/components/Dialogs/SkillsDialog';
 import { useEmployeeSkills } from '@/blocks/Dashboard/hooks/useEmployeeSkills';
 import { UserDirectoryProps } from '@/blocks/Dashboard/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -22,16 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Loader2,
-  XCircle,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useState } from 'react';
 
 export function UserDirectory({
@@ -70,24 +52,6 @@ export function UserDirectory({
         alert(`Please enter a valid page number between 1 and ${totalPages}`);
       }
     }
-  };
-
-  const getSkillLevelLabel = (average: number) => {
-    if (average <= 1) return 'Novice';
-    if (average <= 2) return 'Beginner';
-    if (average <= 3) return 'Intermediate';
-    if (average <= 4) return 'Advanced';
-    if (average <= 5) return 'Expert';
-    return 'Guru';
-  };
-
-  const getSkillStatusIcon = (currentLevel: number, requiredLevel: number) => {
-    if (currentLevel >= requiredLevel) {
-      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-    } else if (currentLevel === requiredLevel - 1) {
-      return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
-    }
-    return <XCircle className="h-5 w-5 text-red-500" />;
   };
 
   return (
@@ -133,80 +97,18 @@ export function UserDirectory({
                 <Badge variant={employee.employmentStatus === 'Active' ? 'success' : 'destructive'}>
                   {employee.employmentStatus}
                 </Badge>
-                <Dialog onOpenChange={open => !open && handleCloseDialog()}>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        handleViewSkills(
-                          employee.email,
-                          `${employee.firstName} ${employee.lastName}`,
-                        )
-                      }
-                    >
-                      View Skills
-                    </Button>
-                  </DialogTrigger>
-                  {selectedEmployee && (
-                    <DialogContent className="max-w-4xl">
-                      <DialogHeader>
-                        <DialogTitle>{`${selectedEmployee.name}'s Skills`}</DialogTitle>
-                        <DialogDescription>Skill levels and proficiencies</DialogDescription>
-                      </DialogHeader>
-                      {skillsLoading ? (
-                        <div className="flex flex-col items-center justify-center h-[500px] gap-2">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                          <p className="text-sm text-muted-foreground">Loading skills data...</p>
-                        </div>
-                      ) : (
-                        <ScrollArea className="h-[500px] w-full pr-4">
-                          <div className="space-y-4">
-                            {skills.length > 0 ? (
-                              skills.map(skill => (
-                                <div key={skill.skill} className="space-y-2 border-b pb-4">
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-medium">{skill.skill}</span>
-                                    <div className="flex items-center space-x-2">
-                                      <Progress
-                                        value={(skill.average / skill.requiredRating) * 100}
-                                        className="w-[100px]"
-                                      />
-                                      <span className="text-sm text-gray-500">
-                                        {getSkillLevelLabel(skill.average)}
-                                      </span>
-                                      {getSkillStatusIcon(skill.average, skill.requiredRating)}
-                                    </div>
-                                  </div>
-                                  <p className="text-sm text-gray-600">
-                                    {skill.description || 'No description available'}
-                                  </p>
-                                  <p className="text-sm font-medium">
-                                    Current Level:{' '}
-                                    {skill.proficiencyDescription ||
-                                      'No proficiency description available'}
-                                  </p>
-                                  <div className="flex justify-between text-sm">
-                                    <span>
-                                      Self Assessment: {getSkillLevelLabel(skill.selfRating)}
-                                    </span>
-                                    <span>
-                                      Manager Assessment: {getSkillLevelLabel(skill.managerRating)}
-                                    </span>
-                                  </div>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="text-center text-gray-500 py-4">
-                                No skills data available for this employee
-                              </div>
-                            )}
-                          </div>
-                        </ScrollArea>
-                      )}
-                    </DialogContent>
-                  )}
-                </Dialog>
+                <SkillsDialog
+                  selectedEmployee={selectedEmployee}
+                  skills={skills}
+                  loading={skillsLoading}
+                  onOpenChange={open => !open && handleCloseDialog()}
+                  onViewSkills={handleViewSkills}
+                  EmployeeDetails={{
+                    email: employee.email,
+                    firstName: employee.firstName,
+                    lastName: employee.lastName,
+                  }}
+                />
               </div>
             </div>
           ))}

@@ -1,6 +1,6 @@
+import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
 import { SkillGapOverviewProps } from '@/blocks/Dashboard/types';
 import { Progress } from '@/components/ui/progress';
-import BaseCard from './BaseCard';
 
 export function SkillGapOverview({ skillGaps, loading, error }: SkillGapOverviewProps) {
   return (

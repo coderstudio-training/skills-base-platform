@@ -1,6 +1,6 @@
+import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
 import { BusinessUnitDistributionProps } from '@/blocks/Dashboard/types';
 import { Badge } from '@/components/ui/badge';
-import BaseCard from './BaseCard';
 
 export function BusinessUnitDistribution({
   businessUnits,

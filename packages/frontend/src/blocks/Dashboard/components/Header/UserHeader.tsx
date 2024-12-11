@@ -2,11 +2,12 @@ import { useUserProfile } from '@/blocks/Dashboard/hooks/useUserProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { getInitials } from '@/lib/utils/string-utils';
 import { LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
 export function UserHeader() {
-  const { userProfile, isManager, fullName, getInitials } = useUserProfile();
+  const { userProfile, isManager, fullName } = useUserProfile();
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });

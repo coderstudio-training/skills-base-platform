@@ -1,19 +1,19 @@
 'use client';
 
 import { LearningManagement } from '@/blocks/Dashboard/components/Admin/LearningManagement';
+import { SearchAndFilter } from '@/blocks/Dashboard/components/Admin/SearchAndFilter';
+import { UserDirectory } from '@/blocks/Dashboard/components/Admin/UserDirectory';
+import { AdminMetricCards } from '@/blocks/Dashboard/components/Cards/AdminMetricCards';
+import { BusinessUnitDistribution } from '@/blocks/Dashboard/components/Cards/BusinessUnitDistributionCard';
+import { SkillGapOverview } from '@/blocks/Dashboard/components/Cards/SkillGapOverviewCard';
+import { TopPerformers } from '@/blocks/Dashboard/components/Cards/TopPerformersCard';
 import AdminDashboardHeader from '@/blocks/Dashboard/components/Header/AdminHeader';
+import { useAdminData } from '@/blocks/Dashboard/hooks/useAdminData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
-import { useAdminData } from '../../hooks/useAdminData';
 import { useTSCManager } from '../../hooks/useTSCManager';
-import { AdminMetricCards } from '../Cards/AdminMetricCards';
-import { BusinessUnitDistribution } from '../Cards/BusinessUnitDistributionCard';
-import { SkillGapOverview } from '../Cards/SkillGapOverviewCard';
-import { TopPerformers } from '../Cards/TopPerformersCard';
 import TaxonomyManager from '../TSC';
 import AnalysisView from './AnalysisView';
-import { SearchAndFilter } from './SearchAndFilter';
-import { UserDirectory } from './UserDirectory';
 
 export default function AdminDashboard() {
   const {

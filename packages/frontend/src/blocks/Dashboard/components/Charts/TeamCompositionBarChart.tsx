@@ -10,10 +10,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { COLORS } from '../../constants';
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#00ced1'];
-
-export function BaseBarChart({
+export function TeamCompositionBarChart({
   data,
   loading = false,
   xAxisKey,

@@ -17,20 +17,11 @@ export function useUserProfile() {
   const isManager = userProfile?.roles?.includes('manager');
   const fullName = userProfile ? `${userProfile.firstName} ${userProfile.lastName}` : 'Loading...';
 
-  const getInitials = (name: string = '') => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase();
-  };
-
   return {
     userProfile,
     isLoading,
     error,
     isManager,
     fullName,
-    getInitials,
   };
 }

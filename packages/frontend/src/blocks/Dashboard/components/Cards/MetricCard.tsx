@@ -1,6 +1,6 @@
 // blocks/Dashboard/components/Cards/StatCard.tsx
+import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
 import { MetricCardProps } from '@/blocks/Dashboard/types';
-import BaseCard from './BaseCard';
 
 export function MetricCard({
   title,

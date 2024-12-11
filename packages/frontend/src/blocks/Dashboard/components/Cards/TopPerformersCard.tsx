@@ -1,7 +1,7 @@
+import BaseCard from '@/blocks/Dashboard/components/Cards/BaseCard';
 import { TopPerformersProps } from '@/blocks/Dashboard/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import BaseCard from './BaseCard';
 
 export function TopPerformers({ rankings, loading, error }: TopPerformersProps) {
   return (

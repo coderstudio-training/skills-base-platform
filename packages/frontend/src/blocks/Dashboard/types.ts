@@ -387,7 +387,6 @@ export interface TeamMembersListProps {
   members: TeamMember[];
   loading: boolean;
   error: ApiError | null;
-  showPerformance?: boolean;
 }
 
 //in use
@@ -490,4 +489,23 @@ export interface TeamMember {
   performanceScore?: number;
   managerName?: string;
   picture?: string;
+}
+
+//in use
+export interface SkillsDialogProps {
+  selectedEmployee: { email: string; name: string } | null;
+  skills: SkillDetail[];
+  loading: boolean;
+  onOpenChange: (open: boolean) => void;
+  onViewSkills: (email: string, name: string) => void;
+  EmployeeDetails: {
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
+//in use
+export interface ViewSkillsButtonProps {
+  onClick: () => void;
 }
