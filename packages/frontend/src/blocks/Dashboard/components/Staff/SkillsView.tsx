@@ -1,39 +1,32 @@
-// // components/Staff/StaffSkillsView.tsx
-// 'use client';
+import { ApiError } from '@/lib/api/types';
+import { StaffData } from '../../types';
+import { SkillsAnalysisCard } from '../Cards/SkillsAnalysisCard';
 
-// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-// import { CustomBarChart } from '@/components/ui/barchart';
-// import { Button } from '@/components/ui/button';
-// import { useSkillsData } from '../../hooks/useSkills';
-// import { useSession } from 'next-auth/react';
-// import { useState } from 'react';
-// import { ResponsiveContainer } from 'recharts';
-// import { SkillSummaryResponse } from '../../types';
-// // import { StaffAnalytics } from '../Cards/StaffAnalyticsCard';
-// // import { SkillsTable } from '../Tables/StaffSkillsTable';
+// components/Staff/SkillsView.tsx
+interface SkillsViewProps {
+  skillsData: StaffData | null;
+  selectedCategory: 'Technical Skills' | 'Soft Skills';
+  onCategoryChange: (category: 'Technical Skills' | 'Soft Skills') => void;
+  loading?: boolean;
+  error?: ApiError | null;
+}
 
-// interface SkillsViewProps {
-//   skillsData: SkillSummaryResponse | null;
-// }
-
-// export default function StaffSkillsView({skillsData}: SkillsViewProps) {
-//   const [selectedCategory, setSelectedCategory] = useState<'Technical Skills' | 'Soft Skills'>(
-//     'Technical Skills',
-//   );
-
-//   if (!skillsData) {
-//     console.log('No skills data available');
-//     return <div>No skills data available</div>;
-//   }
-
-//   const { metrics, skills } = skillsData;
-
-//   if (!metrics || !skills) {
-//     console.log('Invalid data structure:', skillsData);
-//     return <div>Invalid data structure received</div>;
-//   }
-
-//   return (
-//     <SkillsSummaryCard skills={skills} />
-//   );
-// }
+export default function SkillsView({
+  skillsData,
+  selectedCategory,
+  onCategoryChange,
+  loading,
+  error,
+}: SkillsViewProps) {
+  return (
+    <div className="space-y-4">
+      <SkillsAnalysisCard
+        skillsData={skillsData}
+        selectedCategory={selectedCategory}
+        onCategoryChange={onCategoryChange}
+        loading={loading}
+        error={error}
+      />
+    </div>
+  );
+}

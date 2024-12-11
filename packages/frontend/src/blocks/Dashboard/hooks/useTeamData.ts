@@ -1,6 +1,6 @@
+import { TeamMember } from '@/blocks/Dashboard/types';
 import { userApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
-import { TeamMember } from '@/types/manager';
 import { useSession } from 'next-auth/react';
 
 export function useTeamData() {
@@ -22,6 +22,7 @@ export function useTeamData() {
   );
 
   return {
+    session,
     teamMembers: data || [],
     loading,
     error,

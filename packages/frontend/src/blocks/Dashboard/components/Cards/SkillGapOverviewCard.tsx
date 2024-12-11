@@ -1,12 +1,15 @@
-import { useSkillGaps } from '@/blocks/Dashboard/hooks/useSkillGaps';
+import { SkillGapOverviewProps } from '@/blocks/Dashboard/types';
 import { Progress } from '@/components/ui/progress';
 import BaseCard from './BaseCard';
 
-export function SkillGapOverview() {
-  const { skillGaps, loading } = useSkillGaps();
-
+export function SkillGapOverview({ skillGaps, loading, error }: SkillGapOverviewProps) {
   return (
-    <BaseCard title="Skill Gap Overview" loading={loading} loadingMessage="Loading skill gaps...">
+    <BaseCard
+      title="Skill Gap Overview"
+      loading={loading}
+      error={error}
+      loadingMessage="Loading skill gaps..."
+    >
       <div className="space-y-4">
         {skillGaps.map(skill => (
           <div key={skill.name} className="space-y-1">

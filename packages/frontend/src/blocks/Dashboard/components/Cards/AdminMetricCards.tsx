@@ -1,9 +1,7 @@
-import { useStatsData } from '@/blocks/Dashboard/hooks/useStatData';
+import { AdminMetricCardsProps } from '@/blocks/Dashboard/types';
 import { MetricCard } from './MetricCard';
 
-export function AdminMetricCards() {
-  const { stats, loading, error } = useStatsData();
-
+export function AdminMetricCards({ stats, loading, error }: AdminMetricCardsProps) {
   return (
     <div className="grid grid-cols-3 gap-4 mb-6">
       <MetricCard

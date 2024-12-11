@@ -1,7 +1,6 @@
 import { BUSINESS_UNITS } from '@/blocks/Dashboard/constants';
 import { ApiError } from '@/lib/api/types';
 import { IBaseTaxonomy } from '@/lib/skills/types';
-import { TeamMember } from '@/types/manager';
 import { LucideIcon } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -94,6 +93,7 @@ export interface EmployeeSkillsReportProps {
   data: EmployeeSkillsReportData;
 }
 
+//in use
 export interface Employee {
   employeeId: string;
   firstName: string;
@@ -106,34 +106,40 @@ export interface Employee {
   picture?: string;
 }
 
+//in use
 export interface EmployeesResponse {
   items: Employee[];
   total: number;
   totalPages: number;
 }
 
+//in use
 export interface BusinessUnitsResponse {
   businessUnits: string[];
   distribution?: BusinessUnitStat[];
 }
 
+//in use
 export interface EmployeeStats {
   totalEmployeesCount: number;
   businessUnitsCount: number;
   activeEmployeesCount: number;
 }
 
+//in use
 export interface BusinessUnitStat {
   name: string;
   count: number;
 }
 
+//in use
 export interface TopPerformer {
   ranking: number;
   name: string;
   score: number;
 }
 
+//in use
 export interface SkillGap {
   name: string;
   currentLevel: number;
@@ -141,18 +147,20 @@ export interface SkillGap {
   gap: number;
 }
 
+//in use
 export interface SkillDetail {
   skill: string;
-  average: number;
-  requiredRating: number;
-  gap: number;
+  category: string;
   description?: string;
   proficiencyDescription?: string;
-  currentLevel: number;
   selfRating: number;
   managerRating: number;
+  requiredRating: number;
+  gap: number;
+  average: number;
 }
 
+//in use
 export interface UserDirectoryProps {
   employees: Employee[];
   loading: boolean;
@@ -164,6 +172,7 @@ export interface UserDirectoryProps {
   onLimitChange: (limit: string) => void;
 }
 
+//in use
 export interface SearchAndFilterProps {
   selectedBusinessUnit: string;
   businessUnits: string[];
@@ -175,6 +184,11 @@ export interface SearchAndFilterProps {
 
 // staff
 
+export enum SkillStatus {
+  PROFICIENT = 'Proficient',
+  DEVELOPING = 'Developing',
+}
+
 export interface Skill {
   name: string;
   category: 'Technical Skills' | 'Soft Skills';
@@ -183,9 +197,25 @@ export interface Skill {
   average: number;
   gap: number;
   required: number;
+  status: SkillStatus;
 }
 
-export interface SkillsResponse {
+export interface CategoryMetrics {
+  averageGap: number;
+  skillsMeetingRequired: number;
+  skillsNeedingImprovement: number;
+  largestGap: number;
+  averageRating: number;
+  totalSkills: number;
+}
+
+export interface UserMetrics {
+  overall: CategoryMetrics;
+  softSkills: CategoryMetrics;
+  technicalSkills: CategoryMetrics;
+}
+
+export interface StaffSkills {
   email: string;
   name: string;
   careerLevel: string;
@@ -193,19 +223,73 @@ export interface SkillsResponse {
   skills: Skill[];
 }
 
-export interface UserMetrics {
-  averageGap: number;
-  skillsMeetingRequired: number;
-  skillsNeedingImprovement: number;
-  largestGap: number;
-  softSkillsAverage: number;
-  technicalSkillsAverage: number;
-  totalSkillsAssessed: number;
-}
-
-export interface SkillSummaryResponse {
+export interface StaffData {
   metrics: UserMetrics;
   skills: Skill[];
+}
+
+// Manager
+
+export interface TeamData {
+  members: StaffSkills[];
+}
+
+// Admin
+
+export interface TopSkill {
+  name: string;
+  prevalence: number;
+}
+
+export interface SkillGap {
+  name: string;
+  currentAvg: number;
+  requiredLevel: number;
+  gap: number;
+}
+
+export interface OrganizationSkillsAnalysis {
+  capabilities: {
+    capability: string;
+    topSkills: TopSkill[];
+    skillGaps: SkillGap[];
+  }[];
+}
+
+export interface SkillDistributionItem {
+  name: string;
+  userCount: number;
+  status: 'CRITICAL' | 'WARNING' | 'NORMAL';
+}
+
+export interface SkillDistributionCategory {
+  category: string;
+  skills: SkillDistributionItem[];
+}
+
+export interface BusinessUnitDistribution {
+  businessUnit: string;
+  categories: SkillDistributionCategory[];
+}
+
+export interface GradeDistribution {
+  grade: string;
+  userCount: number;
+}
+
+export interface DistributionsResponse {
+  skillDistribution: BusinessUnitDistribution[];
+  gradeDistribution: GradeDistribution[];
+}
+
+export interface EmployeeRanking {
+  name: string;
+  ranking: number;
+  score: number;
+}
+
+export interface EmployeeRankingsResponse {
+  rankings: EmployeeRanking[];
 }
 
 export interface TSCManagerProps {
@@ -266,6 +350,7 @@ export const emptyProficiency: TSCProficiency = {
 
 export type BusinessUnit = keyof typeof BUSINESS_UNITS;
 
+//in use
 export interface BaseCardProps {
   title: string;
   description?: string;
@@ -278,6 +363,7 @@ export interface BaseCardProps {
   headerExtra?: React.ReactNode;
 }
 
+// in use
 export interface MetricCardProps {
   title: string;
   description?: string;
@@ -290,11 +376,13 @@ export interface MetricCardProps {
   valueSuffix?: string;
 }
 
+//in use
 export interface TeamCompositionCardProps {
   teamMembers: TeamMember[];
   loading?: boolean;
 }
 
+//in use
 export interface TeamMembersListProps {
   members: TeamMember[];
   loading: boolean;
@@ -302,6 +390,7 @@ export interface TeamMembersListProps {
   showPerformance?: boolean;
 }
 
+//in use
 export interface TeamMetricCardsProps {
   teamSize: number;
   averagePerformance?: number;
@@ -310,18 +399,21 @@ export interface TeamMetricCardsProps {
   error?: ApiError | null;
 }
 
+//in use
 export interface ManagerOverviewProps {
   teamMembers: TeamMember[];
   loading: boolean;
   error: ApiError | null;
 }
 
+//in use
 export interface ChartSeries {
   key: string;
   name: string;
   color?: string;
 }
 
+//in use
 export interface BaseBarChartProps {
   data: Record<string, number | string>[];
   loading?: boolean;
@@ -337,10 +429,17 @@ export interface BusinessUnitsResponse {
   distribution?: BusinessUnitStat[];
 }
 
+//in use
+export interface SkillGapsResponse {
+  skillGaps: SkillGap[];
+}
+
+//in use
 export interface TopPerformersResponse {
   rankings: TopPerformer[];
 }
 
+//in use
 export interface UserProfile {
   firstName: string;
   lastName: string;
@@ -348,5 +447,47 @@ export interface UserProfile {
   businessUnit: string;
   grade: string;
   roles: string[];
+  picture?: string;
+}
+
+//in use
+export interface AdminMetricCardsProps {
+  stats: EmployeeStats;
+  loading: boolean;
+  error: ApiError | null;
+}
+
+//in use
+export interface BusinessUnitDistributionProps {
+  businessUnits: BusinessUnitStat[];
+  loading: boolean;
+  error: ApiError | null;
+}
+
+//in use
+export interface SkillGapOverviewProps {
+  skillGaps: SkillGap[];
+  loading: boolean;
+  error: ApiError | null;
+}
+
+//in use
+export interface TopPerformersProps {
+  rankings: TopPerformer[];
+  loading: boolean;
+  error: ApiError | null;
+}
+
+//in use
+export interface TeamMember {
+  employeeId: number;
+  grade: string;
+  firstName: string;
+  lastName: string;
+  jobLevel: string;
+  designation: string;
+  email?: string;
+  performanceScore?: number;
+  managerName?: string;
   picture?: string;
 }
