@@ -43,7 +43,7 @@ export class RecommendationService {
     this.courseModel = this.defaultConnection.model<Course>(
       'Course',
       CourseSchema,
-      'QA_LEARNING_RESOURCES',
+      'qa_courses',
     );
 
     this.skillGapsModel = this.skillsConnection.model<SkillGap>(
