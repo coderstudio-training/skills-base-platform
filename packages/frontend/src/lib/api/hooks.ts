@@ -247,7 +247,7 @@ const cache = new Map();
 function suspenseFetcher<T>(
   apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
   endpoint: string,
-  options: { requiresAuth?: boolean; cacheStrategy?: RequestCache } = {},
+  options: { requiresAuth?: boolean; revalidate?: number; cacheStrategy?: RequestCache } = {},
 ): T {
   const key = JSON.stringify({ endpoint, options });
 
@@ -284,6 +284,7 @@ export function useSuspenseQuery<T>(
   options?: {
     requiresAuth?: boolean;
     cacheStrategy?: RequestCache;
+    revalidate?: number;
   },
 ): T {
   return suspenseFetcher<T>(apiInstance, endpoint, options || {});

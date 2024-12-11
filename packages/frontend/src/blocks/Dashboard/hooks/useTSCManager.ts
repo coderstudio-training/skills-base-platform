@@ -20,6 +20,7 @@ export function useTSCManager() {
     `${TAXONOMY_BASE_URL}?businessUnit=QA`,
     {
       requiresAuth: true,
+      revalidate: 3600,
     },
   );
 
