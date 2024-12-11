@@ -8,12 +8,12 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 # Service configurations
 declare -A SERVICES
 SERVICES=(
-    ["user-service"]="http://192.168.100.70:3001"
-    ["skills-service"]="http://192.168.100.70:3002"
-    ["learning-service"]="http://192.168.100.70:3003"
-    ["integration-service"]="http://192.168.100.70:3004"
-    ["email-service"]="http://192.168.100.70:3005"
-    # ["frontend"]="http://192.168.100.70:3000"
+    # ["user-service"]="http://192.168.100.70:3001"
+    # ["skills-service"]="http://192.168.100.70:3002"
+    # ["learning-service"]="http://192.168.100.70:3003"
+    # ["integration-service"]="http://192.168.100.70:3004"
+    # ["email-service"]="http://192.168.100.70:3005"
+    ["frontend"]="http://192.168.100.70:3000"
 )
 
 # OpenAPI/Swagger endpoints
@@ -24,6 +24,16 @@ SWAGGER_ENDPOINTS=(
     ["learning-service"]="/swagger/json"
     ["skills-service"]="/swagger/json"
     ["integration-service"]="/swagger/json"
+)
+
+# Add after your SERVICES declaration
+declare -A AUTH_TOKENS
+AUTH_TOKENS=(
+    ["user-service"]="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzJjMjVjYjY1MWYxODBhZTdhZDAxMWEiLCJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwicm9sZXMiOlsiYWRtaW4iXSwicGVybXMiOlsxMDAxLDEwMDIsMTAwMywxMDA0LDEwMDUsMTAwNiwxMDA3LDEwMDgsMTAwOSwxMDEwLDEwMTEsMTAxMiwxMDEzXSwiaXNzIjoic2tpbGxzLWJhc2UtcGxhdGZvcm0iLCJhdWQiOiJ5b3VyLWF1ZGllbmNlIiwiaWF0IjoxNzMzODkwMDIxLCJleHAiOjE3MzM4OTM2MjF9.oU9gM4PoFms41aMrB5Keb5YkSzD5gGR7cUmNnpGcEb8"
+    ["skills-service"]="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzJjMjVjYjY1MWYxODBhZTdhZDAxMWEiLCJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwicm9sZXMiOlsiYWRtaW4iXSwicGVybXMiOlsxMDAxLDEwMDIsMTAwMywxMDA0LDEwMDUsMTAwNiwxMDA3LDEwMDgsMTAwOSwxMDEwLDEwMTEsMTAxMiwxMDEzXSwiaXNzIjoic2tpbGxzLWJhc2UtcGxhdGZvcm0iLCJhdWQiOiJ5b3VyLWF1ZGllbmNlIiwiaWF0IjoxNzMzODkwMDIxLCJleHAiOjE3MzM4OTM2MjF9.oU9gM4PoFms41aMrB5Keb5YkSzD5gGR7cUmNnpGcEb8"
+    ["learning-service"]="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzJjMjVjYjY1MWYxODBhZTdhZDAxMWEiLCJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwicm9sZXMiOlsiYWRtaW4iXSwicGVybXMiOlsxMDAxLDEwMDIsMTAwMywxMDA0LDEwMDUsMTAwNiwxMDA3LDEwMDgsMTAwOSwxMDEwLDEwMTEsMTAxMiwxMDEzXSwiaXNzIjoic2tpbGxzLWJhc2UtcGxhdGZvcm0iLCJhdWQiOiJ5b3VyLWF1ZGllbmNlIiwiaWF0IjoxNzMzODkwMDIxLCJleHAiOjE3MzM4OTM2MjF9.oU9gM4PoFms41aMrB5Keb5YkSzD5gGR7cUmNnpGcEb8"
+    ["integration-service"]="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzJjMjVjYjY1MWYxODBhZTdhZDAxMWEiLCJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwicm9sZXMiOlsiYWRtaW4iXSwicGVybXMiOlsxMDAxLDEwMDIsMTAwMywxMDA0LDEwMDUsMTAwNiwxMDA3LDEwMDgsMTAwOSwxMDEwLDEwMTEsMTAxMiwxMDEzXSwiaXNzIjoic2tpbGxzLWJhc2UtcGxhdGZvcm0iLCJhdWQiOiJ5b3VyLWF1ZGllbmNlIiwiaWF0IjoxNzMzODkwMDIxLCJleHAiOjE3MzM4OTM2MjF9.oU9gM4PoFms41aMrB5Keb5YkSzD5gGR7cUmNnpGcEb8"
+    ["email-service"]="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzJjMjVjYjY1MWYxODBhZTdhZDAxMWEiLCJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwicm9sZXMiOlsiYWRtaW4iXSwicGVybXMiOlsxMDAxLDEwMDIsMTAwMywxMDA0LDEwMDUsMTAwNiwxMDA3LDEwMDgsMTAwOSwxMDEwLDEwMTEsMTAxMiwxMDEzXSwiaXNzIjoic2tpbGxzLWJhc2UtcGxhdGZvcm0iLCJhdWQiOiJ5b3VyLWF1ZGllbmNlIiwiaWF0IjoxNzMzODkwMDIxLCJleHAiOjE3MzM4OTM2MjF9.oU9gM4PoFms41aMrB5Keb5YkSzD5gGR7cUmNnpGcEb8"
 )
 
 # ZAP configurations
@@ -40,8 +50,8 @@ WKHTMLTOPDF_IMAGE="surnet/alpine-wkhtmltopdf:3.20.2-0.12.6-small"
 declare -A SCAN_TYPES
 SCAN_TYPES=(
     # ["baseline"]="Basic baseline scan"
-    ["api"]="API-specific scan"
-    # ["full"]="Full security scan"
+    # ["api"]="API-specific scan"
+    ["full"]="Full security scan"
 )
 
 # Create necessary directories
@@ -68,6 +78,26 @@ check_service() {
 
     echo "Error: Service at $service_url is not responding"
     return 1
+}
+
+create_auth_hook() {
+    local service_name=$1
+    # Get absolute path using $PWD
+    local auth_hook_file="${PWD}/${LOGS_DIR}/auth_hook_${service_name}.py"
+    
+    cat > "$auth_hook_file" <<EOF
+def zap_started(zap, target):
+    # Add Bearer token to all requests
+    zap.replacer.add_rule(
+        description='Auth header',
+        enabled=True,
+        matchtype='REQ_HEADER',
+        matchstring='Authorization',
+        matchregex=False,
+        replacement='Bearer ${AUTH_TOKENS[$service_name]}'
+    )
+EOF
+    echo "$auth_hook_file"
 }
 
 # Function to run ZAP scan with enhanced configurations
@@ -97,6 +127,15 @@ run_zap_scan() {
       -config scanner.scanNullJsonElements=true \
       -config scanner.handleAntiCSRFTokens=false"
 
+    # Add these auth configurations after your existing NestJS configs
+    local auth_configs="-config authentication.method=form \
+      -config authentication.loginurl=http://192.168.100.70:3001/auth/login \
+      -config authentication.loginRequestData='{\\"email\\":\\"admin@example.com\\",\\"password\\":\\"AdminPassword123!\\"}' \
+      -config authentication.loginRegexes.loggedIn='access_token' \
+      -config authentication.verification.loggedInRegex='.*200.*' \
+      -config authentication.token.header=Authorization \
+      -config authentication.token.value='Bearer {%authentication.token%}'"
+
     case $scan_type in
         "baseline")
             docker run --rm \
@@ -123,10 +162,12 @@ run_zap_scan() {
             if [[ -n "${SWAGGER_ENDPOINTS[$service_name]}" ]]; then
                 local swagger_url="${target_url}${SWAGGER_ENDPOINTS[$service_name]}"
                 echo "Using OpenAPI specification from: ${swagger_url}"
+                local auth_hook=$(create_auth_hook "$service_name")
                 
                 docker run --rm \
                     -v "${PWD}/${REPORT_DIR}:/zap/wrk/:rw" \
                     -v "${PWD}/${LOGS_DIR}:/zap/logs:rw" \
+                    -v "${auth_hook}:/zap/auth_hook.py:ro" \
                     -t ${ZAP_IMAGE} ${ZAP_API_SCAN} \
                     -t "${swagger_url}" \
                     -f openapi \
@@ -135,25 +176,33 @@ run_zap_scan() {
                     -D 45 \
                     -I \
                     -l WARN \
+                    -a \
+                    -j \
+                    -S \
                     -r "/zap/wrk/${service_name}_api_${TIMESTAMP}.html" \
                     -r "${service_name}_api_${TIMESTAMP}.html" \
-                    -z "${zap_common_configs} ${nestjs_configs}" \
+                    -z "${zap_common_configs} ${nestjs_configs} ${auth_configs}" \
+                    --hook /zap/auth_hook.py \
                     2>&1 | tee "${log_file}"
             else
                 echo "No OpenAPI specification endpoint defined for ${service_name}. Using regular API scan."
                 docker run --rm \
                     -v "${PWD}/${REPORT_DIR}:/zap/wrk/:rw" \
                     -v "${PWD}/${LOGS_DIR}:/zap/logs:rw" \
-                    --shm-size="2g" \
+                    -v "${auth_hook}:/zap/auth_hook.py:ro" \
                     -t ${ZAP_IMAGE} ${ZAP_FULL_SCAN} \
                     -t "${target_url}" \
                     -d \
                     -T 60 \
                     -D 45 \
                     -I \
+                    -a \
+                    -j \
+                    -S \
                     -r "/zap/wrk/${service_name}_api_${TIMESTAMP}.html" \
                     -r "${service_name}_api_${TIMESTAMP}.html" \
-                    -z "${zap_common_configs} ${nestjs_configs}" \
+                    -z "${zap_common_configs} ${nestjs_configs} ${auth_configs}" \
+                    --hook /zap/auth_hook.py \
                     2>&1 | tee "${log_file}"
             fi
             ;;

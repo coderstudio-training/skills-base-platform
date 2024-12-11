@@ -38,7 +38,7 @@ import { EmailModule } from './email/email.module';
       rateLimit: {
         enabled: true,
         windowMs: 15 * 60 * 1000,
-        max: 100,
+        max: 1000,
         skipPaths: ['/health', '/metrics'],
       },
       apiKey: {

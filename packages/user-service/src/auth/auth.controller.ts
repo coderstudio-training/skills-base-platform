@@ -57,7 +57,7 @@ export class AuthController {
   })
   @RateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 10,
+    max: 1000,
     message: 'Too many requests, please try again later',
   })
   async register(@Body() registerDto: RegisterDto) {
@@ -96,7 +96,7 @@ export class AuthController {
   })
   @RateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 10,
+    max: 1000,
     message: 'Too many requests, please try again later',
   })
   @Post('login')
@@ -158,7 +158,7 @@ export class AuthController {
   })
   @RateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 3,
+    max: 300,
     message: 'Too many requests, please try again later',
   })
   async googleAuth(@Body('token') token: string, @Req() request: Request) {
