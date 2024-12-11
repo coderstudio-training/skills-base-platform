@@ -9,11 +9,11 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 declare -A SERVICES
 SERVICES=(
     # ["user-service"]="http://172.31.220.111:3001"
-    ["skills-service"]="http://172.31.220.111:3002"
-    ["learning-service"]="http://172.31.220.111:3003"
-    ["integration-service"]="http://172.31.220.111:3004"
-    ["email-service"]="http://172.31.220.111:3005"
-    # ["frontend"]="http://172.31.220.111:3000"
+    # ["skills-service"]="http://172.31.220.111:3002"
+    # ["learning-service"]="http://172.31.220.111:3003"
+    # ["integration-service"]="http://172.31.220.111:3004"
+    # ["email-service"]="http://172.31.220.111:3005"
+    ["frontend"]="http://172.31.220.111:3000"
 )
 
 # OpenAPI/Swagger endpoints
@@ -33,11 +33,14 @@ ZAP_FULL_SCAN="zap-full-scan.py"
 ZAP_BASELINE="zap-baseline.py"
 ZAP_LOG_LEVEL="INFO"
 
+WKHTMLTOPDF_IMAGE="surnet/alpine-wkhtmltopdf:3.20.2-0.12.6-small"
+
+
 # Scan types configuration
 declare -A SCAN_TYPES
 SCAN_TYPES=(
-    # ["baseline"]="Basic baseline scan"
-    ["api"]="API-specific scan"
+    ["baseline"]="Basic baseline scan"
+    # ["api"]="API-specific scan"
     # ["full"]="Full security scan"
 )
 
@@ -195,6 +198,75 @@ run_zap_scan() {
     fi
 }
 
+convert_to_pdf() {
+    local input_file=$1
+    local output_file="${input_file%.*}.pdf"
+    local container_name="wkhtmltopdf-converter-${RANDOM}"
+    
+    # echo "Converting ${input_file} to PDF..."
+    
+    # Run conversion with a specific container name for easier cleanup
+    docker run --rm \
+        --name "${container_name}" \
+        -v "${PWD}/${REPORT_DIR}:/data:rw" \
+        ${WKHTMLTOPDF_IMAGE} \
+        --enable-local-file-access \
+        --page-size A4 \
+        --margin-top 20 \
+        --margin-bottom 20 \
+        --margin-left 20 \
+        --margin-right 20 \
+        --encoding utf-8 \
+        "/data/${input_file}" \
+        "/data/${output_file}"
+        
+    local conversion_status=$?
+    
+    # Ensure container is removed even if conversion fails
+    docker rm -f "${container_name}" >/dev/null 2>&1 || true
+    
+    if [ $conversion_status -eq 0 ]; then
+        # echo "Successfully converted to ${output_file}"
+        # Remove HTML file after successful conversion
+        rm -f "${REPORT_DIR}/${input_file}"
+        # echo "Removed original HTML file: ${input_file}"
+    else
+        echo "Failed to convert ${input_file} to PDF"
+        return 1
+    fi
+}
+
+# Function to process all HTML reports
+convert_all_reports() {
+    local conversion_failed=0
+    
+    # Find all HTML files in the reports directory
+    for html_file in ${REPORT_DIR}/*.html; do
+        if [ -f "$html_file" ]; then
+            # Extract just the filename from the path
+            filename=$(basename "$html_file")
+            if ! convert_to_pdf "$filename"; then
+                conversion_failed=1
+            fi
+        fi
+    done
+    
+    # Clean up any leftover wkhtmltopdf containers
+    echo "Cleaning up Docker containers..."
+    docker ps -a | grep 'wkhtmltopdf-converter-' | awk '{print $1}' | xargs -r docker rm -f >/dev/null 2>&1
+    
+    # Remove the wkhtmltopdf image if requested
+    if [ "$1" = "remove-image" ]; then
+        docker rmi ${WKHTMLTOPDF_IMAGE} >/dev/null 2>&1 || true
+    fi
+    
+    if [ $conversion_failed -eq 0 ]; then
+        echo "PDF output completed successfully"
+    else
+        echo "Some PDF conversions failed, check the logs for details"
+    fi
+}
+
 # Main execution
 echo "Starting security scans..."
 
@@ -214,5 +286,7 @@ for service_name in "${!SERVICES[@]}"; do
         echo ""
     done
 done
+
+convert_all_reports "remove-image"
 
 echo "All scans completed. Check the reports directory for detailed results."
