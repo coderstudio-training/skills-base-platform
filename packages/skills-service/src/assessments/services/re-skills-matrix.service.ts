@@ -32,7 +32,10 @@ const CACHE_KEYS = {
 
 const CACHE_TTL = {
   SOFT_SKILLS: 24 * 3600000, // 24 hours for soft skills
+  TEAM_SKILLS: 24 * 3600000, // 24 hours for team skills
   ANALYSIS: 3600000, // 1 hour for analysis
+  DISTRIBUTIONS: 3600000, // 1 hour for distributions
+  RANKINGS: 3600000, // 1 hour for rankings
 } as const;
 
 @Injectable()
@@ -403,14 +406,30 @@ export class SkillsMatrixService {
           await Promise.all([
             this.cacheManager.del(CACHE_KEYS.SOFT_SKILLS),
             this.cacheManager.del(CACHE_KEYS.ADMIN_ANALYSIS),
-            // Add pattern deletion for team skills
-            this.cacheManager.del('team:skills:*'),
+            this.cacheManager.del(CACHE_KEYS.DISTRIBUTIONS),
+            this.cacheManager.del(CACHE_KEYS.RANKINGS),
+            this.cacheManager.del('team:skills:*'), // Pattern deletion for all team skills
+            this.cacheManager.del('analysis:capability:*'), // Pattern deletion for all capability analyses
+          ]);
+          break;
+        case 'analysis':
+          await Promise.all([
+            this.cacheManager.del(CACHE_KEYS.ADMIN_ANALYSIS),
+            this.cacheManager.del(CACHE_KEYS.DISTRIBUTIONS),
+            this.cacheManager.del(CACHE_KEYS.RANKINGS),
+            this.cacheManager.del('analysis:capability:*'),
+          ]);
+          break;
+        case 'skills':
+          await Promise.all([
+            this.cacheManager.del(CACHE_KEYS.SOFT_SKILLS),
+            this.cacheManager.del(CACHE_KEYS.ADMIN_ANALYSIS), // Invalidate analysis since it depends on skills
+            this.cacheManager.del(CACHE_KEYS.DISTRIBUTIONS), // Invalidate distributions since they depend on skills
           ]);
           break;
         case 'team':
           await this.cacheManager.del('team:skills:*');
           break;
-        // ... other cases
       }
       this.logger.log(`Cache invalidated for type: ${type}`);
     } catch (error) {

@@ -11,6 +11,7 @@ import {
   BaseAssessmentDto,
   BulkUpdateAssessmentsDto,
 } from '../dto/assessments.dto';
+import { SkillGapsDto } from '../dto/skill-gaps.dto';
 import { AssessmentsService } from '../services/assessments.service';
 
 @ApiTags('Skills Assessments')
@@ -47,14 +48,20 @@ export class AssessmentsController {
     @Body()
     body: {
       assessmentType: string;
-      data: BaseAssessmentDto[];
+      data: BaseAssessmentDto[] | SkillGapsDto[];
     },
   ) {
     const { assessmentType, data } = body;
     console.log('Incoming body:', body);
 
-    const bulkUpdateDto: BulkUpdateAssessmentsDto = { data };
+    if (assessmentType === 'gap') {
+      return this.assessmentService.bulkUpsert(assessmentType, {
+        data: data as SkillGapsDto[],
+      });
+    }
 
-    return this.assessmentService.bulkUpsert(assessmentType, bulkUpdateDto);
+    return this.assessmentService.bulkUpsert(assessmentType, {
+      data: data as BaseAssessmentDto[],
+    });
   }
 }
