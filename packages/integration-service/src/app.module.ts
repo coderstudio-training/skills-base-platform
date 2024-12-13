@@ -6,6 +6,7 @@ import {
   SecurityModule,
 } from '@skills-base/shared';
 import { NotificationModule } from './notification/notification.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -53,5 +54,6 @@ import { NotificationModule } from './notification/notification.module';
       },
     }),
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

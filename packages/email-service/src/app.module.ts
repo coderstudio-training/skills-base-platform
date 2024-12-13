@@ -5,6 +5,7 @@ import {
   MonitoringModule,
   SecurityModule,
 } from '@skills-base/shared';
+import { AppController } from './app.controller';
 import { EmailModule } from './email/email.module';
 
 @Module({
@@ -50,5 +51,6 @@ import { EmailModule } from './email/email.module';
     }),
     EmailModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

@@ -8,6 +8,7 @@ import {
   MonitoringModule,
   SecurityModule,
 } from '@skills-base/shared';
+import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { EmployeesModule } from './employees/employees.module';
 import { PermissionsModule } from './permissions/permissions.module';
@@ -109,5 +110,6 @@ import { UsersModule } from './users/users.module';
     EmployeesModule,
     PermissionsModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

@@ -7,6 +7,7 @@ import {
   MonitoringModule,
   SecurityModule,
 } from '@skills-base/shared';
+import { AppController } from './app.controller';
 import { AssessmentsModule } from './assessments/assessments.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
 @Module({
@@ -36,6 +37,9 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
         enabled: false, // Enable if you want IP whitelisting
         allowedIps: [],
       },
+      apiKey: {
+        enabled: false, // Enable if you want API keying
+      },
       payload: {
         maxSize: 10 * 1024 * 1024, // 10MB
       },
@@ -58,5 +62,7 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
     }),
   ],
   providers: [JwtStrategy],
+
+  controllers: [AppController],
 })
 export class AppModule {}
