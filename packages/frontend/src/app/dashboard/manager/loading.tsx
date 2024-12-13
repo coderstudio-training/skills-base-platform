@@ -121,7 +121,7 @@ export default function ManagerLoading() {
                 <div className="p-6 pt-0">
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-full h-[400px] min-w-0">
-                      <div className="relative w-full h-full ">
+                      <div className="relative w-full h-full max-h-[400px] max-w-[516px]">
                         <div className="flex flex-col items-center justify-center align-middle h-full w-full gap-2">
                           <Loader2 className="h-8 w-8 animate-spin" />
                           <p className="text-sm text-muted-foreground">Loading content...</p>

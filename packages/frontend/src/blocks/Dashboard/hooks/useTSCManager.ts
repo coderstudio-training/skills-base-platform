@@ -1,21 +1,12 @@
 import type { TSC } from '@/blocks/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
-import { useMutation, useSuspenseQuery } from '@/lib/api/hooks';
+import { useMutation, useQuery } from '@/lib/api/hooks';
 import { IBaseTaxonomy, IBulkUpsertDTO } from '@/lib/skills/types';
 
 export function useTSCManager() {
   const TAXONOMY_BASE_URL = '/taxonomy/technical';
 
-  // const { data, error, refetch } = useQuery<IBaseTaxonomy[]>(
-  //   skillsApi,
-  //   `${TAXONOMY_BASE_URL}?businessUnit=QA`,
-  //   {
-  //     requiresAuth: true,
-  //     revalidate: 3600,
-  //   },
-  // );
-
-  const data = useSuspenseQuery<IBaseTaxonomy[]>(
+  const { data, error, refetch } = useQuery<IBaseTaxonomy[]>(
     skillsApi,
     `${TAXONOMY_BASE_URL}?businessUnit=QA`,
     {
@@ -23,6 +14,15 @@ export function useTSCManager() {
       revalidate: 3600,
     },
   );
+
+  // const data = useSuspenseQuery<IBaseTaxonomy[]>(
+  //   skillsApi,
+  //   `${TAXONOMY_BASE_URL}?businessUnit=QA`,
+  //   {
+  //     requiresAuth: true,
+  //     revalidate: 3600,
+  //   },
+  // );
 
   // WIP
   const { mutate: createTSC, isLoading: isCreating } = useMutation<TSC, IBulkUpsertDTO>(
@@ -47,6 +47,8 @@ export function useTSCManager() {
 
   return {
     data,
+    error,
+    refetch,
     isCreating,
     isUpdating,
     isDeleting,
