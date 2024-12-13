@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Param,
   Post,
   Query,
   Request,
@@ -12,7 +11,6 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
-  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -78,31 +76,5 @@ export class UsersController extends BaseController<User> {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.usersService.findAll(paginationDto);
-  }
-
-  @Get('picture/:email')
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
-  @ApiOperation({ summary: 'Get user picture by email' })
-  @ApiParam({
-    name: 'email',
-    example: 'adrian.oraya@stratpoint.com',
-    required: true,
-    type: 'string',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Returns the user picture URL',
-    schema: {
-      type: 'object',
-      properties: {
-        picture: { type: 'string', nullable: true },
-      },
-    },
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  async getUserPicture(@Param('email') email: string) {
-    const user = await this.usersService.findByEmail(email);
-    return { picture: user?.picture || null };
   }
 }
