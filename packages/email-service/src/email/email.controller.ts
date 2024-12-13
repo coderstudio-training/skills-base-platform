@@ -19,6 +19,7 @@ import { EmailDto } from './dto/email.dto';
 import { EmailService } from './email.service';
 
 @ApiTags('Email Notifications')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('email')
 export class EmailController {
   constructor(
@@ -29,7 +30,6 @@ export class EmailController {
   }
 
   @Post('grafananotif')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @TrackMetric({
     name: 'grafana_webhook_received',
     eventType: 'grafana.webhook',

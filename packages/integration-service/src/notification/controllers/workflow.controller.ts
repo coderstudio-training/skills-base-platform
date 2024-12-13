@@ -165,7 +165,7 @@ export class WorkflowController {
     name: 'id',
     description: 'Notification ID',
     type: String,
-    example: '507f1f77bcf86cd799439011',
+    example: '675bcc9ecab6717a77306481',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -220,7 +220,7 @@ export class WorkflowController {
     name: 'id',
     description: 'Notification ID',
     type: String,
-    example: '507f1f77bcf86cd799439011',
+    example: '675bcc9ecab6717a77306481',
   })
   @ApiResponse({
     status: HttpStatus.OK,
