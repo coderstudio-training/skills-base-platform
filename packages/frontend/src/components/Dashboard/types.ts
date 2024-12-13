@@ -11,6 +11,12 @@ export interface LandingPageCardProps {
   content?: string;
   icon?: LucideIcon;
 }
+
+export interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}
+
 export interface LoginFormCardProps {
   title?: string;
   description?: string;

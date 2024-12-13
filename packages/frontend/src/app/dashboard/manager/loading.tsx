@@ -102,7 +102,9 @@ export default function ManagerLoading() {
                       <div className="relative w-full h-full max-h-[400px] max-w-[516px]">
                         <div className="flex flex-col items-center justify-center align-middle h-full w-full gap-2">
                           <Loader2 className="h-8 w-8 animate-spin" />
-                          <p className="text-sm text-muted-foreground">Loading content...</p>
+                          <Skeleton className="text-sm text-muted-foreground">
+                            Loading content...
+                          </Skeleton>
                         </div>
                       </div>
                     </div>
