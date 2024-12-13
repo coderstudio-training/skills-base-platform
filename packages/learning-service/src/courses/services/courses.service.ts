@@ -210,7 +210,7 @@ export class CoursesService {
    */
   async getCourses({ category, level }: GetCoursesQueryDto): Promise<Course[]> {
     try {
-      const model = await this.getModelForCollection('QA_LEARNING_RESOURCES');
+      const model = await this.getModelForCollection('qa_courses');
 
       const filterQuery = {} as any;
 
@@ -248,7 +248,7 @@ export class CoursesService {
    */
   async getResources(category?: string): Promise<ResourcesResponseDto> {
     try {
-      const model = await this.getModelForCollection('QA_LEARNING_RESOURCES');
+      const model = await this.getModelForCollection('qa_courses');
 
       const filter: any = {};
       if (category) {
