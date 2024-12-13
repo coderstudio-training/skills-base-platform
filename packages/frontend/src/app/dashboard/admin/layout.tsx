@@ -1,4 +1,4 @@
-import { Skeleton } from '@/blocks/ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

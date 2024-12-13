@@ -1,4 +1,4 @@
-import { Skeleton } from '@/blocks/ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 
 export default function ManagerLoading() {

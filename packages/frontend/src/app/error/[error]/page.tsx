@@ -1,4 +1,4 @@
-import ErrorPage from '@/components/error/ErrorPage';
+import ErrorPage from '@/components/Dashboard/components/Misc/ErrorPage';
 import { errorMessages } from '@/lib/api/config';
 import { notFound } from 'next/navigation';
 
@@ -16,5 +16,7 @@ export default function DynamicErrorPage({ params }: { params: { error: string }
   const dynamicError = errorMapping[error];
   if (!dynamicError) notFound(); // Show 404 if error type is unknown
 
-  return <ErrorPage statusCode={dynamicError.statusCode} message={dynamicError.message} />;
+  // return <ErrorPage statusCode={dynamicError.statusCode} message={dynamicError.message} />;
+
+  return <ErrorPage />;
 }

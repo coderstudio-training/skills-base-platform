@@ -1,8 +1,7 @@
-import ManagerDashboard from '@/blocks/Dashboard/components/Manager';
-import { serverSideIntercept } from '@/lib/api/auth';
+import ManagerDashboard from '@/components/Dashboard/components/Manager';
 
 export default async function ManagerDashboardPage() {
-  await serverSideIntercept({ permission: 'canViewDashboard' });
+  // await serverSideIntercept({ permission: 'canViewDashboard' });
   // Note: Almost responsive dashboard. Modify header
   return <ManagerDashboard />;
 }

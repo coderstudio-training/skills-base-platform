@@ -1,7 +1,6 @@
-import StaffDashboard from '@/blocks/Dashboard/components/Staff';
-import { serverSideIntercept } from '@/lib/api/auth';
+import StaffDashboard from '@/components/Dashboard/components/Staff';
 
 export default async function StaffDashboardPage() {
-  await serverSideIntercept({ permission: 'canViewDashboard' });
+  // await serverSideIntercept({ permission: 'canViewDashboard' });
   return <StaffDashboard />;
 }
