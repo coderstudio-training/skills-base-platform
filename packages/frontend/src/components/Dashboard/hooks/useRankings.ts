@@ -9,7 +9,7 @@ export function useEmployeeRankings() {
     isLoading: rankingsLoading,
   } = useQuery<EmployeeRankingsResponse>(skillsApi, 'skills-matrix/rankings', {
     requiresAuth: true,
-    revalidate: 3600,
+    revalidate: 300,
   });
 
   return {

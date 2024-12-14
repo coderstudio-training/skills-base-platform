@@ -43,7 +43,7 @@ export function useAdminData() {
   }).toString();
 
   const employeesData = useSuspenseQuery<EmployeesResponse>(userApi, `${endpoint}?${queryParams}`, {
-    revalidate: 3600,
+    revalidate: 300,
     requiresAuth: true,
   });
 
@@ -52,20 +52,20 @@ export function useAdminData() {
     userApi,
     '/employees/business-units',
     {
-      revalidate: 3600,
+      revalidate: 300,
       requiresAuth: true,
     },
   );
 
   // Stats query
   const statsData = useSuspenseQuery<EmployeeStats>(userApi, '/employees/stats', {
-    revalidate: 3600,
+    revalidate: 300,
     requiresAuth: true,
   });
 
   // Skill gaps query
   const skillGapsData = useSuspenseQuery<SkillGapsResponse>(skillsApi, '/api/skills/analytics', {
-    revalidate: 3600,
+    revalidate: 300,
     requiresAuth: true,
   });
 
@@ -74,7 +74,7 @@ export function useAdminData() {
     skillsApi,
     '/skills-matrix/rankings',
     {
-      revalidate: 3600,
+      revalidate: 300,
       requiresAuth: true,
     },
   );

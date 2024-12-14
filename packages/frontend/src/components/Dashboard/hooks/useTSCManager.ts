@@ -11,7 +11,7 @@ export function useTSCManager() {
     `${TAXONOMY_BASE_URL}?businessUnit=QA`,
     {
       requiresAuth: true,
-      revalidate: 3600,
+      revalidate: 300,
     },
   );
 
@@ -20,7 +20,7 @@ export function useTSCManager() {
   //   `${TAXONOMY_BASE_URL}?businessUnit=QA`,
   //   {
   //     requiresAuth: true,
-  //     revalidate: 3600,
+  //     revalidate: 300,
   //   },
   // );
 
