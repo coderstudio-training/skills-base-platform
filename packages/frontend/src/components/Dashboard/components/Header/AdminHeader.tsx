@@ -22,7 +22,7 @@ export default function AdminDashboardHeader() {
     <header className="bg-white border-b">
       <div className="h-16 max-w-7xl mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-gray-800">Admin Dashboard v2</h1>
+          <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
           <Badge variant="secondary">{lastSyncTime}</Badge>
         </div>
         <div className="flex items-center space-x-4">
