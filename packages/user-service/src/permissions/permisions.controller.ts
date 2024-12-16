@@ -8,6 +8,7 @@ import {
 import {
   JwtAuthGuard,
   Permission,
+  RedisCache,
   RequirePermissions,
   Roles,
   RolesGuard,
@@ -25,6 +26,7 @@ export class PermissionsController {
   @Get()
   @Roles(UserRole.ADMIN)
   @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @RedisCache('permissions:all', 3600) // Cache for 1 hour
   @ApiOperation({ summary: 'Get all permissions' })
   @ApiResponse({
     status: 200,
@@ -48,6 +50,11 @@ export class PermissionsController {
   @Get('roles/:role')
   @Roles(UserRole.ADMIN)
   @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @RedisCache({
+    key: 'permissions:role',
+    keyGenerator: (args) => `permissions:role:${args[0].params.role}`,
+    ttl: 3600,
+  })
   @ApiOperation({ summary: 'Get permissions for a specific role' })
   @ApiResponse({
     status: 200,
@@ -64,6 +71,10 @@ export class PermissionsController {
   @Post('verify')
   @Roles(UserRole.ADMIN)
   @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @RedisCache({
+    keyGenerator: (args) => `permissions:verify:${args[0].body.permissionName}`,
+    ttl: 3600,
+  })
   @ApiOperation({ summary: 'Verify permissions' })
   @ApiResponse({
     status: 200,
@@ -90,6 +101,10 @@ export class PermissionsController {
   @Get('codes/:permissionName')
   @Roles(UserRole.ADMIN)
   @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @RedisCache({
+    keyGenerator: (args) => `permissions:code:${args[0].params.permissionName}`,
+    ttl: 3600,
+  })
   @ApiOperation({ summary: 'Get code for specific permission' })
   @ApiResponse({
     status: 200,

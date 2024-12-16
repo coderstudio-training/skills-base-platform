@@ -5,12 +5,19 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable, tap } from 'rxjs';
-import { INVALIDATE_CACHE_KEYS } from '../decorators/cache-invalidator.decorator';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+import {
+  INVALIDATE_CACHE_KEYS,
+  CacheKeyGenerator,
+} from '../decorators/cache-invalidator.decorator';
 import { RedisService } from '../services/redis.service';
+import { Logger } from '../services/logger.service';
 
 @Injectable()
 export class CacheInvalidateInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(CacheInvalidateInterceptor.name);
+
   constructor(
     private readonly redisService: RedisService,
     private readonly reflector: Reflector,
@@ -20,24 +27,36 @@ export class CacheInvalidateInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(async () => {
         try {
-          const keysToInvalidate = this.reflector.get(
-            INVALIDATE_CACHE_KEYS,
-            context.getHandler(),
-          );
+          const keysToInvalidate = this.reflector.get<
+            string[] | CacheKeyGenerator
+          >(INVALIDATE_CACHE_KEYS, context.getHandler());
 
           if (!keysToInvalidate) return;
 
-          const args = context.getArgs();
           const keys =
             typeof keysToInvalidate === 'function'
-              ? keysToInvalidate(args)
+              ? keysToInvalidate(context.getArgs())
               : keysToInvalidate;
 
           await this.redisService.invalidateMultiple(keys);
+
+          this.logger.debug('Cache invalidated', {
+            keys,
+            handler: context.getHandler().name,
+          });
         } catch (error) {
-          // Log error but don't fail the request
-          console.error('Cache invalidation failed:', error);
+          this.logger.error('Cache invalidation failed', {
+            error,
+            handler: context.getHandler().name,
+          });
         }
+      }),
+      catchError((error) => {
+        this.logger.error('Error in handler with cache invalidation', {
+          error,
+          handler: context.getHandler().name,
+        });
+        return throwError(() => error);
       }),
     );
   }

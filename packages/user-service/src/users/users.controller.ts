@@ -18,11 +18,13 @@ import {
 } from '@nestjs/swagger';
 import {
   BaseController,
+  InvalidateCache,
   JwtAuthGuard,
   LoggingInterceptor,
   PaginationDto,
   Permission,
   RateLimit,
+  RedisCache,
   RequirePermissions,
   Roles,
   RolesGuard,
@@ -53,6 +55,7 @@ export class UsersController extends BaseController<User> {
   })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
+  @InvalidateCache(['users:list', 'users:profile'])
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
@@ -78,6 +81,7 @@ export class UsersController extends BaseController<User> {
     description: 'Returns all users',
     type: [User],
   })
+  @RedisCache('users:list', 1800)
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.usersService.findAll(paginationDto);
