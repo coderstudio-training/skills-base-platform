@@ -95,8 +95,8 @@ export const handleApiError = (error: ApiError): { statusCode: number; message: 
   return { statusCode: error.status, message };
 };
 
-import { BUSINESS_UNITS } from '@/components/TSC/constants';
-import { BusinessUnit, TSCProficiency } from '@/components/TSC/types';
+import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
+import { BusinessUnit, TSCProficiency } from '@/components/Dashboard/types';
 import { IBaseTaxonomy } from '@/lib/skills/types';
 
 export function validateTextData(text: string): boolean {

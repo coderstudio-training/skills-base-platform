@@ -1,19 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BaseDto } from '@skills-base/shared';
-import { Type } from 'class-transformer';
 import {
-  ArrayMinSize,
-  IsArray,
   IsDate,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
-  Max,
-  Min,
-  ValidateNested,
 } from 'class-validator';
 
 export class PerformanceAverageDto extends BaseDto {
@@ -78,117 +73,155 @@ export class PerformanceAverageDto extends BaseDto {
   };
 }
 
-export class TopSkillDto {
+export enum DistributionSkillStatus {
+  CRITICAL = 'CRITICAL',
+  WARNING = 'WARNING',
+  NORMAL = 'NORMAL',
+}
+
+export class SkillDto {
+  @ApiProperty({ description: 'Name of the skill' })
+  @IsString()
+  name!: string;
+
+  @ApiProperty({ description: 'Number of users with this skill' })
+  @IsNumber()
+  userCount!: number;
+
+  @ApiProperty({
+    description: 'Status of the skill',
+    enum: DistributionSkillStatus,
+  })
+  @IsEnum(DistributionSkillStatus)
+  status!: DistributionSkillStatus;
+}
+
+export class CategoryDistributionDto {
+  @ApiProperty({ description: 'Skill category' })
+  @IsString()
+  category!: string;
+
+  @ApiProperty({ type: [SkillDto] })
+  skills!: SkillDto[];
+}
+
+export class BusinessUnitDistributionDto {
+  @ApiProperty({ description: 'Name of business unit' })
+  @IsString()
+  businessUnit!: string;
+
+  @ApiProperty({ type: [CategoryDistributionDto] })
+  categories!: CategoryDistributionDto[];
+}
+
+export class GradeDistributionDto {
+  @ApiProperty({ description: 'Grade level' })
+  @IsString()
+  grade!: string;
+
+  @ApiProperty({ description: 'Number of users in this grade' })
+  @IsNumber()
+  userCount!: number;
+}
+
+export class DistributionsResponseDto {
+  @ApiProperty({ type: [BusinessUnitDistributionDto] })
+  skillDistribution!: BusinessUnitDistributionDto[];
+
+  @ApiProperty({ type: [GradeDistributionDto] })
+  gradeDistribution!: GradeDistributionDto[];
+}
+
+export class EmployeeRankingDto {
+  @ApiProperty({ description: 'Employee name' })
+  @IsString()
+  name!: string;
+
+  @ApiProperty({ description: 'Ranking position' })
+  @IsNumber()
+  ranking!: number;
+
+  @ApiProperty({ description: 'Average skill score' })
+  @IsNumber()
+  score!: number;
+}
+
+export class EmployeeRankingsResponseDto {
+  @ApiProperty({ type: [EmployeeRankingDto] })
+  rankings!: EmployeeRankingDto[];
+}
+
+export class SkillPrevalenceDto {
   @ApiProperty({
     description: 'Name of the skill',
-    example: 'JavaScript',
+    example: 'Test Planning',
   })
   @IsString()
-  @IsNotEmpty()
   name!: string;
 
   @ApiProperty({
-    description: 'Prevalence of the skill across the organization (percentage)',
-    minimum: 0,
-    maximum: 100,
-    example: 85,
-    type: 'number',
+    description: 'Skill prevalence as percentage of maximum rating',
+    example: 76.4,
   })
   @IsNumber()
-  @Min(0)
-  @Max(100)
   prevalence!: number;
 }
 
 export class SkillGapDto {
   @ApiProperty({
     description: 'Name of the skill',
-    example: 'JavaScript',
+    example: 'Process Improvement And Optimization',
   })
   @IsString()
-  @IsNotEmpty()
   name!: string;
 
   @ApiProperty({
-    description: 'Current average skill level',
-    minimum: 0,
-    maximum: 5,
-    example: 3.5,
-    type: 'number',
+    description: 'Current average rating across all employees',
+    example: 3.16,
   })
   @IsNumber()
-  @Min(0)
-  @Max(5)
-  currentLevel!: number;
+  currentAvg!: number;
 
   @ApiProperty({
-    description: 'Required skill level for the role',
-    minimum: 0,
-    maximum: 5,
+    description: 'Required skill level',
     example: 4,
-    type: 'number',
   })
   @IsNumber()
-  @Min(0)
-  @Max(5)
   requiredLevel!: number;
 
   @ApiProperty({
-    description:
-      'Gap between required and current level (positive indicates deficit)',
-    minimum: 0,
-    maximum: 5,
-    example: 0.5,
-    type: 'number',
+    description: 'Gap between required and current level',
+    example: 0.84,
   })
   @IsNumber()
-  @Min(0)
-  @Max(5)
   gap!: number;
 }
 
-export class AdminSkillAnalyticsDto {
+export class CapabilitySkillsAnalysisDto {
   @ApiProperty({
-    description: 'List of top skills across the organization',
-    type: [TopSkillDto],
-    example: [
-      {
-        name: 'JavaScript',
-        prevalence: 85,
-      },
-      {
-        name: 'TypeScript',
-        prevalence: 75,
-      },
-    ],
+    description: 'Business unit/capability name',
+    example: 'QA',
   })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => TopSkillDto)
-  @ArrayMinSize(1)
-  topSkills!: TopSkillDto[];
+  @IsString()
+  capability!: string;
+
+  // @ApiProperty({
+  //   description: 'Top skills by prevalence',
+  //   type: [SkillPrevalenceDto],
+  // })
+  // topSkills!: SkillPrevalenceDto[];
 
   @ApiProperty({
-    description: 'List of skill gaps identified across the organization',
+    description: 'Top skill gaps',
     type: [SkillGapDto],
-    example: [
-      {
-        name: 'Cloud Architecture',
-        currentLevel: 3.5,
-        requiredLevel: 4,
-        gap: 0.5,
-      },
-      {
-        name: 'Kubernetes',
-        currentLevel: 3,
-        requiredLevel: 4,
-        gap: 1,
-      },
-    ],
   })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SkillGapDto)
-  @ArrayMinSize(1)
   skillGaps!: SkillGapDto[];
+}
+
+export class OrganizationSkillsAnalysisDto {
+  @ApiProperty({
+    description: 'Analysis per capability',
+    type: [CapabilitySkillsAnalysisDto],
+  })
+  capabilities!: CapabilitySkillsAnalysisDto[];
 }

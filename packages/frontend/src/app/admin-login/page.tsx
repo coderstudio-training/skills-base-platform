@@ -1,4 +1,4 @@
-import LoginForm from '@/components/auth/LoginForm';
+import LoginForm from '@/components/auth';
 import { Suspense } from 'react';
 
 export default function AdminLoginPage() {
