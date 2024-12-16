@@ -1,132 +1,423 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
+import { CACHE_MANAGER } from '@skills-base/shared';
+import { Cache } from 'cache-manager';
 import { Connection } from 'mongoose';
 import {
-  AdminSkillAnalyticsDto,
-  SkillGapDto,
-  TopSkillDto,
+  DistributionSkillStatus,
+  DistributionsResponseDto,
+  EmployeeRankingsResponseDto,
+  OrganizationSkillsAnalysisDto,
 } from '../dto/computation.dto';
 import {
-  BusinessUnitDistributionDto,
-  DistributionsResponseDto,
+  CategorySkillsSummaryDto,
+  EmployeeSkillsResponseDto,
+  SkillCategory,
+  SkillDetailsDto,
+  SkillsSummaryDto,
   SkillStatus,
-} from '../dto/distributions.dto';
-import {
-  EmployeeRankingsResponseDto,
-  SkillGapsDto,
-} from '../dto/user-skills.dto';
+} from '../dto/skills-matrix.dto';
+import { TeamSkillsResponseDto } from '../dto/team-skills.dto';
 import { transformToReadableKeys } from '../utils/skills.util';
 
-export enum SkillCategory {
-  TECHNICAL = 'Technical Skills',
-  SOFT = 'Soft Skills',
-}
+const CACHE_KEYS = {
+  SOFT_SKILLS: 'skills:soft',
+  ADMIN_ANALYSIS: 'analysis:admin',
+  DISTRIBUTIONS: 'analysis:distributions',
+  RANKINGS: 'analysis:rankings',
+  TEAM_SKILLS: (managerName: string) => `team:skills:${managerName}`,
+  CAPABILITY_ANALYSIS: (capability: string) =>
+    `analysis:capability:${capability}`,
+} as const;
 
-export interface TransformedSkillDto {
-  skill: string;
-  category: SkillCategory;
-  selfRating: number;
-  managerRating: number;
-  requiredRating: number;
-  gap: number;
-  average: number;
-}
-
-export interface TransformedSkillsResponseDto {
-  employeeInfo: {
-    email: string;
-    name: string;
-    careerLevel: string;
-    capability: string;
-  };
-  skills: TransformedSkillDto[];
-}
-
-interface EmployeeScore {
-  name: string;
-  email: string;
-  score: number;
-  skillCount: number;
-  department: string;
-  ranking?: number; // Add ranking as optional property
-}
+const CACHE_TTL = {
+  SOFT_SKILLS: 24 * 3600000, // 24 hours for soft skills
+  TEAM_SKILLS: 24 * 3600000, // 24 hours for team skills
+  ANALYSIS: 3600000, // 1 hour for analysis
+  DISTRIBUTIONS: 3600000, // 1 hour for distributions
+  RANKINGS: 3600000, // 1 hour for rankings
+} as const;
 
 @Injectable()
-export class SkillsMatrixxService {
-  private readonly logger = new Logger(SkillsMatrixxService.name);
+export class SkillsMatrixService {
+  private readonly logger = new Logger(SkillsMatrixService.name);
 
-  constructor(@InjectConnection() private readonly connection: Connection) {}
+  constructor(
+    @InjectConnection() private readonly connection: Connection,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {
+    this.initializeSoftSkillsCache();
+  }
 
-  async getEmployeeRankings(): Promise<EmployeeRankingsResponseDto> {
+  private async initializeSoftSkillsCache() {
     try {
-      const allEmployeesData = await this.getAllEmployeesSkillsData();
+      let softSkills = await this.cacheManager.get(CACHE_KEYS.SOFT_SKILLS);
 
-      // Calculate average scores for each employee
-      const employeeScores: EmployeeScore[] = allEmployeesData.map(
-        (employee) => {
-          const validSkills = employee.skills.filter(
-            (skill) =>
-              skill.average > 0 ||
-              skill.selfRating > 0 ||
-              skill.managerRating > 0,
+      if (!softSkills) {
+        softSkills = await this.connection
+          .collection('soft_skillsInventory')
+          .find({})
+          .toArray();
+
+        await this.cacheManager.set(
+          CACHE_KEYS.SOFT_SKILLS,
+          softSkills,
+          CACHE_TTL.SOFT_SKILLS,
+        );
+      }
+    } catch (error) {
+      this.logger.error('Error initializing soft skills cache:', error);
+    }
+  }
+
+  private async determineSkillCategory(
+    skillName: string,
+  ): Promise<SkillCategory> {
+    try {
+      const softSkill = await this.connection
+        .collection('soft_skillsInventory')
+        .findOne({
+          title: new RegExp(skillName, 'i'), // Case insensitive match on title only
+        });
+
+      return softSkill ? SkillCategory.SOFT : SkillCategory.TECHNICAL;
+    } catch (error) {
+      this.logger.error(
+        `Error determining skill category for ${skillName}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  private determineSkillStatus(gap: number): SkillStatus {
+    return gap >= 0 ? SkillStatus.PROFICIENT : SkillStatus.DEVELOPING;
+  }
+
+  private calculateCategoryMetrics(
+    skills: SkillDetailsDto[],
+  ): CategorySkillsSummaryDto {
+    const gaps = skills.map((skill) => skill.gap);
+    const ratings = skills.map((skill) => skill.average);
+
+    return {
+      averageGap: this.calculateAverage(gaps),
+      skillsMeetingRequired: gaps.filter((gap) => gap >= 0).length,
+      skillsNeedingImprovement: gaps.filter((gap) => gap < 0).length,
+      largestGap: Math.min(...gaps),
+      averageRating: this.calculateAverage(ratings),
+      totalSkills: skills.length,
+    };
+  }
+
+  private calculateSkillsSummary(skills: SkillDetailsDto[]): SkillsSummaryDto {
+    const softSkills = skills.filter(
+      (skill) => skill.category === SkillCategory.SOFT,
+    );
+    const technicalSkills = skills.filter(
+      (skill) => skill.category === SkillCategory.TECHNICAL,
+    );
+
+    return {
+      overall: this.calculateCategoryMetrics(skills),
+      softSkills: this.calculateCategoryMetrics(softSkills),
+      technicalSkills: this.calculateCategoryMetrics(technicalSkills),
+    };
+  }
+
+  private calculateAverage(numbers: number[]): number {
+    if (numbers.length === 0) return 0;
+    return Number(
+      (numbers.reduce((a, b) => a + b, 0) / numbers.length).toFixed(2),
+    );
+  }
+
+  private async createSkillDetails(
+    skillName: string,
+    selfRating: number,
+    managerRating: number,
+    gap: number,
+    requiredRating: number = 0,
+  ): Promise<SkillDetailsDto> {
+    const skillDetails = new SkillDetailsDto();
+    skillDetails.name = skillName;
+    skillDetails.category = await this.determineSkillCategory(skillName);
+    skillDetails.selfRating = selfRating;
+    skillDetails.managerRating = managerRating;
+    skillDetails.average = Number(
+      ((selfRating + managerRating) / 2).toFixed(2),
+    );
+    skillDetails.gap = gap;
+    skillDetails.required = requiredRating;
+    skillDetails.status = this.determineSkillStatus(gap);
+    return skillDetails;
+  }
+
+  async getEmployeeSkillsSummary(email: string): Promise<SkillsSummaryDto> {
+    this.logger.log(`Fetching skills summary for email: ${email}`);
+
+    try {
+      const employeeSkills = await this.getEmployeeSkillsByEmail(email);
+
+      if (!employeeSkills || !employeeSkills.skills) {
+        throw new NotFoundException(`No skills found for email: ${email}`);
+      }
+
+      return this.calculateSkillsSummary(employeeSkills.skills);
+    } catch (error) {
+      this.logger.error(
+        `Error calculating skills summary for ${email}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  async getEmployeeSkillsByEmail(
+    email: string,
+  ): Promise<EmployeeSkillsResponseDto> {
+    try {
+      const [gapAssessment, selfAssessment, managerAssessment] =
+        await Promise.all([
+          this.connection
+            .collection('Capability_gapAssessments')
+            .findOne({ emailAddress: email }),
+          this.connection
+            .collection('Capability_selfAssessments')
+            .findOne({ emailAddress: email }),
+          this.connection
+            .collection('Capability_managerAssessments')
+            .findOne({ emailOfResource: email }),
+        ]);
+
+      if (!gapAssessment) {
+        throw new NotFoundException(`No assessment found for email: ${email}`);
+      }
+
+      // Get skills from original data without transformation for values
+      const skillNames = new Set([
+        ...Object.keys(gapAssessment.skillAverages || {}),
+        ...Object.keys(gapAssessment.skillGaps || {}),
+        ...Object.keys(selfAssessment?.skills || {}),
+        ...Object.keys(managerAssessment?.skills || {}),
+      ]);
+
+      // Fetch required skills
+      const requiredSkills = await this.connection
+        .collection('capabilityRequiredSkills')
+        .findOne({
+          capability: gapAssessment.capability,
+          careerLevel: gapAssessment.careerLevel,
+        });
+
+      if (requiredSkills?.requiredSkills) {
+        Object.keys(requiredSkills.requiredSkills).forEach((key) =>
+          skillNames.add(key),
+        );
+      }
+
+      // Create skills array with transformed names but original values
+      const skills = await Promise.all(
+        Array.from(skillNames).map(async (originalSkillName) => {
+          const transformedName = transformToReadableKeys({
+            [originalSkillName]: 0,
+          });
+          const readableName = Object.keys(transformedName)[0];
+
+          return this.createSkillDetails(
+            readableName,
+            selfAssessment?.skills?.[originalSkillName] ?? 0,
+            managerAssessment?.skills?.[originalSkillName] ?? 0,
+            gapAssessment.skillGaps?.[originalSkillName] ?? 0,
+            requiredSkills?.requiredSkills?.[originalSkillName] ?? 0,
           );
-
-          const totalScore = validSkills.reduce(
-            (sum, skill) => sum + skill.average,
-            0,
-          );
-          const averageScore =
-            validSkills.length > 0
-              ? Number((totalScore / validSkills.length).toFixed(1))
-              : 0;
-
-          return {
-            name: employee.employeeInfo.name,
-            email: employee.employeeInfo.email,
-            score: averageScore,
-            skillCount: validSkills.length,
-            department: employee.employeeInfo.capability,
-          };
-        },
+        }),
       );
 
-      // Sort employees
-      const sortedEmployees = employeeScores.sort((a, b) => {
-        const scoreDiff = b.score - a.score;
-        if (scoreDiff !== 0) return scoreDiff;
+      const response = new EmployeeSkillsResponseDto();
+      response.email = gapAssessment.emailAddress;
+      response.name = gapAssessment.nameOfResource;
+      response.careerLevel = gapAssessment.careerLevel;
+      response.capability = gapAssessment.capability;
+      response.skills = skills.sort((a, b) => a.name.localeCompare(b.name));
 
-        const skillCountDiff = b.skillCount - a.skillCount;
-        if (skillCountDiff !== 0) return skillCountDiff;
+      return response;
+    } catch (error) {
+      this.logger.error(`Error fetching skills for email ${email}:`, error);
+      throw error;
+    }
+  }
 
-        return a.name.localeCompare(b.name);
+  async getAdminSkillsAnalysis(): Promise<OrganizationSkillsAnalysisDto> {
+    try {
+      // Try to get from cache first
+      const cachedAnalysis = await this.cacheManager.get(
+        CACHE_KEYS.ADMIN_ANALYSIS,
+      );
+      if (cachedAnalysis) {
+        this.logger.log('Returning admin skills analysis from cache');
+        return cachedAnalysis as OrganizationSkillsAnalysisDto;
+      }
+
+      const result = await this.computeAdminSkillsAnalysis();
+
+      // Cache the result
+      await this.cacheManager.set(
+        CACHE_KEYS.ADMIN_ANALYSIS,
+        result,
+        CACHE_TTL.ANALYSIS,
+      ); // 1 hour cache
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        'Error calculating organization technical skills analysis:',
+        error,
+      );
+      throw error;
+    }
+  }
+
+  private async computeAdminSkillsAnalysis(): Promise<OrganizationSkillsAnalysisDto> {
+    try {
+      const [allAssessments, allRequiredSkills] = await Promise.all([
+        this.connection
+          .collection('Capability_gapAssessments')
+          .find({})
+          .toArray(),
+        this.connection
+          .collection('capabilityRequiredSkills')
+          .find({})
+          .toArray(),
+      ]);
+
+      // Group assessments by capability
+      const assessmentsByCapability = new Map();
+      const requiredSkillsByCapability = new Map();
+
+      allAssessments.forEach((assessment) => {
+        const capability = assessment.capability;
+        if (!assessmentsByCapability.has(capability)) {
+          assessmentsByCapability.set(capability, []);
+        }
+        assessmentsByCapability.get(capability).push(assessment);
       });
 
-      // Assign continuous rankings and take only top 5
-      const sortedScores = sortedEmployees
-        .slice(0, 10)
-        .map((employee, index) => ({
-          name: employee.name,
-          ranking: index + 1,
-          score: employee.score,
+      allRequiredSkills.forEach((required) => {
+        requiredSkillsByCapability.set(required.capability, required);
+      });
+
+      // Get soft skills from cache
+      const softSkills = (await this.cacheManager.get(
+        CACHE_KEYS.SOFT_SKILLS,
+      )) as any[];
+      const softSkillTitles = new Set(
+        softSkills?.map((skill) => skill.title.toLowerCase()),
+      );
+
+      const capabilityAnalyses = Array.from(
+        assessmentsByCapability.entries(),
+      ).map(([capability, assessments]) => {
+        const skillsMap = new Map();
+        const requiredSkills =
+          requiredSkillsByCapability.get(capability)?.requiredSkills || {};
+
+        assessments.forEach(
+          (assessment: {
+            skillAverages: any;
+            skillGaps: { [x: string]: number };
+          }) => {
+            Object.entries(assessment.skillAverages || {}).forEach(
+              ([skillName, average]) => {
+                const transformedName = Object.keys(
+                  transformToReadableKeys({ [skillName]: 0 }),
+                )[0];
+
+                // Skip if soft skill using cached soft skills
+                if (softSkillTitles.has(transformedName.toLowerCase())) return;
+
+                const gap = assessment.skillGaps?.[skillName] ?? 0;
+                const required = requiredSkills[skillName] ?? 0;
+
+                const existing = skillsMap.get(transformedName) || {
+                  totalAverage: 0,
+                  count: 0,
+                  required,
+                  gap: 0,
+                };
+
+                existing.totalAverage += average as number;
+                existing.gap += gap as number;
+                existing.count += 1;
+                skillsMap.set(transformedName, existing);
+              },
+            );
+          },
+        );
+
+        // Calculate metrics for each skill
+        const skills = Array.from(skillsMap.entries()).map(([name, data]) => ({
+          name,
+          prevalence: Number(
+            ((data.totalAverage / (data.count * 5)) * 100).toFixed(2),
+          ),
+          currentAvg: Number((data.totalAverage / data.count).toFixed(2)),
+          requiredLevel: data.required,
+          gap: Number((data.gap / data.count).toFixed(2)),
         }));
 
+        return {
+          capability,
+          // topSkills: skills
+          //   .sort((a, b) => b.prevalence - a.prevalence)
+          //   .slice(0, 5)
+          //   .map(({ name, prevalence }) => ({ name, prevalence })),
+          skillGaps: skills
+            .sort((a, b) => a.gap - b.gap)
+            .slice(0, 5)
+            .map(({ name, currentAvg, requiredLevel, gap }) => ({
+              name,
+              currentAvg,
+              requiredLevel,
+              gap,
+            })),
+        };
+      });
+
       return {
-        rankings: sortedScores,
+        capabilities: capabilityAnalyses.filter(
+          (analysis) =>
+            // analysis.topSkills.length >= 2 &&
+            analysis.skillGaps.length >= 2,
+        ),
       };
     } catch (error) {
-      this.logger.error('Error calculating employee rankings:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-      });
+      this.logger.error(
+        'Error computing organization technical skills analysis:',
+        error,
+      );
       throw error;
     }
   }
 
   async getDistributions(): Promise<DistributionsResponseDto> {
     try {
-      const allEmployeesData = await this.getAllEmployeesSkillsData();
+      // Try to get from cache first
+      const cachedDistributions = await this.cacheManager.get(
+        CACHE_KEYS.DISTRIBUTIONS,
+      );
+      if (cachedDistributions) {
+        this.logger.log('Returning distributions from cache');
+        return cachedDistributions as DistributionsResponseDto;
+      }
 
-      // Maps for tracking distributions by business unit
+      // Get all assessments at once
+      const allAssessments = await this.connection
+        .collection('Capability_gapAssessments')
+        .find()
+        .toArray();
+
+      // Maps for tracking distributions
       const businessUnitMap = new Map<string, Map<string, Set<string>>>();
       const skillUserMap = new Map<
         string,
@@ -139,53 +430,68 @@ export class SkillsMatrixxService {
       >();
       const gradeMap = new Map<string, number>();
 
-      // Process each employee's data
-      for (const employee of allEmployeesData) {
+      // Get soft skills from cache
+      const softSkills = (await this.cacheManager.get(
+        CACHE_KEYS.SOFT_SKILLS,
+      )) as any[];
+      const softSkillTitles = new Set(
+        softSkills?.map((skill) => skill.title.toLowerCase()),
+      );
+
+      // Process each assessment
+      for (const assessment of allAssessments) {
         // Track grade distribution
-        const grade = employee.employeeInfo.careerLevel;
+        const grade = assessment.careerLevel;
         gradeMap.set(grade, (gradeMap.get(grade) || 0) + 1);
 
-        const businessUnit = employee.employeeInfo.capability;
-
-        // Initialize business unit map if not exists
+        const businessUnit = assessment.capability;
         if (!businessUnitMap.has(businessUnit)) {
           businessUnitMap.set(businessUnit, new Map());
         }
         const categoryMap = businessUnitMap.get(businessUnit)!;
 
-        // Process each skill
-        employee.skills.forEach((skill) => {
-          // Track skills by category within business unit
-          const category = skill.category;
-          if (!categoryMap.has(category)) {
-            categoryMap.set(category, new Set());
-          }
-          categoryMap.get(category)?.add(skill.skill);
+        // Process skills
+        Object.entries(assessment.skillAverages || {}).forEach(
+          ([skillName]) => {
+            const transformedName = Object.keys(
+              transformToReadableKeys({ [skillName]: 0 }),
+            )[0];
 
-          // Track users and gaps per skill
-          const skillKey = `${businessUnit}:${skill.skill}`;
-          if (!skillUserMap.has(skillKey)) {
-            skillUserMap.set(skillKey, {
-              users: new Set(),
-              totalGap: 0,
-              category,
-              businessUnit,
-            });
-          }
+            // Determine category using cached soft skills
+            const category = softSkillTitles.has(transformedName.toLowerCase())
+              ? SkillCategory.SOFT
+              : SkillCategory.TECHNICAL;
 
-          const skillData = skillUserMap.get(skillKey)!;
-          skillData.users.add(employee.employeeInfo.email);
+            // Track skills by category within business unit
+            if (!categoryMap.has(category)) {
+              categoryMap.set(category, new Set());
+            }
+            categoryMap.get(category)?.add(transformedName);
 
-          if (skill.gap < 0) {
-            skillData.totalGap += Math.abs(skill.gap);
-          }
-        });
+            // Track users and gaps per skill
+            const skillKey = `${businessUnit}:${transformedName}`;
+            if (!skillUserMap.has(skillKey)) {
+              skillUserMap.set(skillKey, {
+                users: new Set(),
+                totalGap: 0,
+                category,
+                businessUnit,
+              });
+            }
+
+            const skillData = skillUserMap.get(skillKey)!;
+            skillData.users.add(assessment.emailAddress);
+
+            const gap = assessment.skillGaps?.[skillName] ?? 0;
+            if (gap < 0) {
+              skillData.totalGap += Math.abs(gap);
+            }
+          },
+        );
       }
 
       // Transform data for response
-      const skillDistribution: BusinessUnitDistributionDto[] = Array.from(
-        businessUnitMap.entries(),
-      )
+      const skillDistribution = Array.from(businessUnitMap.entries())
         .map(([businessUnit, categoryMap]) => ({
           businessUnit,
           categories: Array.from(categoryMap.entries())
@@ -200,17 +506,17 @@ export class SkillsMatrixxService {
                   return {
                     name: skillName,
                     userCount: skillData.users.size,
-                    status: this.determineSkillStatus(
+                    status: this.determineDistributionStatus(
                       averageGap,
                       skillData.users.size,
                     ),
                   };
                 })
-                .sort((a, b) => b.userCount - a.userCount), // Sort by user count
+                .sort((a, b) => b.userCount - a.userCount),
             }))
-            .sort((a, b) => a.category.localeCompare(b.category)), // Sort categories alphabetically
+            .sort((a, b) => a.category.localeCompare(b.category)),
         }))
-        .sort((a, b) => a.businessUnit.localeCompare(b.businessUnit)); // Sort business units
+        .sort((a, b) => a.businessUnit.localeCompare(b.businessUnit));
 
       const gradeDistribution = Array.from(gradeMap.entries())
         .map(([grade, userCount]) => ({
@@ -218,7 +524,6 @@ export class SkillsMatrixxService {
           userCount,
         }))
         .sort((a, b) => {
-          // Custom sort for grade levels
           const gradeOrder = [
             'Associate',
             'Professional',
@@ -229,246 +534,162 @@ export class SkillsMatrixxService {
           return gradeOrder.indexOf(a.grade) - gradeOrder.indexOf(b.grade);
         });
 
-      return {
+      const distributions = {
         skillDistribution,
         gradeDistribution,
       };
+
+      // Cache the result
+      await this.cacheManager.set(
+        CACHE_KEYS.DISTRIBUTIONS,
+        distributions,
+        CACHE_TTL.ANALYSIS,
+      );
+
+      return distributions;
     } catch (error) {
-      this.logger.error('Error calculating distributions:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-      });
+      this.logger.error('Error calculating distributions:', error);
       throw error;
     }
   }
 
-  private determineSkillStatus(
+  private determineDistributionStatus(
     averageGap: number,
     userCount: number,
-  ): SkillStatus {
-    if (averageGap > 2 || userCount < 2) return SkillStatus.CRITICAL;
-    if (averageGap > 1 || userCount < 5) return SkillStatus.WARNING;
-    return SkillStatus.NORMAL;
+  ): DistributionSkillStatus {
+    if (averageGap > 2 || userCount < 2)
+      return DistributionSkillStatus.CRITICAL;
+    if (averageGap > 1 || userCount < 5) return DistributionSkillStatus.WARNING;
+    return DistributionSkillStatus.NORMAL;
   }
 
-  async getAdminSkillsAnalytics(): Promise<AdminSkillAnalyticsDto> {
+  async getEmployeeRankings(): Promise<EmployeeRankingsResponseDto> {
     try {
-      const allEmployeesData = await this.getAllEmployeesSkillsData();
+      // Try to get from cache first
+      const cachedRankings = await this.cacheManager.get(CACHE_KEYS.RANKINGS);
+      if (cachedRankings) {
+        this.logger.log('Returning rankings from cache');
+        return cachedRankings as EmployeeRankingsResponseDto;
+      }
 
-      // Collect all unique skills
-      const skillsMap = new Map<
-        string,
-        {
-          totalRating: number;
-          count: number;
-          category: string;
-          gapCount: number;
-          totalGap: number;
-          requiredLevel: number;
-          currentLevel: number;
-        }
-      >();
+      const assessments = await this.connection
+        .collection('Capability_gapAssessments')
+        .find()
+        .toArray();
 
-      // Process all employees' skills
-      allEmployeesData.forEach((employee) => {
-        employee.skills.forEach((skill) => {
-          const currentSkill = skillsMap.get(skill.skill) || {
-            totalRating: 0,
-            count: 0,
-            category: skill.category,
-            gapCount: 0,
-            totalGap: 0,
-            requiredLevel: skill.requiredRating,
-            currentLevel: skill.average,
-          };
+      // Calculate scores and sort employees
+      const sortedEmployees = assessments
+        .map((assessment) => {
+          const validSkills = Object.values(assessment.skillAverages || {})
+            .map((avg) => Number(avg))
+            .filter((avg) => avg > 0);
 
-          currentSkill.totalRating += skill.average;
-          currentSkill.count += 1;
-
-          if (skill.gap < 0) {
-            currentSkill.gapCount += 1;
-            currentSkill.totalGap += Math.abs(skill.gap);
-          }
-
-          skillsMap.set(skill.skill, currentSkill);
-        });
-      });
-
-      // Transform to match frontend DTOs
-      const topSkills: TopSkillDto[] = Array.from(skillsMap.entries())
-        .map(([name, data]) => ({
-          name,
-          prevalence: (data.totalRating / (data.count * 5)) * 100, // Convert to percentage based on max rating of 5
-        }))
-        .sort((a, b) => b.prevalence - a.prevalence)
-        .slice(0, 5);
-
-      const skillGaps: SkillGapDto[] = Array.from(skillsMap.entries())
-        .map(([name, data]) => {
-          const currentLevel = data.totalRating / data.count;
-          const requiredLevel = data.requiredLevel;
-          const gap = Math.max(0, requiredLevel - currentLevel);
-
+          const averageScore =
+            validSkills.length > 0
+              ? Number(
+                  (
+                    validSkills.reduce((sum, val) => sum + val, 0) /
+                    validSkills.length
+                  ).toFixed(1),
+                )
+              : 0;
           return {
-            name,
-            currentLevel,
-            requiredLevel,
-            gap,
+            name: assessment.nameOfResource,
+            score: averageScore,
+            skillCount: validSkills.length,
           };
         })
-        .filter((gap) => gap.gap > 0)
-        .sort((a, b) => b.gap - a.gap)
-        .slice(0, 5);
-
-      return {
-        topSkills,
-        skillGaps,
-      };
-    } catch (error) {
-      this.logger.error('Error calculating admin skills analytics:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-      });
-      throw error;
-    }
-  }
-
-  async getAllEmployeesSkillsData(): Promise<TransformedSkillsResponseDto[]> {
-    try {
-      // Fetch all employees data in parallel
-      const [gapAssessments, selfAssessments, managerAssessments] =
-        await Promise.all([
-          this.connection
-            .collection('Capability_gapAssessments')
-            .find()
-            .toArray(),
-          this.connection
-            .collection('Capability_selfAssessments')
-            .find()
-            .toArray(),
-          this.connection
-            .collection('Capability_managerAssessments')
-            .find()
-            .toArray(),
-        ]);
-
-      // Create lookup maps for faster access
-      const selfSkillsMap = new Map(
-        selfAssessments.map((assessment) => [
-          assessment.emailAddress,
-          transformToReadableKeys(assessment.skills || {}),
-        ]),
-      );
-
-      const managerSkillsMap = new Map(
-        managerAssessments.map((assessment) => [
-          assessment.emailOfResource,
-          transformToReadableKeys(assessment.skills || {}),
-        ]),
-      );
-
-      // Process each employee's data
-      this.logger.debug(
-        `Processing skills data for ${gapAssessments.length} employees`,
-      );
-
-      return gapAssessments.map((staff) => {
-        const email = staff.emailAddress;
-        return this.transformEmployeeSkills({
-          staff: {
-            emailAddress: staff.emailAddress,
-            nameOfResource: staff.nameOfResource,
-            careerLevel: staff.careerLevel,
-            capability: staff.capability,
-            skillAverages: transformToReadableKeys(staff.skillAverages || {}),
-            skillGaps: transformToReadableKeys(staff.skillGaps || {}),
-          },
-          selfSkills: selfSkillsMap.get(email) || {},
-          managerSkills: managerSkillsMap.get(email) || {},
+        .sort((a, b) => {
+          const scoreDiff = b.score - a.score;
+          if (scoreDiff !== 0) return scoreDiff;
+          const skillCountDiff = b.skillCount - a.skillCount;
+          if (skillCountDiff !== 0) return skillCountDiff;
+          return a.name.localeCompare(b.name);
         });
-      });
+
+      // Take top 10 and assign rankings
+      const rankings = {
+        rankings: sortedEmployees.slice(0, 10).map((employee, index) => ({
+          name: employee.name,
+          ranking: index + 1,
+          score: employee.score,
+        })),
+      };
+
+      // Cache the result
+      await this.cacheManager.set(
+        CACHE_KEYS.RANKINGS,
+        rankings,
+        CACHE_TTL.ANALYSIS,
+      );
+
+      return rankings;
     } catch (error) {
-      this.logger.error('Error fetching skills data:', error);
+      this.logger.error('Error calculating employee rankings:', error);
       throw error;
     }
   }
 
-  private transformEmployeeSkills(data: {
-    staff: SkillGapsDto;
-    selfSkills: Record<string, number>;
-    managerSkills: Record<string, number>;
-  }): TransformedSkillsResponseDto {
-    const { staff, selfSkills, managerSkills } = data;
-    const { skillAverages, skillGaps } = staff;
+  async getTeamSkills(managerName: string): Promise<TeamSkillsResponseDto> {
+    try {
+      // Try to get from cache first
+      const cachedTeamSkills = await this.cacheManager.get(
+        CACHE_KEYS.TEAM_SKILLS(managerName),
+      );
 
-    const transformedSkills = Object.keys(skillAverages)
-      .map((skill) => {
-        const currentSkillGap = skillGaps[skill] || 0;
-        const averageSkill = skillAverages[skill] || 0;
-        const requiredRating = this.calculateRequiredRating(
-          averageSkill,
-          currentSkillGap,
-        );
+      if (cachedTeamSkills) {
+        this.logger.log('Returning team skills from cache');
+        return cachedTeamSkills as TeamSkillsResponseDto;
+      }
 
-        return {
-          skill,
-          category: this.determineSkillCategory(skill),
-          selfRating: selfSkills[skill] || 0,
-          managerRating: managerSkills[skill] || 0,
-          requiredRating,
-          gap: currentSkillGap,
-          average: averageSkill,
-        };
-      })
-      .sort(this.sortSkills);
+      // If not in cache, fetch from database
+      const teamAssessments = await this.connection
+        .collection('Capability_managerAssessments')
+        .find({ nameOfRespondent: managerName })
+        .toArray();
 
-    return {
-      employeeInfo: {
-        email: staff.emailAddress,
-        name: staff.nameOfResource,
-        careerLevel: staff.careerLevel,
-        capability: staff.capability,
-      },
-      skills: transformedSkills,
-    };
-  }
+      if (!teamAssessments || teamAssessments.length === 0) {
+        return { members: [] };
+      }
 
-  private calculateRequiredRating(average: number, gap: number): number {
-    if (gap > 0) return average - gap;
-    if (gap < 0) return average + gap;
-    return average;
-  }
+      const teamSkills = await Promise.all(
+        teamAssessments.map(async (memberAssessment) => {
+          const gapAssessment = await this.connection
+            .collection('Capability_gapAssessments')
+            .findOne({ emailAddress: memberAssessment.emailOfResource });
 
-  private determineSkillCategory(skill: string): SkillCategory {
-    const technicalKeywords = [
-      'Testing',
-      'Development',
-      'Engineering',
-      'Management',
-      'Analysis',
-      'Assurance',
-      'Standards',
-      'Synthesis',
-      'Optimization',
-    ];
-    return technicalKeywords.some((keyword) => skill.includes(keyword))
-      ? SkillCategory.TECHNICAL
-      : SkillCategory.SOFT;
-  }
+          const skills = gapAssessment
+            ? await this.getEmployeeSkillsByEmail(
+                memberAssessment.emailOfResource,
+              )
+            : null;
 
-  private sortSkills(a: TransformedSkillDto, b: TransformedSkillDto): number {
-    if (a.category === b.category) {
-      return a.skill.localeCompare(b.skill);
+          return {
+            email: memberAssessment.emailOfResource,
+            name: memberAssessment.nameOfResource,
+            careerLevel: memberAssessment.careerLevelOfResource,
+            capability: memberAssessment.capability,
+            skills: skills?.skills || [],
+          };
+        }),
+      );
+
+      const result = { members: teamSkills };
+
+      // Cache the results
+      await this.cacheManager.set(
+        CACHE_KEYS.TEAM_SKILLS(managerName),
+        result,
+        CACHE_TTL.ANALYSIS,
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error fetching team skills for manager ${managerName}:`,
+        error,
+      );
+      throw error;
     }
-    return a.category === SkillCategory.TECHNICAL ? -1 : 1;
-  }
-
-  async getEmployeeSkillsByEmail(
-    email: string,
-  ): Promise<TransformedSkillsResponseDto | null> {
-    const allEmployeesSkills = await this.getAllEmployeesSkillsData();
-    return (
-      allEmployeesSkills.find((emp) => emp.employeeInfo.email === email) || null
-    );
   }
 }

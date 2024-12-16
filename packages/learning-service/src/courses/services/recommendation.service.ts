@@ -43,7 +43,7 @@ export class RecommendationService {
     this.courseModel = this.defaultConnection.model<Course>(
       'Course',
       CourseSchema,
-      'QA_LEARNING_RESOURCES',
+      'qa_courses',
     );
 
     this.skillGapsModel = this.skillsConnection.model<SkillGap>(
@@ -57,6 +57,11 @@ export class RecommendationService {
       RequiredSkillsSchema,
       'capabilityRequiredSkills',
     );
+  }
+
+  public invalidateCache(): void {
+    this.requiredSkillsCache.clear();
+    this.logger.debug('Required skills cache has been invalidated');
   }
   /**
    * Generates personalized learning recommendations for an employee.
@@ -105,6 +110,7 @@ export class RecommendationService {
       };
     } catch (error: any) {
       this.logger.error(`Error getting recommendations: ${error.message}`);
+      this.invalidateCache();
       throw error;
     }
   }
@@ -140,9 +146,12 @@ export class RecommendationService {
   ): Promise<RequiredSkills | null> {
     const cacheKey = `${careerLevel}-QA`;
     if (this.requiredSkillsCache.has(cacheKey)) {
+      this.logger.debug(`Cache HIT: Required skills for ${careerLevel}`);
       return this.requiredSkillsCache.get(cacheKey)!;
     }
-
+    this.logger.debug(
+      `Cache MISS: Fetching required skills for ${careerLevel}`,
+    );
     this.logger.debug(
       `Finding required skills for career level: ${careerLevel}`,
     );
