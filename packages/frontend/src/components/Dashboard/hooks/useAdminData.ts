@@ -6,7 +6,7 @@ import {
   TopPerformersResponse,
 } from '@/components/Dashboard/types';
 import { skillsApi, userApi } from '@/lib/api/client';
-import { useSuspenseQuery } from '@/lib/api/hooks';
+import { useQuery, useSuspenseQuery } from '@/lib/api/hooks';
 import { useCallback, useEffect, useState } from 'react';
 
 export function useAdminData() {
