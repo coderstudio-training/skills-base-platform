@@ -150,6 +150,7 @@ export interface TopPerformer {
 //in use
 export interface SkillDetail {
   skill: string;
+  name?: string;
   category: string;
   description?: string;
   proficiencyDescription?: string;
@@ -612,4 +613,13 @@ export interface OrganizationSkillsAnalysis {
 
 export interface SkillGapsResponse {
   capabilities: Capability[];
+}
+
+export interface TaxonomyResponse {
+  [0]: {
+    description?: string;
+    proficiencyDescription?: {
+      [key: string]: string[];
+    };
+  };
 }
