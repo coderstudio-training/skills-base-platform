@@ -17,7 +17,7 @@ export function SkillGapOverview({ skillGaps, loading, error }: SkillGapOverview
               <span>{skill.name}</span>
               <span>{skill.gap.toFixed(1)}</span>
             </div>
-            <Progress value={(skill.currentLevel / skill.requiredLevel) * 100} className="h-2" />
+            <Progress value={(skill.currentAvg / skill.requiredLevel) * 100} className="h-2" />
           </div>
         ))}
         {skillGaps.length === 0 && (

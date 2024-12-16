@@ -73,8 +73,9 @@ export function useAdminData() {
     data: skillGapsData,
     error: skillGapsError,
     isLoading: skillGapsLoading,
-  } = useQuery<SkillGapsResponse>(skillsApi, '/api/skills/analytics', {
+  } = useQuery<SkillGapsResponse>(skillsApi, '/skills-matrix/admin/analysis', {
     revalidate: 3600,
+    requiresAuth: true,
   });
 
   // Top performers query
@@ -134,7 +135,7 @@ export function useAdminData() {
     statsError,
 
     // Skill gaps data
-    skillGaps: skillGapsData?.skillGaps || [],
+    skillGaps: skillGapsData?.capabilities.flatMap(cap => cap.skillGaps) || [],
     skillGapsLoading,
     skillGapsError,
 

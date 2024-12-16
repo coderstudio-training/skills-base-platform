@@ -140,12 +140,12 @@ export interface TopPerformer {
 }
 
 //in use
-export interface SkillGap {
-  name: string;
-  currentLevel: number;
-  requiredLevel: number;
-  gap: number;
-}
+// export interface SkillGap {
+//   name: string;
+//   currentLevel: number;
+//   requiredLevel: number;
+//   gap: number;
+// }
 
 //in use
 export interface SkillDetail {
@@ -591,4 +591,25 @@ export interface LearningPath {
   courseIds: string[];
   skillIds: string[];
   estimatedDuration: number; // in hours
+}
+
+export interface SkillGap {
+  name: string;
+  currentAvg: number;
+  requiredLevel: number;
+  gap: number;
+}
+
+export interface Capability {
+  capability: string;
+  skillGaps: SkillGap[];
+  topSkills: TopSkill[];
+}
+
+export interface OrganizationSkillsAnalysis {
+  capabilities: Capability[];
+}
+
+export interface SkillGapsResponse {
+  capabilities: Capability[];
 }
