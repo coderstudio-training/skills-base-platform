@@ -2,7 +2,7 @@ import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
 import { ApiError } from '@/lib/api/types';
 import { IBaseTaxonomy } from '@/lib/skills/types';
 import { LucideIcon } from 'lucide-react';
-import { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 
 export interface LandingPageCardProps {
   title: string;
@@ -11,6 +11,23 @@ export interface LandingPageCardProps {
   content?: string;
   icon?: LucideIcon;
 }
+
+export interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}
+
+export interface LoadingCardProps {
+  skeleton_cn?: string;
+  div_h1_cn?: string;
+  div_h2_cn?: string;
+  div_h3_cn?: string;
+  skeleton_h_cn?: string;
+  div_b1_cn?: string;
+  headerContent?: string;
+  bodyChildren: React.ReactNode;
+}
+
 export interface LoginFormCardProps {
   title?: string;
   description?: string;
@@ -39,17 +56,6 @@ export interface Notification {
 
 export interface NotificationCenterProps {
   onLastNotificationDateChange?: (date: string | null) => void;
-}
-
-export interface AdminDashboardProps {
-  filters?: DashboardFilters;
-}
-
-export interface DashboardFilters {
-  department?: string;
-  skillCategory?: string;
-  timeRange?: string;
-  status?: string;
 }
 
 export interface ReportSkill {
@@ -164,7 +170,7 @@ export interface SkillDetail {
 //in use
 export interface UserDirectoryProps {
   employees: Employee[];
-  loading: boolean;
+  loading?: boolean;
   totalItems: number;
   totalPages: number;
   page: number;
@@ -386,8 +392,8 @@ export interface TeamCompositionCardProps {
 //in use
 export interface TeamMembersListProps {
   members: TeamMember[];
-  loading: boolean;
-  error: ApiError | null;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
 //in use
@@ -402,8 +408,8 @@ export interface TeamMetricCardsProps {
 //in use
 export interface ManagerOverviewProps {
   teamMembers: TeamMember[];
-  loading: boolean;
-  error: ApiError | null;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
 //in use
@@ -453,29 +459,29 @@ export interface UserProfile {
 //in use
 export interface AdminMetricCardsProps {
   stats: EmployeeStats;
-  loading: boolean;
-  error: ApiError | null;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
 //in use
 export interface BusinessUnitDistributionProps {
   businessUnits: BusinessUnitStat[];
-  loading: boolean;
-  error: ApiError | null;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
 //in use
 export interface SkillGapOverviewProps {
   skillGaps: SkillGap[];
-  loading: boolean;
-  error: ApiError | null;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
 //in use
 export interface TopPerformersProps {
   rankings: TopPerformer[];
-  loading: boolean;
-  error: ApiError | null;
+  loading?: boolean;
+  error?: ApiError | null;
 }
 
 //in use

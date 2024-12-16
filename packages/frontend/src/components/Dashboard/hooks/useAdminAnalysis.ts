@@ -10,7 +10,7 @@ export function useAdminAnalysis() {
     isLoading: analysisLoading,
   } = useQuery<OrganizationSkillsAnalysis>(skillsApi, 'skills-matrix/admin/analysis', {
     requiresAuth: true,
-    revalidate: 3600,
+    revalidate: 300,
   });
 
   const {
@@ -19,7 +19,7 @@ export function useAdminAnalysis() {
     isLoading: distributionsLoading,
   } = useQuery<DistributionsResponse>(skillsApi, 'skills-matrix/distributions', {
     requiresAuth: true,
-    revalidate: 3600,
+    revalidate: 300,
   });
 
   return {

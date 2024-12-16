@@ -241,3 +241,51 @@ export async function fetchServerData<T>(
     };
   }
 }
+
+const cache = new Map();
+
+function suspenseFetcher<T>(
+  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  endpoint: string,
+  options: { requiresAuth?: boolean; revalidate?: number; cacheStrategy?: RequestCache } = {},
+): T {
+  const key = JSON.stringify({ endpoint, options });
+
+  if (cache.has(key)) {
+    const result = cache.get(key);
+    if (result.status === 'pending') {
+      throw result.promise; // Suspend rendering until promise resolves
+    }
+    if (result.status === 'error') {
+      throw result.error; // Throw error if fetching failed
+    }
+    return result.data; // Return cached data
+  }
+
+  const promise = apiInstance
+    .get<T>(endpoint, options)
+    .then(response => {
+      if (response.error) throw response.error;
+      cache.set(key, { status: 'success', data: response.data });
+      return response.data;
+    })
+    .catch(error => {
+      cache.set(key, { status: 'error', error });
+      throw error;
+    });
+
+  cache.set(key, { status: 'pending', promise });
+  throw promise; // Suspend rendering
+}
+
+export function useSuspenseQuery<T>(
+  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  endpoint: string,
+  options?: {
+    requiresAuth?: boolean;
+    cacheStrategy?: RequestCache;
+    revalidate?: number;
+  },
+): T {
+  return suspenseFetcher<T>(apiInstance, endpoint, options || {});
+}

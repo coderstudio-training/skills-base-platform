@@ -6,14 +6,23 @@ import { IBaseTaxonomy, IBulkUpsertDTO } from '@/lib/skills/types';
 export function useTSCManager() {
   const TAXONOMY_BASE_URL = '/taxonomy/technical';
 
-  const { data, error, isLoading, refetch } = useQuery<IBaseTaxonomy[]>(
+  const { data, error, refetch } = useQuery<IBaseTaxonomy[]>(
     skillsApi,
     `${TAXONOMY_BASE_URL}?businessUnit=QA`,
     {
       requiresAuth: true,
-      revalidate: 3600,
+      revalidate: 300,
     },
   );
+
+  // const data = useSuspenseQuery<IBaseTaxonomy[]>(
+  //   skillsApi,
+  //   `${TAXONOMY_BASE_URL}?businessUnit=QA`,
+  //   {
+  //     requiresAuth: true,
+  //     revalidate: 300,
+  //   },
+  // );
 
   // WIP
   const { mutate: createTSC, isLoading: isCreating } = useMutation<TSC, IBulkUpsertDTO>(
@@ -39,13 +48,12 @@ export function useTSCManager() {
   return {
     data,
     error,
-    isLoading,
+    refetch,
     isCreating,
     isUpdating,
     isDeleting,
     createTSC,
     updateTSC,
     deleteTSC,
-    refetch,
   };
 }

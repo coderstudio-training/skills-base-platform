@@ -23,7 +23,7 @@ export function useStaffData() {
     {
       enabled: !!email,
       requiresAuth: true,
-      revalidate: 3600,
+      revalidate: 300,
     },
   );
 
@@ -37,7 +37,7 @@ export function useStaffData() {
     {
       enabled: !!email,
       requiresAuth: true,
-      revalidate: 3600,
+      revalidate: 300,
     },
   );
 
