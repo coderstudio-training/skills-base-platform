@@ -10,8 +10,8 @@ import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
 import {
   BaseAssessmentDto,
   BulkUpdateAssessmentsDto,
+  SkillGapsDto,
 } from '../dto/assessments.dto';
-import { SkillGapsDto } from '../dto/skill-gaps.dto';
 import { AssessmentsService } from '../services/assessments.service';
 
 @ApiTags('Skills Assessments')

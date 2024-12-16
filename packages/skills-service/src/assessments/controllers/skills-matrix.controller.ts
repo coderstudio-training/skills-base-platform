@@ -1,12 +1,10 @@
 import {
-  Body,
   Controller,
   Get,
   HttpStatus,
   Logger,
   NotFoundException,
   Param,
-  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -19,15 +17,17 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
-import { OrganizationSkillsAnalysisDto } from '../dto/organization-analysis.dto';
-import { EmployeeRankingsResponseDto } from '../dto/rankings.dto';
-import { DistributionsResponseDto } from '../dto/re-distributions.dto';
+import {
+  DistributionsResponseDto,
+  EmployeeRankingsResponseDto,
+  OrganizationSkillsAnalysisDto,
+} from '../dto/computation.dto';
 import {
   EmployeeSkillsResponseDto,
   SkillsSummaryDto,
-} from '../dto/re-skills-matrix.dto';
+} from '../dto/skills-matrix.dto';
 import { TeamSkillsResponseDto } from '../dto/team-skills.dto';
-import { SkillsMatrixService } from '../services/re-skills-matrix.service';
+import { SkillsMatrixService } from '../services/skills-matrix.service';
 import { EmailValidationPipe } from '../utils/skills.util';
 
 @ApiTags('Skills Matrix')
@@ -323,18 +323,5 @@ export class SkillsMatrixController {
     @Param('managerName') managerName: string,
   ): Promise<TeamSkillsResponseDto> {
     return this.skillsMatrixService.getTeamSkills(managerName);
-  }
-
-  @Post('cache/invalidate')
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({
-    summary: 'Invalidate cache',
-    description: 'Invalidates specified cache types',
-  })
-  async invalidateCache(
-    @Body('type') type: 'all' | 'analysis' | 'skills' = 'all',
-  ) {
-    await this.skillsMatrixService.invalidateCache(type);
-    return { message: `Cache invalidated for type: ${type}` };
   }
 }

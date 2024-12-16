@@ -12,14 +12,15 @@ import { Connection, Model, Schema } from 'mongoose';
 import {
   BaseAssessmentDto,
   BulkUpdateAssessmentsDto,
+  BulkUpdateSkillGapsDto,
+  SkillGapsDto,
 } from '../dto/assessments.dto';
-import { BulkUpdateSkillGapsDto, SkillGapsDto } from '../dto/skill-gaps.dto';
 import {
   ManagerAssessmentSchema,
   SelfAssessmentSchema,
 } from '../entities/assessments.entity';
 import { SkillGapsSchema } from '../entities/skill-gaps.entity';
-import { SkillsMatrixService } from './re-skills-matrix.service';
+import { SkillsMatrixService } from './skills-matrix.service';
 
 @Injectable()
 export class AssessmentsService {
@@ -131,7 +132,6 @@ export class AssessmentsService {
       // If we had any successful updates, invalidate relevant caches
       if (totalUpdatedCount > 0) {
         await this.invalidateRelevantCaches(assessmentType);
-        await this.skillsMatrixService.invalidateCache('all');
       }
 
       return { updatedCount: totalUpdatedCount, errors };

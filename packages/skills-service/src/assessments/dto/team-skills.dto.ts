@@ -2,7 +2,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEmail, IsNumber, IsString } from 'class-validator';
-import { SkillDetailsDto } from './re-skills-matrix.dto';
+import { SkillDetailsDto } from './skills-matrix.dto';
 
 export class TeamMemberMetricsDto {
   @ApiProperty({ example: 4.2 })
