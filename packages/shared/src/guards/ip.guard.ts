@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { SecurityConfig } from '../interfaces/security.interfaces';
 import {
   SecurityEventType,
@@ -17,34 +18,29 @@ export class IpWhitelistGuard implements CanActivate {
     @Inject('SECURITY_CONFIG') private readonly config: SecurityConfig,
     private readonly securityMonitoring: SecurityMonitoringService,
   ) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Skip if IP whitelist is not enabled
     if (!this.config.ipWhitelist.enabled) {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const { ip, path, method } = request;
+    const request = context.switchToHttp().getRequest<Request>();
+    const clientIp = this.getClientIp(request);
+    const { path, method } = request;
 
-    // Check if IP is in allowed list
-    const isAllowed = this.config.ipWhitelist.allowedIps.includes(ip);
+    const isAllowed = this.isIpAllowed(clientIp);
 
     if (!isAllowed) {
       await this.securityMonitoring.trackThreatEvent(
         SecurityEventType.UNAUTHORIZED_IP,
         {
-          ipAddress: ip,
+          ipAddress: clientIp,
           path,
           method,
           metadata: {
             allowedIps: this.config.ipWhitelist.allowedIps,
             requestHeaders: this.sanitizeHeaders(request.headers),
-            // Include additional context that might be useful for security analysis
             timestamp: new Date().toISOString(),
-            forwardedFor: request.headers['x-forwarded-for'],
-            realIp: request.headers['x-real-ip'],
-            host: request.headers.host,
-            userAgent: request.headers['user-agent'],
           },
         },
       );
@@ -55,10 +51,122 @@ export class IpWhitelistGuard implements CanActivate {
     return true;
   }
 
+  private getClientIp(request: Request): string {
+    // Check X-Forwarded-For header first (for proxied requests)
+    const forwardedFor = request.headers['x-forwarded-for'];
+    if (forwardedFor) {
+      const firstIp = Array.isArray(forwardedFor)
+        ? forwardedFor[0].split(',')[0].trim()
+        : forwardedFor.split(',')[0].trim();
+
+      if (this.isValidIp(firstIp)) {
+        return firstIp;
+      }
+    }
+
+    // Check X-Real-IP header
+    const realIp = request.headers['x-real-ip'];
+    if (realIp) {
+      const ip = Array.isArray(realIp) ? realIp[0] : realIp;
+      if (this.isValidIp(ip)) {
+        return ip;
+      }
+    }
+
+    // Handle IPv4-mapped IPv6 addresses
+    let ip = request.ip;
+    if (ip && ip.startsWith('::ffff:')) {
+      ip = ip.substring(7);
+    }
+
+    return ip && this.isValidIp(ip) ? ip : 'unknown';
+  }
+
+  private isValidIp(ip: string): boolean {
+    if (!ip) return false;
+
+    // Handle IPv4-mapped IPv6 addresses
+    if (ip.startsWith('::ffff:')) {
+      ip = ip.substring(7);
+    }
+
+    const octets = ip.split('.');
+    if (octets.length !== 4) return false;
+
+    return octets.every((octet) => {
+      const num = parseInt(octet, 10);
+      return !isNaN(num) && num >= 0 && num <= 255;
+    });
+  }
+
+  private isIpAllowed(ip: string): boolean {
+    // Special case: 0.0.0.0 allows all IPs
+    if (this.config.ipWhitelist.allowedIps.includes('0.0.0.0')) {
+      return true;
+    }
+
+    if (!this.isValidIp(ip)) {
+      return false;
+    }
+
+    // Check exact IP matches
+    if (this.config.ipWhitelist.allowedIps.includes(ip)) {
+      return true;
+    }
+
+    // Check CIDR ranges if configured
+    if (
+      Array.isArray(this.config.ipWhitelist.allowedRanges) &&
+      this.config.ipWhitelist.allowedRanges.length > 0
+    ) {
+      return this.config.ipWhitelist.allowedRanges.some((range) =>
+        this.isIpInRange(ip, range),
+      );
+    }
+
+    return false;
+  }
+
+  private isIpInRange(ip: string, cidr: string): boolean {
+    try {
+      const [range, bits = '32'] = cidr.split('/');
+
+      if (!this.isValidIp(range)) {
+        return false;
+      }
+
+      const bitNum = parseInt(bits, 10);
+      if (isNaN(bitNum) || bitNum < 0 || bitNum > 32) {
+        return false;
+      }
+
+      const mask = bitNum === 32 ? -1 : ~((1 << (32 - bitNum)) - 1);
+
+      const ipInt = this.ipToInt(ip);
+      const rangeInt = this.ipToInt(range);
+
+      return (ipInt & mask) === (rangeInt & mask);
+    } catch {
+      return false;
+    }
+  }
+
+  private ipToInt(ip: string): number {
+    return (
+      ip.split('.').reduce((int, oct) => (int << 8) + parseInt(oct, 10), 0) >>>
+      0
+    );
+  }
+
   private sanitizeHeaders(headers: Record<string, any>): Record<string, any> {
-    // Create a copy of headers and remove sensitive information
     const sanitized = { ...headers };
-    const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key'];
+    const sensitiveHeaders = [
+      'authorization',
+      'cookie',
+      'x-api-key',
+      'x-auth-token',
+      'x-session-id',
+    ];
 
     sensitiveHeaders.forEach((header) => {
       if (sanitized[header]) {

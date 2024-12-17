@@ -7,6 +7,7 @@ import {
   MonitoringModule,
   SecurityModule,
 } from '@skills-base/shared';
+import { AppController } from './app.controller';
 import { CoursesController } from './courses/controllers/courses.controller';
 import { RecommendationController } from './courses/controllers/recommendation.controller';
 import { CoursesService } from './courses/services/courses.service';
@@ -45,7 +46,7 @@ import { RecommendationService } from './courses/services/recommendation.service
       rateLimit: {
         enabled: true,
         windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100, // limit each IP to 100 requests per windowMs
+        max: 1000, // limit each IP to 100 requests per windowMs
       },
       apiKey: {
         enabled: false, // Enable if you want API keying
@@ -75,7 +76,7 @@ import { RecommendationService } from './courses/services/recommendation.service
       },
     }),
   ],
-  controllers: [CoursesController, RecommendationController],
+  controllers: [CoursesController, RecommendationController, AppController],
   providers: [CoursesService, RecommendationService, JwtStrategy],
 })
 export class AppModule {}

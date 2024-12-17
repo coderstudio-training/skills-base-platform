@@ -149,26 +149,33 @@ export class Logger {
 
   error(error: Error | string, context?: Partial<LogContext>) {
     const errorObj = typeof error === 'string' ? new Error(error) : error;
+    const formattedContext = this.formatContext(context);
 
-    const trackingInfo = this.errorTracker.captureException(errorObj, {
-      ...context,
-      service: Logger.globalService,
-      job: this.job,
-    });
+    // Only track and include error context if we have a proper Error object
+    if (error instanceof Error) {
+      const trackingInfo = this.errorTracker.captureException(errorObj, {
+        ...context,
+        service: Logger.globalService,
+        job: this.job,
+      });
 
-    this.logger.error(errorObj.message, {
-      ...this.formatContext(context),
-      error: errorObj, // Keep original error for stack trace
-      errorTracking: {
-        error: {
-          name: trackingInfo.name,
-          message: trackingInfo.message,
-          code: trackingInfo.code,
+      this.logger.error(errorObj.message, {
+        ...formattedContext,
+        error: errorObj,
+        errorTracking: {
+          error: {
+            name: trackingInfo.name,
+            message: trackingInfo.message,
+            code: trackingInfo.code,
+          },
+          context: trackingInfo.context,
+          timestamp: trackingInfo.timestamp,
         },
-        context: trackingInfo.context,
-        timestamp: trackingInfo.timestamp,
-      },
-    });
+      });
+    } else {
+      // For string errors, just log the message without error tracking
+      this.logger.error(errorObj.message, formattedContext);
+    }
   }
 
   warn(message: string, context?: Partial<LogContext>) {

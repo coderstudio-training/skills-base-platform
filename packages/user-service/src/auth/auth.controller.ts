@@ -1,13 +1,30 @@
 // packages/user-service/src/auth/auth.controller.ts
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  GoogleAuthSecurityService,
+  Logger,
+  RateLimit,
+} from '@skills-base/shared';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private logger: Logger = new Logger(AuthController.name),
+    private googleAuthSecurityService: GoogleAuthSecurityService,
+  ) {}
 
   @Post('register')
   @ApiOperation({
@@ -37,6 +54,11 @@ export class AuthController {
         message: ['email must be an email', 'password is too short'],
       },
     },
+  })
+  @RateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 1000,
+    message: 'Too many requests, please try again later',
   })
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -72,10 +94,26 @@ export class AuthController {
       },
     },
   })
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
-  }
+  @RateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 1000,
+    message: 'Too many requests, please try again later',
+  })
+  @Post('login')
+  // @UseGuards(BruteForceGuard)
+  async login(@Req() request: Request, @Body() loginDto: LoginDto) {
+    try {
+      const user = await this.authService.login(loginDto);
+      // Reset attempts on successful login
+      // await this.bruteForceGuard.handleLoginResult(request, true);
 
+      return user;
+    } catch (error) {
+      // Increment attempts on failed login
+      // await this.bruteForceGuard.handleLoginResult(request, false);
+      throw error;
+    }
+  }
   @Post('google')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -118,7 +156,17 @@ export class AuthController {
       },
     },
   })
-  async googleAuth(@Body('token') token: string) {
-    return this.authService.verifyGoogleToken(token);
+  @RateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 300,
+    message: 'Too many requests, please try again later',
+  })
+  async googleAuth(@Body('token') token: string, @Req() request: Request) {
+    const payload = await this.googleAuthSecurityService.verifyToken(
+      token,
+      request.ip || 'unknown',
+    );
+    this.logger.info(`Verified Google token for email: ${payload.email}`);
+    return this.authService.handleGoogleUser(payload);
   }
 }

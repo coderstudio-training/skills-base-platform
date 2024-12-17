@@ -4,20 +4,40 @@ global:
 
 scrape_configs:
   - job_name: 'user_service'
+    metrics_path: /metrics
+    params:
+      'X-API-KEY': [852fb2ab4a2a775450c038efe16be3c65eefaf1405e636e321c579e6ef075001]
     static_configs:
-      - targets: ['192.168.203.84:3001']
+      - targets: ['172.31.220.111:3001']
+
   - job_name: 'skills_service'
+    metrics_path: /metrics
+    params:
+      'X-API-KEY': [852fb2ab4a2a775450c038efe16be3c65eefaf1405e636e321c579e6ef075001]
     static_configs:
-      - targets: ['192.168.203.84:3002']
+      - targets: ['172.31.220.111:3002']
+
   - job_name: 'learning_service'
+    metrics_path: /metrics
+    params:
+      'X-API-KEY': [852fb2ab4a2a775450c038efe16be3c65eefaf1405e636e321c579e6ef075001]
     static_configs:
-      - targets: ['192.168.203.84:3003']
+      - targets: ['172.31.220.111:3003']
+
   - job_name: 'email_service'
+    metrics_path: /metrics
+    params:
+      'X-API-KEY': [852fb2ab4a2a775450c038efe16be3c65eefaf1405e636e321c579e6ef075001]
     static_configs:
-      - targets: ['192.168.203.84:3005']
+      - targets: ['172.31.220.111:3005']
+
   - job_name: 'event_processes_service'
+    metrics_path: /metrics
+    params:
+      'X-API-KEY': [852fb2ab4a2a775450c038efe16be3c65eefaf1405e636e321c579e6ef075001]
     static_configs:
-      - targets: ['192.168.203.84:3006']
+      - targets: ['172.31.220.111:3006']
+
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']

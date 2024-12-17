@@ -725,3 +725,274 @@ groups:
         isPaused: false
         notification_settings:
           receiver: skills_base_email_service
+
+      - uid: rate_limit_breaches_alert
+        title: High Rate of Rate Limit Breaches
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                sum(rate(security_rate_limit_breaches_total[1m])) by (path, ip_address)
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{ip_address}} - {{path}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [10] # Alert if more than 10 breaches per minute
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        annotations:
+          description: 'High rate of rate limit breaches detected from IP {{ $labels.ip_address }} on path {{ $labels.path }}'
+          summary: Rate Limit Breaches Detected
+          runbook_url: 'https://your-runbook-url/rate-limit-breaches'
+        labels:
+          severity: warning
+          category: security
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # Unauthorized Access Alert
+      - uid: unauthorized_access_alert
+        title: High Rate of Unauthorized Access Attempts
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                sum(rate(security_unauthorized_access_total[5m])) by (type, ip_address)
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{ip_address}} - {{type}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [5] # Alert if more than 5 unauthorized attempts per 5 minutes
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        annotations:
+          description: 'Multiple unauthorized access attempts detected from IP {{ $labels.ip_address }} (Type: {{ $labels.type }})'
+          summary: Unauthorized Access Attempts
+          runbook_url: 'https://your-runbook-url/unauthorized-access'
+        labels:
+          severity: critical
+          category: security
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # Suspicious Requests Alert
+      - uid: suspicious_requests_alert
+        title: High Rate of Suspicious Requests
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                sum(rate(security_suspicious_requests_total[5m])) by (type, ip_address)
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{ip_address}} - {{type}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [3] # Alert if more than 3 suspicious requests per 5 minutes
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        annotations:
+          description: 'Multiple suspicious requests detected from IP {{ $labels.ip_address }} (Type: {{ $labels.type }})'
+          summary: Suspicious Requests Detected
+          runbook_url: 'https://your-runbook-url/suspicious-requests'
+        labels:
+          severity: critical
+          category: security
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # Blocked IPs Alert
+      - uid: blocked_ips_alert
+        title: High Number of Blocked IPs
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: PBFA97CFB590B2093
+            model:
+              editorMode: code
+              expr: |
+                sum(security_blocked_ips_current) by (reason)
+              instant: true
+              intervalMs: 1000
+              legendFormat: '{{reason}}'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [50] # Alert if more than 50 IPs are blocked
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          description: 'High number of blocked IPs detected (Reason: {{ $labels.reason }})'
+          summary: High Number of Blocked IPs
+          runbook_url: 'https://your-runbook-url/blocked-ips'
+        labels:
+          severity: warning
+          category: security
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service

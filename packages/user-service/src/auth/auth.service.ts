@@ -3,14 +3,14 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UserRole } from '@skills-base/shared';
+import { Logger, UserRole } from '@skills-base/shared';
 import * as bcrypt from 'bcrypt';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
+import { PermissionsService } from 'src/permissions/permissions.service';
 import { EmployeesService } from '../employees/employees.service';
 import { UsersService } from '../users/users.service';
 import { LoginDto, RegisterDto } from './dto';
@@ -25,6 +25,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private employeeService: EmployeesService,
+    private permissionsService: PermissionsService,
   ) {
     const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
     if (!clientId) {
@@ -67,8 +68,8 @@ export class AuthService {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'An unknown error occurred';
-      const errorStack = error instanceof Error ? error.stack : undefined;
-      this.logger.error(`Failed to register user: ${errorMessage}`, errorStack);
+      // const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to register user: ${errorMessage}`);
       throw error;
     }
   }
@@ -78,7 +79,6 @@ export class AuthService {
 
     try {
       const user = await this.usersService.findByEmail(email);
-
       if (!user) {
         throw new UnauthorizedException('Invalid credentials');
       }
@@ -90,21 +90,30 @@ export class AuthService {
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.password);
-
       if (!isPasswordValid) {
         throw new UnauthorizedException('Invalid credentials');
       }
 
-      const payload = { email: user.email, sub: user.id, roles: user.roles };
+      // Get permission codes from the roles
+      const permissionCodes =
+        await this.permissionsService.getPermissionCodesForRoles(user.roles);
+
+      // Create JWT payload
+      const payload = {
+        sub: user.id, // required
+        email: user.email, // required
+        roles: user.roles, // required
+        perms: permissionCodes, // required
+        iss: 'skills-base-platform',
+        aud: this.configService.get('JWT_AUDIENCE'),
+      };
+
       return {
         access_token: this.jwtService.sign(payload),
         roles: user.roles,
       };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'An unknown error occurred';
-      const errorStack = error instanceof Error ? error.stack : undefined;
-      this.logger.error(`Failed to login user: ${errorMessage}`, errorStack);
+      this.logger.error(`Failed to login user: ${(error as Error).message}`);
       throw error;
     }
   }
@@ -134,16 +143,13 @@ export class AuthService {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'An unknown error occurred';
-      const errorStack = error instanceof Error ? error.stack : undefined;
-      this.logger.error(
-        `Failed to verify Google token: ${errorMessage}`,
-        errorStack,
-      );
+      // const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to verify Google token: ${errorMessage}`);
       throw new UnauthorizedException('Invalid Google token');
     }
   }
 
-  private async handleGoogleUser(payload: TokenPayload) {
+  public async handleGoogleUser(payload: TokenPayload) {
     const { email, sub: googleId, given_name, family_name, picture } = payload;
 
     if (!email) {
@@ -171,30 +177,36 @@ export class AuthService {
           picture: picture || '',
           roles: [UserRole.USER], // Default role
         });
-        this.logger.log(`Created new user with Google OAuth: ${email}`);
+        this.logger.info(`Created new user with Google OAuth: ${email}`);
       } else if (!user.googleId) {
         // If the user exists but doesn't have a googleId, update it
         user = await this.usersService.update(user.id, { googleId: googleId! });
-        this.logger.log(`Updated existing user with Google ID: ${email}`);
+        this.logger.info(`Updated existing user with Google ID: ${email}`);
       }
 
-      const jwtPayload = {
-        email: user.email,
-        sub: user.id,
-        roles: user.roles,
+      // Get permission codes from the roles
+      const permissionCodes =
+        await this.permissionsService.getPermissionCodesForRoles(user.roles);
+
+      // Create JWT payload
+      const payload = {
+        sub: user.id, // required
+        email: user.email, // required
+        roles: user.roles, // required
+        perms: permissionCodes, // required
+        iss: 'skills-base-platform',
+        aud: this.configService.get('JWT_AUDIENCE'),
       };
+
       return {
-        access_token: this.jwtService.sign(jwtPayload),
+        access_token: this.jwtService.sign(payload),
         roles: user.roles,
       };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'An unknown error occurred';
-      const errorStack = error instanceof Error ? error.stack : undefined;
-      this.logger.error(
-        `Failed to handle Google user: ${errorMessage}`,
-        errorStack,
-      );
+      // const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to handle Google user: ${errorMessage}`);
       throw new InternalServerErrorException(
         'Failed to process Google authentication',
       );

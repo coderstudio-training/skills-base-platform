@@ -21,6 +21,9 @@ import {
   JwtAuthGuard,
   LoggingInterceptor,
   PaginationDto,
+  Permission,
+  RateLimit,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -104,5 +107,17 @@ export class UsersController extends BaseController<User> {
   async getUserPicture(@Param('email') email: string) {
     const user = await this.usersService.findByEmail(email);
     return { picture: user?.picture || null };
+  }
+
+  @Get('test')
+  @RateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10,
+    message: 'Too many requests, please try again later',
+  })
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @Roles(UserRole.ADMIN)
+  test() {
+    return { message: 'Security test endpoint' };
   }
 }

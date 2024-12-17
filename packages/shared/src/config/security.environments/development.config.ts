@@ -5,13 +5,5 @@ export const createDevelopmentConfig = () => {
 
   return {
     ...baseConfig,
-    rateLimit: {
-      ...baseConfig.rateLimit,
-      enabled: false, // Disabled in development by default
-    },
-    apiKey: {
-      ...baseConfig.apiKey,
-      enabled: false, // Disabled in development by default
-    },
   };
 };

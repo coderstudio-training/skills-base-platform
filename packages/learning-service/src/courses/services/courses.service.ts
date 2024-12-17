@@ -23,7 +23,7 @@ export class CoursesService {
   // Maximum number of documents to process in a single batch
   private readonly BATCH_SIZE = 1000;
   // Cache to store dynamically created Mongoose models
-  private modelCache: Map<string, Model<Course>> = new Map();
+  // private modelCache: Map<string, Model<Course>> = new Map();
 
   constructor(@InjectConnection() private readonly connection: Connection) {}
 
@@ -38,10 +38,6 @@ export class CoursesService {
   private async getModelForCollection(
     collection: string,
   ): Promise<Model<Course>> {
-    if (this.modelCache.has(collection)) {
-      return this.modelCache.get(collection)!;
-    }
-    //create a new model
     const model = this.connection.model<Course>(
       `Course_${collection}`,
       CourseSchema,
@@ -50,8 +46,6 @@ export class CoursesService {
 
     // Set up indexes for this new collection
     await this.ensureIndexes(model);
-    // Cache the model
-    this.modelCache.set(collection, model);
     return model;
   }
 
@@ -210,7 +204,7 @@ export class CoursesService {
    */
   async getCourses({ category, level }: GetCoursesQueryDto): Promise<Course[]> {
     try {
-      const model = await this.getModelForCollection('QA_LEARNING_RESOURCES');
+      const model = await this.getModelForCollection('qa_courses');
 
       const filterQuery = {} as any;
 
@@ -248,7 +242,7 @@ export class CoursesService {
    */
   async getResources(category?: string): Promise<ResourcesResponseDto> {
     try {
-      const model = await this.getModelForCollection('QA_LEARNING_RESOURCES');
+      const model = await this.getModelForCollection('qa_courses');
 
       const filter: any = {};
       if (category) {

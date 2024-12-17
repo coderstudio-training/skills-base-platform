@@ -1,14 +1,16 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { SecurityConfigurationManager } from '../config/security.config';
 import { ApiKeyGuard } from '../guards/api-key.guard';
 import { IpWhitelistGuard } from '../guards/ip.guard';
 import { RateLimitGuard } from '../guards/rate-limit.guard';
-import { PartialSecurityConfig } from '../interfaces/security.interfaces';
+import {
+  PartialSecurityConfig,
+  SecurityConfig,
+} from '../interfaces/security.interfaces';
 import { SecurityMiddleware } from '../middlewares/security.middleware';
-import { RateLimiter } from '../services/rate-limiter.service';
 import { SecurityMonitoringService } from '../services/security-monitoring.service';
-import { SecurityValidationMiddleware } from '../validators/security.validator';
 
 @Module({})
 export class SecurityModule {
@@ -17,40 +19,70 @@ export class SecurityModule {
     if (config) {
       configManager.updateConfig(config);
     }
-
     const securityConfig = configManager.getConfig();
-    const monitoringService = new SecurityMonitoringService();
 
-    const securityConfigProvider: Provider = {
-      provide: 'SECURITY_CONFIG',
-      useValue: securityConfig,
-    };
-
+    // Base providers that are always included
     const providers: Provider[] = [
-      securityConfigProvider,
       {
-        provide: SecurityMonitoringService,
-        useValue: monitoringService,
+        provide: 'SECURITY_CONFIG',
+        useValue: securityConfig,
       },
-      RateLimiter,
-      RateLimitGuard,
-      ApiKeyGuard,
-      IpWhitelistGuard,
+      SecurityMonitoringService,
       SecurityMiddleware,
-      SecurityValidationMiddleware,
     ];
+
+    // Initialize core cache module
+    const cacheModule = CacheModule.register({
+      ttl: Math.ceil(securityConfig.rateLimit.windowMs / 1000), // Sync with rate limit window
+      max: 10000,
+      isGlobal: true,
+      store: 'memory',
+    });
+
+    const guards = this.getEnabledGuards(securityConfig);
+    providers.push(...guards);
 
     return {
       module: SecurityModule,
-      imports: [
-        CacheModule.register({
-          ttl: securityConfig.rateLimit.windowMs / 1000,
-          max: 10000,
-        }),
-      ],
+      imports: [cacheModule],
       providers,
-      exports: [...providers, SecurityMonitoringService],
+      exports: [
+        'SECURITY_CONFIG',
+        SecurityMonitoringService,
+        SecurityMiddleware,
+        cacheModule,
+      ],
       global: true,
     };
+  }
+
+  private static getEnabledGuards(config: SecurityConfig): Provider[] {
+    const guards: Provider[] = [];
+
+    // Rate Limiting
+    if (config.rateLimit.enabled) {
+      guards.push({
+        provide: APP_GUARD,
+        useClass: RateLimitGuard,
+      });
+    }
+
+    // API Key Authentication
+    if (config.apiKey.enabled) {
+      guards.push({
+        provide: APP_GUARD,
+        useClass: ApiKeyGuard,
+      });
+    }
+
+    // IP Whitelist Protection
+    if (config.ipWhitelist.enabled) {
+      guards.push({
+        provide: APP_GUARD,
+        useClass: IpWhitelistGuard,
+      });
+    }
+
+    return guards;
   }
 }
