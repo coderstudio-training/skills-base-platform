@@ -5,18 +5,21 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable, throwError } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import {
+  CacheInvalidationContext,
+  INVALIDATE_CACHE_CONDITION,
   INVALIDATE_CACHE_KEYS,
-  CacheKeyGenerator,
+  INVALIDATE_CACHE_KEY_GENERATORS,
 } from '../decorators/cache-invalidator.decorator';
-import { RedisService } from '../services/redis.service';
 import { Logger } from '../services/logger.service';
+import { RedisService } from '../services/redis.service';
 
 @Injectable()
 export class CacheInvalidateInterceptor implements NestInterceptor {
   private readonly logger = new Logger(CacheInvalidateInterceptor.name);
+  private readonly environment = process.env.NODE_ENV || 'development';
 
   constructor(
     private readonly redisService: RedisService,
@@ -25,23 +28,36 @@ export class CacheInvalidateInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
-      tap(async () => {
+      tap(async (response) => {
         try {
-          const keysToInvalidate = this.reflector.get<
-            string[] | CacheKeyGenerator
-          >(INVALIDATE_CACHE_KEYS, context.getHandler());
+          const shouldInvalidate = await this.shouldInvalidateCache(
+            context,
+            response,
+          );
+          if (!shouldInvalidate) {
+            return;
+          }
 
-          if (!keysToInvalidate) return;
+          const keysToInvalidate = await this.getKeysToInvalidate(
+            context,
+            response,
+          );
 
-          const keys =
-            typeof keysToInvalidate === 'function'
-              ? keysToInvalidate(context.getArgs())
-              : keysToInvalidate;
+          if (keysToInvalidate.length === 0) {
+            return;
+          }
 
-          await this.redisService.invalidateMultiple(keys);
+          // Add environment prefix to each key if it doesn't already have one
+          const prefixedKeys = keysToInvalidate.map((key) =>
+            key.startsWith(`${this.environment}:`)
+              ? key
+              : `${this.environment}:${key}`,
+          );
 
-          this.logger.debug('Cache invalidated', {
-            keys,
+          await this.redisService.invalidateMultiple(prefixedKeys);
+
+          this.logger.info('Cache invalidated', {
+            keys: prefixedKeys,
             handler: context.getHandler().name,
           });
         } catch (error) {
@@ -51,13 +67,89 @@ export class CacheInvalidateInterceptor implements NestInterceptor {
           });
         }
       }),
-      catchError((error) => {
-        this.logger.error('Error in handler with cache invalidation', {
-          error,
-          handler: context.getHandler().name,
-        });
-        return throwError(() => error);
-      }),
     );
+  }
+
+  private async shouldInvalidateCache(
+    context: ExecutionContext,
+    response: any,
+  ): Promise<boolean> {
+    const condition = this.reflector.get(
+      INVALIDATE_CACHE_CONDITION,
+      context.getHandler(),
+    );
+
+    if (!condition) {
+      return true;
+    }
+
+    try {
+      const invalidationContext = this.createInvalidationContext(
+        context,
+        response,
+      );
+      return await condition(invalidationContext);
+    } catch (error) {
+      this.logger.error('Cache invalidation condition check failed', {
+        error,
+        handler: context.getHandler().name,
+      });
+      return false;
+    }
+  }
+
+  private async getKeysToInvalidate(
+    context: ExecutionContext,
+    response: any,
+  ): Promise<string[]> {
+    const staticKeys =
+      this.reflector.get<string[]>(
+        INVALIDATE_CACHE_KEYS,
+        context.getHandler(),
+      ) || [];
+
+    const keyGenerators =
+      this.reflector.get<
+        Array<
+          (context: CacheInvalidationContext) => string[] | Promise<string[]>
+        >
+      >(INVALIDATE_CACHE_KEY_GENERATORS, context.getHandler()) || [];
+
+    const invalidationContext = this.createInvalidationContext(
+      context,
+      response,
+    );
+
+    const dynamicKeysPromises = keyGenerators.map((generator) =>
+      generator(invalidationContext),
+    );
+
+    const dynamicKeysArrays = await Promise.all(dynamicKeysPromises);
+    const dynamicKeys = dynamicKeysArrays.flat();
+
+    return [...new Set([...staticKeys, ...dynamicKeys])];
+  }
+
+  private createInvalidationContext(
+    context: ExecutionContext,
+    response: any,
+  ): CacheInvalidationContext {
+    const request = context.switchToHttp().getRequest();
+    const args = context.getArgs();
+
+    return {
+      request: {
+        path: request.path,
+        method: request.method,
+        params: request.params || {},
+        query: request.query || {},
+        body: request.body,
+        headers: request.headers,
+        user: request.user,
+      },
+      response,
+      args,
+      executionContext: context,
+    };
   }
 }

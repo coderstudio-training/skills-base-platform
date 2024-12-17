@@ -30,7 +30,7 @@ export class RedisService implements OnModuleDestroy {
       db: this.config.db,
       keyPrefix: this.config.keyPrefix,
       retryStrategy: (times) => {
-        const delay = Math.min(times * (this.config.retryDelay || 50), 2000);
+        const delay = Math.min(times * (this.config.retryDelay || 5000), 2000);
         this.logger.warn('Redis connection retry', {
           attempt: times,
           delay,
@@ -175,15 +175,43 @@ export class RedisService implements OnModuleDestroy {
 
     try {
       for (const pattern of patterns) {
-        const keys = await this.client.keys(pattern);
+        let searchPattern = pattern;
+
+        // Ensure key prefix is applied correctly
+        if (!pattern.startsWith(this.config.keyPrefix || '')) {
+          searchPattern = `${this.config.keyPrefix}${pattern}`;
+        }
+
+        const keys: string[] = [];
+        let cursor = '0';
+
+        // SCAN for keys matching the pattern
+        do {
+          const [newCursor, foundKeys] = await this.client.scan(
+            cursor,
+            'MATCH',
+            searchPattern,
+            'COUNT',
+            100,
+          );
+          cursor = newCursor;
+          keys.push(...foundKeys);
+        } while (cursor !== '0');
+
         let deletedCount = 0;
 
         if (keys.length > 0) {
-          deletedCount = await this.client.del(...keys);
+          const redisKeys = keys.map((key) =>
+            this.client.options.keyPrefix ? key : key,
+          );
+          deletedCount = (await this.client.call(
+            'DEL',
+            ...redisKeys,
+          )) as number;
         }
 
         results.push({
-          pattern,
+          pattern: searchPattern,
           deletedKeys: deletedCount,
         });
       }
@@ -192,14 +220,12 @@ export class RedisService implements OnModuleDestroy {
         patterns,
         results,
         duration: Date.now() - startTime,
-        operation: 'invalidateMultiple',
       });
     } catch (error) {
       this.logger.error('Cache invalidation failed', {
         patterns,
         error,
         duration: Date.now() - startTime,
-        operation: 'invalidateMultiple',
       });
       throw error;
     }
@@ -207,23 +233,44 @@ export class RedisService implements OnModuleDestroy {
 
   async invalidateByPrefix(prefix: string): Promise<void> {
     const startTime = Date.now();
+    let cursor = '0';
+    let totalDeleted = 0;
+
     try {
-      const keys = await this.client.keys(`${prefix}:*`);
-      const deletedCount = keys.length > 0 ? await this.client.del(...keys) : 0;
+      // Ensure prefix consistency with keyPrefix configuration
+      let searchPattern = prefix;
+      if (!prefix.startsWith(this.config.keyPrefix || '')) {
+        searchPattern = `${this.config.keyPrefix}${prefix}`;
+      }
+      searchPattern = `${searchPattern}:*`;
+
+      // Use SCAN to find keys that match the pattern
+      do {
+        const [newCursor, keys] = await this.client.scan(
+          cursor,
+          'MATCH',
+          searchPattern,
+          'COUNT',
+          100,
+        );
+        cursor = newCursor;
+
+        if (keys.length > 0) {
+          const deletedCount = await this.client.del(...keys);
+          totalDeleted += deletedCount;
+        }
+      } while (cursor !== '0');
 
       this.logger.info('Prefix-based cache invalidation completed', {
         prefix,
-        matchedKeys: keys.length,
-        deletedKeys: deletedCount,
+        deletedKeys: totalDeleted,
         duration: Date.now() - startTime,
-        operation: 'invalidateByPrefix',
       });
     } catch (error) {
       this.logger.error('Prefix-based cache invalidation failed', {
         prefix,
         error,
         duration: Date.now() - startTime,
-        operation: 'invalidateByPrefix',
       });
       throw error;
     }

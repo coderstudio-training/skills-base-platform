@@ -9,6 +9,6 @@ export function createDevelopmentConfig(env: string): RedisConfig {
     keyPrefix: `${env}:`,
     ttl: 3600, // 1 hour
     retryAttempts: 10,
-    retryDelay: 50,
+    retryDelay: 3000,
   };
 }

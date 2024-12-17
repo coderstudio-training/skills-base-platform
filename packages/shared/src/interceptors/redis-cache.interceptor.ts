@@ -8,9 +8,11 @@ import { Reflector } from '@nestjs/core';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import {
+  REDIS_CACHE_CONDITION,
   REDIS_CACHE_KEY_GENERATOR,
   REDIS_CACHE_KEY_METADATA,
   REDIS_CACHE_TTL_METADATA,
+  RedisCacheContext,
 } from '../decorators/redis-cache.decorator';
 import { Logger } from '../services/logger.service';
 import { RedisService } from '../services/redis.service';
@@ -42,10 +44,26 @@ export class RedisCacheInterceptor implements NestInterceptor {
       REDIS_CACHE_KEY_GENERATOR,
       context.getHandler(),
     );
+    const condition = this.reflector.get(
+      REDIS_CACHE_CONDITION,
+      context.getHandler(),
+    );
 
-    const finalKey = keyGenerator
-      ? keyGenerator(context.getArgs())
-      : this.generateKey(key, context);
+    const cacheContext = this.createCacheContext(context);
+
+    // Check if caching should be skipped based on condition
+    if (condition) {
+      const shouldCache = await condition(cacheContext);
+      if (!shouldCache) {
+        return next.handle();
+      }
+    }
+
+    const finalKey = await this.generateCacheKey(
+      key,
+      keyGenerator,
+      cacheContext,
+    );
 
     try {
       const cachedValue = await this.redisService.get(finalKey);
@@ -95,15 +113,46 @@ export class RedisCacheInterceptor implements NestInterceptor {
     }
   }
 
-  private generateKey(baseKey: string, context: ExecutionContext): string {
+  private createCacheContext(context: ExecutionContext): RedisCacheContext {
     const request = context.switchToHttp().getRequest();
-    const params = request.params || {};
-    const query = request.query || {};
+    const args = context.getArgs();
 
+    return {
+      request: {
+        path: request.path,
+        method: request.method,
+        params: request.params || {},
+        query: request.query || {},
+        body: request.body,
+        headers: request.headers,
+        user: request.user,
+      },
+      args,
+      executionContext: context,
+    };
+  }
+
+  private async generateCacheKey(
+    baseKey: string,
+    keyGenerator:
+      | ((context: RedisCacheContext) => string | Promise<string>)
+      | undefined,
+    context: RedisCacheContext,
+  ): Promise<string> {
+    if (keyGenerator) {
+      return keyGenerator(context);
+    }
+
+    const { params, query, user } = context.request;
     const keyParts = [
       baseKey,
-      Object.values(params).join(':'),
-      Object.values(query).join(':'),
+      user?.id ? `user:${user.id}` : null,
+      Object.entries(params)
+        .map(([key, value]) => `${key}:${value}`)
+        .join(':'),
+      Object.entries(query)
+        .map(([key, value]) => `${key}:${value}`)
+        .join(':'),
     ].filter(Boolean);
 
     return keyParts.join(':');

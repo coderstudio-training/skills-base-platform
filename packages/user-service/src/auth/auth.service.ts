@@ -100,7 +100,7 @@ export class AuthService {
 
       // Create JWT payload
       const payload = {
-        sub: user.id, // required
+        userId: user.id, // required
         email: user.email, // required
         roles: user.roles, // required
         perms: permissionCodes, // required
@@ -190,7 +190,7 @@ export class AuthService {
 
       // Create JWT payload
       const payload = {
-        sub: user.id, // required
+        userId: user.id, // required
         email: user.email, // required
         roles: user.roles, // required
         perms: permissionCodes, // required

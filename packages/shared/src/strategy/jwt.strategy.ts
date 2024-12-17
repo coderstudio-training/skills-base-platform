@@ -39,7 +39,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }
 
       return {
-        sub: payload.sub,
+        userId: payload.userId,
         email: payload.email,
         roles: payload.roles,
         perms: payload.perms,
@@ -57,7 +57,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   private validateTokenStructure(payload: any): boolean {
-    const requiredFields = ['sub', 'email', 'perms', 'roles'];
+    const requiredFields = ['userId', 'email', 'perms', 'roles'];
     const missingFields = requiredFields.filter((field) => !payload[field]);
 
     if (missingFields.length > 0) {

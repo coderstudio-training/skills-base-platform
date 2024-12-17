@@ -52,7 +52,7 @@ export class PermissionsController {
   @RequirePermissions(Permission.MANAGE_SYSTEM)
   @RedisCache({
     key: 'permissions:role',
-    keyGenerator: (args) => `permissions:role:${args[0].params.role}`,
+    keyGenerator: (ctx) => `permissions:role:${ctx.request.user.role}`,
     ttl: 3600,
   })
   @ApiOperation({ summary: 'Get permissions for a specific role' })
@@ -72,7 +72,8 @@ export class PermissionsController {
   @Roles(UserRole.ADMIN)
   @RequirePermissions(Permission.MANAGE_SYSTEM)
   @RedisCache({
-    keyGenerator: (args) => `permissions:verify:${args[0].body.permissionName}`,
+    keyGenerator: (ctx) =>
+      `permissions:verify:${ctx.request.body.permissionName}`,
     ttl: 3600,
   })
   @ApiOperation({ summary: 'Verify permissions' })
@@ -102,7 +103,8 @@ export class PermissionsController {
   @Roles(UserRole.ADMIN)
   @RequirePermissions(Permission.MANAGE_SYSTEM)
   @RedisCache({
-    keyGenerator: (args) => `permissions:code:${args[0].params.permissionName}`,
+    keyGenerator: (ctx) =>
+      `permissions:code:${ctx.request.params.permissionName}`,
     ttl: 3600,
   })
   @ApiOperation({ summary: 'Get code for specific permission' })

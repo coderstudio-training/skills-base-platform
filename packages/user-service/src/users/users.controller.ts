@@ -20,6 +20,7 @@ import {
   BaseController,
   InvalidateCache,
   JwtAuthGuard,
+  Logger,
   LoggingInterceptor,
   PaginationDto,
   Permission,
@@ -41,6 +42,7 @@ import { UsersService } from './users.service';
 @UseInterceptors(LoggingInterceptor, TransformInterceptor)
 @ApiBearerAuth('JWT-Admin')
 export class UsersController extends BaseController<User> {
+  private readonly logger = new Logger(UsersController.name);
   constructor(private readonly usersService: UsersService) {
     super(usersService);
   }
@@ -55,7 +57,15 @@ export class UsersController extends BaseController<User> {
   })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  @InvalidateCache(['users:list', 'users:profile'])
+  @InvalidateCache({
+    keyGenerators: [
+      (ctx) => [
+        `users:profile:${ctx.request.user.userId}`,
+        'users:list:*:*',
+        'users:list',
+      ],
+    ],
+  })
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
@@ -69,7 +79,11 @@ export class UsersController extends BaseController<User> {
     type: User,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @RedisCache({
+    keyGenerator: (ctx) => `users:profile:${ctx.request.user.userId}`,
+  })
   async getProfile(@Request() req: { user: { userId: string } }) {
+    this.logger.info(`Fetching user profile for user ID: ${req.user.userId}`);
     return this.usersService.findUserProfileById(req.user.userId);
   }
 
