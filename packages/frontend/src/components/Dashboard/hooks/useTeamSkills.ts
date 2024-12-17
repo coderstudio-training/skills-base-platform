@@ -13,7 +13,7 @@ export default function useTeamSkills(name: string) {
     {
       enabled: !!name,
       requiresAuth: true,
-      revalidate: 3600,
+      revalidate: 300,
     },
   );
 

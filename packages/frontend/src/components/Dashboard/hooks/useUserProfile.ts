@@ -11,10 +11,10 @@ export function useUserProfile() {
     isLoading,
   } = useQuery<UserProfile>(userApi, '/users/profile', {
     enabled: !!session?.user?.email,
-    revalidate: 3600,
+    revalidate: 300,
   });
 
-  const isManager = userProfile?.roles?.includes('manager');
+  const isManager = session?.user.role === 'manager';
   const fullName = userProfile ? `${userProfile.firstName} ${userProfile.lastName}` : 'Loading...';
 
   return {

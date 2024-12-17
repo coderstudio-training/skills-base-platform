@@ -19,7 +19,6 @@ export default function Overview({
   skillsData,
   selectedCategory,
   onCategoryChange,
-  loading,
   error,
 }: OverviewProps) {
   const safeMetrics = {
@@ -35,21 +34,18 @@ export default function Overview({
           icon={User2}
           title="Soft Skills Average"
           value={safeMetrics.softSkillsAverage}
-          loading={loading}
           error={error}
         />
         <MetricCard
           icon={BrainCircuit}
           title="Technical Skills Average"
           value={safeMetrics.technicalSkillsAverage}
-          loading={loading}
           error={error}
         />
         <MetricCard
           icon={Blocks}
           title="Skills Assessed"
           value={safeMetrics.skillsAssessed}
-          loading={loading}
           error={error}
         />
       </div>
@@ -58,7 +54,6 @@ export default function Overview({
         skills={skillsData?.skills ?? []}
         selectedCategory={selectedCategory}
         onCategoryChange={onCategoryChange}
-        loading={loading}
         error={error}
       />
     </div>

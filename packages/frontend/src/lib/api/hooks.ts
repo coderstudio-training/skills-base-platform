@@ -6,6 +6,7 @@ import { authConfig, rolePermissions } from '@/lib/api/config';
 import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
 import { getSession, signOut } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
+import { logger } from '../utils';
 
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
@@ -21,7 +22,7 @@ export function useAuth() {
         const tokenExpired = await isTokenExpired(session.user.accessToken);
 
         if (tokenExpired) {
-          console.warn('Access token is expired. Logging out...');
+          logger.warn('Access token is expired. Logging out...');
           await signOut({ callbackUrl: '/' });
           return;
         }
@@ -240,4 +241,55 @@ export async function fetchServerData<T>(
       },
     };
   }
+}
+
+const cache = new Map();
+
+function suspenseFetcher<T>(
+  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  endpoint: string,
+  options: { requiresAuth?: boolean; revalidate?: number; cacheStrategy?: RequestCache } = {},
+): T {
+  const key = JSON.stringify({ endpoint });
+
+  if (cache.has(key)) {
+    const result = cache.get(key);
+    if (result.status === 'pending') {
+      throw result.promise; // Suspend rendering until promise resolves
+    }
+    if (result.status === 'error') {
+      logger.error('[Suspense Error]', result.error);
+      throw result.error; // Ensure a meaningful error
+    }
+    return result.data;
+  }
+
+  const promise = apiInstance
+    .get<T>(endpoint, options)
+    .then(response => {
+      if (response.error) throw new Error(response.error.message || 'Unknown API error');
+      cache.set(key, { status: 'success', data: response.data });
+      return response.data;
+    })
+    .catch(error => {
+      const wrappedError = new Error(error.message || 'Failed to fetch data');
+      wrappedError.stack = error.stack; // Preserve the stack trace
+      cache.set(key, { status: 'error', error: wrappedError });
+      throw wrappedError;
+    });
+
+  cache.set(key, { status: 'pending', promise });
+  throw promise; // Suspend rendering
+}
+
+export function useSuspenseQuery<T>(
+  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  endpoint: string,
+  options?: {
+    requiresAuth?: boolean;
+    cacheStrategy?: RequestCache;
+    revalidate?: number;
+  },
+): T {
+  return suspenseFetcher<T>(apiInstance, endpoint, options || {});
 }

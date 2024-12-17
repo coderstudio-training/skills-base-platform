@@ -38,7 +38,7 @@ export default function LandingDashboard() {
   return (
     <div className="container mx-auto p-4">
       <header className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2">Welcome to SkillBase v2</h1>
+        <h1 className="text-4xl font-bold mb-2">Welcome to SkillBase</h1>
         <p className="text-xl text-muted-foreground">Empower Your Team, Elevate Your Business</p>
       </header>
 

@@ -6,7 +6,7 @@ import {
   TopPerformersResponse,
 } from '@/components/Dashboard/types';
 import { skillsApi, userApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useQuery, useSuspenseQuery } from '@/lib/api/hooks';
 import { useCallback, useEffect, useState } from 'react';
 
 export function useAdminData() {
@@ -44,48 +44,44 @@ export function useAdminData() {
 
   const {
     data: employeesData,
-    error: employeesError,
     isLoading: employeesLoading,
+    error: employeesError,
   } = useQuery<EmployeesResponse>(userApi, `${endpoint}?${queryParams}`, {
-    revalidate: 3600,
+    revalidate: 300,
+    requiresAuth: true,
   });
 
   // Business units query
-  const {
-    data: businessUnitsData,
-    error: businessUnitsError,
-    isLoading: businessUnitsLoading,
-  } = useQuery<BusinessUnitsResponse>(userApi, '/employees/business-units', {
-    revalidate: 3600,
-  });
+  const businessUnitsData = useSuspenseQuery<BusinessUnitsResponse>(
+    userApi,
+    '/employees/business-units',
+    {
+      revalidate: 300,
+      requiresAuth: true,
+    },
+  );
 
   // Stats query
-  const {
-    data: statsData,
-    error: statsError,
-    isLoading: statsLoading,
-  } = useQuery<EmployeeStats>(userApi, '/employees/stats', {
-    revalidate: 3600,
+  const statsData = useSuspenseQuery<EmployeeStats>(userApi, '/employees/stats', {
+    revalidate: 300,
+    requiresAuth: true,
   });
 
   // Skill gaps query
-  const {
-    data: skillGapsData,
-    error: skillGapsError,
-    isLoading: skillGapsLoading,
-  } = useQuery<SkillGapsResponse>(skillsApi, '/skills-matrix/admin/analysis', {
-    revalidate: 3600,
+  const skillGapsData = useSuspenseQuery<SkillGapsResponse>(skillsApi, '/api/skills/analytics', {
+    revalidate: 300,
     requiresAuth: true,
   });
 
   // Top performers query
-  const {
-    data: topPerformersData,
-    error: topPerformersError,
-    isLoading: topPerformersLoading,
-  } = useQuery<TopPerformersResponse>(skillsApi, '/skills-matrix/rankings', {
-    revalidate: 3600,
-  });
+  const topPerformersData = useSuspenseQuery<TopPerformersResponse>(
+    skillsApi,
+    '/skills-matrix/rankings',
+    {
+      revalidate: 300,
+      requiresAuth: true,
+    },
+  );
 
   // Handlers
   const handlePageChange = useCallback((newPage: number) => {
@@ -119,11 +115,8 @@ export function useAdminData() {
     totalPages: employeesData?.totalPages || 0,
     employeesLoading,
     employeesError,
-
     // Business units data
     businessUnits: businessUnitsData?.distribution || [],
-    businessUnitsLoading,
-    businessUnitsError,
 
     // Stats data
     stats: statsData || {
@@ -131,18 +124,12 @@ export function useAdminData() {
       businessUnitsCount: 0,
       activeEmployeesCount: 0,
     },
-    statsLoading,
-    statsError,
 
     // Skill gaps data
-    skillGaps: skillGapsData?.capabilities.flatMap(cap => cap.skillGaps) || [],
-    skillGapsLoading,
-    skillGapsError,
+    skillGaps: skillGapsData?.skillGaps || [],
 
     // Top performers data
     topPerformers: topPerformersData?.rankings.slice(0, 10) || [],
-    topPerformersLoading,
-    topPerformersError,
 
     // Pagination and filter state
     page,
