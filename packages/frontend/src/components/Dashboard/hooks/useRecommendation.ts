@@ -18,8 +18,9 @@ export function useRecommendations() {
     `/api/learning/recommendations/${session?.user?.email}`,
     {
       enabled: !!session?.user?.email,
-      revalidate: 300, // Cache for 5 minutes
+      // revalidate: 300,
       requiresAuth: true,
+      cacheStrategy: 'force-cache',
     },
   );
 
