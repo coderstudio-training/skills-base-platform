@@ -110,7 +110,6 @@ import { UsersModule } from './users/users.module';
       port: process.env.REDIS_PORT
         ? parseInt(process.env.REDIS_PORT, 10)
         : 6379,
-      // other redis options
     }),
 
     // Feature Modules

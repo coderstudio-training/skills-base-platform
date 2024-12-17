@@ -56,7 +56,7 @@ export class CacheInvalidateInterceptor implements NestInterceptor {
 
           await this.redisService.invalidateMultiple(prefixedKeys);
 
-          this.logger.info('Cache invalidated', {
+          this.logger.debug('Cache invalidated', {
             keys: prefixedKeys,
             handler: context.getHandler().name,
           });

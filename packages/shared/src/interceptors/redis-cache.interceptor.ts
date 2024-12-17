@@ -69,14 +69,14 @@ export class RedisCacheInterceptor implements NestInterceptor {
       const cachedValue = await this.redisService.get(finalKey);
 
       if (cachedValue) {
-        this.logger.debug('Cache hit', {
+        this.logger.info('Cache hit', {
           key: finalKey,
           handler: context.getHandler().name,
         });
         return of(JSON.parse(cachedValue));
       }
 
-      this.logger.debug('Cache miss', {
+      this.logger.info('Cache miss', {
         key: finalKey,
         handler: context.getHandler().name,
       });
@@ -143,15 +143,14 @@ export class RedisCacheInterceptor implements NestInterceptor {
       return keyGenerator(context);
     }
 
-    const { params, query, user } = context.request;
+    const { params, query } = context.request;
     const keyParts = [
       baseKey,
-      user?.id ? `user:${user.id}` : null,
       Object.entries(params)
-        .map(([key, value]) => `${key}:${value}`)
+        .map(([, value]) => `${value}`)
         .join(':'),
       Object.entries(query)
-        .map(([key, value]) => `${key}:${value}`)
+        .map(([, value]) => `${value}`)
         .join(':'),
     ].filter(Boolean);
 

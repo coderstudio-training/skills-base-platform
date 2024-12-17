@@ -59,11 +59,7 @@ export class UsersController extends BaseController<User> {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @InvalidateCache({
     keyGenerators: [
-      (ctx) => [
-        `users:profile:${ctx.request.user.userId}`,
-        'users:list:*:*',
-        'users:list',
-      ],
+      (ctx) => [`users:profile:${ctx.request.user.userId}`, 'users:list:*:*'],
     ],
   })
   create(@Body() createUserDto: CreateUserDto) {

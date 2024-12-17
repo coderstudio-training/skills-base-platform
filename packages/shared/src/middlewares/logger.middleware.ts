@@ -96,8 +96,6 @@ export class LoggerMiddleware implements NestMiddleware {
     this.logger[logLevel](`${message} ${statusCode} ${duration}ms`, {
       type: 'request.complete',
       correlationId: context.correlationId,
-      statusCode: context.statusCode,
-      duration: context.duration,
       responseSize: context.responseSize,
     });
   }
