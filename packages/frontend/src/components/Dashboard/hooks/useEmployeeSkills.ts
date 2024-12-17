@@ -1,83 +1,126 @@
-import { SkillDetail } from '@/components/Dashboard/types';
-import { useState } from 'react';
+import { Skill, SkillDetail, StaffSkills, TaxonomyResponse } from '@/components/Dashboard/types';
+import { skillsApi } from '@/lib/api/client';
+import { useQuery } from '@/lib/api/hooks';
+import { useEffect, useState } from 'react';
 
 export function useEmployeeSkills() {
-  const [skills, setSkills] = useState<SkillDetail[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
+  const [processedSkills, setProcessedSkills] = useState<SkillDetail[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchSkills = async (email: string) => {
-    setLoading(true);
-    setError(null);
+  // Query for employee skills
+  const {
+    data: skillsData,
+    error: skillsError,
+    isLoading: skillsLoading,
+  } = useQuery<StaffSkills>(
+    skillsApi,
+    selectedEmail ? `skills-matrix/user/?email=${selectedEmail}` : '',
+    {
+      enabled: !!selectedEmail,
+      requiresAuth: true,
+    },
+  );
 
-    try {
-      const response = await fetch(`/api/skills/employee/${email}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch employee skills');
-      }
-      const data = await response.json();
+  // Process skills and fetch taxonomy data
+  useEffect(() => {
+    const fetchTaxonomyData = async () => {
+      if (!skillsData?.skills) return;
 
-      // Fetch descriptions for each skill using taxonomy find by title
-      const skillsWithDescriptions = await Promise.all(
-        data.skills.map(async (skill: SkillDetail) => {
-          try {
-            const taxonomyResponse = await fetch(
-              `/api/taxonomy/technical/title/${skill.skill}?businessUnit=QA`,
-            );
+      setIsProcessing(true);
+      setError(null);
 
-            if (!taxonomyResponse.ok) {
-              console.warn(`No taxonomy found for skill: ${skill.skill}`);
+      try {
+        const skillsWithDescriptions = await Promise.all(
+          skillsData.skills.map(async (skill: Skill) => {
+            try {
+              // Using useQuery's underlying client for consistency
+              const taxonomyResponse = await skillsApi.get<TaxonomyResponse>(
+                `/taxonomy/technical/title/${skill.name}?businessUnit=QA`,
+                { requiresAuth: true },
+              );
+
+              if (!taxonomyResponse.data?.[0]) {
+                console.warn(`No taxonomy found for skill: ${skill.name}`);
+                return {
+                  skill: skill.name,
+                  category: skill.category,
+                  selfRating: skill.selfRating,
+                  managerRating: skill.managerRating,
+                  requiredRating: skill.required,
+                  gap: skill.gap,
+                  average: skill.average,
+                  description: 'No description available',
+                  proficiencyDescription: 'No proficiency description available',
+                } as SkillDetail;
+              }
+
+              const taxonomyData = taxonomyResponse.data;
+
+              // Use Math.floor to get the exact level key
+              const levelKey = `Level ${Math.floor(skill.average)}`;
+              const proficiencyDescription =
+                taxonomyData[0]?.proficiencyDescription?.[levelKey]?.[1] ||
+                'No proficiency description available';
+
               return {
-                ...skill,
+                skill: skill.name,
+                category: skill.category,
+                selfRating: skill.selfRating,
+                managerRating: skill.managerRating,
+                requiredRating: skill.required,
+                gap: skill.gap,
+                average: skill.average,
+                description: taxonomyData[0]?.description || 'No description available',
+                proficiencyDescription,
+              } as SkillDetail;
+            } catch (error) {
+              console.error(`Error fetching description for ${skill.name}:`, error);
+              return {
+                skill: skill.name,
+                category: skill.category,
+                selfRating: skill.selfRating,
+                managerRating: skill.managerRating,
+                requiredRating: skill.required,
+                gap: skill.gap,
+                average: skill.average,
                 description: 'No description available',
                 proficiencyDescription: 'No proficiency description available',
-              };
+              } as SkillDetail;
             }
+          }),
+        );
 
-            const taxonomyData = await taxonomyResponse.json();
+        setProcessedSkills(skillsWithDescriptions);
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error('An error occurred');
+        setError(err);
+        setProcessedSkills([]);
+      } finally {
+        setIsProcessing(false);
+      }
+    };
 
-            // Use Math.floor to get the exact level key
-            const levelKey = `Level ${Math.floor(skill.average)}`;
-            const proficiencyDescription =
-              taxonomyData[0]?.proficiencyDescription?.[levelKey]?.[1] ||
-              'No proficiency description available';
-
-            return {
-              ...skill,
-              description:
-                taxonomyData.length > 0 ? taxonomyData[0].description : 'No description available',
-              proficiencyDescription,
-            };
-          } catch (error) {
-            console.error(`Error fetching description for ${skill.skill}:`, error);
-            return {
-              ...skill,
-              description: 'No description available',
-              proficiencyDescription: 'No proficiency description available',
-            };
-          }
-        }),
-      );
-
-      setSkills(skillsWithDescriptions);
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error('An error occurred');
-      setError(err);
-      setSkills([]);
-    } finally {
-      setLoading(false);
+    if (skillsData?.skills) {
+      fetchTaxonomyData();
     }
+  }, [skillsData]);
+
+  const fetchSkills = async (email: string) => {
+    setSelectedEmail(email);
   };
 
   const clearSkills = () => {
-    setSkills([]);
+    setSelectedEmail(null);
+    setProcessedSkills([]);
     setError(null);
   };
 
   return {
-    skills,
-    loading,
-    error,
+    skills: processedSkills,
+    loading: skillsLoading || isProcessing,
+    error: error || skillsError,
     fetchSkills,
     clearSkills,
   };

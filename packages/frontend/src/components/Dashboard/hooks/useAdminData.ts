@@ -68,10 +68,14 @@ export function useAdminData() {
   });
 
   // Skill gaps query
-  const skillGapsData = useSuspenseQuery<SkillGapsResponse>(skillsApi, '/api/skills/analytics', {
-    revalidate: 300,
-    requiresAuth: true,
-  });
+  const skillGapsData = useSuspenseQuery<SkillGapsResponse>(
+    skillsApi,
+    '/skills-matrix/admin/analysis',
+    {
+      revalidate: 300,
+      requiresAuth: true,
+    },
+  );
 
   // Top performers query
   const topPerformersData = useSuspenseQuery<TopPerformersResponse>(
@@ -126,7 +130,7 @@ export function useAdminData() {
     },
 
     // Skill gaps data
-    skillGaps: skillGapsData?.skillGaps || [],
+    skillGaps: skillGapsData?.capabilities.flatMap(cap => cap.skillGaps) || [],
 
     // Top performers data
     topPerformers: topPerformersData?.rankings.slice(0, 10) || [],
