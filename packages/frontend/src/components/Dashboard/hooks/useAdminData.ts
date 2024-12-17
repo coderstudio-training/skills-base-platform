@@ -6,7 +6,7 @@ import {
   TopPerformersResponse,
 } from '@/components/Dashboard/types';
 import { skillsApi, userApi } from '@/lib/api/client';
-import { useSuspenseQuery } from '@/lib/api/hooks';
+import { useQuery, useSuspenseQuery } from '@/lib/api/hooks';
 import { useCallback, useEffect, useState } from 'react';
 
 export function useAdminData() {
@@ -42,7 +42,11 @@ export function useAdminData() {
     }),
   }).toString();
 
-  const employeesData = useSuspenseQuery<EmployeesResponse>(userApi, `${endpoint}?${queryParams}`, {
+  const {
+    data: employeesData,
+    isLoading: employeesLoading,
+    error: employeesError,
+  } = useQuery<EmployeesResponse>(userApi, `${endpoint}?${queryParams}`, {
     revalidate: 300,
     requiresAuth: true,
   });
@@ -109,7 +113,8 @@ export function useAdminData() {
     employees: employeesData?.items || [],
     totalItems: employeesData?.total || 0,
     totalPages: employeesData?.totalPages || 0,
-
+    employeesLoading,
+    employeesError,
     // Business units data
     businessUnits: businessUnitsData?.distribution || [],
 

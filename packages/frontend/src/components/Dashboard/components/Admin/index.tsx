@@ -21,7 +21,7 @@ export default function AdminDashboard() {
     employees,
     totalItems,
     totalPages,
-
+    employeesLoading,
     // Business units data
     businessUnits,
 
@@ -107,6 +107,7 @@ export default function AdminDashboard() {
               employees={employees}
               totalItems={totalItems}
               totalPages={totalPages}
+              loading={employeesLoading}
               page={page}
               limit={limit}
               onPageChange={handlePageChange}

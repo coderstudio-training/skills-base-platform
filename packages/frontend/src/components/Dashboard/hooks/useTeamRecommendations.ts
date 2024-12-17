@@ -5,17 +5,13 @@ import { MemberRecommendations, RecommendationResponse, TeamMember } from '../ty
 import { useTeamData } from './useTeamData';
 
 export function useTeamRecommendations() {
-  const { teamMembers, loading: teamLoading, error: teamError } = useTeamData();
+  const { teamMembers } = useTeamData();
   const [teamData, setTeamData] = useState<
     Array<TeamMember & { recommendations?: MemberRecommendations }>
   >([]);
 
   // Get recommendations for the first team member
-  const {
-    data: recommendationsData,
-    isLoading: recommendationsLoading,
-    error: recommendationsError,
-  } = useQuery<RecommendationResponse>(
+  const { data: recommendationsData } = useQuery<RecommendationResponse>(
     learningApi,
     `/api/learning/recommendations/${teamMembers[0]?.email}`,
     {
@@ -39,7 +35,5 @@ export function useTeamRecommendations() {
 
   return {
     teamData,
-    loading: teamLoading || recommendationsLoading,
-    error: teamError || recommendationsError,
   };
 }
