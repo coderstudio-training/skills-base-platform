@@ -25,8 +25,8 @@ import {
 import {
   EmployeeSkillsResponseDto,
   SkillsSummaryDto,
+  TeamSkillsResponseDto,
 } from '../dto/skills-matrix.dto';
-import { TeamSkillsResponseDto } from '../dto/team-skills.dto';
 import { SkillsMatrixService } from '../services/skills-matrix.service';
 import { EmailValidationPipe } from '../utils/skills.util';
 

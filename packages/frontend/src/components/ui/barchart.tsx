@@ -1,30 +1,53 @@
 'use client';
 
+import { CustomTooltip } from '@/components/ui/tooltip';
 import * as React from 'react';
 import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
 
-interface DataPoint {
-  [key: string]: string | number;
+interface SkillData {
+  skill: string;
+  average: number;
+  requiredRating: number;
+  gap: number;
+  [key: string]: string | number; // For additional properties
+}
+
+type StaticColor = { type: 'static'; value: string };
+type DynamicColor = {
+  type: 'dynamic';
+  getValue: (data: SkillData) => string;
+};
+type ColorConfig = StaticColor | DynamicColor;
+
+interface SeriesConfig {
+  name: string;
+  key: string;
+  color: ColorConfig;
 }
 
 interface BarChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: DataPoint[];
+  data: SkillData[];
   xAxisKey: string;
   yAxisDomain?: [number, number];
   yAxisTicks?: number[];
-  series: { name: string; key: string; color: string }[];
+  series: SeriesConfig[];
   height?: number;
-  title?: string;
+  tooltipFormatter?: (
+    value: number | string,
+    name: string,
+    entry: { payload: SkillData },
+  ) => number | string;
 }
+
 const CustomXAxisTick = ({
   x,
   y,
@@ -49,6 +72,13 @@ const CustomXAxisTick = ({
   </g>
 );
 
+const getBarColor = (config: ColorConfig, data: SkillData): string => {
+  if (config.type === 'static') {
+    return config.value;
+  }
+  return config.getValue(data);
+};
+
 export function CustomBarChart({
   data,
   xAxisKey,
@@ -56,9 +86,7 @@ export function CustomBarChart({
   yAxisTicks = [0, 1.5, 3, 4.5, 6],
   series,
   height = 500,
-  // title,
-  // className,
-  // ...props
+  // tooltipFormatter,
 }: BarChartProps) {
   return (
     <div style={{ height: `${height}px`, width: '100%' }}>
@@ -78,7 +106,7 @@ export function CustomBarChart({
             tick={{ fill: '#666', fontSize: '11px' }}
             tickLine={false}
           />
-          <Tooltip />
+          <CustomTooltip />
           <Legend
             verticalAlign="bottom"
             height={36}
@@ -88,7 +116,18 @@ export function CustomBarChart({
             }}
           />
           {series.map(s => (
-            <Bar key={s.key} dataKey={s.key} name={s.name} fill={s.color} radius={[4, 4, 0, 0]} />
+            <Bar
+              key={s.key}
+              dataKey={s.key}
+              name={s.name}
+              fill={s.color.type === 'static' ? s.color.value : undefined}
+              radius={[4, 4, 0, 0]}
+            >
+              {s.color.type === 'dynamic' &&
+                data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getBarColor(s.color, entry)} />
+                ))}
+            </Bar>
           ))}
         </BarChart>
       </ResponsiveContainer>
