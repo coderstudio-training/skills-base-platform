@@ -1,4 +1,3 @@
-// hooks/useAdminAnalysis.ts
 import { skillsApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 import { DistributionsResponse, OrganizationSkillsAnalysis } from '../types';
@@ -10,7 +9,7 @@ export function useAdminAnalysis() {
     isLoading: analysisLoading,
   } = useQuery<OrganizationSkillsAnalysis>(skillsApi, 'skills-matrix/admin/analysis', {
     requiresAuth: true,
-    revalidate: 3600,
+    cacheStrategy: 'force-cache',
   });
 
   const {
@@ -19,7 +18,17 @@ export function useAdminAnalysis() {
     isLoading: distributionsLoading,
   } = useQuery<DistributionsResponse>(skillsApi, 'skills-matrix/distributions', {
     requiresAuth: true,
-    revalidate: 3600,
+    cacheStrategy: 'force-cache',
+  });
+
+  // Add debug logging to help identify where the error might be occurring
+  console.log({
+    analysisData,
+    distributionsData,
+    analysisError,
+    distributionsError,
+    analysisLoading,
+    distributionsLoading,
   });
 
   return {

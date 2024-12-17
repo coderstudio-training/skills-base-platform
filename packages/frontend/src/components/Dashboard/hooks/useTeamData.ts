@@ -17,7 +17,7 @@ export function useTeamData() {
     `/employees/manager/${encodeURIComponent(managerName || '')}`,
     {
       enabled: !!managerName,
-      revalidate: 3600,
+      cacheStrategy: 'force-cache',
     },
   );
 
