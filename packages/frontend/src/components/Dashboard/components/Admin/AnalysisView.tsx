@@ -2,7 +2,7 @@
 import { cn } from '@/lib/utils';
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 import { useAdminAnalysis } from '../../hooks/useAdminAnalysis';
-import { SkillDistributionItem, SkillGap, TopSkill } from '../../types';
+import { SkillDistributionItem, SkillGap } from '../../types';
 import BaseCard from '../Cards/BaseCard';
 
 const StatusIcon = ({ status }: { status: 'WARNING' | 'CRITICAL' | 'NORMAL' }) => {
@@ -30,20 +30,20 @@ const SkillItem = ({ skill }: { skill: SkillDistributionItem }) => (
   </div>
 );
 
-const TopSkillItem = ({ skill }: { skill: TopSkill }) => (
-  <div className="space-y-2">
-    <div className="flex items-center justify-between">
-      <span className="font-medium text-sm">{skill.name}</span>
-      <span className="text-sm text-muted-foreground">{Math.round(skill.prevalence)}%</span>
-    </div>
-    <div className="relative h-2 w-full bg-secondary rounded-full overflow-hidden">
-      <div
-        className="h-full bg-primary rounded-full transition-all duration-500 ease-in-out"
-        style={{ width: `${skill.prevalence}%` }}
-      />
-    </div>
-  </div>
-);
+// const TopSkillItem = ({ skill }: { skill: TopSkill }) => (
+//   <div className="space-y-2">
+//     <div className="flex items-center justify-between">
+//       <span className="font-medium text-sm">{skill.name}</span>
+//       <span className="text-sm text-muted-foreground">{Math.round(skill.prevalence)}%</span>
+//     </div>
+//     <div className="relative h-2 w-full bg-secondary rounded-full overflow-hidden">
+//       <div
+//         className="h-full bg-primary rounded-full transition-all duration-500 ease-in-out"
+//         style={{ width: `${skill.prevalence}%` }}
+//       />
+//     </div>
+//   </div>
+// );
 
 const SkillGapItem = ({ skill }: { skill: SkillGap }) => (
   <div className="space-y-2">
@@ -137,9 +137,9 @@ export default function AnalysisView() {
           {analysisData?.capabilities.map((capability, capIndex) => (
             <div key={capIndex} className="space-y-4">
               <h3 className="text-sm font-semibold text-primary">{capability.capability}</h3>
-              {capability.topSkills.map((skill, skillIndex) => (
+              {/* {capability.topSkills.map((skill, skillIndex) => (
                 <TopSkillItem key={skillIndex} skill={skill} />
-              ))}
+              ))} */}
             </div>
           ))}
         </div>

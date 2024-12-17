@@ -47,7 +47,8 @@ export function useAdminData() {
     error: employeesError,
     isLoading: employeesLoading,
   } = useQuery<EmployeesResponse>(userApi, `${endpoint}?${queryParams}`, {
-    revalidate: 3600,
+    cacheStrategy: 'force-cache',
+    requiresAuth: true,
   });
 
   // Business units query
@@ -56,7 +57,8 @@ export function useAdminData() {
     error: businessUnitsError,
     isLoading: businessUnitsLoading,
   } = useQuery<BusinessUnitsResponse>(userApi, '/employees/business-units', {
-    revalidate: 3600,
+    cacheStrategy: 'force-cache',
+    requiresAuth: true,
   });
 
   // Stats query
@@ -65,7 +67,8 @@ export function useAdminData() {
     error: statsError,
     isLoading: statsLoading,
   } = useQuery<EmployeeStats>(userApi, '/employees/stats', {
-    revalidate: 3600,
+    cacheStrategy: 'force-cache',
+    requiresAuth: true,
   });
 
   // Skill gaps query
@@ -74,7 +77,7 @@ export function useAdminData() {
     error: skillGapsError,
     isLoading: skillGapsLoading,
   } = useQuery<SkillGapsResponse>(skillsApi, '/skills-matrix/admin/analysis', {
-    revalidate: 3600,
+    cacheStrategy: 'force-cache',
     requiresAuth: true,
   });
 
@@ -84,7 +87,8 @@ export function useAdminData() {
     error: topPerformersError,
     isLoading: topPerformersLoading,
   } = useQuery<TopPerformersResponse>(skillsApi, '/skills-matrix/rankings', {
-    revalidate: 3600,
+    cacheStrategy: 'force-cache',
+    requiresAuth: true,
   });
 
   // Handlers

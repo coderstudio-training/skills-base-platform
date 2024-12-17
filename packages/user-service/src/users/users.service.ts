@@ -61,7 +61,7 @@ export class UsersService extends BaseService<User> {
 
       const user = await this.userModel
         .findById(id)
-        .select('-__v -createdAt -updatedAt -password -_id')
+        .select('-createdAt -updatedAt -password -_id')
         .lean()
         .transform((doc) => ({
           ...doc,
@@ -74,7 +74,7 @@ export class UsersService extends BaseService<User> {
 
       const employee = await this.employeeModel
         .findOne({ email: user.email })
-        .select('-__v -createdAt -updatedAt -email -firstName -lastName -_id')
+        .select('-createdAt -updatedAt -email -firstName -lastName -_id')
         .lean()
         .transform((doc) => ({
           ...doc,
