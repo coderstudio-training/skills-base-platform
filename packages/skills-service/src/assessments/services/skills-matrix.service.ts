@@ -16,8 +16,8 @@ import {
   SkillDetailsDto,
   SkillsSummaryDto,
   SkillStatus,
+  TeamSkillsResponseDto,
 } from '../dto/skills-matrix.dto';
-import { TeamSkillsResponseDto } from '../dto/team-skills.dto';
 import { transformToReadableKeys } from '../utils/skills.util';
 
 const CACHE_KEYS = {

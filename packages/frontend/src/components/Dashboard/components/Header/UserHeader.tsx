@@ -4,14 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getInitials } from '@/lib/utils/string-utils';
 import { LogOut } from 'lucide-react';
-import { signOut } from 'next-auth/react';
+import { useLogout } from '../../hooks/useLogout';
 
 export function UserHeader() {
   const { userProfile, isManager, fullName } = useUserProfile();
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
+  const { handleLogout } = useLogout();
 
   return (
     <div className="flex justify-between items-center mb-6">

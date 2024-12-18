@@ -4,10 +4,10 @@ import { isTokenExpired } from '@/lib/api/auth';
 import { learningApi, skillsApi, userApi } from '@/lib/api/client';
 import { authConfig, rolePermissions } from '@/lib/api/config';
 import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
+import { logger } from '../utils';
 
-// Create a custom hook for auth state
 export function useAuth() {
   const { data: session, status } = useSession();
   const [authState, setAuthState] = useState<AuthState>({
@@ -17,19 +17,31 @@ export function useAuth() {
   });
 
   useEffect(() => {
-    if (status === 'authenticated' && session?.user?.accessToken) {
-      const checkToken = async () => {
+    const checkAuthState = async () => {
+      if (status === 'authenticated' && session?.user?.accessToken) {
         const tokenExpired = await isTokenExpired(session.user.accessToken);
-        if (!tokenExpired) {
-          setAuthState({
-            isAuthenticated: true,
-            user: session.user,
-            role: session.user.role ? [session.user.role] : [],
-          });
+
+        if (tokenExpired) {
+          logger.warn('Access token is expired. Logging out...');
+          await signOut({ callbackUrl: '/' });
+          return;
         }
-      };
-      checkToken();
-    }
+
+        setAuthState({
+          isAuthenticated: true,
+          user: session.user,
+          role: session.user.role ? [session.user.role] : [],
+        });
+      } else {
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+          role: [],
+        });
+      }
+    };
+
+    checkAuthState();
   }, [session, status]);
 
   const hasPermission = useCallback(
@@ -56,6 +68,12 @@ export function useAuth() {
 }
 
 type FetchState<T> = {
+  data: T | null;
+  error: ApiError | null;
+  isLoading: boolean;
+};
+
+type MutationState<T> = {
   data: T | null;
   error: ApiError | null;
   isLoading: boolean;
@@ -141,11 +159,7 @@ export function useMutation<T, TData = unknown>(
     requiresAuth?: boolean;
   },
 ) {
-  const [state, setState] = useState<{
-    data: T | null;
-    error: ApiError | null;
-    isLoading: boolean;
-  }>({
+  const [state, setState] = useState<MutationState<T>>({
     data: null,
     error: null,
     isLoading: false,
@@ -215,4 +229,79 @@ export function useMutation<T, TData = unknown>(
     ...state,
     mutate,
   };
+}
+
+// Server component data fetching function
+export async function fetchServerData<T>(
+  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  endpoint: string,
+  options?: {
+    revalidate?: number;
+    requiresAuth?: boolean;
+  },
+): Promise<ApiResponse<T>> {
+  try {
+    return await apiInstance.get<T>(endpoint, options);
+  } catch (error) {
+    return {
+      data: null as T,
+      error: {
+        status: 500,
+        code: 'SERVER_FETCH_ERROR',
+        message: error instanceof Error ? error.message : 'An error occurred during server fetch',
+      },
+    };
+  }
+}
+
+// Memoized cache for suspense fetching
+const cache = new Map();
+
+function suspenseFetcher<T>(
+  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  endpoint: string,
+  options: { requiresAuth?: boolean; revalidate?: number; cacheStrategy?: RequestCache } = {},
+): T {
+  const key = JSON.stringify({ endpoint });
+
+  if (cache.has(key)) {
+    const result = cache.get(key);
+    if (result.status === 'pending') {
+      throw result.promise;
+    }
+    if (result.status === 'error') {
+      logger.error('[Suspense Error]', result.error);
+      throw result.error;
+    }
+    return result.data;
+  }
+
+  const promise = apiInstance
+    .get<T>(endpoint, options)
+    .then(response => {
+      if (response.error) throw new Error(response.error.message || 'Unknown API error');
+      cache.set(key, { status: 'success', data: response.data });
+      return response.data;
+    })
+    .catch(error => {
+      const wrappedError = new Error(error.message || 'Failed to fetch data');
+      wrappedError.stack = error.stack;
+      cache.set(key, { status: 'error', error: wrappedError });
+      throw wrappedError;
+    });
+
+  cache.set(key, { status: 'pending', promise });
+  throw promise;
+}
+
+export function useSuspenseQuery<T>(
+  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  endpoint: string,
+  options?: {
+    requiresAuth?: boolean;
+    cacheStrategy?: RequestCache;
+    revalidate?: number;
+  },
+): T {
+  return suspenseFetcher<T>(apiInstance, endpoint, options || {});
 }

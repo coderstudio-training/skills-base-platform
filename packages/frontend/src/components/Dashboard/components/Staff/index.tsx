@@ -9,15 +9,8 @@ import Overview from './Overview';
 import SkillsView from './SkillsView';
 
 export default function StaffDashboard() {
-  const {
-    skillsData,
-    activeTab,
-    setActiveTab,
-    selectedCategory,
-    setSelectedCategory,
-    loading,
-    error,
-  } = useStaffData();
+  const { skillsData, activeTab, setActiveTab, selectedCategory, setSelectedCategory } =
+    useStaffData();
 
   return (
     <div className="container mx-auto p-4 max-w-[80%]">
@@ -35,8 +28,6 @@ export default function StaffDashboard() {
             skillsData={skillsData}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
-            loading={loading}
-            error={error}
           />
         </TabsContent>
 
@@ -45,8 +36,6 @@ export default function StaffDashboard() {
             skillsData={skillsData}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
-            loading={loading}
-            error={error}
           />
         </TabsContent>
         <TabsContent value="growth-plan">
