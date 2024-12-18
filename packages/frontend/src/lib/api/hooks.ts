@@ -6,6 +6,7 @@ import { authConfig, rolePermissions } from '@/lib/api/config';
 import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
+import { logger } from '../utils';
 
 // Create a custom hook for auth state
 export function useAuth() {
@@ -215,4 +216,78 @@ export function useMutation<T, TData = unknown>(
     ...state,
     mutate,
   };
+}
+
+// Server component data fetching function
+export async function fetchServerData<T>(
+  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  endpoint: string,
+  options?: {
+    revalidate?: number;
+    requiresAuth?: boolean;
+  },
+): Promise<ApiResponse<T>> {
+  try {
+    return await apiInstance.get<T>(endpoint, options);
+  } catch (error) {
+    return {
+      data: null as T,
+      error: {
+        status: 500,
+        code: 'SERVER_FETCH_ERROR',
+        message: error instanceof Error ? error.message : 'An error occurred during server fetch',
+      },
+    };
+  }
+}
+
+const cache = new Map();
+
+function suspenseFetcher<T>(
+  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  endpoint: string,
+  options: { requiresAuth?: boolean; revalidate?: number; cacheStrategy?: RequestCache } = {},
+): T {
+  const key = JSON.stringify({ endpoint });
+
+  if (cache.has(key)) {
+    const result = cache.get(key);
+    if (result.status === 'pending') {
+      throw result.promise; // Suspend rendering until promise resolves
+    }
+    if (result.status === 'error') {
+      logger.error('[Suspense Error]', result.error);
+      throw result.error; // Ensure a meaningful error
+    }
+    return result.data;
+  }
+
+  const promise = apiInstance
+    .get<T>(endpoint, options)
+    .then(response => {
+      if (response.error) throw new Error(response.error.message || 'Unknown API error');
+      cache.set(key, { status: 'success', data: response.data });
+      return response.data;
+    })
+    .catch(error => {
+      const wrappedError = new Error(error.message || 'Failed to fetch data');
+      wrappedError.stack = error.stack; // Preserve the stack trace
+      cache.set(key, { status: 'error', error: wrappedError });
+      throw wrappedError;
+    });
+
+  cache.set(key, { status: 'pending', promise });
+  throw promise; // Suspend rendering
+}
+
+export function useSuspenseQuery<T>(
+  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  endpoint: string,
+  options?: {
+    requiresAuth?: boolean;
+    cacheStrategy?: RequestCache;
+    revalidate?: number;
+  },
+): T {
+  return suspenseFetcher<T>(apiInstance, endpoint, options || {});
 }

@@ -1,7 +1,5 @@
-import ErrorPage from '@/components/Dashboard/components/Misc/ErrorPage';
+import ErrorPage from '@/components/error/ErrorPage';
 
 export default function DefaultErrorPage() {
-  // return <ErrorPage statusCode="Error" message="An unexpected error occurred." />;
-
-  return <ErrorPage />;
+  return <ErrorPage statusCode={'Error'} message="An unexpected error occurred." />;
 }

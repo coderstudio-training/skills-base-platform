@@ -3,24 +3,16 @@ import { userApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
 
 export function useTeamData(managerName: string) {
-  const {
-    data,
-    error = null,
-    isLoading: loading,
-    refetch,
-  } = useQuery<TeamMember[]>(
+  const { data } = useQuery<TeamMember[]>(
     userApi,
     `/employees/manager/${encodeURIComponent(managerName || '')}`,
     {
-      enabled: !!managerName,
-      cacheStrategy: 'force-cache',
+      requiresAuth: true,
+      revalidate: 300,
     },
   );
 
   return {
     teamMembers: data || [],
-    loading,
-    error,
-    refetchTeam: refetch,
   };
 }

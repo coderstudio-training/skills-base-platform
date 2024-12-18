@@ -1,6 +1,6 @@
 // hooks/useStaffData.ts
 import { skillsApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useSuspenseQuery } from '@/lib/api/hooks';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { StaffData, StaffSkills, UserMetrics } from '../types';
@@ -12,29 +12,19 @@ export function useStaffData(email: string) {
   );
   const { data: session, status } = useSession();
 
-  const {
-    data: metrics,
-    error: metricsError,
-    isLoading: metricsLoading,
-  } = useQuery<UserMetrics>(
+  const metrics = useSuspenseQuery<UserMetrics>(
     skillsApi,
     email ? `skills-matrix/user/summary?email=${encodeURIComponent(email)}` : '',
     {
-      enabled: !!email,
       requiresAuth: true,
       cacheStrategy: 'force-cache',
     },
   );
 
-  const {
-    data: skills,
-    error: skillsError,
-    isLoading: skillsLoading,
-  } = useQuery<StaffSkills>(
+  const skills = useSuspenseQuery<StaffSkills>(
     skillsApi,
     email ? `skills-matrix/user?email=${encodeURIComponent(email)}` : '',
     {
-      enabled: !!email,
       requiresAuth: true,
       cacheStrategy: 'force-cache',
     },
@@ -65,7 +55,5 @@ export function useStaffData(email: string) {
     setActiveTab,
     selectedCategory,
     setSelectedCategory,
-    error: metricsError || skillsError,
-    loading: metricsLoading || skillsLoading,
   };
 }

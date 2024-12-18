@@ -11,16 +11,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Settings } from 'lucide-react';
 import { useAdminDashboardHeader } from '../../hooks/useAdminDashboardHeader';
+import { useLogout } from '../../hooks/useLogout';
 import { ReportManager } from '../Reports/ReportManager';
 import { NotificationCenter } from './AdminNotifications';
 export default function AdminDashboardHeader() {
-  const { lastSyncTime, handleLastNotificationDate, handleLogout } = useAdminDashboardHeader();
+  const { lastSyncTime, handleLastNotificationDate } = useAdminDashboardHeader();
+  const { handleLogout } = useLogout();
 
   return (
     <header className="bg-white border-b">
       <div className="h-16 max-w-7xl mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-gray-800">Admin Dashboard v2</h1>
+          <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
           <Badge variant="secondary">{lastSyncTime}</Badge>
         </div>
         <div className="flex items-center space-x-4">
