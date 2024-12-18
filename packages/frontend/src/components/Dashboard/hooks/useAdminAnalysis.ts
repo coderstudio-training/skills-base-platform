@@ -21,6 +21,16 @@ export function useAdminAnalysis() {
     cacheStrategy: 'force-cache',
   });
 
+  // Add debug logging to help identify where the error might be occurring
+  console.log({
+    analysisData,
+    distributionsData,
+    analysisError,
+    distributionsError,
+    analysisLoading,
+    distributionsLoading,
+  });
+
   return {
     analysisData,
     distributionsData,
