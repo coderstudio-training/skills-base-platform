@@ -7,8 +7,12 @@ import { Card, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const Training = () => {
-  const { teamData, loading, error } = useTeamRecommendations();
+interface TrainingProps {
+  name: string;
+}
+
+function Training(user: TrainingProps) {
+  const { teamData, loading, error } = useTeamRecommendations(user.name);
 
   return (
     <BaseCard
@@ -101,6 +105,6 @@ const Training = () => {
       )}
     </BaseCard>
   );
-};
+}
 
 export default Training;

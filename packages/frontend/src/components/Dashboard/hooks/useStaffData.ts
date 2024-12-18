@@ -5,13 +5,12 @@ import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { StaffData, StaffSkills, UserMetrics } from '../types';
 
-export function useStaffData() {
+export function useStaffData(email: string) {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedCategory, setSelectedCategory] = useState<'Technical Skills' | 'Soft Skills'>(
     'Technical Skills',
   );
   const { data: session, status } = useSession();
-  const email = session?.user?.email;
 
   const {
     data: metrics,

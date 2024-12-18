@@ -15,13 +15,15 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
+import { DashboardProps } from '../../types';
 import { IndividualPerformanceCard } from '../Cards/IndividualPerformanceCard';
 import SkillsView from './SkillsView';
 import Training from './Training';
 
-export default function ManagerDashboard() {
+export default function ManagerDashboard(user: DashboardProps) {
+  const managerName = user.name;
   const [activeTab, setActiveTab] = useState('overview');
-  const { session, teamMembers, loading, error } = useTeamData();
+  const { teamMembers, loading, error } = useTeamData(managerName);
 
   return (
     <div className="container mx-auto p-4 max-w-[80%]">
@@ -46,11 +48,11 @@ export default function ManagerDashboard() {
         </TabsContent>
 
         <TabsContent value="skills">
-          <SkillsView name={session?.user?.name || ''} />
+          <SkillsView name={managerName || ''} />
         </TabsContent>
 
         <TabsContent value="training">
-          <Training />
+          <Training name={managerName || ''} />
         </TabsContent>
 
         <TabsContent value="evaluation">

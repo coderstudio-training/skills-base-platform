@@ -1,12 +1,8 @@
 import { TeamMember } from '@/components/Dashboard/types';
 import { userApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
-import { useSession } from 'next-auth/react';
 
-export function useTeamData() {
-  const { data: session } = useSession();
-  const managerName = session?.user?.name;
-
+export function useTeamData(managerName: string) {
   const {
     data,
     error = null,
@@ -22,7 +18,6 @@ export function useTeamData() {
   );
 
   return {
-    session,
     teamMembers: data || [],
     loading,
     error,

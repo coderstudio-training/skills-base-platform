@@ -1,5 +1,5 @@
 import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
-import { ApiError } from '@/lib/api/types';
+import { ApiError, Roles } from '@/lib/api/types';
 import { IBaseTaxonomy } from '@/lib/skills/types';
 import { LucideIcon } from 'lucide-react';
 import { Dispatch, SetStateAction } from 'react';
@@ -622,4 +622,14 @@ export interface TaxonomyResponse {
       [key: string]: string[];
     };
   };
+}
+
+// Props
+export interface DashboardProps {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | undefined;
+  accessToken: string;
+  role: Roles;
 }

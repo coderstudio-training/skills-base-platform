@@ -4,10 +4,12 @@ import { isTokenExpired } from '@/lib/api/auth';
 import { learningApi, skillsApi, userApi } from '@/lib/api/client';
 import { authConfig, rolePermissions } from '@/lib/api/config';
 import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
-import { getSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
 
+// Create a custom hook for auth state
 export function useAuth() {
+  const { data: session, status } = useSession();
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
@@ -15,37 +17,36 @@ export function useAuth() {
   });
 
   useEffect(() => {
-    const fetchAuthState = async () => {
-      const session = await getSession();
-      if (session && session.user?.accessToken) {
+    if (status === 'authenticated' && session?.user?.accessToken) {
+      const checkToken = async () => {
         const tokenExpired = await isTokenExpired(session.user.accessToken);
-
-        if (tokenExpired) {
-          console.warn('Access token is expired. Logging out...');
-          await signOut({ callbackUrl: '/' });
-          return;
+        if (!tokenExpired) {
+          setAuthState({
+            isAuthenticated: true,
+            user: session.user,
+            role: session.user.role ? [session.user.role] : [],
+          });
         }
+      };
+      checkToken();
+    }
+  }, [session, status]);
 
-        setAuthState({
-          isAuthenticated: true,
-          user: session.user || null,
-          role: session.user ? [session.user.role] : [],
-        });
-      }
-    };
+  const hasPermission = useCallback(
+    (permission: Permission) => {
+      if (!authState.role.length) return false;
+      return authState.role.some(role => rolePermissions[role][permission]);
+    },
+    [authState.role],
+  );
 
-    fetchAuthState();
-  }, []);
-
-  const hasPermission = async (permission: Permission) => {
-    if (!authState.role.length) return false;
-    return authState.role.some(role => rolePermissions[role][permission]);
-  };
-
-  const canAccessRoutes = async (route: string) => {
-    if (!authState.role.length) return false;
-    return authState.role.some(role => authConfig.routes[role].includes(route));
-  };
+  const canAccessRoutes = useCallback(
+    (route: string) => {
+      if (!authState.role.length) return false;
+      return authState.role.some(role => authConfig.routes[role].includes(route));
+    },
+    [authState.role],
+  );
 
   return {
     ...authState,
@@ -55,12 +56,6 @@ export function useAuth() {
 }
 
 type FetchState<T> = {
-  data: T | null;
-  error: ApiError | null;
-  isLoading: boolean;
-};
-
-type MutationState<T> = {
   data: T | null;
   error: ApiError | null;
   isLoading: boolean;
@@ -133,7 +128,7 @@ export function useQuery<T>(
 
   return {
     ...state,
-    refetch: fetchData, // allows for more granularized control of data fetching
+    refetch: fetchData,
   };
 }
 
@@ -146,7 +141,11 @@ export function useMutation<T, TData = unknown>(
     requiresAuth?: boolean;
   },
 ) {
-  const [state, setState] = useState<MutationState<T>>({
+  const [state, setState] = useState<{
+    data: T | null;
+    error: ApiError | null;
+    isLoading: boolean;
+  }>({
     data: null,
     error: null,
     isLoading: false,
@@ -154,7 +153,6 @@ export function useMutation<T, TData = unknown>(
 
   const { isAuthenticated } = useAuth();
 
-  // function to initiate mutation (calling the Api)
   const mutate = async (data?: TData): Promise<ApiResponse<T>> => {
     if (options?.requiresAuth !== false && !isAuthenticated) {
       const error = {
@@ -217,27 +215,4 @@ export function useMutation<T, TData = unknown>(
     ...state,
     mutate,
   };
-}
-
-// Server component data fetching function
-export async function fetchServerData<T>(
-  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
-  endpoint: string,
-  options?: {
-    revalidate?: number;
-    requiresAuth?: boolean;
-  },
-): Promise<ApiResponse<T>> {
-  try {
-    return await apiInstance.get<T>(endpoint, options);
-  } catch (error) {
-    return {
-      data: null as T,
-      error: {
-        status: 500,
-        code: 'SERVER_FETCH_ERROR',
-        message: error instanceof Error ? error.message : 'An error occurred during server fetch',
-      },
-    };
-  }
 }

@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { MemberRecommendations, RecommendationResponse, TeamMember } from '../types';
 import { useTeamData } from './useTeamData';
 
-export function useTeamRecommendations() {
-  const { teamMembers, loading: teamLoading, error: teamError } = useTeamData();
+export function useTeamRecommendations(managerName: string) {
+  const { teamMembers, loading: teamLoading, error: teamError } = useTeamData(managerName);
   const [teamData, setTeamData] = useState<
     Array<TeamMember & { recommendations?: MemberRecommendations }>
   >([]);

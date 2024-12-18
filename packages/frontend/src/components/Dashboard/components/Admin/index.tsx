@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { useTSCManager } from '../../hooks/useTSCManager';
 import TaxonomyManager from '../TSC';
-import AnalysisTestView from './AnalysisTestView';
+import AnalysisView from './AnalysisView';
 
 export default function AdminDashboard() {
   const {
@@ -139,7 +139,7 @@ export default function AdminDashboard() {
 
           {/* Metrics */}
           <TabsContent value="metrics">
-            <AnalysisTestView />
+            <AnalysisView />
           </TabsContent>
 
           {/* Learning */}

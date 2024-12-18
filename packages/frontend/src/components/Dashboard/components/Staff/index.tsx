@@ -4,11 +4,13 @@
 import { UserHeader } from '@/components/Dashboard/components/Header/UserHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStaffData } from '../../hooks/useStaffData';
+import { DashboardProps } from '../../types';
 import GrowthPlan from './GrowthPlan';
 import Overview from './Overview';
 import SkillsView from './SkillsView';
 
-export default function StaffDashboard() {
+export default function StaffDashboard(user: DashboardProps) {
+  const email = user.email;
   const {
     skillsData,
     activeTab,
@@ -17,7 +19,7 @@ export default function StaffDashboard() {
     setSelectedCategory,
     loading,
     error,
-  } = useStaffData();
+  } = useStaffData(email);
 
   return (
     <div className="container mx-auto p-4 max-w-[80%]">
@@ -50,7 +52,7 @@ export default function StaffDashboard() {
           />
         </TabsContent>
         <TabsContent value="growth-plan">
-          <GrowthPlan />
+          <GrowthPlan email={email} />
         </TabsContent>
       </Tabs>
     </div>

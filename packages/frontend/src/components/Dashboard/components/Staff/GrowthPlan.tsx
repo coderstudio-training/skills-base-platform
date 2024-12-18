@@ -6,7 +6,11 @@ import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { X } from 'lucide-react';
 import BaseCard from '../Cards/BaseCard';
 
-function GrowthPlan() {
+interface GrowthPlanProps {
+  email: string;
+}
+
+function GrowthPlan(user: GrowthPlanProps) {
   const {
     recommendations,
     loading,
@@ -15,7 +19,7 @@ function GrowthPlan() {
     isDialogOpen,
     setIsDialogOpen,
     handleCourseClick,
-  } = useRecommendations();
+  } = useRecommendations(user.email);
 
   return (
     <>

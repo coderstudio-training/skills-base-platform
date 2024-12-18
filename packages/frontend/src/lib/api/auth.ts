@@ -295,4 +295,6 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
       redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
     }
   }
+
+  return session;
 }
