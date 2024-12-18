@@ -4,11 +4,10 @@ import { isTokenExpired } from '@/lib/api/auth';
 import { learningApi, skillsApi, userApi } from '@/lib/api/client';
 import { authConfig, rolePermissions } from '@/lib/api/config';
 import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
 import { logger } from '../utils';
 
-// Create a custom hook for auth state
 export function useAuth() {
   const { data: session, status } = useSession();
   const [authState, setAuthState] = useState<AuthState>({
@@ -21,12 +20,11 @@ export function useAuth() {
     const checkAuthState = async () => {
       if (status === 'authenticated' && session?.user?.accessToken) {
         const tokenExpired = await isTokenExpired(session.user.accessToken);
-        if (!tokenExpired) {
-          setAuthState({
-            isAuthenticated: true,
-            user: session.user,
-            role: session.user.role ? [session.user.role] : [],
-          });
+
+        if (tokenExpired) {
+          logger.warn('Access token is expired. Logging out...');
+          await signOut({ callbackUrl: '/' });
+          return;
         }
 
         setAuthState({
@@ -75,7 +73,12 @@ type FetchState<T> = {
   isLoading: boolean;
 };
 
-// Hook for fetching data in client components
+type MutationState<T> = {
+  data: T | null;
+  error: ApiError | null;
+  isLoading: boolean;
+};
+
 export function useQuery<T>(
   apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
   endpoint: string,
@@ -155,11 +158,7 @@ export function useMutation<T, TData = unknown>(
     requiresAuth?: boolean;
   },
 ) {
-  const [state, setState] = useState<{
-    data: T | null;
-    error: ApiError | null;
-    isLoading: boolean;
-  }>({
+  const [state, setState] = useState<MutationState<T>>({
     data: null,
     error: null,
     isLoading: false,
@@ -231,7 +230,6 @@ export function useMutation<T, TData = unknown>(
   };
 }
 
-// Server component data fetching function
 export async function fetchServerData<T>(
   apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
   endpoint: string,
@@ -254,7 +252,6 @@ export async function fetchServerData<T>(
   }
 }
 
-// Memoized cache for suspense fetching
 const cache = new Map();
 
 function suspenseFetcher<T>(
