@@ -1,12 +1,9 @@
 import useTeamSkills from '../../hooks/useTeamSkills';
+import { TabViewProps } from '../../types';
 import StaffSkillsCard from '../Cards/StaffSkillsCard';
 
-interface SkillsViewProps {
-  name: string;
-}
-
-export default function SkillsView({ name }: SkillsViewProps) {
-  const { teamSkills, error, loading } = useTeamSkills(name);
+export default function SkillsView({ name }: TabViewProps) {
+  const { teamSkills, error, loading } = useTeamSkills(name || '');
 
   // early return for loading state
   if (loading) {

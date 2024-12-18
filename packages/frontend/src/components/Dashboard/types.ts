@@ -639,3 +639,16 @@ export interface DashboardProps {
   accessToken: string;
   role: Roles;
 }
+
+export interface TabViewProps {
+  email?: string;
+  name?: string;
+}
+
+export interface StaffSkillsProps {
+  skillsData: StaffData | null;
+  selectedCategory: 'Technical Skills' | 'Soft Skills';
+  onCategoryChange: (category: 'Technical Skills' | 'Soft Skills') => void;
+  loading?: boolean;
+  error?: ApiError | null;
+}

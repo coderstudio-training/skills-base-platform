@@ -1,26 +1,17 @@
 // components/Staff/Overview.tsx
 'use client';
 
-import { ApiError } from '@/lib/api/types';
 import { Blocks, BrainCircuit, User2 } from 'lucide-react';
-import { StaffData } from '../../types';
+import { StaffSkillsProps } from '../../types';
 import { MetricCard } from '../Cards/MetricCard';
 import { SkillsOverviewCard } from '../Cards/SkillsOverviewCard';
-
-interface OverviewProps {
-  skillsData: StaffData | null;
-  selectedCategory: 'Technical Skills' | 'Soft Skills';
-  onCategoryChange: (category: 'Technical Skills' | 'Soft Skills') => void;
-  loading?: boolean;
-  error?: ApiError | null;
-}
 
 export default function Overview({
   skillsData,
   selectedCategory,
   onCategoryChange,
   error,
-}: OverviewProps) {
+}: StaffSkillsProps) {
   const safeMetrics = {
     softSkillsAverage: skillsData?.metrics?.softSkills.averageRating ?? 0,
     technicalSkillsAverage: skillsData?.metrics?.technicalSkills.averageRating ?? 0,
