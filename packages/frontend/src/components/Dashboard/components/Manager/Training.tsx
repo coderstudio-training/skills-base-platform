@@ -5,13 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { TabViewProps } from '../../types';
 
-interface TrainingProps {
-  name: string;
-}
-
-function Training(user: TrainingProps) {
-  const { teamData } = useTeamRecommendations(user.name);
+function Training(user: TabViewProps) {
+  const { teamData } = useTeamRecommendations(user.name || '');
 
   return (
     <BaseCard
