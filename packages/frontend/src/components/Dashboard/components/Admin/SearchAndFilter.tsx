@@ -26,7 +26,7 @@ export function SearchAndFilter({
 
   return (
     <div className="flex gap-4 mb-6">
-      <div className="flex-1 flex gap-2">
+      <div className="flex-1 flex flex-col sm:flex-row gap-2">
         <Select
           value={selectedBusinessUnit}
           onValueChange={onBusinessUnitChange}
@@ -64,7 +64,7 @@ export function SearchAndFilter({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-start sm:items-center gap-2">
         <Button variant="outline" size="icon" disabled={isLoading}>
           <Filter className="h-4 w-4" />
         </Button>

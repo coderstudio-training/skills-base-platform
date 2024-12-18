@@ -9,27 +9,38 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Settings } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { useAdminDashboardHeader } from '../../hooks/useAdminDashboardHeader';
 import { useLogout } from '../../hooks/useLogout';
 import { ReportManager } from '../Reports/ReportManager';
 import { NotificationCenter } from './AdminNotifications';
 export default function AdminDashboardHeader() {
-  const { lastSyncTime, handleLastNotificationDate } = useAdminDashboardHeader();
+  const { lastSyncTime, handleLastNotificationDate, handleThemeChange, preference } =
+    useAdminDashboardHeader();
   const { handleLogout } = useLogout();
 
   return (
-    <header className="bg-white border-b">
-      <div className="h-16 max-w-7xl mx-auto px-4 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
+    <header className="bg-background border-b w-screen overflow-x-hidden">
+      <div className="h-auto sm:h-16 max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+        {/* Left section */}
+        <div className="flex flex-col p-1 sm:p-0 sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200">
+            Admin Dashboard
+          </h1>
           <Badge variant="secondary">{lastSyncTime}</Badge>
         </div>
-        <div className="flex items-center space-x-4">
+
+        {/* Right section */}
+        <div className="flex items-center space-x-2 p-2 sm:p-0 sm:space-x-4">
           <ReportManager />
           <NotificationCenter onLastNotificationDateChange={handleLastNotificationDate} />
-          <Button variant="ghost" size="icon">
-            <Settings className="h-5 w-5" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleThemeChange}
+            className="dark:hover:bg-slate-600 dark:bg-slate"
+          >
+            {preference === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

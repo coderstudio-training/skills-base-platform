@@ -7,11 +7,11 @@ import { AdminMetricCards } from '@/components/Dashboard/components/Cards/AdminM
 import { BusinessUnitDistribution } from '@/components/Dashboard/components/Cards/BusinessUnitDistributionCard';
 import { SkillGapOverview } from '@/components/Dashboard/components/Cards/SkillGapOverviewCard';
 import { TopPerformers } from '@/components/Dashboard/components/Cards/TopPerformersCard';
-import AdminDashboardHeader from '@/components/Dashboard/components/Header/AdminHeader';
 import { useAdminData } from '@/components/Dashboard/hooks/useAdminData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { useTSCManager } from '../../hooks/useTSCManager';
+import AdminDashboardHeader from '../Header/AdminHeader';
 import TaxonomyManager from '../TSC';
 import AnalysisView from './AnalysisView';
 
@@ -50,9 +50,8 @@ export default function AdminDashboard() {
   const { data: tscData } = useTSCManager();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="md:min-h-screen bg-gray-50 dark:bg-gray-950">
       <AdminDashboardHeader />
-
       <main className="max-w-7xl mx-auto px-4 py-8">
         <SearchAndFilter
           selectedBusinessUnit={selectedBusinessUnit}
@@ -64,14 +63,14 @@ export default function AdminDashboard() {
 
         <AdminMetricCards stats={stats} />
 
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid md:grid-cols-3 gap-4 mb-6 ">
           <TopPerformers rankings={topPerformers} />
           <SkillGapOverview skillGaps={skillGaps} />
           <BusinessUnitDistribution businessUnits={businessUnits} />
         </div>
 
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList>
+          <TabsList className="hidden lg:inline-flex">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Users
@@ -88,19 +87,56 @@ export default function AdminDashboard() {
               <Network className="h-4 w-4" />
               Organization
             </TabsTrigger>
-            <TabsTrigger value="metrics" className="flex items-center gap-2">
+            <TabsTrigger value="metrics" className="flex  items-center gap-2">
               <BarChart2 className="h-4 w-4" />
               Metrics
             </TabsTrigger>
-            <TabsTrigger value="learning" className="flex items-center gap-2">
+            <TabsTrigger value="learning" className="flex  items-center gap-2">
               <BookOpen className="h-4 w-4" />
               Learning
             </TabsTrigger>
-            <TabsTrigger value="taxonomy" className="flex items-center gap-2">
+            <TabsTrigger value="taxonomy" className="flex  items-center gap-2">
               <BookOpen className="h-4 w-4" />
               Taxonomy
             </TabsTrigger>
           </TabsList>
+
+          <div className="lg:hidden rounded-md bg-muted">
+            <TabsList className="grid grid-cols-3 gap-2 w-full">
+              <TabsTrigger value="users" className="flex items-center gap-2">
+                <Users className="h-4 w-4 hidden sm:block" />
+                Users
+              </TabsTrigger>
+              <TabsTrigger value="skills" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 hidden sm:block" />
+                Skills
+              </TabsTrigger>
+              <TabsTrigger value="required-skills" className="flex items-center gap-2">
+                <Award className="h-4 w-4 hidden sm:block" />
+                Required Skills
+              </TabsTrigger>
+            </TabsList>
+            <TabsList className="grid grid-cols-3 gap-2 w-full">
+              <TabsTrigger value="organization" className="flex items-center gap-2">
+                <Network className="h-4 w-4 hidden sm:block" />
+                Organization
+              </TabsTrigger>
+              <TabsTrigger value="metrics" className="flex  items-center gap-2">
+                <BarChart2 className="h-4 w-4 hidden sm:block" />
+                Metrics
+              </TabsTrigger>
+              <TabsTrigger value="learning" className="flex  items-center gap-2">
+                <BookOpen className="h-4 w-4 hidden sm:block" />
+                Learning
+              </TabsTrigger>
+            </TabsList>
+            <TabsList className="grid grid-cols-3 gap-2 w-full">
+              <TabsTrigger value="taxonomy" className="flex  items-center gap-2">
+                <BookOpen className="h-4 w-4 hidden sm:block" />
+                Taxonomy
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="users">
             <UserDirectory
