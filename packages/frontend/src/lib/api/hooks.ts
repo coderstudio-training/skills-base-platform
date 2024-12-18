@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from 'react';
 interface CacheOptions {
   requiresAuth?: boolean;
   cacheStrategy?: RequestCache;
+  revalidate?: number;
 }
 
 interface CacheEntry<T> {
@@ -27,6 +28,7 @@ function getCacheKey(endpoint: string, options?: CacheOptions): string {
     options: {
       requiresAuth: options?.requiresAuth,
       cacheStrategy: options?.cacheStrategy,
+      revalidate: options?.revalidate,
     },
   });
 }
@@ -109,6 +111,7 @@ export function useQuery<T>(
     enabled?: boolean;
     requiresAuth?: boolean;
     cacheStrategy?: RequestCache;
+    revalidate?: number;
   },
 ) {
   const [state, setState] = useState<FetchState<T>>({
