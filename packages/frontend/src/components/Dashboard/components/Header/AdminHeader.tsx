@@ -11,12 +11,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Moon, Sun } from 'lucide-react';
 import { useAdminDashboardHeader } from '../../hooks/useAdminDashboardHeader';
+import useDarkTheme from '../../hooks/useDarkTheme';
 import { useLogout } from '../../hooks/useLogout';
 import { ReportManager } from '../Reports/ReportManager';
 import { NotificationCenter } from './AdminNotifications';
 export default function AdminDashboardHeader() {
-  const { lastSyncTime, handleLastNotificationDate, handleThemeChange, preference } =
-    useAdminDashboardHeader();
+  const { lastSyncTime, handleLastNotificationDate } = useAdminDashboardHeader();
+  const { preference, handleThemeChange } = useDarkTheme();
   const { handleLogout } = useLogout();
 
   return (

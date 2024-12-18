@@ -3,12 +3,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getInitials } from '@/lib/utils/string-utils';
-import { LogOut } from 'lucide-react';
+import { LogOut, Moon, Sun } from 'lucide-react';
+import useDarkTheme from '../../hooks/useDarkTheme';
 import { useLogout } from '../../hooks/useLogout';
 
 export function UserHeader() {
   const { userProfile, isManager, fullName } = useUserProfile();
-
+  const { preference, handleThemeChange } = useDarkTheme();
   const { handleLogout } = useLogout();
 
   return (
@@ -44,6 +45,14 @@ export function UserHeader() {
 
         {/* Right Section */}
         <div className="flex items-center space-x-2 sm:space-y-0 sm:space-x-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleThemeChange}
+            className="dark:hover:bg-slate-600 dark:bg-slate"
+          >
+            {preference === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          </Button>
           <Button>{isManager ? 'Team Settings' : 'Update Profile'}</Button>
           <Button onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />

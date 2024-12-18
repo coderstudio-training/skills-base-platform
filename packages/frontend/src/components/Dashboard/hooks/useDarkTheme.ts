@@ -12,5 +12,12 @@ export default function useDarkTheme() {
     localStorage.setItem('theme', theme);
   }, [theme, preference]);
 
-  return [preference, setTheme] as const;
+  const handleThemeChange = () => {
+    setTheme(preference);
+  };
+
+  return {
+    preference,
+    handleThemeChange,
+  };
 }
