@@ -13,7 +13,6 @@ export default function useTeamSkills(name: string) {
     {
       requiresAuth: true,
       cacheStrategy: 'force-cache',
-      // revalidate: 100
     },
   );
 
