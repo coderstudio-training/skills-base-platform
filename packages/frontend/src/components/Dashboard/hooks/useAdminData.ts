@@ -47,7 +47,7 @@ export function useAdminData() {
     isLoading: employeesLoading,
     error: employeesError,
   } = useQuery<EmployeesResponse>(userApi, `${endpoint}?${queryParams}`, {
-    revalidate: 300,
+    cacheStrategy: 'force-cache',
     requiresAuth: true,
   });
 
@@ -56,29 +56,33 @@ export function useAdminData() {
     userApi,
     '/employees/business-units',
     {
-      revalidate: 300,
+      cacheStrategy: 'force-cache',
       requiresAuth: true,
     },
   );
 
   // Stats query
   const statsData = useSuspenseQuery<EmployeeStats>(userApi, '/employees/stats', {
-    revalidate: 300,
+    cacheStrategy: 'force-cache',
     requiresAuth: true,
   });
 
   // Skill gaps query
-  const skillGapsData = useSuspenseQuery<SkillGapsResponse>(skillsApi, '/api/skills/analytics', {
-    revalidate: 300,
-    requiresAuth: true,
-  });
+  const skillGapsData = useSuspenseQuery<SkillGapsResponse>(
+    skillsApi,
+    '/skills-matrix/admin/analysis',
+    {
+      cacheStrategy: 'force-cache',
+      requiresAuth: true,
+    },
+  );
 
   // Top performers query
   const topPerformersData = useSuspenseQuery<TopPerformersResponse>(
     skillsApi,
     '/skills-matrix/rankings',
     {
-      revalidate: 300,
+      cacheStrategy: 'force-cache',
       requiresAuth: true,
     },
   );
@@ -126,7 +130,7 @@ export function useAdminData() {
     },
 
     // Skill gaps data
-    skillGaps: skillGapsData?.skillGaps || [],
+    skillGaps: skillGapsData?.capabilities.flatMap(cap => cap.skillGaps) || [],
 
     // Top performers data
     topPerformers: topPerformersData?.rankings.slice(0, 10) || [],

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
 import {
+  DatabaseModule,
   JwtStrategy,
   LoggingModule,
   MonitoringModule,
@@ -15,24 +15,7 @@ import { RecommendationService } from './courses/services/recommendation.service
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    // Primary MongoDB connection
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
-      }),
-      inject: [ConfigService],
-    }),
-    // Skills MongoDB connection
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_SKILLS_URI'),
-      }),
-      inject: [ConfigService],
-      connectionName: 'MONGODB_SKILLS_URI',
-    }),
-    // Configure Logging Module
+    DatabaseModule,
     LoggingModule.forRoot({
       serviceName: 'learning-service',
       environment: process.env.NODE_ENV,

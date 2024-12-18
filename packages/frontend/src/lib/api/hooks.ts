@@ -18,8 +18,8 @@ export function useAuth() {
   });
 
   useEffect(() => {
-    if (status === 'authenticated' && session?.user?.accessToken) {
-      const checkToken = async () => {
+    const checkAuthState = async () => {
+      if (status === 'authenticated' && session?.user?.accessToken) {
         const tokenExpired = await isTokenExpired(session.user.accessToken);
         if (!tokenExpired) {
           setAuthState({
@@ -28,9 +28,22 @@ export function useAuth() {
             role: session.user.role ? [session.user.role] : [],
           });
         }
-      };
-      checkToken();
-    }
+
+        setAuthState({
+          isAuthenticated: true,
+          user: session.user,
+          role: session.user.role ? [session.user.role] : [],
+        });
+      } else {
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+          role: [],
+        });
+      }
+    };
+
+    checkAuthState();
   }, [session, status]);
 
   const hasPermission = useCallback(
@@ -241,6 +254,7 @@ export async function fetchServerData<T>(
   }
 }
 
+// Memoized cache for suspense fetching
 const cache = new Map();
 
 function suspenseFetcher<T>(
@@ -253,11 +267,11 @@ function suspenseFetcher<T>(
   if (cache.has(key)) {
     const result = cache.get(key);
     if (result.status === 'pending') {
-      throw result.promise; // Suspend rendering until promise resolves
+      throw result.promise;
     }
     if (result.status === 'error') {
       logger.error('[Suspense Error]', result.error);
-      throw result.error; // Ensure a meaningful error
+      throw result.error;
     }
     return result.data;
   }
@@ -271,13 +285,13 @@ function suspenseFetcher<T>(
     })
     .catch(error => {
       const wrappedError = new Error(error.message || 'Failed to fetch data');
-      wrappedError.stack = error.stack; // Preserve the stack trace
+      wrappedError.stack = error.stack;
       cache.set(key, { status: 'error', error: wrappedError });
       throw wrappedError;
     });
 
   cache.set(key, { status: 'pending', promise });
-  throw promise; // Suspend rendering
+  throw promise;
 }
 
 export function useSuspenseQuery<T>(

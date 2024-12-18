@@ -8,7 +8,7 @@ export function useTeamData(managerName: string) {
     `/employees/manager/${encodeURIComponent(managerName || '')}`,
     {
       requiresAuth: true,
-      revalidate: 300,
+      cacheStrategy: 'force-cache',
     },
   );
 

@@ -17,7 +17,7 @@ export function useTeamRecommendations(managerName: string) {
     {
       enabled: teamMembers.length > 0 && !!teamMembers[0]?.email,
       requiresAuth: true,
-      revalidate: 300,
+      cacheStrategy: 'force-cache',
     },
   );
 
