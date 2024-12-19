@@ -22,8 +22,6 @@ export class CoursesService {
   private readonly logger = new Logger(CoursesService.name);
   // Maximum number of documents to process in a single batch
   private readonly BATCH_SIZE = 1000;
-  // Cache to store dynamically created Mongoose models
-  // private modelCache: Map<string, Model<Course>> = new Map();
 
   constructor(@InjectConnection() private readonly connection: Connection) {}
 

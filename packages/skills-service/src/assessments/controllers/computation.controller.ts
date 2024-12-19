@@ -13,7 +13,13 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
+import {
+  JwtAuthGuard,
+  RedisCache,
+  Roles,
+  RolesGuard,
+  UserRole,
+} from '@skills-base/shared';
 import { Request } from 'express';
 import { BulkRequiredSkillsDto } from '../dto/required-skills.dto';
 import { PerformanceService } from '../services/computation.service';
@@ -61,6 +67,10 @@ export class PerformanceController {
     status: 500,
     description: 'Internal server error while calculating performance',
   })
+  @RedisCache({
+    keyGenerator: (ctx) =>
+      `assessments:bulk-performance:${ctx.request.body.bu}`,
+  })
   async bulkCalculatePerformance(@Body() body: { bu: string }) {
     try {
       const { bu } = body;
@@ -102,6 +112,10 @@ export class PerformanceController {
   @ApiResponse({
     status: 500,
     description: 'Internal server error while retrieving skills',
+  })
+  @RedisCache({
+    keyGenerator: (ctx) =>
+      `assessments:required-skills:${ctx.request.query.capability}`,
   })
   async getRequiredSkillsByCapability(@Req() req: Request) {
     try {

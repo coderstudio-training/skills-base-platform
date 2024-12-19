@@ -20,11 +20,6 @@ export class RecommendationService {
   private readonly logger = new Logger(RecommendationService.name);
   private courseModel: Model<Course>;
   private readonly skillsServiceUrl: string;
-  private requiredSkillsCache = new Map<string, RequiredSkills>();
-  private readonly recommendationCache = new Map<
-    string,
-    RecommendationResponseDto
-  >();
 
   constructor(@InjectConnection() private readonly connection: Connection) {
     this.skillsServiceUrl =
@@ -41,13 +36,6 @@ export class RecommendationService {
     authHeader: string,
   ): Promise<RecommendationResponseDto> {
     try {
-      // Check if the recommendation is already cached
-      const cacheKey = `recommendation-${email}`;
-      if (this.recommendationCache.has(cacheKey)) {
-        this.logger.debug('Recommendation data found in cache');
-        return this.recommendationCache.get(cacheKey)!;
-      }
-
       // Fetch skill gap data
       const skillGapData = await this.fetchSkillGapData(email, authHeader);
 
@@ -83,7 +71,7 @@ export class RecommendationService {
         requiredSkills.requiredSkills,
       );
 
-      // Create the response object and cache it
+      // Create the response object
       const response: RecommendationResponseDto = {
         success: true,
         employeeName: skillGapData.name,
@@ -92,13 +80,9 @@ export class RecommendationService {
         generatedDate: new Date(),
       };
 
-      this.recommendationCache.set(cacheKey, response);
-      this.logger.debug('Recommendation data cached');
-
       return response;
     } catch (error: any) {
       this.logger.error(`Error getting recommendations: ${error.message}`);
-      this.invalidateCache();
       throw error;
     }
   }
@@ -129,15 +113,6 @@ export class RecommendationService {
     careerLevel: string,
     authHeader: string, // Add auth header parameter
   ): Promise<RequiredSkills | null> {
-    const cacheKey = `${careerLevel}-QA`;
-    if (this.requiredSkillsCache.has(cacheKey)) {
-      this.logger.debug(`Cache HIT: Required skills for ${careerLevel}`);
-      return this.requiredSkillsCache.get(cacheKey)!;
-    }
-    this.logger.debug(
-      `Cache MISS: Fetching required skills for ${careerLevel}`,
-    );
-
     try {
       const response = await fetch(
         `${this.skillsServiceUrl}/api/skills-assessments/required-skills?capability=QA`,
@@ -166,7 +141,6 @@ export class RecommendationService {
           requiredSkills: matchingSkills.requiredSkills,
         } as RequiredSkills;
 
-        this.requiredSkillsCache.set(cacheKey, requiredSkills);
         return requiredSkills;
       }
 
@@ -178,12 +152,6 @@ export class RecommendationService {
       this.logger.error(`Error fetching required skills: ${error.message}`);
       return null;
     }
-  }
-
-  public invalidateCache(): void {
-    this.requiredSkillsCache.clear();
-    this.recommendationCache.clear();
-    this.logger.debug('Required skills cache has been invalidated');
   }
 
   private async processSkillGaps(
