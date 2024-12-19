@@ -283,119 +283,214 @@ export class SkillsMatrixService {
       const [allAssessments, allRequiredSkills] = await Promise.all([
         this.connection
           .collection('Capability_gapAssessments')
-          .find({})
+          .find()
           .toArray(),
-        this.connection
-          .collection('capabilityRequiredSkills')
-          .find({})
-          .toArray(),
+        this.connection.collection('capabilityRequiredSkills').find().toArray(),
       ]);
 
-      // Group assessments by capability
-      const assessmentsByCapability = new Map();
-      const requiredSkillsByCapability = new Map();
-
-      allAssessments.forEach((assessment) => {
-        const capability = assessment.capability;
-        if (!assessmentsByCapability.has(capability)) {
-          assessmentsByCapability.set(capability, []);
-        }
-        assessmentsByCapability.get(capability).push(assessment);
-      });
-
-      allRequiredSkills.forEach((required) => {
-        requiredSkillsByCapability.set(required.capability, required);
-      });
-
-      // Get soft skills from cache
+      // Get soft skills from cache first
       const softSkills = (await this.cacheManager.get(
         CACHE_KEYS.SOFT_SKILLS,
       )) as any[];
       const softSkillTitles = new Set(
-        softSkills?.map((skill) => skill.title.toLowerCase()),
+        softSkills?.map((skill) => skill.title.toLowerCase()) || [],
       );
 
-      const capabilityAnalyses = Array.from(
-        assessmentsByCapability.entries(),
-      ).map(([capability, assessments]) => {
-        const skillsMap = new Map();
-        const requiredSkills =
-          requiredSkillsByCapability.get(capability)?.requiredSkills || {};
+      // Track career level distribution
+      const careerLevelCounts = new Map<string, number>();
 
-        assessments.forEach(
-          (assessment: {
-            skillAverages: any;
-            skillGaps: { [x: string]: number };
-          }) => {
-            Object.entries(assessment.skillAverages || {}).forEach(
-              ([skillName, average]) => {
-                const transformedName = Object.keys(
-                  transformToReadableKeys({ [skillName]: 0 }),
-                )[0];
+      // Track skills data by capability
+      const assessmentsByCapability = new Map<
+        string,
+        {
+          assessments: any[];
+          skillsMap: Map<
+            string,
+            {
+              totalAverage: number;
+              count: number;
+              byCareerLevel: Map<
+                string,
+                {
+                  totalAverage: number;
+                  count: number;
+                  requiredLevel: number;
+                }
+              >;
+            }
+          >;
+        }
+      >();
 
-                // Skip if soft skill using cached soft skills
-                if (softSkillTitles.has(transformedName.toLowerCase())) return;
+      // Initialize capability groups and count career levels
+      allAssessments.forEach((assessment) => {
+        const capability = assessment.capability;
+        const careerLevel = assessment.careerLevel;
 
-                const gap = assessment.skillGaps?.[skillName] ?? 0;
-                const required = requiredSkills[skillName] ?? 0;
-
-                const existing = skillsMap.get(transformedName) || {
-                  totalAverage: 0,
-                  count: 0,
-                  required,
-                  gap: 0,
-                };
-
-                existing.totalAverage += average as number;
-                existing.gap += gap as number;
-                existing.count += 1;
-                skillsMap.set(transformedName, existing);
-              },
-            );
-          },
+        // Track career level counts
+        careerLevelCounts.set(
+          careerLevel,
+          (careerLevelCounts.get(careerLevel) || 0) + 1,
         );
 
-        // Calculate metrics for each skill
-        const skills = Array.from(skillsMap.entries()).map(([name, data]) => ({
-          name,
-          prevalence: Number(
-            ((data.totalAverage / (data.count * 5)) * 100).toFixed(2),
-          ),
-          currentAvg: Number((data.totalAverage / data.count).toFixed(2)),
-          requiredLevel: data.required,
-          gap: Number((data.gap / data.count).toFixed(2)),
-        }));
+        if (!assessmentsByCapability.has(capability)) {
+          assessmentsByCapability.set(capability, {
+            assessments: [],
+            skillsMap: new Map(),
+          });
+        }
+        assessmentsByCapability.get(capability)!.assessments.push(assessment);
+      });
+
+      // Process assessments by capability
+      assessmentsByCapability.forEach((capabilityData) => {
+        const { assessments, skillsMap } = capabilityData;
+
+        assessments.forEach((assessment) => {
+          const careerLevel = assessment.careerLevel;
+
+          Object.entries(assessment.skillAverages || {}).forEach(
+            ([skillName, average]) => {
+              const transformedName = Object.keys(
+                transformToReadableKeys({ [skillName]: 0 }),
+              )[0];
+
+              // Skip if soft skill
+              if (softSkillTitles.has(transformedName.toLowerCase())) return;
+
+              const numericAverage = Number(average);
+
+              if (!skillsMap.has(transformedName)) {
+                skillsMap.set(transformedName, {
+                  totalAverage: 0,
+                  count: 0,
+                  byCareerLevel: new Map(),
+                });
+              }
+
+              const skillData = skillsMap.get(transformedName)!;
+
+              // Update overall metrics
+              skillData.totalAverage += numericAverage;
+              skillData.count += 1;
+
+              // Update career level specific metrics
+              if (!skillData.byCareerLevel.has(careerLevel)) {
+                skillData.byCareerLevel.set(careerLevel, {
+                  totalAverage: 0,
+                  count: 0,
+                  requiredLevel: 0,
+                });
+              }
+              const careerLevelData = skillData.byCareerLevel.get(careerLevel)!;
+              careerLevelData.totalAverage += numericAverage;
+              careerLevelData.count += 1;
+            },
+          );
+        });
+      });
+
+      // Calculate weighted required levels and process final metrics
+      const capabilityAnalyses = Array.from(
+        assessmentsByCapability.entries(),
+      ).map(([capability, data]) => {
+        const skillGaps = Array.from(data.skillsMap.entries()).map(
+          ([skillName, skillData]) => {
+            // Calculate overall average for this skill
+            const currentAvg = Number(
+              (skillData.totalAverage / skillData.count).toFixed(2),
+            );
+
+            // Calculate weighted required level based on career level distribution
+            let weightedRequiredLevel = 0;
+            let totalWeight = 0;
+
+            // Process each career level
+            skillData.byCareerLevel.forEach((levelData, careerLevel) => {
+              const levelCount = careerLevelCounts.get(careerLevel) || 0;
+
+              // Find required skills doc for this capability and career level
+              const requiredSkillsDoc = allRequiredSkills.find(
+                (req) =>
+                  req.capability === capability &&
+                  req.careerLevel === careerLevel,
+              );
+
+              // Find matching skill in required skills
+              let requiredLevel = 0;
+              if (requiredSkillsDoc?.requiredSkills) {
+                for (const [origSkillName, level] of Object.entries(
+                  requiredSkillsDoc.requiredSkills,
+                )) {
+                  const transformedOrigName = Object.keys(
+                    transformToReadableKeys({ [origSkillName]: 0 }),
+                  )[0];
+
+                  if (transformedOrigName === skillName) {
+                    requiredLevel = Number(level) || 0;
+                    break;
+                  }
+                }
+              }
+
+              weightedRequiredLevel += requiredLevel * levelCount;
+              totalWeight += levelCount;
+            });
+
+            // Calculate final required level
+            const effectiveRequiredLevel =
+              totalWeight > 0
+                ? Number((weightedRequiredLevel / totalWeight).toFixed(2))
+                : 4;
+
+            // Calculate gap (positive means above requirements)
+            const gap = Number(
+              (currentAvg - effectiveRequiredLevel).toFixed(2),
+            );
+
+            return {
+              name: skillName,
+              currentAvg,
+              requiredLevel: effectiveRequiredLevel,
+              gap,
+              careerLevelBreakdown: Array.from(
+                skillData.byCareerLevel.entries(),
+              )
+                .map(([level, levelData]) => ({
+                  careerLevel: level,
+                  average: Number(
+                    (levelData.totalAverage / levelData.count).toFixed(2),
+                  ),
+                  employeeCount: levelData.count,
+                }))
+                .sort((a, b) => b.employeeCount - a.employeeCount),
+            };
+          },
+        );
+        // .sort((a, b) => b.gap - a.gap)
+        // .slice(0, 5);
 
         return {
           capability,
-          // topSkills: skills
-          //   .sort((a, b) => b.prevalence - a.prevalence)
-          //   .slice(0, 5)
-          //   .map(({ name, prevalence }) => ({ name, prevalence })),
-          skillGaps: skills
-            .sort((a, b) => a.gap - b.gap)
-            .slice(0, 5)
-            .map(({ name, currentAvg, requiredLevel, gap }) => ({
-              name,
-              currentAvg,
-              requiredLevel,
-              gap,
-            })),
+          skillGaps,
         };
       });
 
       return {
-        capabilities: capabilityAnalyses.filter(
-          (analysis) =>
-            // analysis.topSkills.length >= 2 &&
-            analysis.skillGaps.length >= 2,
-        ),
+        capabilities: capabilityAnalyses
+          .filter((analysis) => analysis.skillGaps.length >= 2)
+          .map((analysis) => ({
+            capability: analysis.capability,
+            skillGaps: analysis.skillGaps.map((gap) => ({
+              name: gap.name,
+              currentAvg: gap.currentAvg,
+              requiredLevel: gap.requiredLevel,
+              gap: gap.gap,
+            })),
+          })),
       };
     } catch (error) {
-      this.logger.error(
-        'Error computing organization technical skills analysis:',
-        error,
-      );
+      this.logger.error('Error computing organization skills analysis:', error);
       throw error;
     }
   }
@@ -419,24 +514,17 @@ export class SkillsMatrixService {
 
       // Maps for tracking distributions
       const businessUnitMap = new Map<string, Map<string, Set<string>>>();
-      const skillUserMap = new Map<
+      const skillMap = new Map<
         string,
         {
-          users: Set<string>;
-          totalGap: number;
-          category: SkillCategory;
+          totalLevel: number;
+          userCount: number;
+          users: Map<string, number>; // email -> skill level
           businessUnit: string;
+          totalGap: number;
         }
       >();
       const gradeMap = new Map<string, number>();
-
-      // Get soft skills from cache
-      const softSkills = (await this.cacheManager.get(
-        CACHE_KEYS.SOFT_SKILLS,
-      )) as any[];
-      const softSkillTitles = new Set(
-        softSkills?.map((skill) => skill.title.toLowerCase()),
-      );
 
       // Process each assessment
       for (const assessment of allAssessments) {
@@ -450,37 +538,37 @@ export class SkillsMatrixService {
         }
         const categoryMap = businessUnitMap.get(businessUnit)!;
 
+        // Initialize technical skills category
+        if (!categoryMap.has(SkillCategory.TECHNICAL)) {
+          categoryMap.set(SkillCategory.TECHNICAL, new Set());
+        }
+
         // Process skills
         Object.entries(assessment.skillAverages || {}).forEach(
-          ([skillName]) => {
+          ([skillName, level]) => {
             const transformedName = Object.keys(
               transformToReadableKeys({ [skillName]: 0 }),
             )[0];
 
-            // Determine category using cached soft skills
-            const category = softSkillTitles.has(transformedName.toLowerCase())
-              ? SkillCategory.SOFT
-              : SkillCategory.TECHNICAL;
+            // Track skills within business unit
+            categoryMap.get(SkillCategory.TECHNICAL)?.add(transformedName);
 
-            // Track skills by category within business unit
-            if (!categoryMap.has(category)) {
-              categoryMap.set(category, new Set());
-            }
-            categoryMap.get(category)?.add(transformedName);
-
-            // Track users and gaps per skill
+            // Track skill levels and users
             const skillKey = `${businessUnit}:${transformedName}`;
-            if (!skillUserMap.has(skillKey)) {
-              skillUserMap.set(skillKey, {
-                users: new Set(),
-                totalGap: 0,
-                category,
+            if (!skillMap.has(skillKey)) {
+              skillMap.set(skillKey, {
+                totalLevel: 0,
+                userCount: 0,
+                users: new Map(),
                 businessUnit,
+                totalGap: 0,
               });
             }
 
-            const skillData = skillUserMap.get(skillKey)!;
-            skillData.users.add(assessment.emailAddress);
+            const skillData = skillMap.get(skillKey)!;
+            skillData.totalLevel += Number(level);
+            skillData.userCount += 1;
+            skillData.users.set(assessment.emailAddress, Number(level));
 
             const gap = assessment.skillGaps?.[skillName] ?? 0;
             if (gap < 0) {
@@ -500,22 +588,43 @@ export class SkillsMatrixService {
               skills: Array.from(skills)
                 .map((skillName) => {
                   const skillKey = `${businessUnit}:${skillName}`;
-                  const skillData = skillUserMap.get(skillKey)!;
-                  const averageGap = skillData.totalGap / skillData.users.size;
+                  const skillData = skillMap.get(skillKey)!;
+
+                  // Calculate average level for this skill
+                  const averageLevel =
+                    skillData.totalLevel / skillData.userCount;
+
+                  // Count users below average
+                  const usersBelowAverage = Array.from(
+                    skillData.users.entries(),
+                  ).filter(([, level]) => level < averageLevel).length;
+
+                  // Skip if no users are below average
+                  if (usersBelowAverage === 0) {
+                    return null;
+                  }
+
+                  const averageGap = skillData.totalGap / skillData.userCount;
 
                   return {
                     name: skillName,
-                    userCount: skillData.users.size,
+                    userCount: usersBelowAverage,
                     status: this.determineDistributionStatus(
                       averageGap,
-                      skillData.users.size,
+                      usersBelowAverage,
+                      skillData.userCount,
                     ),
                   };
                 })
+                .filter(
+                  (skill): skill is NonNullable<typeof skill> => skill !== null,
+                )
                 .sort((a, b) => b.userCount - a.userCount),
             }))
+            .filter((category) => category.skills.length > 0)
             .sort((a, b) => a.category.localeCompare(b.category)),
         }))
+        .filter((bu) => bu.categories.length > 0)
         .sort((a, b) => a.businessUnit.localeCompare(b.businessUnit));
 
       const gradeDistribution = Array.from(gradeMap.entries())
@@ -524,13 +633,7 @@ export class SkillsMatrixService {
           userCount,
         }))
         .sort((a, b) => {
-          const gradeOrder = [
-            'Associate',
-            'Professional',
-            'Senior Professional',
-            'Lead',
-            'Principal',
-          ];
+          const gradeOrder = ['Professional', 'Manager', 'Director'];
           return gradeOrder.indexOf(a.grade) - gradeOrder.indexOf(b.grade);
         });
 
@@ -555,11 +658,20 @@ export class SkillsMatrixService {
 
   private determineDistributionStatus(
     averageGap: number,
-    userCount: number,
+    belowAverageCount: number,
+    totalUsers: number,
   ): DistributionSkillStatus {
-    if (averageGap > 2 || userCount < 2)
+    // Calculate what percentage of users are below average
+    const percentageBelowAverage = (belowAverageCount / totalUsers) * 100;
+
+    // If more than 50% are below average or there's a significant gap
+    if (percentageBelowAverage > 50 || averageGap < -2) {
       return DistributionSkillStatus.CRITICAL;
-    if (averageGap > 1 || userCount < 5) return DistributionSkillStatus.WARNING;
+    }
+    // If more than 25% are below average or there's a moderate gap
+    if (percentageBelowAverage > 25 || averageGap < -1) {
+      return DistributionSkillStatus.WARNING;
+    }
     return DistributionSkillStatus.NORMAL;
   }
 
