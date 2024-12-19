@@ -70,69 +70,34 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList className="hidden lg:inline-flex">
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger value="skills" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Skills
-            </TabsTrigger>
-            <TabsTrigger value="required-skills" className="flex items-center gap-2">
-              <Award className="h-4 w-4" />
-              Required Skills
-            </TabsTrigger>
-            <TabsTrigger value="organization" className="flex items-center gap-2">
-              <Network className="h-4 w-4" />
-              Organization
-            </TabsTrigger>
-            <TabsTrigger value="metrics" className="flex  items-center gap-2">
-              <BarChart2 className="h-4 w-4" />
-              Metrics
-            </TabsTrigger>
-            <TabsTrigger value="learning" className="flex  items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Learning
-            </TabsTrigger>
-            <TabsTrigger value="taxonomy" className="flex  items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Taxonomy
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="lg:hidden rounded-md bg-muted">
-            <TabsList className="grid grid-cols-3 gap-2 w-full">
+          <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+            <TabsList className="inline-flex max-w-max">
               <TabsTrigger value="users" className="flex items-center gap-2">
-                <Users className="h-4 w-4 hidden sm:block" />
+                <Users className="h-4 w-4" />
                 Users
               </TabsTrigger>
               <TabsTrigger value="skills" className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 hidden sm:block" />
+                <BookOpen className="h-4 w-4" />
                 Skills
               </TabsTrigger>
               <TabsTrigger value="required-skills" className="flex items-center gap-2">
-                <Award className="h-4 w-4 hidden sm:block" />
+                <Award className="h-4 w-4" />
                 Required Skills
               </TabsTrigger>
-            </TabsList>
-            <TabsList className="grid grid-cols-3 gap-2 w-full">
               <TabsTrigger value="organization" className="flex items-center gap-2">
-                <Network className="h-4 w-4 hidden sm:block" />
+                <Network className="h-4 w-4" />
                 Organization
               </TabsTrigger>
-              <TabsTrigger value="metrics" className="flex  items-center gap-2">
-                <BarChart2 className="h-4 w-4 hidden sm:block" />
+              <TabsTrigger value="metrics" className="flex items-center gap-2">
+                <BarChart2 className="h-4 w-4" />
                 Metrics
               </TabsTrigger>
-              <TabsTrigger value="learning" className="flex  items-center gap-2">
-                <BookOpen className="h-4 w-4 hidden sm:block" />
+              <TabsTrigger value="learning" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
                 Learning
               </TabsTrigger>
-            </TabsList>
-            <TabsList className="grid grid-cols-3 gap-2 w-full">
-              <TabsTrigger value="taxonomy" className="flex  items-center gap-2">
-                <BookOpen className="h-4 w-4 hidden sm:block" />
+              <TabsTrigger value="taxonomy" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
                 Taxonomy
               </TabsTrigger>
             </TabsList>

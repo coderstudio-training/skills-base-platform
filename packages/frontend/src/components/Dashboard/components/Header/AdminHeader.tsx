@@ -39,9 +39,13 @@ export default function AdminDashboardHeader() {
             variant="ghost"
             size="icon"
             onClick={handleThemeChange}
-            className="dark:hover:bg-slate-600 dark:bg-slate"
+            className="dark:hover:bg-slate-600 dark:bg-slate transition-colors duration-200 relative"
           >
-            {preference === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            {preference === 'dark' ? (
+              <Moon className="h-5 w-5 animate-scaleIn absolute" />
+            ) : (
+              <Sun className="h-5 w-5 animate-scaleIn absolute" />
+            )}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

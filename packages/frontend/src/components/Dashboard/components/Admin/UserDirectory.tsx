@@ -67,7 +67,7 @@ export function UserDirectory({
           {employees.map(employee => (
             <div
               key={employee.employeeId}
-              className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+              className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <div className="flex items-center gap-4">
                 <Avatar className="h-10 w-10">

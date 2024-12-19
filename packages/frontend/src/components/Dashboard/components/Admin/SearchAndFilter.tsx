@@ -32,7 +32,7 @@ export function SearchAndFilter({
           onValueChange={onBusinessUnitChange}
           disabled={isLoading}
         >
-          <SelectTrigger className="min-w-[200px] w-fit">
+          <SelectTrigger className="min-w-[200px] w-fit bg-background">
             <SelectValue>
               <div className="flex items-center">
                 <Building2 className="w-4 h-4 mr-2" />

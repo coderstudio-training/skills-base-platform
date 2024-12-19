@@ -18,14 +18,14 @@ interface DataTableProps<T> {
 export function DataTable<T>({ data, columns, height = 'h-[360px]' }: DataTableProps<T>) {
   return (
     <div className="rounded-md border">
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-gray-800 border-b">
         <table className="w-full">
           <thead>
             <tr className="text-left">
               {columns.map((column, index) => (
                 <th
                   key={index}
-                  className={`py-4 px-6 text-gray-600 font-normal text-sm ${
+                  className={`py-4 px-6 text-gray-600 dark:text-gray-400 font-normal text-sm ${
                     column.width || ''
                   } text-${column.align || 'left'}`}
                 >
@@ -42,7 +42,7 @@ export function DataTable<T>({ data, columns, height = 'h-[360px]' }: DataTableP
           <table className="w-full">
             <tbody className="divide-y">
               {data.map((item, rowIndex) => (
-                <tr key={rowIndex} className="hover:bg-gray-50">
+                <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   {columns.map((column, colIndex) => (
                     <td
                       key={colIndex}

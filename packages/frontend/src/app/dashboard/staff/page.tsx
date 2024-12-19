@@ -6,6 +6,7 @@ const StaffDashboard = dynamic(() => import('@/components/Dashboard/components/S
   ssr: false,
   loading: () => <StaffLoading />,
 });
+
 export default async function StaffDashboardPage() {
   await serverSideIntercept({ permission: 'canViewDashboard' });
   return <StaffDashboard />;
