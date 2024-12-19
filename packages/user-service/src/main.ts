@@ -41,7 +41,7 @@ async function bootstrap() {
   SwaggerHelper.setup(
     app,
     'User API Documentation',
-    'swagger', // Access swagger at /swagger
+    '/swagger', // Access swagger at /swagger
   );
 
   app.enableCors({
@@ -49,9 +49,21 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   });
-  app.use(helmet());
 
-  const port = process.env.PORT || 3000;
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: [`'self'`],
+          styleSrc: [`'self'`, `'unsafe-inline'`],
+          imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
+          scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
+        },
+      },
+    }),
+  );
+
+  const port = process.env.PORT || 3001;
   await app.listen(port);
 
   logger.info(`User service is running on: http://localhost:${port}`);

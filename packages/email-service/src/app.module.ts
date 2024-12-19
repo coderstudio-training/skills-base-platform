@@ -5,6 +5,7 @@ import {
   MonitoringModule,
   SecurityModule,
 } from '@skills-base/shared';
+import { AppController } from './app.controller';
 import { EmailModule } from './email/email.module';
 
 @Module({
@@ -38,15 +39,18 @@ import { EmailModule } from './email/email.module';
       rateLimit: {
         enabled: true,
         windowMs: 15 * 60 * 1000,
-        max: 100,
+        max: 1000,
         skipPaths: ['/health', '/metrics'],
       },
       apiKey: {
         enabled: false,
-        keys: [process.env.API_KEY],
+      },
+      ipWhitelist: {
+        enabled: false,
       },
     }),
     EmailModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

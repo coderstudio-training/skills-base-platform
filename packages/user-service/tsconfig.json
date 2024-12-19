@@ -20,7 +20,7 @@
     "paths": {
       "@skills-base/shared": ["../shared/dist"]
     },
-    "types": ["@types/babel__core", "jest"]
+    "types": ["@types/babel__core", "jest", "node"]
   },
   "exclude": ["node_modules", "dist"]
 }

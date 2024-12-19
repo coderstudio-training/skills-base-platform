@@ -1,6 +1,7 @@
 import { SecurityConfig } from '../../interfaces/security.interfaces';
 
 export const createBaseConfig = (): SecurityConfig => ({
+  adminEmail: 'admin@example.com',
   rateLimit: {
     enabled: true,
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -13,7 +14,7 @@ export const createBaseConfig = (): SecurityConfig => ({
     excludePaths: ['/health', '/metrics'],
   },
   ipWhitelist: {
-    enabled: false,
+    enabled: true,
     allowedIps: [],
     maxFailedAttempts: 5,
     blockDuration: 30 * 60 * 1000, // 30 minutes

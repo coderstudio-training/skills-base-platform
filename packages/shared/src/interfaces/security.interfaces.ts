@@ -43,6 +43,7 @@ export interface PayloadConfig {
 }
 
 export interface SecurityConfig {
+  adminEmail: string;
   rateLimit: RateLimitConfig;
   apiKey: ApiKeyConfig;
   ipWhitelist: IpWhitelistConfig;
@@ -55,11 +56,13 @@ export type PartialIpWhitelistConfig = Partial<IpWhitelistConfig>;
 export type PartialPayloadConfig = Partial<PayloadConfig>;
 
 export interface PartialSecurityConfig {
+  adminEmail?: string;
   rateLimit?: PartialRateLimitConfig;
   apiKey?: PartialApiKeyConfig;
   ipWhitelist?: PartialIpWhitelistConfig;
   payload?: PartialPayloadConfig;
 }
+
 export interface ValidationConfig {
   payload: {
     maxSize: number;
@@ -80,4 +83,11 @@ export interface ValidationConfig {
     allowedTags: string[];
     allowedAttributes: Record<string, string[]>;
   };
+}
+
+export interface RouteRateLimitConfig extends Partial<RateLimitConfig> {
+  keyPrefix?: string;
+  keyGenerator?: (request: ExpressRequest) => string;
+  skipIf?: (request: ExpressRequest) => boolean;
+  weight?: number | ((request: ExpressRequest) => number);
 }
