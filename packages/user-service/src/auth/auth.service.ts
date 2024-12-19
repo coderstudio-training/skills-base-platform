@@ -1,4 +1,4 @@
-// packages/user-service/src/auth/auth.service.ts
+// packages/ersu - service / src / auth / auth.service.ts;
 import {
   ConflictException,
   Injectable,
@@ -100,7 +100,7 @@ export class AuthService {
 
       // Create JWT payload
       const payload = {
-        userId: user.id, // required
+        sub: user.id, // required
         email: user.email, // required
         roles: user.roles, // required
         perms: permissionCodes, // required
@@ -190,7 +190,7 @@ export class AuthService {
 
       // Create JWT payload
       const payload = {
-        userId: user.id, // required
+        sub: user.id, // required
         email: user.email, // required
         roles: user.roles, // required
         perms: permissionCodes, // required
