@@ -29,9 +29,10 @@ async function bootstrap() {
   // Apply global middleware
   app.use(new SecurityMiddleware().use);
 
-  // CORS configuration
+  const corsOrigins = process.env.CORS_ORIGINS?.split(',') || [];
+
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3002'],
+    origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   });

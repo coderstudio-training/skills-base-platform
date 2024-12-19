@@ -56,11 +56,7 @@ export class UsersController extends BaseController<User> {
   })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  @InvalidateCache({
-    keyGenerators: [
-      (ctx) => [`users:profile:${ctx.request.user.userId}`, 'users:list:*'],
-    ],
-  })
+  @InvalidateCache(['users:list:*'])
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
@@ -90,7 +86,7 @@ export class UsersController extends BaseController<User> {
     description: 'Returns all users',
     type: [User],
   })
-  @RedisCache('users:list', 1800)
+  @RedisCache('users:list')
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.usersService.findAll(paginationDto);

@@ -124,6 +124,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.accessToken = user.accessToken;
         token.role = user.role;
+        token.perms = user.perms;
       }
       return token;
     },
