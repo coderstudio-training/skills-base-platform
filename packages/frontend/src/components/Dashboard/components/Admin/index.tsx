@@ -76,7 +76,7 @@ export default function AdminDashboard() {
         </PermissionGate>
 
         <Tabs defaultValue="users" className="space-y-4">
-          <TabsList className="flex flex-wrap gap-2">
+          <TabsList>
             <PermissionGate permission="canManageUsers">
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />

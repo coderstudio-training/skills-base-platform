@@ -100,7 +100,7 @@ export class AuthService {
 
       // Create JWT payload
       const payload = {
-        sub: user.id, // required
+        userId: user.id, // required
         email: user.email, // required
         roles: user.roles, // required
         perms: permissionCodes, // required
@@ -175,7 +175,7 @@ export class AuthService {
           firstName: given_name || 'Google',
           lastName: family_name || 'User',
           picture: picture || '',
-          roles: [UserRole.USER], // Default role
+          roles: [UserRole.STAFF], // Default role
         });
         this.logger.info(`Created new user with Google OAuth: ${email}`);
       } else if (!user.googleId) {
@@ -190,7 +190,7 @@ export class AuthService {
 
       // Create JWT payload
       const payload = {
-        sub: user.id, // required
+        userId: user.id, // required
         email: user.email, // required
         roles: user.roles, // required
         perms: permissionCodes, // required

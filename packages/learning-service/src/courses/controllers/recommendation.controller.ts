@@ -33,7 +33,7 @@ export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @Get('recommendations/:email')
-  @Roles(UserRole.USER, UserRole.MANAGER)
+  @Roles(UserRole.STAFF, UserRole.MANAGER)
   @ApiOperation({
     summary: 'Get learning recommendations',
     description: `
