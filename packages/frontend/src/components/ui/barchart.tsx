@@ -82,9 +82,7 @@ const CustomTooltip = ({ active, payload }: TooltipProps) => {
         <p className="font-semibold mb-2">{data.skill}</p>
         <p className="text-blue-600">Current Level: {data.average.toFixed(1)}</p>
         <p className="text-gray-600">Required Level: {data.requiredRating.toFixed(1)}</p>
-        <p className={payload[2].payload.gapType === -1 ? 'text-red-600' : 'text-green-500'}>
-          Gap: {data.gap.toFixed(1)}
-        </p>
+        <p className="text-red-600">Gap: {data.gap.toFixed(1)}</p>
       </div>
     );
   }
@@ -137,17 +135,7 @@ export function CustomBarChart({
                 {payload?.map((entry, index) => (
                   <div key={`legend-${index}`} className="flex items-center gap-2">
                     {entry.value === 'Skill Gap' ? (
-                      <div className="w-3 h-3 relative">
-                        <div
-                          className="absolute w-0 h-0"
-                          style={{
-                            borderLeft: '12px solid #22c55e',
-                            borderTop: '12px solid #dc2626',
-                            borderRightColor: 'transparent',
-                            borderBottomColor: 'transparent',
-                          }}
-                        />
-                      </div>
+                      <div className="w-3 h-3" style={{ backgroundColor: '#dc2626' }}></div>
                     ) : (
                       <div className="w-3 h-3" style={{ backgroundColor: entry.color }}></div>
                     )}

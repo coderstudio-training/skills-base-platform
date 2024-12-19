@@ -13,7 +13,7 @@ export function SkillsGapChart({ skills, category }: SkillsGapChartProps) {
     skill: skill.name,
     average: skill.average,
     requiredRating: skill.required,
-    gap: Math.abs(skill.gap),
+    gap: skill.gap,
     gapType: skill.gap < 0 ? -1 : 1, // Using number instead of boolean
   }));
 
@@ -35,12 +35,20 @@ export function SkillsGapChart({ skills, category }: SkillsGapChartProps) {
             name: 'Required Level',
             color: { type: 'static', value: '#666666' },
           },
+          // {
+          //   key: 'gap',
+          //   name: 'Skill Gap',
+          //   color: {
+          //     type: 'dynamic',
+          //     getValue: data => (data.gapType === -1 ? '#dc2626' : '#22c55e'),
+          //   },
+          // },
           {
             key: 'gap',
             name: 'Skill Gap',
             color: {
-              type: 'dynamic',
-              getValue: data => (data.gapType === -1 ? '#dc2626' : '#22c55e'),
+              type: 'static',
+              value: '#dc2626',
             },
           },
         ]}
