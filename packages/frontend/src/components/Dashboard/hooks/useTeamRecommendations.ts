@@ -4,24 +4,20 @@ import { useEffect, useState } from 'react';
 import { MemberRecommendations, RecommendationResponse, TeamMember } from '../types';
 import { useTeamData } from './useTeamData';
 
-export function useTeamRecommendations() {
-  const { teamMembers, loading: teamLoading, error: teamError } = useTeamData();
+export function useTeamRecommendations(managerName: string) {
+  const { teamMembers } = useTeamData(managerName);
   const [teamData, setTeamData] = useState<
     Array<TeamMember & { recommendations?: MemberRecommendations }>
   >([]);
 
   // Get recommendations for the first team member
-  const {
-    data: recommendationsData,
-    isLoading: recommendationsLoading,
-    error: recommendationsError,
-  } = useQuery<RecommendationResponse>(
+  const { data: recommendationsData } = useQuery<RecommendationResponse>(
     learningApi,
     `/api/learning/recommendations/${teamMembers[0]?.email}`,
     {
       enabled: teamMembers.length > 0 && !!teamMembers[0]?.email,
       requiresAuth: true,
-      revalidate: 300,
+      cacheStrategy: 'force-cache',
     },
   );
 
@@ -39,7 +35,5 @@ export function useTeamRecommendations() {
 
   return {
     teamData,
-    loading: teamLoading || recommendationsLoading,
-    error: teamError || recommendationsError,
   };
 }

@@ -1,4 +1,3 @@
-import { signOut } from 'next-auth/react';
 import { useState } from 'react';
 
 export function useAdminDashboardHeader() {
@@ -17,13 +16,8 @@ export function useAdminDashboardHeader() {
     }
   };
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
-  };
-
   return {
     lastSyncTime,
     handleLastNotificationDate,
-    handleLogout,
   };
 }

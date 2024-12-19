@@ -6,7 +6,7 @@ import {
   PERMISSION_CODES,
   PermissionCode,
 } from '../constants/permisssion-codes.constant';
-import { JwtPayload } from '../interfaces/kwt-payload.interface';
+import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { Logger } from '../services/logger.service';
 
 @Injectable()

@@ -37,7 +37,7 @@ export class RedisService implements OnModuleDestroy {
           maxAttempts: this.config.retryAttempts,
         });
 
-        if (times > (this.config.retryAttempts || 10)) {
+        if (times > (this.config.retryAttempts || 3)) {
           this.logger.error('Redis max retry attempts reached', {
             attempts: times,
             maxAttempts: this.config.retryAttempts,

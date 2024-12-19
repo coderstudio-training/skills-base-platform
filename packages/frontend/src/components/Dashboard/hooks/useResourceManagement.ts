@@ -14,7 +14,8 @@ export function useResourceManagement(category?: string) {
     `api/courses/resources${category ? `?category=${category}` : ''}`,
     {
       requiresAuth: true,
-      revalidate: 300, // Cache for 5 minutes
+      // revalidate: 300, // Cache for 5 minutes
+      cacheStrategy: 'force-cache',
     },
   );
 

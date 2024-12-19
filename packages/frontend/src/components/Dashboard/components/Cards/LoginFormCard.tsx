@@ -11,7 +11,7 @@ export function LoginFormCard({
   handleSubmit,
   adminLoginLoading,
   adminLoginError,
-  title = 'Admin Login v2',
+  title = 'Admin Login',
   description = 'Enter your credentials to access the admin dashboard',
   className = 'w-full max-w-md',
 }: LoginFormCardProps) {

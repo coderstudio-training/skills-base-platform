@@ -16,7 +16,7 @@ export function useLearningResources() {
     error,
   } = useQuery<Course[]>(learningApi, '/api/courses', {
     requiresAuth: true,
-    revalidate: 300,
+    cacheStrategy: 'force-cache',
   });
 
   // Update allResources when data changes

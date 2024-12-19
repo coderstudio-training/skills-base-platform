@@ -175,7 +175,7 @@ export class AuthService {
           firstName: given_name || 'Google',
           lastName: family_name || 'User',
           picture: picture || '',
-          roles: [UserRole.USER], // Default role
+          roles: [UserRole.STAFF], // Default role
         });
         this.logger.info(`Created new user with Google OAuth: ${email}`);
       } else if (!user.googleId) {

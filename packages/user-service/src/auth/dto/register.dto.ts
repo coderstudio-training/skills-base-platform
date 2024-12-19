@@ -39,10 +39,10 @@ export class RegisterDto {
 
   @ApiProperty({
     description: 'User roles',
-    example: [UserRole.USER],
+    example: [UserRole.STAFF],
     type: [String],
-    default: [UserRole.USER],
+    default: [UserRole.STAFF],
   })
   @IsArray({ message: 'Roles must be an array' })
-  roles: UserRole[] = [UserRole.USER];
+  roles: UserRole[] = [UserRole.STAFF];
 }

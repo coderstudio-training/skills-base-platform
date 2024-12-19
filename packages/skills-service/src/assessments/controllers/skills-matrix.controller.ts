@@ -25,8 +25,8 @@ import {
 import {
   EmployeeSkillsResponseDto,
   SkillsSummaryDto,
+  TeamSkillsResponseDto,
 } from '../dto/skills-matrix.dto';
-import { TeamSkillsResponseDto } from '../dto/team-skills.dto';
 import { SkillsMatrixService } from '../services/skills-matrix.service';
 import { EmailValidationPipe } from '../utils/skills.util';
 
@@ -40,7 +40,7 @@ export class SkillsMatrixController {
   constructor(private readonly skillsMatrixService: SkillsMatrixService) {}
 
   @Get('user')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.USER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @ApiOperation({
     summary: 'Get employee skills assessment',
     description:
@@ -108,7 +108,7 @@ export class SkillsMatrixController {
   }
 
   @Get('user/summary')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.USER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @ApiOperation({
     summary: 'Get employee skills summary',
     description:

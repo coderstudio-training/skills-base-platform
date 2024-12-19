@@ -44,7 +44,7 @@ export const authOptions: NextAuthOptions = {
           logger.log('Decoded token:', JSON.stringify(decodedToken));
 
           // Validate the decoded token
-          if (!decodedToken.email || !decodedToken.sub || !Array.isArray(decodedToken.roles)) {
+          if (!decodedToken.email || !decodedToken.userId || !Array.isArray(decodedToken.roles)) {
             logger.error('Invalid token structure');
             return null;
           }
@@ -63,7 +63,7 @@ export const authOptions: NextAuthOptions = {
               : 'staff';
 
           return {
-            id: decodedToken.sub,
+            id: decodedToken.userId,
             name: decodedToken.email.split('@')[0], // You might want to adjust this
             email: decodedToken.email,
             accessToken: credentials.access_token,
@@ -295,4 +295,6 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
       redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
     }
   }
+
+  return session;
 }

@@ -21,7 +21,6 @@ import {
   InvalidateCache,
   JwtAuthGuard,
   Logger,
-  LoggingInterceptor,
   PaginationDto,
   Permission,
   RateLimit,
@@ -39,7 +38,7 @@ import { UsersService } from './users.service';
 @ApiTags('users')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(LoggingInterceptor, TransformInterceptor)
+@UseInterceptors(TransformInterceptor)
 @ApiBearerAuth('JWT-Admin')
 export class UsersController extends BaseController<User> {
   private readonly logger = new Logger(UsersController.name);
@@ -59,7 +58,7 @@ export class UsersController extends BaseController<User> {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @InvalidateCache({
     keyGenerators: [
-      (ctx) => [`users:profile:${ctx.request.user.userId}`, 'users:list:*:*'],
+      (ctx) => [`users:profile:${ctx.request.user.userId}`, 'users:list:*'],
     ],
   })
   create(@Body() createUserDto: CreateUserDto) {
@@ -118,6 +117,9 @@ export class UsersController extends BaseController<User> {
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'User not found' })
+  @RedisCache({
+    keyGenerator: (ctx) => `users:picture:${ctx.request.params.email}`,
+  })
   async getUserPicture(@Param('email') email: string) {
     const user = await this.usersService.findByEmail(email);
     return { picture: user?.picture || null };
