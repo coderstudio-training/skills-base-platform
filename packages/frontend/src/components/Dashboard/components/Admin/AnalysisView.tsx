@@ -82,23 +82,31 @@ export default function AnalysisView() {
         error={error}
       >
         <div className="space-y-6 max-h-[400px] overflow-y-auto pr-4">
-          {distributionsData?.skillDistribution.map((businessUnit, buIndex) => (
-            <div key={buIndex} className="space-y-4">
-              <h3 className="text-sm font-semibold text-primary">
-                {getBusinessUnitName(businessUnit.businessUnit)}
-              </h3>
-              <div className="space-y-2">
-                {businessUnit.categories[1].skills.map((skill, skillIndex) => (
-                  <SkillItem key={skillIndex} skill={skill} />
-                ))}
+          {distributionsData?.skillDistribution.map((businessUnit, buIndex) => {
+            // Find technical skills category
+            const technicalSkills = businessUnit.categories?.find(
+              category => category.category === 'Technical Skills',
+            );
+
+            return (
+              <div key={buIndex} className="space-y-4">
+                <h3 className="text-sm font-semibold text-primary">
+                  {getBusinessUnitName(businessUnit.businessUnit)}
+                </h3>
+                <div className="space-y-2">
+                  {technicalSkills?.skills?.map((skill, skillIndex) => (
+                    <SkillItem key={skillIndex} skill={skill} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </BaseCard>
 
+      {/* Rest of the component remains unchanged */}
       <BaseCard
-        title="Skill Distribution"
+        title="Grade Distribution"
         description="Employee distribution by grade level"
         loading={loading}
         error={error}

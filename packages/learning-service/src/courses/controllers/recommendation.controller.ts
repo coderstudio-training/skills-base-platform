@@ -1,10 +1,10 @@
 import {
   Controller,
   Get,
+  Headers,
   Param,
   UseGuards,
   UseInterceptors,
-  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -33,7 +33,7 @@ export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @Get('recommendations/:email')
-  @Roles(UserRole.USER, UserRole.MANAGER)
+  @Roles(UserRole.STAFF, UserRole.MANAGER)
   @ApiOperation({
     summary: 'Get learning recommendations',
     description: `
@@ -62,8 +62,9 @@ export class RecommendationController {
     description: 'No skill gap data found for the user',
   })
   async getRecommendations(
-    @Param('email', new ValidationPipe()) email: string,
+    @Param('email') email: string,
+    @Headers('authorization') authHeader: string,
   ): Promise<RecommendationResponseDto> {
-    return this.recommendationService.getRecommendations(email);
+    return this.recommendationService.getRecommendations(email, authHeader);
   }
 }

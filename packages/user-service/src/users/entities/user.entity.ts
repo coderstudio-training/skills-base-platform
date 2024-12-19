@@ -26,10 +26,10 @@ export class User extends BaseEntity {
   @ApiProperty({
     enum: UserRole,
     isArray: true,
-    example: [UserRole.USER],
+    example: [UserRole.STAFF],
     description: 'User roles',
   })
-  @Prop({ type: [String], enum: UserRole, default: [UserRole.USER] })
+  @Prop({ type: [String], enum: UserRole, default: [UserRole.STAFF] })
   roles!: UserRole[];
 
   @ApiProperty({

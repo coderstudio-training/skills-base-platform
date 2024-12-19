@@ -52,7 +52,6 @@ const symbols = {
   stackTrace: '└─',
   subStack: '├─',
   subStackLast: '└─',
-  metadataSymbol: '🔍',
   errorSymbol: '⛔', // Changed to stop sign emoji
 };
 
@@ -168,8 +167,6 @@ export const createConsoleFormat = () => {
 
     // Show error details if it's an error
     if (isError && (error || errorTracking)) {
-      output += `${colors.red}${symbols.stackTrace} ${colors.bold}Error Details${colors.reset}\n`;
-
       if (error) {
         output += formatErrorDetails(
           {
@@ -199,7 +196,6 @@ export const createConsoleFormat = () => {
       excludedMetadataFields.forEach((field) => delete remainingMeta[field]);
 
       if (Object.keys(remainingMeta).length > 0) {
-        output += `${colors.gray}${symbols.stackTrace} ${symbols.metadataSymbol} ${colors.bold}Details${colors.reset}\n`;
         const metaEntries = Object.entries(remainingMeta);
         metaEntries.forEach(([key, value], index) => {
           const isLast = index === metaEntries.length - 1;

@@ -1,15 +1,7 @@
-import { ApiError } from '@/lib/api/types';
-import { StaffData } from '../../types';
+import { StaffSkillsProps } from '../../types';
 import { SkillsAnalysisCard } from '../Cards/SkillsAnalysisCard';
 
 // components/Staff/SkillsView.tsx
-interface SkillsViewProps {
-  skillsData: StaffData | null;
-  selectedCategory: 'Technical Skills' | 'Soft Skills';
-  onCategoryChange: (category: 'Technical Skills' | 'Soft Skills') => void;
-  loading?: boolean;
-  error?: ApiError | null;
-}
 
 export default function SkillsView({
   skillsData,
@@ -17,7 +9,7 @@ export default function SkillsView({
   onCategoryChange,
   loading,
   error,
-}: SkillsViewProps) {
+}: StaffSkillsProps) {
   return (
     <div className="space-y-4">
       <SkillsAnalysisCard

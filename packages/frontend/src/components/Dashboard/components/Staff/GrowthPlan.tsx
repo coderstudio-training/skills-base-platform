@@ -4,9 +4,10 @@ import { useRecommendations } from '@/components/Dashboard/hooks/useRecommendati
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { X } from 'lucide-react';
+import { TabViewProps } from '../../types';
 import BaseCard from '../Cards/BaseCard';
 
-function GrowthPlan() {
+function GrowthPlan(user: TabViewProps) {
   const {
     recommendations,
     loading,
@@ -15,7 +16,7 @@ function GrowthPlan() {
     isDialogOpen,
     setIsDialogOpen,
     handleCourseClick,
-  } = useRecommendations();
+  } = useRecommendations(user.email || '');
 
   return (
     <>

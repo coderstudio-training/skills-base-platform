@@ -52,7 +52,7 @@ async function bootstrap() {
     'Bootstrap',
   );
   Logger.log(
-    `Swagger documentation is available at: http://localhost:${port}/api-docs`,
+    `Swagger documentation is available at: http://localhost:${port}/swagger`,
     'Bootstrap',
   );
 }

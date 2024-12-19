@@ -3,19 +3,27 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   Post,
   Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { N8nWebhookDto } from '../dto/n8n-webhook.dto';
 import { NotificationResponseDto } from '../dto/notification-response.dto';
 import { NotificationService } from '../notificaition.service';
 import { NotificationGateway } from '../notification.gateway';
 
-@ApiTags('workflows')
+@ApiTags('Workflow Notifications')
 @Controller('workflows')
 export class WorkflowController {
   constructor(
@@ -24,11 +32,41 @@ export class WorkflowController {
   ) {}
 
   @Post('webhook')
-  @ApiOperation({ summary: 'Handle incoming webhook from n8n workflow' })
+  @ApiOperation({
+    summary: 'Create workflow notification',
+    description:
+      'Handle incoming webhook from n8n workflow and create a notification',
+  })
+  @ApiBody({
+    type: N8nWebhookDto,
+    description: 'Webhook payload from n8n workflow',
+    examples: {
+      example1: {
+        value: {
+          workflow: {
+            id: '123',
+            name: 'Test Workflow',
+          },
+          execution: {
+            id: 'exec_456',
+            status: 'success',
+          },
+          data: {
+            recordsProcessed: '42',
+          },
+        },
+        summary: 'Sample webhook payload',
+      },
+    },
+  })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     description: 'The notification has been successfully created',
     type: NotificationResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid webhook payload format',
   })
   @UsePipes(new ValidationPipe({ transform: true }))
   async handleWebhook(@Body() payload: N8nWebhookDto) {
@@ -39,21 +77,68 @@ export class WorkflowController {
   }
 
   @Get('notifications')
-  @ApiOperation({ summary: 'Get all notifications with optional filtering' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'workflowId', required: false })
+  @ApiOperation({
+    summary: 'Get notifications',
+    description:
+      'Retrieve notifications with optional filtering and pagination',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of items per page',
+    example: 20,
+  })
+  @ApiQuery({
+    name: 'workflowId',
+    required: false,
+    type: String,
+    description: 'Filter by workflow ID',
+    example: '123',
+  })
   @ApiQuery({
     name: 'status',
     required: false,
     enum: ['success', 'error', 'running'],
+    description: 'Filter by execution status',
   })
-  @ApiQuery({ name: 'startDate', required: false })
-  @ApiQuery({ name: 'endDate', required: false })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: String,
+    description: 'Filter by start date (ISO 8601 format)',
+    example: '2024-12-13T00:00:00Z',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: String,
+    description: 'Filter by end date (ISO 8601 format)',
+    example: '2024-12-13T23:59:59Z',
+  })
   @ApiResponse({
-    status: 200,
-    description: 'Return all notifications',
-    type: [NotificationResponseDto],
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved notifications',
+    schema: {
+      type: 'object',
+      properties: {
+        notifications: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/NotificationResponseDto' },
+        },
+        total: {
+          type: 'number',
+          description: 'Total number of notifications matching the filters',
+        },
+      },
+    },
   })
   async getNotifications(
     @Query('page') page = 1,
@@ -72,11 +157,28 @@ export class WorkflowController {
   }
 
   @Post('notifications/:id/read')
-  @ApiOperation({ summary: 'Mark a notification as read' })
+  @ApiOperation({
+    summary: 'Mark notification as read',
+    description: 'Mark a specific notification as read by ID',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Notification ID',
+    type: String,
+    example: '675bcc9ecab6717a77306481',
+  })
   @ApiResponse({
-    status: 200,
-    description: 'The notification has been marked as read',
+    status: HttpStatus.OK,
+    description: 'Notification marked as read successfully',
     type: NotificationResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Notification not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid notification ID format',
   })
   async markAsRead(@Param('id') id: string) {
     const notification = await this.notificationService.markAsRead(id);
@@ -85,16 +187,20 @@ export class WorkflowController {
   }
 
   @Get('notifications/unread-count')
-  @ApiOperation({ summary: 'Get the count of unread notifications' })
+  @ApiOperation({
+    summary: 'Get unread count',
+    description: 'Get the total count of unread notifications',
+  })
   @ApiResponse({
-    status: 200,
-    description: 'Returns the count of unread notifications',
+    status: HttpStatus.OK,
+    description: 'Successfully retrieved unread count',
     schema: {
       type: 'object',
       properties: {
         count: {
           type: 'number',
-          description: 'The number of unread notifications',
+          description: 'Number of unread notifications',
+          example: 5,
         },
       },
     },
@@ -106,11 +212,28 @@ export class WorkflowController {
   }
 
   @Delete('notifications/:id')
-  @ApiOperation({ summary: 'Delete a notification' })
+  @ApiOperation({
+    summary: 'Delete notification',
+    description: 'Delete a specific notification by ID',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Notification ID',
+    type: String,
+    example: '675bcc9ecab6717a77306481',
+  })
   @ApiResponse({
-    status: 200,
-    description: 'The notification has been deleted',
+    status: HttpStatus.OK,
+    description: 'Notification deleted successfully',
     type: NotificationResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Notification not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid notification ID format',
   })
   async deleteNotification(@Param('id') id: string) {
     const notification = await this.notificationService.deleteNotification(id);

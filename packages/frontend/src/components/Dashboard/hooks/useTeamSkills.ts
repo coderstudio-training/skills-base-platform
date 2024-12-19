@@ -11,9 +11,8 @@ export default function useTeamSkills(name: string) {
     skillsApi,
     name ? `skills-matrix/manager/${encodeURIComponent(name)}` : '',
     {
-      enabled: !!name,
       requiresAuth: true,
-      revalidate: 300,
+      cacheStrategy: 'force-cache',
     },
   );
 

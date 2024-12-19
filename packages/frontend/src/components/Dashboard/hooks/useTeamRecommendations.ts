@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { MemberRecommendations, RecommendationResponse, TeamMember } from '../types';
 import { useTeamData } from './useTeamData';
 
-export function useTeamRecommendations() {
-  const { teamMembers } = useTeamData();
+export function useTeamRecommendations(managerName: string) {
+  const { teamMembers } = useTeamData(managerName);
   const [teamData, setTeamData] = useState<
     Array<TeamMember & { recommendations?: MemberRecommendations }>
   >([]);
@@ -17,7 +17,7 @@ export function useTeamRecommendations() {
     {
       enabled: teamMembers.length > 0 && !!teamMembers[0]?.email,
       requiresAuth: true,
-      revalidate: 300,
+      cacheStrategy: 'force-cache',
     },
   );
 

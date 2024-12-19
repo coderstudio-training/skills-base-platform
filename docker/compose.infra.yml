@@ -2,32 +2,37 @@ services:
   mongodb:
     image: mongo:4.4
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
       - mongodb_data:/data/db
 
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - '5672:5672'
+      - '15672:15672'
 
   n8n:
     image: n8nio/n8n
     ports:
-      - "5678:5678"
+      - '5678:5678'
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
       - N8N_BASIC_AUTH_PASSWORD=password
     volumes:
       - n8n_data:/home/node/.n8n
-  
+
   mailhog:
     image: mailhog/mailhog:latest
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - '1025:1025'
+      - '8025:8025'
+
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
 
 volumes:
   mongodb_data:

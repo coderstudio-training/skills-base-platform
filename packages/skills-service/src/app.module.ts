@@ -7,6 +7,7 @@ import {
   MonitoringModule,
   SecurityModule,
 } from '@skills-base/shared';
+import { AppController } from './app.controller';
 import { AssessmentsModule } from './assessments/assessments.module';
 import { TaxonomyModule } from './taxonomy/taxonomy.module';
 @Module({
@@ -30,11 +31,14 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
       rateLimit: {
         enabled: true,
         windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100, // limit each IP to 100 requests per windowMs
+        max: 1000, // limit each IP to 100 requests per windowMs
       },
       ipWhitelist: {
         enabled: false, // Enable if you want IP whitelisting
         allowedIps: [],
+      },
+      apiKey: {
+        enabled: false, // Enable if you want API keying
       },
       payload: {
         maxSize: 10 * 1024 * 1024, // 10MB
@@ -58,5 +62,7 @@ import { TaxonomyModule } from './taxonomy/taxonomy.module';
     }),
   ],
   providers: [JwtStrategy],
+
+  controllers: [AppController],
 })
 export class AppModule {}

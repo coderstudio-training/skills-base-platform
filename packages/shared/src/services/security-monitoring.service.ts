@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as client from 'prom-client';
+import { Logger } from './logger.service';
 
 export enum SecurityEventType {
   // Rate Limiting Events
@@ -16,6 +17,9 @@ export enum SecurityEventType {
   // Request Events
   INVALID_REQUEST = 'threat.request.invalid',
   SUSPICIOUS_REQUEST_PATTERN = 'threat.request.suspicious',
+
+  // Other Events
+  UNKNOWN = 'threat.unknown',
 }
 
 export interface SecurityEventContext {
@@ -28,6 +32,7 @@ export interface SecurityEventContext {
 
 @Injectable()
 export class SecurityMonitoringService {
+  private readonly logger = new Logger(SecurityMonitoringService.name);
   private readonly securityMetrics: {
     rateLimitBreaches: client.Counter;
     unauthorizedAccess: client.Counter;
@@ -87,13 +92,15 @@ export class SecurityMonitoringService {
     eventType: SecurityEventType,
     context: SecurityEventContext,
   ): void {
-    const message = `Security threat detected: ${eventType.replace(/\./g, ' ')} from ${context.ipAddress}`;
-    console.warn(message, {
-      type: 'security_threat',
-      eventType,
-      ...context,
-      timestamp: new Date().toISOString(),
-    });
+    this.logger.warn(
+      `Security threat detected: ${eventType.replace(/\./g, ' ')} from ${context.ipAddress}`,
+      {
+        type: 'security_threat',
+        eventType,
+        ...context,
+        timestamp: new Date().toISOString(),
+      },
+    );
   }
 
   private trackEventMetrics(

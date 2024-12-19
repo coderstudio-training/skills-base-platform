@@ -1,23 +1,18 @@
 import { TeamMember } from '@/components/Dashboard/types';
 import { userApi } from '@/lib/api/client';
-import { useSuspenseQuery } from '@/lib/api/hooks';
-import { useSession } from 'next-auth/react';
+import { useQuery } from '@/lib/api/hooks';
 
-export function useTeamData() {
-  const { data: session } = useSession();
-  const managerName = session?.user?.name;
-
-  const data = useSuspenseQuery<TeamMember[]>(
+export function useTeamData(managerName: string) {
+  const { data } = useQuery<TeamMember[]>(
     userApi,
-    `/employees/manager/${encodeURIComponent(managerName || '')}`,
+    `/employees/manager/${encodeURIComponent(managerName)}`,
     {
       requiresAuth: true,
-      revalidate: 300,
+      cacheStrategy: 'force-cache',
     },
   );
 
   return {
-    session,
     teamMembers: data || [],
   };
 }
