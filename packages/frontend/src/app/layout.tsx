@@ -10,8 +10,20 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const themeScript = `
+    (function() {
+      const storedTheme = localStorage.getItem('theme');
+      const theme = storedTheme === 'dark' ? 'dark' : 'light';
+      document.documentElement.classList.add(theme);
+    })();
+  `;
+
   return (
     <html lang="en">
+      <head>
+        {/* Add the script to set the initial theme */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>
