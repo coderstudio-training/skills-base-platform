@@ -1,8 +1,10 @@
 import { UserProfile } from '@/components/Dashboard/types';
 import { userApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 
 export function useUserProfile() {
+  const { hasPermission } = useAuth();
+
   const {
     data: userProfile,
     error,
@@ -10,6 +12,7 @@ export function useUserProfile() {
   } = useQuery<UserProfile>(userApi, '/users/profile', {
     requiresAuth: true,
     cacheStrategy: 'force-cache',
+    enabled: hasPermission('canViewDashboard'),
   });
 
   const isManager = userProfile?.roles?.includes('manager');

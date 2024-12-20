@@ -1,4 +1,4 @@
-// packages/user-service/src/auth/auth.service.ts
+// packages/ersu - service / src / auth / auth.service.ts;
 import {
   ConflictException,
   Injectable,
