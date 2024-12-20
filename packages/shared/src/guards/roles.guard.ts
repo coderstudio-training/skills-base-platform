@@ -33,34 +33,22 @@ export class RolesGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    this.logger.info('User object:', user);
 
     if (!user || !Array.isArray(user.roles)) {
       this.logger.warn('Invalid user object or roles array');
       throw new UnauthorizedException('Invalid user object');
     }
 
-    // Debug logging
-    this.logger.info(`Required roles: ${JSON.stringify(requiredRoles)}`);
-    this.logger.info(`User roles: ${JSON.stringify(user.roles)}`);
-
-    // Case insensitive role checking
     const hasRequiredRole = requiredRoles.some((requiredRole) => {
       const normalizedRequiredRole = requiredRole.toLowerCase();
       const userHasRole = user.roles.some(
         (userRole: UserRole) =>
           userRole.toLowerCase() === normalizedRequiredRole,
       );
-
-      this.logger.info(
-        `Checking role: ${requiredRole} (normalized: ${normalizedRequiredRole}) - User has role: ${userHasRole}`,
-      );
-
       return userHasRole;
     });
 
-    // Admin email check (if you still want this)
-    if (requiredRoles.includes(UserRole.ADMIN)) {
+    if (user.roles.includes(UserRole.ADMIN)) {
       const isAdmin = user.email === this.config.adminEmail;
       return isAdmin && hasRequiredRole;
     }
