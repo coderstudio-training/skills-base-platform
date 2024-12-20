@@ -14,21 +14,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/lib/api/hooks';
 import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
-import { usePermissions } from '../../hooks/usePermissions';
 import { DashboardProps } from '../../types';
 import { IndividualPerformanceCard } from '../Cards/IndividualPerformanceCard';
 import SkillsView from './SkillsView';
 import Training from './Training';
 
 export default function ManagerDashboard(user: DashboardProps) {
-  const { hasPermission } = usePermissions();
+  const { hasPermission, role } = useAuth();
   const managerName = user.name;
   const [activeTab, setActiveTab] = useState('overview');
   const { teamMembers } = useTeamData(managerName);
+  const isManager = role?.includes('manager');
 
-  if (!hasPermission('canManageTeam')) {
+  if (!hasPermission('canManageTeam') || !isManager) {
     return (
       <Alert variant="destructive">
         <AlertDescription>
@@ -63,19 +64,19 @@ export default function ManagerDashboard(user: DashboardProps) {
           </TabsContent>
         )}
 
-        {hasPermission('canEditTeamSkills') && (
+        {hasPermission('canViewSkills') && (
           <TabsContent value="skills">
             <SkillsView name={managerName || ''} />
           </TabsContent>
         )}
 
-        {hasPermission('canEditTeamLearning') && (
+        {hasPermission('canViewLearning') && (
           <TabsContent value="training">
             <Training name={managerName || ''} />
           </TabsContent>
         )}
 
-        {hasPermission('canManageTeam') && (
+        {hasPermission('canEditTeamSkills') && (
           <TabsContent value="evaluation">
             <Card>
               <CardHeader>

@@ -18,7 +18,9 @@ import {
 } from '@nestjs/swagger';
 import {
   JwtAuthGuard,
+  Permission,
   RedisCache,
+  RequirePermissions,
   Roles,
   RolesGuard,
   UserRole,
@@ -47,6 +49,7 @@ export class SkillsMatrixController {
 
   @Get('user')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({
     summary: 'Get employee skills assessment',
     description:
@@ -118,6 +121,7 @@ export class SkillsMatrixController {
 
   @Get('user/summary')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({
     summary: 'Get employee skills summary',
     description:
@@ -191,7 +195,8 @@ export class SkillsMatrixController {
   }
 
   @Get('admin/analysis')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.VIEW_REPORTS)
   @ApiOperation({
     summary: 'Get organization technical skills analysis',
     description: 'Retrieves technical skills analysis grouped by capabilities',
@@ -237,7 +242,8 @@ export class SkillsMatrixController {
   }
 
   @Get('distributions')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.VIEW_REPORTS)
   @ApiOperation({
     summary: 'Get skill distributions',
     description:
@@ -279,7 +285,8 @@ export class SkillsMatrixController {
   }
 
   @Get('rankings')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.VIEW_REPORTS)
   @ApiOperation({
     summary: 'Get employee skill rankings',
     description:
@@ -321,7 +328,8 @@ export class SkillsMatrixController {
   }
 
   @Get('manager/:managerName')
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @Roles(UserRole.MANAGER)
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({ summary: 'Get team members skills by manager name' })
   @ApiParam({
     name: 'managerName',
