@@ -21,7 +21,6 @@ import {
   Logger,
   PaginationDto,
   Permission,
-  RateLimit,
   RedisCache,
   RequirePermissions,
   Roles,
@@ -91,46 +90,5 @@ export class UsersController extends BaseController<User> {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   findAll(@Query() paginationDto: PaginationDto) {
     return this.usersService.findAll(paginationDto);
-  }
-
-  // @Get('picture/:email')
-  // @Roles(UserRole.MANAGER, UserRole.ADMIN)
-  // @ApiOperation({ summary: 'Get user picture by email' })
-  // @ApiParam({
-  //   name: 'email',
-  //   example: 'adrian.oraya@stratpoint.com',
-  //   required: true,
-  //   type: 'string',
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'Returns the user picture URL',
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       picture: { type: 'string', nullable: true },
-  //     },
-  //   },
-  // })
-  // @ApiResponse({ status: 403, description: 'Forbidden' })
-  // @ApiResponse({ status: 404, description: 'User not found' })
-  // @RedisCache({
-  //   keyGenerator: (ctx) => `users:picture:${ctx.request.params.email}`,
-  // })
-  // async getUserPicture(@Param('email') email: string) {
-  //   const user = await this.usersService.findByEmail(email);
-  //   return { picture: user?.picture || null };
-  // }
-
-  @Get('test')
-  @RateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 10,
-    message: 'Too many requests, please try again later',
-  })
-  @RequirePermissions(Permission.MANAGE_SYSTEM)
-  @Roles(UserRole.ADMIN)
-  test() {
-    return { message: 'Security test endpoint' };
   }
 }
