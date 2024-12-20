@@ -46,7 +46,7 @@ export class UsersController extends BaseController<User> {
 
   @Post()
   @Roles(UserRole.ADMIN)
-  @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({
     status: 201,
@@ -80,7 +80,7 @@ export class UsersController extends BaseController<User> {
 
   @Get()
   @Roles(UserRole.ADMIN)
-  @RequirePermissions(Permission.MANAGE_SYSTEM)
+  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: 200,

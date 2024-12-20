@@ -32,9 +32,7 @@ export default function ManagerDashboard(user: DashboardProps) {
   if (!hasPermission('canManageTeam') || !isManager) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>
-          You dont have permission to access the manager dashboard.
-        </AlertDescription>
+        <AlertDescription>Access Denied</AlertDescription>
       </Alert>
     );
   }
@@ -52,11 +50,9 @@ export default function ManagerDashboard(user: DashboardProps) {
           <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
         </TabsList>
 
-        {hasPermission('canManageTeam') && (
-          <TabsContent value="overview" className="space-y-4">
-            <ManagerOverview teamMembers={teamMembers} />
-          </TabsContent>
-        )}
+        <TabsContent value="overview" className="space-y-4">
+          <ManagerOverview teamMembers={teamMembers} />
+        </TabsContent>
 
         {hasPermission('canViewReports') && (
           <TabsContent value="performance">
