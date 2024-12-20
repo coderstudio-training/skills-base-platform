@@ -1,10 +1,11 @@
 import { learningApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useEffect, useState } from 'react';
 import { MemberRecommendations, RecommendationResponse, TeamMember } from '../types';
 import { useTeamData } from './useTeamData';
 
 export function useTeamRecommendations(managerName: string) {
+  const { hasPermission } = useAuth();
   const { teamMembers } = useTeamData(managerName);
   const [teamData, setTeamData] = useState<
     Array<TeamMember & { recommendations?: MemberRecommendations }>
@@ -15,7 +16,8 @@ export function useTeamRecommendations(managerName: string) {
     learningApi,
     `/api/learning/recommendations/${teamMembers[0]?.email}`,
     {
-      enabled: teamMembers.length > 0 && !!teamMembers[0]?.email,
+      enabled:
+        teamMembers.length > 0 && !!teamMembers[0]?.email && hasPermission('canViewLearning'),
       requiresAuth: true,
       cacheStrategy: 'force-cache',
     },

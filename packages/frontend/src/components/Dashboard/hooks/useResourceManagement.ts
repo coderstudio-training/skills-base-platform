@@ -1,9 +1,10 @@
 import { learningApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useMemo } from 'react';
 import type { ResourcesResponse } from '../types';
 
 export function useResourceManagement(category?: string) {
+  const { hasPermission } = useAuth();
   // Use useQuery for fetching resource stats
   const {
     data: resourceStats,
@@ -16,6 +17,7 @@ export function useResourceManagement(category?: string) {
       requiresAuth: true,
       // revalidate: 300, // Cache for 5 minutes
       cacheStrategy: 'force-cache',
+      enabled: hasPermission('canManageSystem'),
     },
   );
 

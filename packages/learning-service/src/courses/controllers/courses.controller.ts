@@ -18,7 +18,9 @@ import {
   InvalidateCache,
   JwtAuthGuard,
   LoggingInterceptor,
+  Permission,
   RedisCache,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -65,6 +67,7 @@ export class CoursesController {
 
   @Get()
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
   @ApiOperation({
     summary: 'Get all courses',
     description:
@@ -91,6 +94,7 @@ export class CoursesController {
 
   @Get('resources')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
   @ApiOperation({
     summary: 'Get learning resources',
     description:

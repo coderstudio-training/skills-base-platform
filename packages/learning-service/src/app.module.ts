@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import {
+  DatabaseModule,
   JwtStrategy,
   LoggingModule,
   MonitoringModule,
@@ -15,6 +16,7 @@ import { RecommendationService } from './courses/services/recommendation.service
 
 @Module({
   imports: [
+    DatabaseModule,
     // Core Configuration
     ConfigModule.forRoot({
       isGlobal: true,
