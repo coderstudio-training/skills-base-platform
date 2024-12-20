@@ -7,9 +7,17 @@ import React, { Dispatch, SetStateAction } from 'react';
 export interface LandingPageCardProps {
   title: string;
   description?: string;
-  contentHeader: string;
   content?: string;
+  contentHeader: string;
   icon?: LucideIcon;
+  cardCn?: string;
+  cardHeaderCn?: string;
+  cardTitleCn?: string;
+  iconCn?: string;
+  cardContentCn?: string;
+  descriptionCn?: string;
+  contentCn?: string;
+  contentHeaderCn?: string;
 }
 
 export interface ErrorBoundaryProps {
