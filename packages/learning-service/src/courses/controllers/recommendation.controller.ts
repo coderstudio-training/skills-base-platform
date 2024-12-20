@@ -16,7 +16,9 @@ import {
 import {
   JwtAuthGuard,
   LoggingInterceptor,
+  Permission,
   RedisCache,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -35,6 +37,7 @@ export class RecommendationController {
 
   @Get('recommendations/:email')
   @Roles(UserRole.STAFF, UserRole.MANAGER)
+  @RequirePermissions(Permission.VIEW_LEARNING)
   @ApiOperation({
     summary: 'Get learning recommendations',
     description: `

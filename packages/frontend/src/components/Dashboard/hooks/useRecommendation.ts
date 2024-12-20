@@ -1,12 +1,12 @@
 import { learningApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useState } from 'react';
 import { Recommendation } from '../types';
 
 export function useRecommendations(email: string) {
   const [selectedCourse, setSelectedCourse] = useState<Recommendation | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
+  const { hasPermission } = useAuth();
   const {
     data: recommendationData,
     error,
@@ -17,6 +17,7 @@ export function useRecommendations(email: string) {
     {
       cacheStrategy: 'force-cache',
       requiresAuth: true,
+      enabled: hasPermission('canViewLearning'),
     },
   );
 
