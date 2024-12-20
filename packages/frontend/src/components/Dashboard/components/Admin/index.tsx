@@ -1,6 +1,5 @@
 'use client';
 
-import { LearningManagement } from '@/components/Dashboard/components/Admin/LearningManagement';
 import { SearchAndFilter } from '@/components/Dashboard/components/Admin/SearchAndFilter';
 import { UserDirectory } from '@/components/Dashboard/components/Admin/UserDirectory';
 import { AdminMetricCards } from '@/components/Dashboard/components/Cards/AdminMetricCards';
@@ -14,9 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useTSCManager } from '../../hooks/useTSCManager';
-import { PermissionGate } from '../PermissionGate';
 import TaxonomyManager from '../TSC';
 import AnalysisView from './AnalysisView';
+import { LearningManagement } from './LearningManagement';
 
 export default function AdminDashboard() {
   const { hasPermission } = usePermissions();
@@ -44,9 +43,7 @@ export default function AdminDashboard() {
   if (!hasPermission('canManageSystem')) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>
-          <p>You dont have permission to access the admin dashboard.</p>
-        </AlertDescription>
+        <AlertDescription>You dont have permission to access the admin dashboard.</AlertDescription>
       </Alert>
     );
   }
@@ -56,79 +53,61 @@ export default function AdminDashboard() {
       <AdminDashboardHeader />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <PermissionGate permission="canManageUsers">
-          <SearchAndFilter
-            selectedBusinessUnit={selectedBusinessUnit}
-            businessUnits={businessUnits.map(bu => bu.name)}
-            searchQuery={searchQuery}
-            onBusinessUnitChange={handleBusinessUnitChange}
-            onSearchChange={handleSearch}
-            isLoading={employeesLoading}
-          />
+        {hasPermission('canManageUsers') && (
+          <>
+            <SearchAndFilter
+              selectedBusinessUnit={selectedBusinessUnit}
+              businessUnits={businessUnits.map(bu => bu.name)}
+              searchQuery={searchQuery}
+              onBusinessUnitChange={handleBusinessUnitChange}
+              onSearchChange={handleSearch}
+              isLoading={employeesLoading}
+            />
 
-          <AdminMetricCards stats={stats} />
+            <AdminMetricCards stats={stats} />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <TopPerformers rankings={topPerformers} loading={employeesLoading} />
-            <SkillGapOverview skillGaps={skillGaps} loading={employeesLoading} />
-            <BusinessUnitDistribution businessUnits={businessUnits} loading={employeesLoading} />
-          </div>
-        </PermissionGate>
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <TopPerformers rankings={topPerformers} />
+              <SkillGapOverview skillGaps={skillGaps} />
+              <BusinessUnitDistribution businessUnits={businessUnits} />
+            </div>
+          </>
+        )}
 
         <Tabs defaultValue="users" className="space-y-4">
           <TabsList>
-            <PermissionGate permission="canManageUsers">
-              <TabsTrigger value="users" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Users
-              </TabsTrigger>
-            </PermissionGate>
-
-            <PermissionGate permission="canEditAllSkills">
-              <TabsTrigger value="skills" className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Skills
-              </TabsTrigger>
-            </PermissionGate>
-
-            <PermissionGate permission="canEditAllSkills">
-              <TabsTrigger value="required-skills" className="flex items-center gap-2">
-                <Award className="h-4 w-4" />
-                Required Skills
-              </TabsTrigger>
-            </PermissionGate>
-
-            <PermissionGate permission="canManageSystem">
-              <TabsTrigger value="organization" className="flex items-center gap-2">
-                <Network className="h-4 w-4" />
-                Organization
-              </TabsTrigger>
-            </PermissionGate>
-
-            <PermissionGate permission="canViewReports">
-              <TabsTrigger value="metrics" className="flex items-center gap-2">
-                <BarChart2 className="h-4 w-4" />
-                Metrics
-              </TabsTrigger>
-            </PermissionGate>
-
-            <PermissionGate permission="canEditAllLearning">
-              <TabsTrigger value="learning" className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Learning
-              </TabsTrigger>
-            </PermissionGate>
-
-            <PermissionGate permission="canManageSystem">
-              <TabsTrigger value="taxonomy" className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Taxonomy
-              </TabsTrigger>
-            </PermissionGate>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Users
+            </TabsTrigger>
+            <TabsTrigger value="skills" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Skills
+            </TabsTrigger>
+            <TabsTrigger value="required-skills" className="flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              Required Skills
+            </TabsTrigger>
+            <TabsTrigger value="organization" className="flex items-center gap-2">
+              <Network className="h-4 w-4" />
+              Organization
+            </TabsTrigger>
+            <TabsTrigger value="metrics" className="flex items-center gap-2">
+              <BarChart2 className="h-4 w-4" />
+              Metrics
+            </TabsTrigger>
+            <TabsTrigger value="learning" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Learning
+            </TabsTrigger>
+            <TabsTrigger value="taxonomy" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Taxonomy
+            </TabsTrigger>
           </TabsList>
 
-          <PermissionGate permission="canManageUsers">
-            <TabsContent value="users" className="space-y-4">
+          {hasPermission('canManageUsers') && (
+            <TabsContent value="users">
               <UserDirectory
                 employees={employees}
                 totalItems={totalItems}
@@ -140,29 +119,29 @@ export default function AdminDashboard() {
                 onLimitChange={handleLimitChange}
               />
             </TabsContent>
-          </PermissionGate>
+          )}
 
-          <PermissionGate permission="canViewReports">
+          {hasPermission('canViewReports') && (
             <TabsContent value="metrics">
               <AnalysisView />
             </TabsContent>
-          </PermissionGate>
+          )}
 
-          <PermissionGate permission="canEditAllLearning">
+          {hasPermission('canEditAllLearning') && (
             <TabsContent value="learning">
               <LearningManagement />
             </TabsContent>
-          </PermissionGate>
+          )}
 
-          <PermissionGate permission="canManageSystem">
+          {hasPermission('canManageSystem') && (
             <TabsContent value="taxonomy">
               <TaxonomyManager
                 searchQuery={searchQuery}
-                data={tscData || []}
+                data={tscData ? tscData : []}
                 selectedBusinessUnit={selectedBusinessUnit}
               />
             </TabsContent>
-          </PermissionGate>
+          )}
         </Tabs>
       </main>
     </div>

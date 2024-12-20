@@ -6,7 +6,7 @@ import {
   TopPerformersResponse,
 } from '@/components/Dashboard/types';
 import { skillsApi, userApi } from '@/lib/api/client';
-import { useQuery, useSuspenseQuery } from '@/lib/api/hooks';
+import { useAuth, useQuery, useSuspenseQuery } from '@/lib/api/hooks';
 import { useCallback, useEffect, useState } from 'react';
 
 export function useAdminData() {
@@ -15,6 +15,7 @@ export function useAdminData() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBusinessUnit, setSelectedBusinessUnit] = useState('All Business Units');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const { hasPermission } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -49,6 +50,7 @@ export function useAdminData() {
   } = useQuery<EmployeesResponse>(userApi, `${endpoint}?${queryParams}`, {
     cacheStrategy: 'force-cache',
     requiresAuth: true,
+    enabled: hasPermission('canManageSystem'),
   });
 
   // Business units query
@@ -58,6 +60,7 @@ export function useAdminData() {
     {
       cacheStrategy: 'force-cache',
       requiresAuth: true,
+      enabled: hasPermission('canManageSystem'),
     },
   );
 
@@ -65,6 +68,7 @@ export function useAdminData() {
   const statsData = useSuspenseQuery<EmployeeStats>(userApi, '/employees/stats', {
     cacheStrategy: 'force-cache',
     requiresAuth: true,
+    enabled: hasPermission('canManageSystem'),
   });
 
   // Skill gaps query
@@ -74,6 +78,7 @@ export function useAdminData() {
     {
       cacheStrategy: 'force-cache',
       requiresAuth: true,
+      enabled: hasPermission('canManageSystem'),
     },
   );
 
@@ -84,6 +89,7 @@ export function useAdminData() {
     {
       cacheStrategy: 'force-cache',
       requiresAuth: true,
+      enabled: hasPermission('canManageSystem'),
     },
   );
 

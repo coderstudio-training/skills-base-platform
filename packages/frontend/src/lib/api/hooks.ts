@@ -12,6 +12,7 @@ interface CacheOptions {
   requiresAuth?: boolean;
   cacheStrategy?: RequestCache;
   revalidate?: number;
+  enabled?: boolean;
 }
 
 interface CacheEntry<T> {

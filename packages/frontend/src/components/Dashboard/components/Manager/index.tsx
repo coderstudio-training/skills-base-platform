@@ -19,7 +19,6 @@ import { useState } from 'react';
 import { usePermissions } from '../../hooks/usePermissions';
 import { DashboardProps } from '../../types';
 import { IndividualPerformanceCard } from '../Cards/IndividualPerformanceCard';
-import { PermissionGate } from '../PermissionGate';
 import SkillsView from './SkillsView';
 import Training from './Training';
 
@@ -45,52 +44,38 @@ export default function ManagerDashboard(user: DashboardProps) {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
-          <PermissionGate permission="canManageTeam">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-          </PermissionGate>
-
-          <PermissionGate permission="canViewReports">
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-          </PermissionGate>
-
-          <PermissionGate permission="canEditTeamSkills">
-            <TabsTrigger value="skills">Skills</TabsTrigger>
-          </PermissionGate>
-
-          <PermissionGate permission="canEditTeamLearning">
-            <TabsTrigger value="training">Training</TabsTrigger>
-          </PermissionGate>
-
-          <PermissionGate permission="canManageTeam">
-            <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
-          </PermissionGate>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="skills">Skills</TabsTrigger>
+          <TabsTrigger value="training">Training</TabsTrigger>
+          <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
         </TabsList>
 
-        <PermissionGate permission="canManageTeam">
+        {hasPermission('canManageTeam') && (
           <TabsContent value="overview" className="space-y-4">
             <ManagerOverview teamMembers={teamMembers} />
           </TabsContent>
-        </PermissionGate>
+        )}
 
-        <PermissionGate permission="canViewReports">
+        {hasPermission('canViewReports') && (
           <TabsContent value="performance">
             <IndividualPerformanceCard members={teamMembers} />
           </TabsContent>
-        </PermissionGate>
+        )}
 
-        <PermissionGate permission="canEditTeamSkills">
+        {hasPermission('canEditTeamSkills') && (
           <TabsContent value="skills">
             <SkillsView name={managerName || ''} />
           </TabsContent>
-        </PermissionGate>
+        )}
 
-        <PermissionGate permission="canEditTeamLearning">
+        {hasPermission('canEditTeamLearning') && (
           <TabsContent value="training">
             <Training name={managerName || ''} />
           </TabsContent>
-        </PermissionGate>
+        )}
 
-        <PermissionGate permission="canManageTeam">
+        {hasPermission('canManageTeam') && (
           <TabsContent value="evaluation">
             <Card>
               <CardHeader>
@@ -170,7 +155,7 @@ export default function ManagerDashboard(user: DashboardProps) {
               </CardContent>
             </Card>
           </TabsContent>
-        </PermissionGate>
+        )}
       </Tabs>
     </div>
   );
