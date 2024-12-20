@@ -78,7 +78,7 @@ const CustomTooltip = ({ active, payload }: TooltipProps) => {
     const data = payload[0].payload as SkillData;
 
     return (
-      <div className="bg-white p-4 rounded-lg space-y-1 shadow-lg border">
+      <div className="bg-background p-4 rounded-lg space-y-1 shadow-lg border">
         <p className="font-semibold mb-2">{data.skill}</p>
         <p className="text-blue-600">Current Level: {data.average.toFixed(1)}</p>
         <p className="text-gray-600">Required Level: {data.requiredRating.toFixed(1)}</p>
@@ -137,7 +137,7 @@ export function CustomBarChart({
                     {entry.value === 'Skill Gap' ? (
                       <div className="w-3 h-3" style={{ backgroundColor: '#dc2626' }}></div>
                     ) : (
-                      <div className="w-3 h-3" style={{ backgroundColor: entry.color }}></div>
+                      <div className="w-3 h-3" style={{ backgroundColor: 'entry.color' }}></div>
                     )}
                     <span className="text-sm text-gray-700">{entry.value}</span>
                   </div>

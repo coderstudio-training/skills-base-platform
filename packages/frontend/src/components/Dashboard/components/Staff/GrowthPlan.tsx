@@ -86,7 +86,7 @@ function GrowthPlan(user: TabViewProps) {
 
       {isDialogOpen && selectedCourse && (
         <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl p-6 relative">
+          <div className="bg-background rounded-lg w-full max-w-2xl p-6 relative">
             <button
               onClick={() => setIsDialogOpen(false)}
               className="absolute right-3 top-3 text-gray-400 hover:text-gray-500"

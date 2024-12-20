@@ -44,6 +44,7 @@ export class CoursesController {
 
   @Post('bulk-update')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.EDIT_ALL_LEARNING)
   @ApiOperation({
     summary: 'Bulk update courses',
     description:

@@ -21,7 +21,9 @@ import {
   InvalidateCache,
   JwtAuthGuard,
   LoggingInterceptor,
+  Permission,
   RedisCache,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -46,6 +48,7 @@ export class TaxonomyController {
   // Bulk Upsert for Technical Taxonomy
   @Post('technical/bulk-upsert')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.EDIT_ALL_SKILLS)
   @ApiOperation({
     summary: 'Bulk upsert taxonomy records for a specific business unit',
   })
@@ -80,6 +83,7 @@ export class TaxonomyController {
   // Bulk Upsert for Soft Taxonomy
   @Post('soft/bulk-upsert')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.EDIT_ALL_SKILLS)
   @ApiOperation({
     summary: 'Bulk upsert soft skill taxonomy records',
   })
@@ -113,6 +117,8 @@ export class TaxonomyController {
 
   // Find all Technical Taxonomy
   @Get('technical')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({ summary: 'Get all taxonomy records by business unit' })
   @ApiQuery({
     name: 'businessUnit',
@@ -184,6 +190,8 @@ export class TaxonomyController {
 
   // Find all Soft Taxonomy
   @Get('soft')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({
     summary: 'Get all soft skills taxonomy',
   })
@@ -376,6 +384,8 @@ export class TaxonomyController {
 
   // Find Soft Taxonomy by title
   @Get('soft/title/:title')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({
     summary: 'Get all matching title for soft skills taxonomy',
   })

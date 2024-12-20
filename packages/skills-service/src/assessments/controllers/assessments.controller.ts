@@ -9,6 +9,8 @@ import {
 import {
   InvalidateCache,
   JwtAuthGuard,
+  Permission,
+  RequirePermissions,
   Roles,
   RolesGuard,
   UserRole,
@@ -29,6 +31,7 @@ export class AssessmentsController {
 
   @Post('bulk-update-assessments')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.EDIT_ALL_SKILLS)
   @ApiOperation({
     summary: 'Bulk update skills assessments',
     description:

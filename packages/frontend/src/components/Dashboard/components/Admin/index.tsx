@@ -18,9 +18,7 @@ import AnalysisView from './AnalysisView';
 import { LearningManagement } from './LearningManagement';
 
 export default function AdminDashboard() {
-  const { role, hasPermission } = useAuth();
-  const isAdmin = role?.includes('admin');
-
+  const { hasPermission, role } = useAuth();
   const {
     employees,
     totalItems,
@@ -40,9 +38,10 @@ export default function AdminDashboard() {
     handleBusinessUnitChange,
   } = useAdminData();
 
+  const isAdmin = role?.includes('admin');
   const { data: tscData } = useTSCManager();
 
-  if (isAdmin && !hasPermission('canManageSystem')) {
+  if (!hasPermission('canViewDashboard') || !isAdmin) {
     return (
       <Alert variant="destructive">
         <AlertDescription>Access Denied</AlertDescription>
