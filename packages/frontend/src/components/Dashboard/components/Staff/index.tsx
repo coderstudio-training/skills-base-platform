@@ -15,9 +15,9 @@ import SkillsView from './SkillsView';
 export default function StaffDashboard(user: DashboardProps) {
   const { hasPermission, role } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const isStaff = role?.includes('staff');
   const email = user.email;
   const { skillsData, selectedCategory, setSelectedCategory } = useStaffData(email, hasPermission);
-  const isStaff = role?.includes('staff');
 
   if (!hasPermission('canViewDashboard') || !isStaff) {
     return (
@@ -49,7 +49,7 @@ export default function StaffDashboard(user: DashboardProps) {
           </TabsContent>
         )}
 
-        {hasPermission('canViewSkills') && (
+        {hasPermission('canManageSystem') && (
           <TabsContent value="skills">
             <SkillsView
               skillsData={skillsData}
