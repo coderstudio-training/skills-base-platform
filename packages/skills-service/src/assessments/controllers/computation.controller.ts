@@ -67,10 +67,6 @@ export class PerformanceController {
     status: 500,
     description: 'Internal server error while calculating performance',
   })
-  @RedisCache({
-    keyGenerator: (ctx) =>
-      `assessments:bulk-performance:${ctx.request.body.bu}`,
-  })
   async bulkCalculatePerformance(@Body() body: { bu: string }) {
     try {
       const { bu } = body;

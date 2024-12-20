@@ -38,8 +38,8 @@ export default function LandingDashboard() {
   return (
     <div className="container mx-auto p-4">
       <header className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2">Welcome to SkillBase</h1>
-        <p className="text-xl text-muted-foreground">Empower Your Team, Elevate Your Business</p>
+        <h1 className="text-4xl font-bold mb-2">Welcome to SkillPoint</h1>
+        <p className="text-xl text-muted-foreground">Skills Crafted with CARE</p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -78,7 +78,7 @@ export default function LandingDashboard() {
         <TabsContent value="overview">
           <Card>
             <CardHeader>
-              <CardTitle>Why Choose SkillBase?</CardTitle>
+              <CardTitle>Why Choose SkillPoint?</CardTitle>
               <CardDescription>
                 Discover how our platform can transform your team&apos;s skills management
               </CardDescription>
@@ -111,7 +111,7 @@ export default function LandingDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Platform Features</CardTitle>
-              <CardDescription>Explore the powerful tools SkillBase offers</CardDescription>
+              <CardDescription>Explore the powerful tools SkillPoint offers</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -142,7 +142,7 @@ export default function LandingDashboard() {
             <CardHeader>
               <CardTitle>Platform Benefits</CardTitle>
               <CardDescription>
-                See the impact SkillBase can have on your organization
+                See the impact SkillPoint can have on your organization
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -7,13 +7,13 @@ export default function LoadingCard({
   div_h1_cn,
   div_h2_cn,
   div_h3_cn,
-  skeleton_h_cn = 'bg-gray-300',
+  skeleton_h_cn = 'bg-gray-300 dark:bg-gray-700',
   div_b1_cn,
   headerContent = 'Card ****',
   bodyChildren,
 }: LoadingCardProps) {
   return (
-    <Skeleton className={cn('bg-gray-200 rounded-xl border shadow bg-card', skeleton_cn)}>
+    <Skeleton className={cn('rounded-xl border shadow bg-card', skeleton_cn)}>
       <div className={cn('flex flex-col space-y-1.5 p-6', div_h1_cn)}>
         <div className={cn('flex items-center justify-between', div_h2_cn)}>
           <div className={cn('flex flex-col space-y-1.5', div_h3_cn)}>

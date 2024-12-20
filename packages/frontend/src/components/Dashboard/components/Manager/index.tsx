@@ -26,7 +26,7 @@ export default function ManagerDashboard(user: DashboardProps) {
   const { teamMembers } = useTeamData(managerName);
 
   return (
-    <div className="container mx-auto p-4 max-w-[80%]">
+    <div className="container mx-auto p-4 max-w-full lg:max-w-[80%]">
       <UserHeader />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>

@@ -9,6 +9,5 @@ const AdminDashboard = dynamic(() => import('@/components/Dashboard/components/A
 
 export default async function AdminDashboardPage() {
   await serverSideIntercept({ permission: 'canViewDashboard' });
-
   return <AdminDashboard />;
 }

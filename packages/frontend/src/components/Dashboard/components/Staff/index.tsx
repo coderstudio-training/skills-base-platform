@@ -15,7 +15,7 @@ export default function StaffDashboard(user: DashboardProps) {
     useStaffData(email);
 
   return (
-    <div className="container mx-auto p-4 max-w-[80%]">
+    <div className="container mx-auto p-4 max-w-max md:max-w-[80%]">
       <UserHeader />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>

@@ -9,20 +9,30 @@ export default function ManagerLoading() {
       <LoadingHeader />
       <div>
         <div className="h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground grid w-full grid-cols-5">
-          <div className="bg-white text-transparent inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium">
-            <Skeleton className="bg-gray-200 text-transparent rounded-sm">Tab List 1 </Skeleton>
+          <div className="bg-background text-transparent inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium">
+            <Skeleton className="bg-gray-200 dark:bg-gray-800 text-transparent rounded-sm">
+              Tab List 1{' '}
+            </Skeleton>
           </div>
           <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium text-transparent">
-            <Skeleton className="bg-gray-200 text-transparent rounded-sm">Tab List 2 </Skeleton>
+            <Skeleton className="bg-gray-200 dark:bg-gray-700 text-transparent rounded-sm">
+              Tab List 2{' '}
+            </Skeleton>
           </div>
           <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium text-transparent">
-            <Skeleton className="bg-gray-200 text-transparent rounded-sm">Tab List 3 </Skeleton>
+            <Skeleton className="bg-gray-200 dark:bg-gray-700 text-transparent rounded-sm">
+              Tab List 3{' '}
+            </Skeleton>
           </div>
           <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium text-transparent">
-            <Skeleton className="bg-gray-200 text-transparent rounded-sm">Tab List 4 </Skeleton>
+            <Skeleton className="bg-gray-200 dark:bg-gray-700 text-transparent rounded-sm">
+              Tab List 4{' '}
+            </Skeleton>
           </div>
           <div className=" inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium text-transparent">
-            <Skeleton className="bg-gray-200 text-transparent rounded-sm">Tab List 5 </Skeleton>
+            <Skeleton className="bg-gray-200 dark:bg-gray-700 text-transparent rounded-sm">
+              Tab List 5{' '}
+            </Skeleton>
           </div>
         </div>
         <div className="mt-2 space-y-4">
@@ -30,14 +40,14 @@ export default function ManagerLoading() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <LoadingCard
                 bodyChildren={
-                  <Skeleton className="bg-gray-300 text-2xl rounded-md font-bold text-transparent">
+                  <Skeleton className="bg-gray-300 dark:bg-gray-700 text-2xl rounded-md font-bold text-transparent">
                     ****
                   </Skeleton>
                 }
               />
               <LoadingCard
                 bodyChildren={
-                  <Skeleton className="bg-gray-300 text-2xl rounded-md font-bold text-transparent">
+                  <Skeleton className="bg-gray-300 dark:bg-gray-700 text-2xl rounded-md font-bold text-transparent">
                     ****
                   </Skeleton>
                 }
@@ -45,10 +55,10 @@ export default function ManagerLoading() {
               <LoadingCard
                 bodyChildren={
                   <div>
-                    <Skeleton className="bg-gray-300 text-2xl rounded-md font-bold text-transparent">
+                    <Skeleton className="bg-gray-300 dark:bg-gray-700 text-2xl rounded-md font-bold text-transparent">
                       ****
                     </Skeleton>
-                    <Skeleton className="bg-gray-300 text-xs text-transparent mt-1 w-1/4 rounded-md">
+                    <Skeleton className="bg-gray-300 dark:bg-gray-700 text-xs text-transparent mt-1 w-1/4 rounded-md">
                       ****
                     </Skeleton>
                   </div>
@@ -56,14 +66,14 @@ export default function ManagerLoading() {
               />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              <Skeleton className="bg-gray-200 rounded-xl border shadow bg-card">
+              <Skeleton className="bg-gray-200 dark:bg-gray-800 rounded-xl border shadow bg-card">
                 <div className="flex flex-col space-y-1.5 p-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1.5">
-                      <Skeleton className="bg-gray-300 rounded-md text-transparent font-semibold tracking-tight leading-none w-2/3">
+                      <Skeleton className="bg-gray-300 dark:bg-gray-700 rounded-md text-transparent font-semibold tracking-tight leading-none w-2/3">
                         Card Header
                       </Skeleton>
-                      <Skeleton className="bg-gray-300 rounded-md text-sm text-transparent">
+                      <Skeleton className="bg-gray-300 dark:bg-gray-700 rounded-md text-sm text-transparent">
                         Card Description Lorem Ipsum
                       </Skeleton>
                     </div>
@@ -82,14 +92,14 @@ export default function ManagerLoading() {
                   </div>
                 </div>
               </Skeleton>
-              <Skeleton className="bg-gray-200 rounded-xl border shadow bg-card">
+              <Skeleton className="bg-gray-200 dark:bg-gray-800 rounded-xl border shadow bg-card">
                 <div className="flex flex-col space-y-1.5 p-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1.5">
-                      <Skeleton className="bg-gray-300 rounded-md text-transparent font-semibold tracking-tight leading-none w-[90%]">
+                      <Skeleton className="bg-gray-300 dark:bg-gray-700 rounded-md text-transparent font-semibold tracking-tight leading-none w-[90%]">
                         Card Header
                       </Skeleton>
-                      <Skeleton className="bg-gray-300 rounded-md text-sm text-transparent">
+                      <Skeleton className="bg-gray-300 dark:bg-gray-700 rounded-md text-sm text-transparent">
                         Card Description
                       </Skeleton>
                     </div>
@@ -102,12 +112,12 @@ export default function ManagerLoading() {
                         <div className="space-y-4 pr-4">
                           <div className="flex items-center justify-between p-2 rounded-lg">
                             <div className="flex items-center gap-3 ">
-                              <Skeleton className="bg-gray-300 relative flex shrink-0 overflow-hidden rounded-full h-10 w-10" />
+                              <Skeleton className="bg-gray-300 dark:bg-gray-700 relative flex shrink-0 overflow-hidden rounded-full h-10 w-10" />
                               <div>
-                                <Skeleton className="bg-gray-300 rounded-md text-transparent font-medium ">
+                                <Skeleton className="bg-gray-300 dark:bg-gray-700 rounded-md text-transparent font-medium ">
                                   First Middle Last Name
                                 </Skeleton>
-                                <Skeleton className="bg-gray-300 rounded-md text-sm text-transparent w-3/4 mt-1">
+                                <Skeleton className="bg-gray-300 dark:bg-gray-700 rounded-md text-sm text-transparent w-3/4 mt-1">
                                   Employee Job Title
                                 </Skeleton>
                               </div>
@@ -115,12 +125,12 @@ export default function ManagerLoading() {
                           </div>
                           <div className="flex items-center justify-between p-2 rounded-lg">
                             <div className="flex items-center gap-3 ">
-                              <Skeleton className="bg-gray-300 relative flex shrink-0 overflow-hidden rounded-full h-10 w-10" />
+                              <Skeleton className="bg-gray-300 dark:bg-gray-700 relative flex shrink-0 overflow-hidden rounded-full h-10 w-10" />
                               <div>
-                                <Skeleton className="bg-gray-300 rounded-md text-transparent font-medium ">
+                                <Skeleton className="bg-gray-300 dark:bg-gray-700 rounded-md text-transparent font-medium ">
                                   First Middle Last Name
                                 </Skeleton>
-                                <Skeleton className="bg-gray-300 rounded-md text-sm text-transparent w-3/4 mt-1">
+                                <Skeleton className="bg-gray-300 dark:bg-gray-700 rounded-md text-sm text-transparent w-3/4 mt-1">
                                   Employee Job Title
                                 </Skeleton>
                               </div>
@@ -128,12 +138,12 @@ export default function ManagerLoading() {
                           </div>
                           <div className="flex items-center justify-between p-2 rounded-lg">
                             <div className="flex items-center gap-3 ">
-                              <Skeleton className="bg-gray-300 relative flex shrink-0 overflow-hidden rounded-full h-10 w-10" />
+                              <Skeleton className="bg-gray-300 dark:bg-gray-700 relative flex shrink-0 overflow-hidden rounded-full h-10 w-10" />
                               <div>
-                                <Skeleton className="bg-gray-300 rounded-md text-transparent font-medium ">
+                                <Skeleton className="bg-gray-300 dark:bg-gray-700 rounded-md text-transparent font-medium ">
                                   First Middle Last Name
                                 </Skeleton>
-                                <Skeleton className="bg-gray-300 rounded-md text-sm text-transparent w-3/4 mt-1">
+                                <Skeleton className="bg-gray-300 dark:bg-gray-700 rounded-md text-sm text-transparent w-3/4 mt-1">
                                   Employee Job Title
                                 </Skeleton>
                               </div>
