@@ -10,15 +10,17 @@ import AdminDashboardHeader from '@/components/Dashboard/components/Header/Admin
 import { useAdminData } from '@/components/Dashboard/hooks/useAdminData';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/lib/api/hooks';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
-import { usePermissions } from '../../hooks/usePermissions';
 import { useTSCManager } from '../../hooks/useTSCManager';
 import TaxonomyManager from '../TSC';
 import AnalysisView from './AnalysisView';
 import { LearningManagement } from './LearningManagement';
 
 export default function AdminDashboard() {
-  const { hasPermission } = usePermissions();
+  const { role, hasPermission } = useAuth();
+  const isAdmin = role?.includes('admin');
+
   const {
     employees,
     totalItems,
@@ -40,10 +42,10 @@ export default function AdminDashboard() {
 
   const { data: tscData } = useTSCManager();
 
-  if (!hasPermission('canManageSystem')) {
+  if (isAdmin && !hasPermission('canManageSystem')) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>You dont have permission to access the admin dashboard.</AlertDescription>
+        <AlertDescription>Access Denied</AlertDescription>
       </Alert>
     );
   }

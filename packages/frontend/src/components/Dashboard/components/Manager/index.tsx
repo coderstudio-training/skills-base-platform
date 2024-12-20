@@ -14,26 +14,25 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/lib/api/hooks';
 import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
-import { usePermissions } from '../../hooks/usePermissions';
 import { DashboardProps } from '../../types';
 import { IndividualPerformanceCard } from '../Cards/IndividualPerformanceCard';
 import SkillsView from './SkillsView';
 import Training from './Training';
 
 export default function ManagerDashboard(user: DashboardProps) {
-  const { hasPermission } = usePermissions();
+  const { role, hasPermission } = useAuth();
   const managerName = user.name;
   const [activeTab, setActiveTab] = useState('overview');
   const { teamMembers } = useTeamData(managerName);
+  const isManager = role?.includes('manager');
 
-  if (!hasPermission('canManageTeam')) {
+  if (!isManager && !hasPermission('canViewDashboard')) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>
-          You dont have permission to access the manager dashboard.
-        </AlertDescription>
+        <AlertDescription>Access Denied</AlertDescription>
       </Alert>
     );
   }
@@ -51,11 +50,9 @@ export default function ManagerDashboard(user: DashboardProps) {
           <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
         </TabsList>
 
-        {hasPermission('canManageTeam') && (
-          <TabsContent value="overview" className="space-y-4">
-            <ManagerOverview teamMembers={teamMembers} />
-          </TabsContent>
-        )}
+        <TabsContent value="overview" className="space-y-4">
+          <ManagerOverview teamMembers={teamMembers} />
+        </TabsContent>
 
         {hasPermission('canViewReports') && (
           <TabsContent value="performance">
