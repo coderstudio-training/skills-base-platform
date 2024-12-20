@@ -1,17 +1,18 @@
 import { UserProfile } from '@/components/Dashboard/types';
 import { userApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
-import { useSession } from 'next-auth/react';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 
 export function useUserProfile() {
-  const { data: session } = useSession();
+  const { hasPermission } = useAuth();
+
   const {
     data: userProfile,
     error,
     isLoading,
   } = useQuery<UserProfile>(userApi, '/users/profile', {
-    enabled: !!session?.user?.email,
-    revalidate: 3600,
+    requiresAuth: true,
+    cacheStrategy: 'force-cache',
+    enabled: hasPermission('canViewDashboard'),
   });
 
   const isManager = userProfile?.roles?.includes('manager');

@@ -64,3 +64,11 @@ export * from './utils/swagger.utils';
 export * from './constants/permissions.constant';
 export * from './decorators/require-permissions.decorator';
 export * from './guards/permissions.guard';
+
+// redis
+export * from './decorators/cache-invalidator.decorator';
+export * from './decorators/redis-cache.decorator';
+export * from './interceptors/cache-invalidate.interceptor';
+export * from './interceptors/redis-cache.interceptor';
+export * from './modules/redis.module';
+export * from './services/redis.service';

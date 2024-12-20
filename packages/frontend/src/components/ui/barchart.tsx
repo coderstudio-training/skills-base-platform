@@ -1,10 +1,9 @@
-'use client';
-
 import * as React from 'react';
 import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   ResponsiveContainer,
   Tooltip,
@@ -12,19 +11,36 @@ import {
   YAxis,
 } from 'recharts';
 
-interface DataPoint {
+interface SkillData {
+  skill: string;
+  average: number;
+  requiredRating: number;
+  gap: number;
   [key: string]: string | number;
 }
 
+type StaticColor = { type: 'static'; value: string };
+type DynamicColor = {
+  type: 'dynamic';
+  getValue: (data: SkillData) => string;
+};
+type ColorConfig = StaticColor | DynamicColor;
+
+interface SeriesConfig {
+  name: string;
+  key: string;
+  color: ColorConfig;
+}
+
 interface BarChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: DataPoint[];
+  data: SkillData[];
   xAxisKey: string;
   yAxisDomain?: [number, number];
   yAxisTicks?: number[];
-  series: { name: string; key: string; color: string }[];
+  series: SeriesConfig[];
   height?: number;
-  title?: string;
 }
+
 const CustomXAxisTick = ({
   x,
   y,
@@ -49,6 +65,37 @@ const CustomXAxisTick = ({
   </g>
 );
 
+interface TooltipProps {
+  active?: boolean;
+  payload?: {
+    value: number;
+    payload: SkillData;
+  }[];
+}
+
+const CustomTooltip = ({ active, payload }: TooltipProps) => {
+  if (active && payload?.length) {
+    const data = payload[0].payload as SkillData;
+
+    return (
+      <div className="bg-background p-4 rounded-lg space-y-1 shadow-lg border">
+        <p className="font-semibold mb-2">{data.skill}</p>
+        <p className="text-blue-600">Current Level: {data.average.toFixed(1)}</p>
+        <p className="text-gray-600">Required Level: {data.requiredRating.toFixed(1)}</p>
+        <p className="text-red-600">Gap: {data.gap.toFixed(1)}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const getBarColor = (config: ColorConfig, data: SkillData): string => {
+  if (config.type === 'static') {
+    return config.value;
+  }
+  return config.getValue(data);
+};
+
 export function CustomBarChart({
   data,
   xAxisKey,
@@ -56,9 +103,6 @@ export function CustomBarChart({
   yAxisTicks = [0, 1.5, 3, 4.5, 6],
   series,
   height = 500,
-  // title,
-  // className,
-  // ...props
 }: BarChartProps) {
   return (
     <div style={{ height: `${height}px`, width: '100%' }}>
@@ -78,7 +122,7 @@ export function CustomBarChart({
             tick={{ fill: '#666', fontSize: '11px' }}
             tickLine={false}
           />
-          <Tooltip />
+          <Tooltip content={<CustomTooltip />} />
           <Legend
             verticalAlign="bottom"
             height={36}
@@ -86,9 +130,34 @@ export function CustomBarChart({
               paddingTop: '50px',
               paddingBottom: '0px',
             }}
+            content={({ payload }) => (
+              <div className="flex justify-center items-center gap-8 pt-12">
+                {payload?.map((entry, index) => (
+                  <div key={`legend-${index}`} className="flex items-center gap-2">
+                    {entry.value === 'Skill Gap' ? (
+                      <div className="w-3 h-3" style={{ backgroundColor: '#dc2626' }}></div>
+                    ) : (
+                      <div className="w-3 h-3" style={{ backgroundColor: 'entry.color' }}></div>
+                    )}
+                    <span className="text-sm text-gray-700">{entry.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           />
           {series.map(s => (
-            <Bar key={s.key} dataKey={s.key} name={s.name} fill={s.color} radius={[4, 4, 0, 0]} />
+            <Bar
+              key={s.key}
+              dataKey={s.key}
+              name={s.name}
+              fill={s.color.type === 'static' ? s.color.value : undefined}
+              radius={[4, 4, 0, 0]}
+            >
+              {s.color.type === 'dynamic' &&
+                data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getBarColor(s.color, entry)} />
+                ))}
+            </Bar>
           ))}
         </BarChart>
       </ResponsiveContainer>

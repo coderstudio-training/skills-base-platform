@@ -2,337 +2,209 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
 import {
-  CourseDetailsDto,
   RecommendationDto,
   RecommendationResponseDto,
 } from '../dto/recommendation.dto';
 import { Course, CourseSchema } from '../entity/courses.entity';
-import {
-  RequiredSkills,
-  RequiredSkillsSchema,
-} from '../entity/required-skills.entity';
-import { SkillGap, SkillGapSchema } from '../entity/skill-gap.entity';
+import { RequiredSkills } from '../entity/required-skills.entity';
 
 /**
- * Service responsible for generating personalized learning recommendations
- * based on employee skill gaps and career levels.
- * Integrates data from multiple collections across different databases.
+ * Service for generating personalized learning recommendations based on skill gaps
  */
 
 @Injectable()
 export class RecommendationService {
   private readonly logger = new Logger(RecommendationService.name);
   private courseModel: Model<Course>;
-  private skillGapsModel: Model<SkillGap>;
-  private requiredSkillsModel: Model<RequiredSkills>;
-  private requiredSkillsCache = new Map<string, RequiredSkills>();
+  private readonly skillsServiceUrl: string;
 
-  /**
-   * Initializes the service with connections to multiple MongoDB databases
-   * and sets up the required models for courses, skill gaps, and required skills.
-   *
-   * @param defaultConnection - Primary MongoDB connection
-   * @param skillsConnection - Secondary MongoDB connection for skills data
-   */
-  constructor(
-    @InjectConnection() private readonly defaultConnection: Connection,
-    @InjectConnection('MONGODB_SKILLS_URI')
-    private readonly skillsConnection: Connection,
-  ) {
-    // Initialize models
-    this.courseModel = this.defaultConnection.model<Course>(
+  constructor(@InjectConnection() private readonly connection: Connection) {
+    this.skillsServiceUrl =
+      process.env.SKILLS_SERVICE_HOST || 'http://localhost:3002';
+    this.courseModel = this.connection.model<Course>(
       'Course',
       CourseSchema,
       'qa_courses',
     );
-
-    this.skillGapsModel = this.skillsConnection.model<SkillGap>(
-      'SkillGap',
-      SkillGapSchema,
-      'Capability_gapAssessments',
-    );
-
-    this.requiredSkillsModel = this.skillsConnection.model<RequiredSkills>(
-      'RequiredSkills',
-      RequiredSkillsSchema,
-      'capabilityRequiredSkills',
-    );
   }
 
-  public invalidateCache(): void {
-    this.requiredSkillsCache.clear();
-    this.logger.debug('Required skills cache has been invalidated');
-  }
   /**
-   * Generates personalized learning recommendations for an employee.
-   * Process includes:
-   * 1. Retrieving employee's skill gap data
-   * 2. Getting required skills for their career level
-   * 3. Finding matching courses for skill gaps
-   * 4. Generating recommendations based on gaps and available courses
-   *
-   * @param email - Employee's email address
-   * @returns Promise resolving to recommendations response
+   * Generates learning recommendations for an employee based on their skill gaps
    */
-  async getRecommendations(email: string): Promise<RecommendationResponseDto> {
+  async getRecommendations(
+    email: string,
+    authHeader: string,
+  ): Promise<RecommendationResponseDto> {
     try {
-      // Step 1: Get skill gap data
-      const skillGap = await this.findLatestSkillGap(email);
-      if (!skillGap) {
+      // Fetch skill gap data
+      const skillGapData = await this.fetchSkillGapData(email, authHeader);
+      if (!skillGapData) {
         return this.createEmptyResponse();
       }
-
-      // Step 2: Get required skills for career level
+      // Get required skills for employee's level
       const requiredSkills = await this.findRequiredSkills(
-        skillGap.careerLevel,
+        skillGapData.careerLevel,
+        authHeader,
       );
-      if (!requiredSkills) {
-        this.logger.warn(
-          `No required skills found for career level: ${skillGap.careerLevel}`,
-        );
+      if (!requiredSkills?.requiredSkills) {
         return this.createEmptyResponse();
       }
-
-      // Step 3: Find matching courses for each skill gap
+      // Convert skills array to map of skill gaps
+      const skillGaps = skillGapData.skills.reduce(
+        (acc: Record<string, number>, skill: any) => {
+          acc[skill.name] = skill.gap;
+          return acc;
+        },
+        {},
+      );
+      // Generate recommendations based on gaps
       const recommendations = await this.processSkillGaps(
-        skillGap.skillGaps,
-        skillGap.careerLevel,
+        skillGaps,
+        skillGapData.careerLevel,
         requiredSkills.requiredSkills,
       );
 
-      // Step 4: Return combined response
-      return {
+      // Create the response object
+      const response: RecommendationResponseDto = {
         success: true,
-        employeeName: skillGap.name,
-        careerLevel: skillGap.careerLevel,
+        employeeName: skillGapData.name,
+        careerLevel: skillGapData.careerLevel,
         recommendations,
         generatedDate: new Date(),
       };
+
+      return response;
     } catch (error: any) {
       this.logger.error(`Error getting recommendations: ${error.message}`);
-      this.invalidateCache();
       throw error;
     }
   }
   /**
-   * Retrieves the most recent skill gap assessment for an employee.
-   * Uses case-insensitive email matching.
-   *
-   * @param email - Employee's email address
-   * @returns Promise resolving to skill gap data or null if not found
+   * Fetches employee skill gap data from the skills service
    */
-  private async findLatestSkillGap(email: string): Promise<SkillGap | null> {
-    const skillGap = await this.skillGapsModel
-      .findOne({ emailAddress: { $regex: new RegExp(`^${email}$`, 'i') } })
-      .sort({ computedDate: -1 })
-      .exec();
+  private async fetchSkillGapData(
+    email: string,
+    authHeader: string,
+  ): Promise<any> {
+    const url = `${this.skillsServiceUrl}/skills-matrix/user?email=${encodeURIComponent(email)}`;
+    const response = await fetch(url, {
+      headers: {
+        Authorization: authHeader,
+        'Content-Type': 'application/json',
+      },
+    });
 
-    if (!skillGap) {
-      this.logger.warn(`No skill gaps found for email: ${email}`);
-      return null;
-    }
-
-    return skillGap;
+    return response.ok ? response.json() : null;
   }
   /**
-   * Finds required skills for a specific career level.
-   * Currently hardcoded to 'QA' capability becaus of limited data, but should be made configurable in the future.
-   *
-   * @param careerLevel - Career level to find required skills for
-   * @returns Promise resolving to required skills or null if not found
+   * Retrieves required skills for a career level with caching
    */
   private async findRequiredSkills(
     careerLevel: string,
+    authHeader: string,
   ): Promise<RequiredSkills | null> {
-    const cacheKey = `${careerLevel}-QA`;
-    if (this.requiredSkillsCache.has(cacheKey)) {
-      this.logger.debug(`Cache HIT: Required skills for ${careerLevel}`);
-      return this.requiredSkillsCache.get(cacheKey)!;
-    }
-    this.logger.debug(
-      `Cache MISS: Fetching required skills for ${careerLevel}`,
-    );
-    this.logger.debug(
-      `Finding required skills for career level: ${careerLevel}`,
-    );
-
-    const requiredSkills = await this.requiredSkillsModel
-      .findOne({
-        careerLevel,
-        capability: 'QA',
-      })
-      .exec();
-
-    if (requiredSkills) {
-      this.requiredSkillsCache.set(cacheKey, requiredSkills);
-      this.logger.debug(
-        `Found required skills: ${JSON.stringify(requiredSkills.requiredSkills)}`,
+    try {
+      const response = await fetch(
+        `${this.skillsServiceUrl}/api/skills-assessments/required-skills?capability=QA`,
+        {
+          headers: {
+            Authorization: authHeader,
+            'Content-Type': 'application/json',
+          },
+        },
       );
-    } else {
-      this.logger.warn(
-        `No required skills found for career level: ${careerLevel}`,
-      );
-    }
 
-    return requiredSkills;
+      if (!response.ok) return null;
+
+      const allSkills = await response.json();
+      const matchingSkills = allSkills.find(
+        (skill: any) => skill.careerLevel === careerLevel,
+      );
+
+      if (matchingSkills) {
+        const requiredSkills = {
+          capability: matchingSkills.capability,
+          careerLevel: matchingSkills.careerLevel,
+          requiredSkills: matchingSkills.requiredSkills,
+        } as RequiredSkills;
+
+        return requiredSkills;
+      }
+      return null;
+    } catch (error: any) {
+      this.logger.error(`Error fetching required skills: ${error.message}`);
+      return null;
+    }
   }
-
-  /**
-   * Processes skill gaps to generate course recommendations.
-   * Matches skills with appropriate courses based on career level and required skill level.
-   *
-   * @param skillGaps - Current skill levels mapped to skill names
-   * @param careerLevel - Employee's career level
-   * @param requiredSkills - Required skill levels mapped to skill names
-   * @returns Promise resolving to array of recommendations
-   */
   private async processSkillGaps(
     skillGaps: Record<string, number>,
     careerLevel: string,
     requiredSkills: Record<string, number>,
   ): Promise<RecommendationDto[]> {
     const recommendations: RecommendationDto[] = [];
-
-    const formattedSkillNames = Object.keys(skillGaps).map((skillName) =>
-      this.formatSkillName(skillName),
-    );
-
-    const matchingCourses = await this.courseModel
-      .find({
-        $and: [
-          {
-            skillName: {
-              $in: formattedSkillNames.map(
-                (name) =>
-                  new RegExp(
-                    name
-                      .replace(/([A-Z])/g, ' $1')
-                      .trim()
-                      .replace(/\s+/g, '\\s+'),
-                    'i',
-                  ),
-              ),
-            },
-          },
-          { careerLevel },
-        ],
-      })
-      .exec();
-
+    // Get all courses and create lookup map
+    const allCourses = await this.courseModel.find({}).exec();
     const courseMap = new Map(
-      matchingCourses.map((course) => [course.skillName.toLowerCase(), course]),
+      allCourses.map((course) => [
+        `${course.skillName.toLowerCase().replace(/\s+/g, '')}-${course.careerLevel}`,
+        course,
+      ]),
     );
-
+    // Normalize required skills for comparison
+    const normalizedRequiredSkills = Object.fromEntries(
+      Object.entries(requiredSkills).map(([key, value]) => [
+        key.toLowerCase().replace(/\s+/g, ''),
+        value,
+      ]),
+    );
+    // Process each skill gap
     for (const [skillName, gap] of Object.entries(skillGaps)) {
-      try {
-        const formattedSkillName = this.formatSkillName(skillName);
-        this.logger.debug(`Processing ${formattedSkillName} with gap ${gap}`);
+      if (gap === 0) continue;
 
-        const requiredLevel = requiredSkills[skillName];
+      const normalizedSkillName = skillName.toLowerCase().replace(/\s+/g, '');
+      this.logger.debug(`Processing ${skillName} with gap ${gap}`);
+      const requiredLevel = normalizedRequiredSkills[normalizedSkillName];
 
-        if (requiredLevel !== undefined) {
-          this.logger.debug(
-            `Required level for ${skillName}: ${requiredLevel}`,
-          );
+      if (requiredLevel === undefined) continue;
 
-          const course = courseMap.get(formattedSkillName.toLowerCase());
+      const courseKey = `${normalizedSkillName}-${careerLevel}`;
+      const course = courseMap.get(courseKey);
 
-          if (course) {
-            const recommendation = await this.createRecommendation(
-              formattedSkillName,
-              gap,
-              course,
-            );
-            if (recommendation) {
-              recommendations.push(recommendation);
-            }
-          } else {
-            this.logger.debug(`No matching course found for ${skillName}`);
-          }
-        } else {
-          this.logger.debug(`No required level found for skill: ${skillName}`);
-        }
-      } catch (error: any) {
-        this.logger.error(
-          `Error processing skill ${skillName}: ${error.message}`,
-        );
+      if (course) {
+        const currentLevel = course.requiredLevel - Math.abs(gap);
+        recommendations.push({
+          skillName,
+          currentLevel: Number(currentLevel.toFixed(1)),
+          targetLevel: course.requiredLevel,
+          gap,
+          type: gap < 0 ? 'skillGap' : 'promotion',
+          course: {
+            name: this.getFieldValue(course, 'courseName'),
+            provider: this.getFieldValue(course, 'provider'),
+            duration: this.getFieldValue(course, 'duration'),
+            format: this.getFieldValue(course, 'format'),
+            learningPath: `This course will help you progress from level ${currentLevel.toFixed(1)} to level ${course.requiredLevel}, which is appropriate for your career level.`,
+            learningObjectives: this.getFieldValue(course, 'learningObjectives')
+              .split(',')
+              .map((obj) => obj.trim()),
+            prerequisites: this.getFieldValue(course, 'prerequisites'),
+            businessValue: this.getFieldValue(course, 'businessValue'),
+          },
+        });
       }
     }
 
     return recommendations.sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap));
   }
   /**
-   * Creates a recommendation based on skill gap and matching course.
-   * Only creates recommendations for non-zero gaps.
-   */
-  private async createRecommendation(
-    skillName: string,
-    gap: number,
-    course: Course,
-  ): Promise<RecommendationDto | null> {
-    const currentLevel = course.requiredLevel - Math.abs(gap);
-
-    if (gap !== 0) {
-      return {
-        skillName,
-        currentLevel: Number(currentLevel.toFixed(1)),
-        targetLevel: course.requiredLevel,
-        gap,
-        type: gap < 0 ? 'skillGap' : 'promotion',
-        course: this.formatCourseDetails(course, currentLevel),
-      };
-    }
-
-    return null;
-  }
-  /**
-   * Formats course details into a standardized DTO structure.
-   * Extracts values from dynamic course fields.
-   */
-  private formatCourseDetails(
-    course: Course,
-    currentLevel: number,
-  ): CourseDetailsDto {
-    return {
-      name: this.getFieldValue(course, 'courseName'),
-      provider: this.getFieldValue(course, 'provider'),
-      duration: this.getFieldValue(course, 'duration'),
-      format: this.getFieldValue(course, 'format'),
-      learningPath: `This course will help you progress from level ${currentLevel.toFixed(
-        1,
-      )} to level ${course.requiredLevel}, which is appropriate for your career level.`,
-      learningObjectives: this.getFieldValue(course, 'learningObjectives')
-        .split(',')
-        .map((obj) => obj.trim()),
-      prerequisites: this.getFieldValue(course, 'prerequisites'),
-      businessValue: this.getFieldValue(course, 'businessValue'),
-    };
-  }
-  /**
-   * Helper function to safely extract field values from course data.
-   * Returns empty string if field is not found.
+   * Helper to get field value from course data
    */
   private getFieldValue(course: Course, fieldName: string): string {
-    const field = course.fields.find((f) => f.name === fieldName);
-    return field?.value || '';
+    return course.fields.find((f) => f.name === fieldName)?.value || '';
   }
-  /**
-   * Formats skill names by replacing abbreviations and adding spaces.
-   * Handles special cases like 'QE' and 'QA'.
-   */
-  private formatSkillName(camelCase: string): string {
-    const formatted = camelCase
-      .replace(/QE/g, 'Quality Engineering')
-      .replace(/QA/g, 'Quality Assurance');
 
-    return formatted
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, (str) => str.toUpperCase())
-      .trim();
-  }
   /**
-   * Creates an empty response for cases where no recommendations can be generated.
-   * Used when no skill gap data is found or when required skills are missing.
+   * Creates empty response for cases where no recommendations can be generated
    */
   private createEmptyResponse(): RecommendationResponseDto {
     return {

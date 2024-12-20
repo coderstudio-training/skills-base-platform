@@ -3,6 +3,8 @@ import { SkillGapOverviewProps } from '@/components/Dashboard/types';
 import { Progress } from '@/components/ui/progress';
 
 export function SkillGapOverview({ skillGaps, loading, error }: SkillGapOverviewProps) {
+  const sortedSkills = skillGaps.sort((a, b) => a.gap - b.gap).slice(0, 3);
+
   return (
     <BaseCard
       title="Skill Gap Overview"
@@ -11,7 +13,7 @@ export function SkillGapOverview({ skillGaps, loading, error }: SkillGapOverview
       loadingMessage="Loading skill gaps..."
     >
       <div className="space-y-4">
-        {skillGaps.map(skill => (
+        {sortedSkills.map(skill => (
           <div key={skill.name} className="space-y-1">
             <div className="flex justify-between text-sm">
               <span>{skill.name}</span>

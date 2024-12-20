@@ -1,28 +1,25 @@
 import {
-  BadRequestException,
   CallHandler,
   ExecutionContext,
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { Logger } from '../services/logger.service';
-import { ErrorTracker } from '../utils/error-tracker.util';
 import { HttpContextUtils } from '../utils/http.utils';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly errorTracker: ErrorTracker;
+  private readonly logger: Logger;
 
-  constructor(private readonly logger: Logger = new Logger('http')) {
-    this.errorTracker = new ErrorTracker();
+  constructor(logger: Logger = new Logger('http')) {
+    this.logger = logger;
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const startTime = Date.now();
     const request = context.switchToHttp().getRequest();
-    const response = context.switchToHttp().getResponse();
     const requestContext = HttpContextUtils.getRequestContext(request);
 
     if (this.shouldSkipLogging(request)) {
@@ -35,62 +32,36 @@ export class LoggingInterceptor implements NestInterceptor {
     request.headers['x-correlation-id'] = correlationId;
 
     return next.handle().pipe(
-      tap(() => {
-        const duration = Date.now() - startTime;
-        if (response.statusCode < 400) {
-          // Only log successful requests here
-          this.logger.info(
-            `Processed ${requestContext.method} ${requestContext.path}`,
+      tap({
+        next: () => {
+          const duration = Date.now() - startTime;
+          const response = context.switchToHttp().getResponse();
+
+          if (response.statusCode < 400) {
+            this.logger.info(
+              `Processed ${requestContext.method} ${requestContext.path} ${response.statusCode} ${duration}ms`,
+              {
+                type: 'request.complete',
+                correlationId,
+                method: requestContext.method,
+                path: requestContext.path,
+              },
+            );
+          }
+        },
+        error: (error) => {
+          const duration = Date.now() - startTime;
+          const statusCode = error.status || 500;
+
+          this.logger.error(
+            `Failed ${requestContext.method} ${requestContext.path} ${statusCode} ${duration}ms`,
             {
-              type: 'request.complete',
+              type: 'request.error',
               correlationId,
-              duration,
-              statusCode: response.statusCode,
-              method: requestContext.method,
-              path: requestContext.path,
+              error,
             },
           );
-        }
-      }),
-      catchError((error) => {
-        const duration = Date.now() - startTime;
-        const statusCode = error.status || 500;
-
-        // Enhanced error logging for validation errors
-        if (error instanceof BadRequestException) {
-          const validationMetadata = (error as any).validationMetadata;
-          if (validationMetadata) {
-            this.logger.error(error, {
-              type: 'validation.error',
-              correlationId,
-              method: requestContext.method,
-              path: requestContext.path,
-              statusCode,
-              duration,
-              validation: {
-                errors: validationMetadata.validationErrors,
-                receivedValue: this.sanitizeRequestBody(
-                  validationMetadata.receivedValue,
-                ),
-                expectedType: validationMetadata.expectedType,
-              },
-            });
-
-            // Don't log the request completion for validation errors
-            return throwError(() => error);
-          }
-        }
-
-        this.logger.error(error, {
-          type: 'request.error',
-          correlationId,
-          method: requestContext.method,
-          path: requestContext.path,
-          statusCode,
-          duration,
-        });
-
-        return throwError(() => error);
+        },
       }),
     );
   }

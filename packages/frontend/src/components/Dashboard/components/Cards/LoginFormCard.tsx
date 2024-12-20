@@ -11,7 +11,7 @@ export function LoginFormCard({
   handleSubmit,
   adminLoginLoading,
   adminLoginError,
-  title = 'Admin Login v2',
+  title = 'Admin Login',
   description = 'Enter your credentials to access the admin dashboard',
   className = 'w-full max-w-md',
 }: LoginFormCardProps) {
@@ -46,7 +46,11 @@ export function LoginFormCard({
             <AlertDescription>{adminLoginError.message}</AlertDescription>
           </Alert>
         )}
-        <Button type="submit" className="w-full" disabled={adminLoginLoading}>
+        <Button
+          type="submit"
+          className="w-full dark:hover:bg-green-400"
+          disabled={adminLoginLoading}
+        >
           {adminLoginLoading ? 'Logging in...' : 'Log in'}
         </Button>
       </form>

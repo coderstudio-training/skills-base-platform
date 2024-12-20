@@ -4,9 +4,10 @@ import { useRecommendations } from '@/components/Dashboard/hooks/useRecommendati
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { X } from 'lucide-react';
+import { TabViewProps } from '../../types';
 import BaseCard from '../Cards/BaseCard';
 
-function GrowthPlan() {
+function GrowthPlan(user: TabViewProps) {
   const {
     recommendations,
     loading,
@@ -15,7 +16,7 @@ function GrowthPlan() {
     isDialogOpen,
     setIsDialogOpen,
     handleCourseClick,
-  } = useRecommendations();
+  } = useRecommendations(user.email || '');
 
   return (
     <>
@@ -85,7 +86,7 @@ function GrowthPlan() {
 
       {isDialogOpen && selectedCourse && (
         <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl p-6 relative">
+          <div className="bg-background rounded-lg w-full max-w-2xl p-6 relative">
             <button
               onClick={() => setIsDialogOpen(false)}
               className="absolute right-3 top-3 text-gray-400 hover:text-gray-500"

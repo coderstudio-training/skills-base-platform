@@ -13,7 +13,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
+import {
+  JwtAuthGuard,
+  Permission,
+  RedisCache,
+  RequirePermissions,
+  Roles,
+  RolesGuard,
+  UserRole,
+} from '@skills-base/shared';
 import { Request } from 'express';
 import { BulkRequiredSkillsDto } from '../dto/required-skills.dto';
 import { PerformanceService } from '../services/computation.service';
@@ -27,6 +35,7 @@ export class PerformanceController {
 
   @Roles(UserRole.ADMIN)
   @Get('bulk-performance')
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({
     summary: 'Calculate bulk performance metrics',
     description:
@@ -82,6 +91,8 @@ export class PerformanceController {
   }
 
   @Get('required-skills')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({
     summary: 'Get required skills by capability',
     description: 'Get all required skills for a specific capability',
@@ -102,6 +113,10 @@ export class PerformanceController {
   @ApiResponse({
     status: 500,
     description: 'Internal server error while retrieving skills',
+  })
+  @RedisCache({
+    keyGenerator: (ctx) =>
+      `assessments:required-skills:${ctx.request.query.capability}`,
   })
   async getRequiredSkillsByCapability(@Req() req: Request) {
     try {

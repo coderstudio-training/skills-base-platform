@@ -17,9 +17,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
+  InvalidateCache,
   JwtAuthGuard,
-  LoggingInterceptor,
   PaginationDto,
+  Permission,
+  RedisCache,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -32,7 +35,7 @@ import { Employee } from './entities/employee.entity';
 @ApiTags('employees')
 @Controller('employees')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UseInterceptors(LoggingInterceptor, TransformInterceptor)
+@UseInterceptors(TransformInterceptor)
 @ApiBearerAuth('JWT-Admin')
 export class EmployeesController {
   private readonly logger = new Logger(EmployeesController.name);
@@ -41,6 +44,7 @@ export class EmployeesController {
 
   @Post('sync')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Sync employee data' })
   @ApiResponse({
     status: 201,
@@ -70,6 +74,7 @@ export class EmployeesController {
     },
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
+  @InvalidateCache(['employees:*', 'users:*'])
   async syncEmployees(@Body() body: Record<string, any>) {
     this.logger.log(
       `Starting bulk upsert with ${Object.keys(body).length} records`,
@@ -83,6 +88,7 @@ export class EmployeesController {
 
   @Get()
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Get all employees with pagination' })
   @ApiResponse({
     status: 200,
@@ -91,12 +97,14 @@ export class EmployeesController {
     isArray: true,
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
+  @RedisCache('employees')
   findAll(@Query() paginationDto: PaginationDto) {
     return this.employeesService.findAll(paginationDto);
   }
 
   @Get('search')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Search employees' })
   @ApiResponse({
     status: 200,
@@ -111,6 +119,7 @@ export class EmployeesController {
 
   @Get('business-units')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.VIEW_DASHBOARD)
   @ApiOperation({ summary: 'Get all business units and their distribution' })
   @ApiResponse({
     status: 200,
@@ -136,12 +145,14 @@ export class EmployeesController {
     },
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
+  @RedisCache('employees:business-units')
   async getBusinessUnits() {
     return this.employeesService.getBusinessUnits();
   }
 
   @Get('stats')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.VIEW_DASHBOARD)
   @ApiOperation({ summary: 'Get employee statistics' })
   @ApiResponse({
     status: 200,
@@ -156,12 +167,14 @@ export class EmployeesController {
     },
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
+  @RedisCache('employee:stats')
   async getEmployeeStats() {
     return this.employeesService.getEmployeeStats();
   }
 
   @Get(':employeeId')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Get employee by ID' })
   @ApiParam({
     name: 'employeeId',
@@ -176,12 +189,16 @@ export class EmployeesController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Employee not found' })
+  @RedisCache({
+    keyGenerator: (ctx) =>
+      `employee:employeeId:${ctx.request.params.employeeId}`,
+  })
   async findOne(@Param('employeeId') employeeId: number) {
     return this.employeesService.findByEmployeeId(employeeId);
   }
 
   @Get('email/:email')
-  @Roles(UserRole.MANAGER, UserRole.ADMIN, UserRole.USER)
+  @Roles(UserRole.MANAGER, UserRole.ADMIN, UserRole.STAFF)
   @ApiOperation({ summary: 'Get employee by email' })
   @ApiParam({
     name: 'email',
@@ -196,6 +213,9 @@ export class EmployeesController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Employee not found' })
+  @RedisCache({
+    keyGenerator: (ctx) => `employee:email:${ctx.request.params.email}`,
+  })
   async findByEmail(@Param('email') email: string) {
     this.logger.log(`Fetching employee details for email: ${email}`);
     const employee = await this.employeesService.findByEmail(email);
@@ -206,7 +226,8 @@ export class EmployeesController {
   }
 
   @Get('manager/:managerName')
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @Roles(UserRole.MANAGER)
+  @RequirePermissions(Permission.MANAGE_TEAM)
   @ApiOperation({ summary: 'Get employees by manager name' })
   @ApiParam({
     name: 'managerName',
@@ -221,6 +242,9 @@ export class EmployeesController {
     isArray: true,
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
+  @RedisCache({
+    keyGenerator: (ctx) => `employee:manager:${ctx.request.params.managerName}`,
+  })
   async findTeamMembers(@Param('managerName') managerName: string) {
     return this.employeesService.findByManager(managerName);
   }

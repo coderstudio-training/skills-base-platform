@@ -1,6 +1,4 @@
-// components/Staff/Charts/SkillsGapChart.tsx
 import { CustomBarChart } from '@/components/ui/barchart';
-import { ResponsiveContainer } from 'recharts';
 import { Skill } from '../../types';
 
 interface SkillsGapChartProps {
@@ -14,23 +12,48 @@ export function SkillsGapChart({ skills, category }: SkillsGapChartProps) {
   const chartData = filteredSkills.map(skill => ({
     skill: skill.name,
     average: skill.average,
-    required: skill.required,
+    requiredRating: skill.required,
     gap: skill.gap,
+    gapType: skill.gap < 0 ? -1 : 1, // Using number instead of boolean
   }));
 
   return (
     <div className="h-[450px] w-full">
-      <ResponsiveContainer width="100%" height={500}>
-        <CustomBarChart
-          data={chartData}
-          xAxisKey="skill"
-          series={[
-            { key: 'average', name: 'Current Level', color: '#4285f4' },
-            { key: 'required', name: 'Required Level', color: '#666666' },
-            { key: 'gap', name: 'Skill Gap', color: '#dc2626' },
-          ]}
-        />
-      </ResponsiveContainer>
+      <CustomBarChart
+        data={chartData}
+        xAxisKey="skill"
+        yAxisDomain={[0, 6]}
+        yAxisTicks={[0, 1.5, 3, 4.5, 6]}
+        series={[
+          {
+            key: 'average',
+            name: 'Current Level',
+            color: { type: 'static', value: '#4285f4' },
+          },
+          {
+            key: 'requiredRating',
+            name: 'Required Level',
+            color: { type: 'static', value: '#666666' },
+          },
+          // {
+          //   key: 'gap',
+          //   name: 'Skill Gap',
+          //   color: {
+          //     type: 'dynamic',
+          //     getValue: data => (data.gapType === -1 ? '#dc2626' : '#22c55e'),
+          //   },
+          // },
+          {
+            key: 'gap',
+            name: 'Skill Gap',
+            color: {
+              type: 'static',
+              value: '#dc2626',
+            },
+          },
+        ]}
+        height={500}
+      />
     </div>
   );
 }

@@ -1,27 +1,25 @@
 import { learningApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useEffect, useState } from 'react';
 import { MemberRecommendations, RecommendationResponse, TeamMember } from '../types';
 import { useTeamData } from './useTeamData';
 
-export function useTeamRecommendations() {
-  const { teamMembers, loading: teamLoading, error: teamError } = useTeamData();
+export function useTeamRecommendations(managerName: string) {
+  const { hasPermission } = useAuth();
+  const { teamMembers } = useTeamData(managerName);
   const [teamData, setTeamData] = useState<
     Array<TeamMember & { recommendations?: MemberRecommendations }>
   >([]);
 
   // Get recommendations for the first team member
-  const {
-    data: recommendationsData,
-    isLoading: recommendationsLoading,
-    error: recommendationsError,
-  } = useQuery<RecommendationResponse>(
+  const { data: recommendationsData } = useQuery<RecommendationResponse>(
     learningApi,
     `/api/learning/recommendations/${teamMembers[0]?.email}`,
     {
-      enabled: teamMembers.length > 0 && !!teamMembers[0]?.email,
+      enabled:
+        teamMembers.length > 0 && !!teamMembers[0]?.email && hasPermission('canViewLearning'),
       requiresAuth: true,
-      revalidate: 300,
+      cacheStrategy: 'force-cache',
     },
   );
 
@@ -39,7 +37,5 @@ export function useTeamRecommendations() {
 
   return {
     teamData,
-    loading: teamLoading || recommendationsLoading,
-    error: teamError || recommendationsError,
   };
 }

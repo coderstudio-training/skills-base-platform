@@ -1,31 +1,21 @@
 import { TeamMember } from '@/components/Dashboard/types';
 import { userApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
-import { useSession } from 'next-auth/react';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 
-export function useTeamData() {
-  const { data: session } = useSession();
-  const managerName = session?.user?.name;
+export function useTeamData(managerName: string) {
+  const { hasPermission } = useAuth();
 
-  const {
-    data,
-    error = null,
-    isLoading: loading,
-    refetch,
-  } = useQuery<TeamMember[]>(
+  const { data } = useQuery<TeamMember[]>(
     userApi,
-    `/employees/manager/${encodeURIComponent(managerName || '')}`,
+    `/employees/manager/${encodeURIComponent(managerName)}`,
     {
-      enabled: !!managerName,
-      revalidate: 3600,
+      requiresAuth: true,
+      cacheStrategy: 'force-cache',
+      enabled: hasPermission('canManageTeam'),
     },
   );
 
   return {
-    session,
     teamMembers: data || [],
-    loading,
-    error,
-    refetchTeam: refetch,
   };
 }

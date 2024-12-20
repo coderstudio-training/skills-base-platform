@@ -1,25 +1,23 @@
 import { learningApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
-import { useSession } from 'next-auth/react';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useState } from 'react';
 import { Recommendation } from '../types';
 
-export function useRecommendations() {
-  const { data: session } = useSession();
+export function useRecommendations(email: string) {
   const [selectedCourse, setSelectedCourse] = useState<Recommendation | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
+  const { hasPermission } = useAuth();
   const {
     data: recommendationData,
     error,
     isLoading,
   } = useQuery<{ recommendations: Recommendation[] }>(
     learningApi,
-    `/api/learning/recommendations/${session?.user?.email}`,
+    `/api/learning/recommendations/${email}`,
     {
-      enabled: !!session?.user?.email,
-      revalidate: 300, // Cache for 5 minutes
+      cacheStrategy: 'force-cache',
       requiresAuth: true,
+      enabled: hasPermission('canViewLearning'),
     },
   );
 

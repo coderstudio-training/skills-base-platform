@@ -1,47 +1,37 @@
 // hooks/useStaffData.ts
 import { skillsApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useSuspenseQuery } from '@/lib/api/hooks';
+import { Permission } from '@/lib/api/types';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { StaffData, StaffSkills, UserMetrics } from '../types';
 
-export function useStaffData() {
-  const [activeTab, setActiveTab] = useState('overview');
+export function useStaffData(email: string, hasPermission: (permission: Permission) => boolean) {
   const [selectedCategory, setSelectedCategory] = useState<'Technical Skills' | 'Soft Skills'>(
     'Technical Skills',
   );
   const { data: session, status } = useSession();
-  const email = session?.user?.email;
 
-  const {
-    data: metrics,
-    error: metricsError,
-    isLoading: metricsLoading,
-  } = useQuery<UserMetrics>(
+  const metrics = useSuspenseQuery<UserMetrics>(
     skillsApi,
     email ? `skills-matrix/user/summary?email=${encodeURIComponent(email)}` : '',
     {
-      enabled: !!email,
       requiresAuth: true,
-      revalidate: 3600,
+      cacheStrategy: 'force-cache',
+      enabled: hasPermission('canViewSkills'),
     },
   );
 
-  const {
-    data: skills,
-    error: skillsError,
-    isLoading: skillsLoading,
-  } = useQuery<StaffSkills>(
+  const skills = useSuspenseQuery<StaffSkills>(
     skillsApi,
     email ? `skills-matrix/user?email=${encodeURIComponent(email)}` : '',
     {
-      enabled: !!email,
       requiresAuth: true,
-      revalidate: 3600,
+      cacheStrategy: 'force-cache',
+      enabled: hasPermission('canViewSkills'),
     },
   );
 
-  // Get category-specific metrics based on selected category
   const getCategoryMetrics = () => {
     if (!metrics) return null;
     return selectedCategory === 'Technical Skills' ? metrics.technicalSkills : metrics.softSkills;
@@ -62,11 +52,7 @@ export function useStaffData() {
     status,
     skillsData,
     categoryMetrics,
-    activeTab,
-    setActiveTab,
     selectedCategory,
     setSelectedCategory,
-    error: metricsError || skillsError,
-    loading: metricsLoading || skillsLoading,
   };
 }

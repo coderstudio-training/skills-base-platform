@@ -1,10 +1,12 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { SecurityConfigurationManager } from '../config/security.config';
 import { ApiKeyGuard } from '../guards/api-key.guard';
 import { IpWhitelistGuard } from '../guards/ip.guard';
 import { RateLimitGuard } from '../guards/rate-limit.guard';
+import { RolesGuard } from '../guards/roles.guard';
 import {
   PartialSecurityConfig,
   SecurityConfig,
@@ -27,6 +29,8 @@ export class SecurityModule {
         provide: 'SECURITY_CONFIG',
         useValue: securityConfig,
       },
+      JwtAuthGuard,
+      RolesGuard,
       SecurityMonitoringService,
       SecurityMiddleware,
     ];
@@ -50,6 +54,8 @@ export class SecurityModule {
         'SECURITY_CONFIG',
         SecurityMonitoringService,
         SecurityMiddleware,
+        JwtAuthGuard,
+        RolesGuard,
         cacheModule,
       ],
       global: true,

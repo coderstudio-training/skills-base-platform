@@ -6,6 +6,7 @@ import {
   DatabaseModule,
   LoggingModule,
   MonitoringModule,
+  RedisModule,
   SecurityModule,
 } from '@skills-base/shared';
 import { AppController } from './app.controller';
@@ -102,6 +103,13 @@ import { UsersModule } from './users/users.module';
         environment: process.env.NODE_ENV || 'development',
         version: process.env.APP_VERSION || '1.0.0',
       },
+    }),
+
+    RedisModule.forRoot({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: process.env.REDIS_PORT
+        ? parseInt(process.env.REDIS_PORT, 10)
+        : 6379,
     }),
 
     // Feature Modules

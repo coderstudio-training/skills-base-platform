@@ -109,3 +109,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 tmp/
 temp/
 .temp
+
+package-lock.json

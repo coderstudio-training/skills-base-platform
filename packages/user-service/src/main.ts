@@ -44,8 +44,10 @@ async function bootstrap() {
     '/swagger', // Access swagger at /swagger
   );
 
+  const corsOrigins = process.env.CORS_ORIGINS?.split(',') || [];
+
   app.enableCors({
-    origin: ['http://localhost:3001', 'https://yourdomain.com'],
+    origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   });

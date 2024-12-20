@@ -13,7 +13,7 @@ export const BUSINESS_UNITS = {
   SLS: 'Sales',
   SW: 'Software Services',
   VS: 'Venture Studio',
-};
+} as const;
 
 export const PROFICIENCY_LEVELS = ['1', '2', '3', '4', '5', '6'];
 

@@ -1,10 +1,10 @@
 import {
   Controller,
   Get,
+  Headers,
   Param,
   UseGuards,
   UseInterceptors,
-  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -16,6 +16,9 @@ import {
 import {
   JwtAuthGuard,
   LoggingInterceptor,
+  Permission,
+  RedisCache,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -33,7 +36,8 @@ export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @Get('recommendations/:email')
-  @Roles(UserRole.USER, UserRole.MANAGER)
+  @Roles(UserRole.STAFF, UserRole.MANAGER)
+  @RequirePermissions(Permission.VIEW_LEARNING)
   @ApiOperation({
     summary: 'Get learning recommendations',
     description: `
@@ -61,9 +65,14 @@ export class RecommendationController {
     status: 404,
     description: 'No skill gap data found for the user',
   })
+  @RedisCache({
+    keyGenerator: (ctx) =>
+      `learning:recommendations:${ctx.request.params.email}`,
+  })
   async getRecommendations(
-    @Param('email', new ValidationPipe()) email: string,
+    @Param('email') email: string,
+    @Headers('authorization') authHeader: string,
   ): Promise<RecommendationResponseDto> {
-    return this.recommendationService.getRecommendations(email);
+    return this.recommendationService.getRecommendations(email, authHeader);
   }
 }

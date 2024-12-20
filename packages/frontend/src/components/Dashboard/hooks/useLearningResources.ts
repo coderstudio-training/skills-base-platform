@@ -1,5 +1,5 @@
 import { learningApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useEffect, useMemo, useState } from 'react';
 import { Course } from '../types';
 
@@ -8,6 +8,7 @@ export function useLearningResources() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [filteredResources, setFilteredResources] = useState<Course[]>([]);
+  const { hasPermission } = useAuth();
 
   // Fetch resources
   const {
@@ -16,7 +17,8 @@ export function useLearningResources() {
     error,
   } = useQuery<Course[]>(learningApi, '/api/courses', {
     requiresAuth: true,
-    revalidate: 300,
+    cacheStrategy: 'force-cache',
+    enabled: hasPermission('canManageSystem'),
   });
 
   // Update allResources when data changes

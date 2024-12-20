@@ -3,6 +3,7 @@
 import { UserHeader } from '@/components/Dashboard/components/Header/UserHeader';
 import { ManagerOverview } from '@/components/Dashboard/components/Manager/ManagerOverview';
 import { useTeamData } from '@/components/Dashboard/hooks/useTeamData';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -13,18 +14,31 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/lib/api/hooks';
 import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
+import { DashboardProps } from '../../types';
 import { IndividualPerformanceCard } from '../Cards/IndividualPerformanceCard';
 import SkillsView from './SkillsView';
 import Training from './Training';
 
-export default function ManagerDashboard() {
+export default function ManagerDashboard(user: DashboardProps) {
+  const { hasPermission, role } = useAuth();
+  const managerName = user.name;
   const [activeTab, setActiveTab] = useState('overview');
-  const { session, teamMembers, loading, error } = useTeamData();
+  const { teamMembers } = useTeamData(managerName);
+  const isManager = role?.includes('manager');
+
+  if (!hasPermission('canViewDashboard') || !isManager) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>Access Denied</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4 max-w-[80%]">
+    <div className="container mx-auto p-4 max-w-full lg:max-w-[80%]">
       <UserHeader />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -37,30 +51,29 @@ export default function ManagerDashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          {/* Manager Overview*/}
-          <ManagerOverview teamMembers={teamMembers} loading={loading} error={error} />
+          <ManagerOverview teamMembers={teamMembers} />
         </TabsContent>
 
-        <TabsContent value="performance">
-          <IndividualPerformanceCard members={teamMembers} loading={loading} error={error} />
-        </TabsContent>
+        {hasPermission('canViewReports') && (
+          <TabsContent value="performance">
+            <IndividualPerformanceCard members={teamMembers} />
+          </TabsContent>
+        )}
 
-        <TabsContent value="skills">
-          <SkillsView name={session?.user?.name || ''} />
-        </TabsContent>
+        {hasPermission('canViewSkills') && (
+          <TabsContent value="skills">
+            <SkillsView name={managerName || ''} />
+          </TabsContent>
+        )}
 
-        <TabsContent value="training">
-          <Training />
-        </TabsContent>
+        {hasPermission('canViewLearning') && (
+          <TabsContent value="training">
+            <Training name={managerName || ''} />
+          </TabsContent>
+        )}
 
-        <TabsContent value="evaluation">
-          {loading ? (
-            <Card>
-              <CardContent className="flex items-center justify-center h-64">
-                <p className="text-muted-foreground">Loading team members...</p>
-              </CardContent>
-            </Card>
-          ) : (
+        {hasPermission('canEditTeamSkills') && (
+          <TabsContent value="evaluation">
             <Card>
               <CardHeader>
                 <CardTitle>Team Evaluation</CardTitle>
@@ -138,8 +151,8 @@ export default function ManagerDashboard() {
                 </Button>
               </CardContent>
             </Card>
-          )}
-        </TabsContent>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

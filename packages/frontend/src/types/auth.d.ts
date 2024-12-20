@@ -2,7 +2,7 @@ import { Roles } from '@/lib/api/types';
 
 export interface DecodedToken {
   email: string;
-  sub: string;
+  userId: string;
   roles: string[];
   iat: number;
   exp: number;

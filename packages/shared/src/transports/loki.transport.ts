@@ -12,7 +12,7 @@ export const createLokiTransport = (
 ): winston.transport => {
   return new LokiTransport({
     host: process.env.LOKI_HOST || 'http://localhost:3100',
-    interval: 5,
+    interval: 30,
     json: true,
     labels: {
       app: options.service,
@@ -26,7 +26,8 @@ export const createLokiTransport = (
     ),
     replaceTimestamp: false,
     onConnectionError: (err: Error) => {
-      console.error('Error connecting to Loki:', err);
+      console.error('Error connecting to Loki:', err.message);
+      // console.error('Error connecting to Loki:', err);
     },
   });
 };
