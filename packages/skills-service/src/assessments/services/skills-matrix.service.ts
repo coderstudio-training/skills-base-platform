@@ -1,7 +1,5 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
-import { CACHE_MANAGER } from '@skills-base/shared';
-import { Cache } from 'cache-manager';
 import { Connection } from 'mongoose';
 import {
   DistributionSkillStatus,
@@ -20,55 +18,11 @@ import {
 } from '../dto/skills-matrix.dto';
 import { transformToReadableKeys } from '../utils/skills.util';
 
-const CACHE_KEYS = {
-  SOFT_SKILLS: 'skills:soft',
-  ADMIN_ANALYSIS: 'analysis:admin',
-  DISTRIBUTIONS: 'analysis:distributions',
-  RANKINGS: 'analysis:rankings',
-  TEAM_SKILLS: (managerName: string) => `team:skills:${managerName}`,
-  CAPABILITY_ANALYSIS: (capability: string) =>
-    `analysis:capability:${capability}`,
-} as const;
-
-const CACHE_TTL = {
-  SOFT_SKILLS: 24 * 3600000, // 24 hours for soft skills
-  TEAM_SKILLS: 24 * 3600000, // 24 hours for team skills
-  ANALYSIS: 3600000, // 1 hour for analysis
-  DISTRIBUTIONS: 3600000, // 1 hour for distributions
-  RANKINGS: 3600000, // 1 hour for rankings
-} as const;
-
 @Injectable()
 export class SkillsMatrixService {
   private readonly logger = new Logger(SkillsMatrixService.name);
 
-  constructor(
-    @InjectConnection() private readonly connection: Connection,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {
-    this.initializeSoftSkillsCache();
-  }
-
-  private async initializeSoftSkillsCache() {
-    try {
-      let softSkills = await this.cacheManager.get(CACHE_KEYS.SOFT_SKILLS);
-
-      if (!softSkills) {
-        softSkills = await this.connection
-          .collection('soft_skillsInventory')
-          .find({})
-          .toArray();
-
-        await this.cacheManager.set(
-          CACHE_KEYS.SOFT_SKILLS,
-          softSkills,
-          CACHE_TTL.SOFT_SKILLS,
-        );
-      }
-    } catch (error) {
-      this.logger.error('Error initializing soft skills cache:', error);
-    }
-  }
+  constructor(@InjectConnection() private readonly connection: Connection) {}
 
   private async determineSkillCategory(
     skillName: string,
@@ -250,23 +204,7 @@ export class SkillsMatrixService {
 
   async getAdminSkillsAnalysis(): Promise<OrganizationSkillsAnalysisDto> {
     try {
-      // Try to get from cache first
-      const cachedAnalysis = await this.cacheManager.get(
-        CACHE_KEYS.ADMIN_ANALYSIS,
-      );
-      if (cachedAnalysis) {
-        this.logger.log('Returning admin skills analysis from cache');
-        return cachedAnalysis as OrganizationSkillsAnalysisDto;
-      }
-
       const result = await this.computeAdminSkillsAnalysis();
-
-      // Cache the result
-      await this.cacheManager.set(
-        CACHE_KEYS.ADMIN_ANALYSIS,
-        result,
-        CACHE_TTL.ANALYSIS,
-      ); // 1 hour cache
 
       return result;
     } catch (error) {
@@ -289,9 +227,10 @@ export class SkillsMatrixService {
       ]);
 
       // Get soft skills from cache first
-      const softSkills = (await this.cacheManager.get(
-        CACHE_KEYS.SOFT_SKILLS,
-      )) as any[];
+      const softSkills = await this.connection
+        .collection('soft_skillsInventory')
+        .find({})
+        .toArray();
       const softSkillTitles = new Set(
         softSkills?.map((skill) => skill.title.toLowerCase()) || [],
       );
@@ -497,15 +436,6 @@ export class SkillsMatrixService {
 
   async getDistributions(): Promise<DistributionsResponseDto> {
     try {
-      // Try to get from cache first
-      const cachedDistributions = await this.cacheManager.get(
-        CACHE_KEYS.DISTRIBUTIONS,
-      );
-      if (cachedDistributions) {
-        this.logger.log('Returning distributions from cache');
-        return cachedDistributions as DistributionsResponseDto;
-      }
-
       // Get all assessments at once
       const allAssessments = await this.connection
         .collection('Capability_gapAssessments')
@@ -642,13 +572,6 @@ export class SkillsMatrixService {
         gradeDistribution,
       };
 
-      // Cache the result
-      await this.cacheManager.set(
-        CACHE_KEYS.DISTRIBUTIONS,
-        distributions,
-        CACHE_TTL.ANALYSIS,
-      );
-
       return distributions;
     } catch (error) {
       this.logger.error('Error calculating distributions:', error);
@@ -677,13 +600,6 @@ export class SkillsMatrixService {
 
   async getEmployeeRankings(): Promise<EmployeeRankingsResponseDto> {
     try {
-      // Try to get from cache first
-      const cachedRankings = await this.cacheManager.get(CACHE_KEYS.RANKINGS);
-      if (cachedRankings) {
-        this.logger.log('Returning rankings from cache');
-        return cachedRankings as EmployeeRankingsResponseDto;
-      }
-
       const assessments = await this.connection
         .collection('Capability_gapAssessments')
         .find()
@@ -728,13 +644,6 @@ export class SkillsMatrixService {
         })),
       };
 
-      // Cache the result
-      await this.cacheManager.set(
-        CACHE_KEYS.RANKINGS,
-        rankings,
-        CACHE_TTL.ANALYSIS,
-      );
-
       return rankings;
     } catch (error) {
       this.logger.error('Error calculating employee rankings:', error);
@@ -744,16 +653,6 @@ export class SkillsMatrixService {
 
   async getTeamSkills(managerName: string): Promise<TeamSkillsResponseDto> {
     try {
-      // Try to get from cache first
-      const cachedTeamSkills = await this.cacheManager.get(
-        CACHE_KEYS.TEAM_SKILLS(managerName),
-      );
-
-      if (cachedTeamSkills) {
-        this.logger.log('Returning team skills from cache');
-        return cachedTeamSkills as TeamSkillsResponseDto;
-      }
-
       // If not in cache, fetch from database
       const teamAssessments = await this.connection
         .collection('Capability_managerAssessments')
@@ -787,13 +686,6 @@ export class SkillsMatrixService {
       );
 
       const result = { members: teamSkills };
-
-      // Cache the results
-      await this.cacheManager.set(
-        CACHE_KEYS.TEAM_SKILLS(managerName),
-        result,
-        CACHE_TTL.ANALYSIS,
-      );
 
       return result;
     } catch (error) {

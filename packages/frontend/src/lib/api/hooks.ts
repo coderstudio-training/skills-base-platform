@@ -4,11 +4,38 @@ import { isTokenExpired } from '@/lib/api/auth';
 import { learningApi, skillsApi, userApi } from '@/lib/api/client';
 import { authConfig, rolePermissions } from '@/lib/api/config';
 import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
-import { useSession } from 'next-auth/react';
+import { logger } from '@/lib/utils';
+import { signOut, useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
-import { logger } from '../utils';
 
-// Create a custom hook for auth state
+interface CacheOptions {
+  requiresAuth?: boolean;
+  cacheStrategy?: RequestCache;
+  revalidate?: number;
+}
+
+interface CacheEntry<T> {
+  status: 'success' | 'error' | 'pending';
+  data?: T;
+  error?: Error;
+  promise?: Promise<T>;
+}
+
+// Cache key generation
+function getCacheKey(endpoint: string, options?: CacheOptions): string {
+  return JSON.stringify({
+    endpoint,
+    options: {
+      requiresAuth: options?.requiresAuth,
+      cacheStrategy: options?.cacheStrategy,
+      revalidate: options?.revalidate,
+    },
+  });
+}
+
+// Memoized cache for suspense fetching
+const cache = new Map<string, CacheEntry<unknown>>();
+
 export function useAuth() {
   const { data: session, status } = useSession();
   const [authState, setAuthState] = useState<AuthState>({
@@ -21,12 +48,11 @@ export function useAuth() {
     const checkAuthState = async () => {
       if (status === 'authenticated' && session?.user?.accessToken) {
         const tokenExpired = await isTokenExpired(session.user.accessToken);
-        if (!tokenExpired) {
-          setAuthState({
-            isAuthenticated: true,
-            user: session.user,
-            role: session.user.role ? [session.user.role] : [],
-          });
+
+        if (tokenExpired) {
+          logger.warn('Access token is expired. Logging out...');
+          await signOut({ callbackUrl: '/' });
+          return;
         }
 
         setAuthState({
@@ -69,21 +95,23 @@ export function useAuth() {
   };
 }
 
-type FetchState<T> = {
+interface FetchState<T> {
   data: T | null;
   error: ApiError | null;
   isLoading: boolean;
-};
+}
+
+type ApiInstance = typeof userApi | typeof skillsApi | typeof learningApi;
 
 // Hook for fetching data in client components
 export function useQuery<T>(
-  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  apiInstance: ApiInstance,
   endpoint: string,
   options?: {
     enabled?: boolean;
-    revalidate?: number;
     requiresAuth?: boolean;
     cacheStrategy?: RequestCache;
+    revalidate?: number;
   },
 ) {
   const [state, setState] = useState<FetchState<T>>({
@@ -105,7 +133,6 @@ export function useQuery<T>(
 
     try {
       const response = await apiInstance.get<T>(endpoint, {
-        revalidate: options?.revalidate,
         requiresAuth: options?.requiresAuth,
         cache: options?.cacheStrategy,
       });
@@ -131,7 +158,6 @@ export function useQuery<T>(
     endpoint,
     enabled,
     isAuthenticated,
-    options?.revalidate,
     options?.requiresAuth,
     options?.cacheStrategy,
   ]);
@@ -148,18 +174,14 @@ export function useQuery<T>(
 
 // Hook for mutations (POST, PUT, DELETE) in client components
 export function useMutation<T, TData = unknown>(
-  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  apiInstance: ApiInstance,
   endpoint: string,
   method: 'POST' | 'PUT' | 'DELETE' = 'POST',
   options?: {
     requiresAuth?: boolean;
   },
 ) {
-  const [state, setState] = useState<{
-    data: T | null;
-    error: ApiError | null;
-    isLoading: boolean;
-  }>({
+  const [state, setState] = useState<FetchState<T>>({
     data: null,
     error: null,
     isLoading: false,
@@ -231,12 +253,78 @@ export function useMutation<T, TData = unknown>(
   };
 }
 
+// Suspense fetcher implementation
+function suspenseFetcher<T>(
+  apiInstance: ApiInstance,
+  endpoint: string,
+  options: CacheOptions = {},
+): T {
+  const key = getCacheKey(endpoint, options);
+
+  if (cache.has(key)) {
+    const result = cache.get(key) as CacheEntry<T>;
+
+    if (result.status === 'success' && result.data) {
+      return result.data;
+    }
+
+    if (result.status === 'pending' && result.promise) {
+      throw result.promise;
+    }
+
+    if (result.status === 'error' && result.error) {
+      logger.error('[Suspense Error]', result.error);
+      throw result.error;
+    }
+  }
+
+  const promise = apiInstance
+    .get<T>(endpoint, {
+      ...options,
+      cache: options.cacheStrategy || 'default',
+    })
+    .then(response => {
+      if (response.error) throw new Error(response.error.message || 'Unknown API error');
+
+      cache.set(key, {
+        status: 'success',
+        data: response.data,
+      });
+
+      return response.data;
+    })
+    .catch(error => {
+      const wrappedError = new Error(error.message || 'Failed to fetch data');
+      wrappedError.stack = error.stack;
+      cache.set(key, {
+        status: 'error',
+        error: wrappedError,
+      });
+      throw wrappedError;
+    });
+
+  cache.set(key, {
+    status: 'pending',
+    promise,
+  });
+
+  throw promise;
+}
+
+// Suspense Query Hook
+export function useSuspenseQuery<T>(
+  apiInstance: ApiInstance,
+  endpoint: string,
+  options?: CacheOptions,
+): T {
+  return suspenseFetcher<T>(apiInstance, endpoint, options);
+}
+
 // Server component data fetching function
 export async function fetchServerData<T>(
-  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
+  apiInstance: ApiInstance,
   endpoint: string,
   options?: {
-    revalidate?: number;
     requiresAuth?: boolean;
   },
 ): Promise<ApiResponse<T>> {
@@ -252,56 +340,4 @@ export async function fetchServerData<T>(
       },
     };
   }
-}
-
-// Memoized cache for suspense fetching
-const cache = new Map();
-
-function suspenseFetcher<T>(
-  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
-  endpoint: string,
-  options: { requiresAuth?: boolean; revalidate?: number; cacheStrategy?: RequestCache } = {},
-): T {
-  const key = JSON.stringify({ endpoint });
-
-  if (cache.has(key)) {
-    const result = cache.get(key);
-    if (result.status === 'pending') {
-      throw result.promise;
-    }
-    if (result.status === 'error') {
-      logger.error('[Suspense Error]', result.error);
-      throw result.error;
-    }
-    return result.data;
-  }
-
-  const promise = apiInstance
-    .get<T>(endpoint, options)
-    .then(response => {
-      if (response.error) throw new Error(response.error.message || 'Unknown API error');
-      cache.set(key, { status: 'success', data: response.data });
-      return response.data;
-    })
-    .catch(error => {
-      const wrappedError = new Error(error.message || 'Failed to fetch data');
-      wrappedError.stack = error.stack;
-      cache.set(key, { status: 'error', error: wrappedError });
-      throw wrappedError;
-    });
-
-  cache.set(key, { status: 'pending', promise });
-  throw promise;
-}
-
-export function useSuspenseQuery<T>(
-  apiInstance: typeof userApi | typeof skillsApi | typeof learningApi,
-  endpoint: string,
-  options?: {
-    requiresAuth?: boolean;
-    cacheStrategy?: RequestCache;
-    revalidate?: number;
-  },
-): T {
-  return suspenseFetcher<T>(apiInstance, endpoint, options || {});
 }

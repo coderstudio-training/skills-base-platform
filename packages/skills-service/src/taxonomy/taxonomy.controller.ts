@@ -18,8 +18,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
+  InvalidateCache,
   JwtAuthGuard,
   LoggingInterceptor,
+  RedisCache,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -66,6 +68,7 @@ export class TaxonomyController {
     status: 403,
     description: 'Forbidden',
   })
+  @InvalidateCache(['taxonomy:techincal:*', 'taxonomy:technical'])
   async bulkUpsertTechnical(@Body() dto: BulkUpsertTTaxonomyDTO) {
     this.logger.log(
       '[TECHNICAL TAXONOMY DTO RECEIVED]',
@@ -99,6 +102,7 @@ export class TaxonomyController {
     status: 403,
     description: 'Forbidden',
   })
+  @InvalidateCache(['taxonomy:soft:*', 'taxonomy:soft'])
   async bulkUpsertSoft(@Body() dto: BulkUpsertSTaxonomyDTO) {
     this.logger.log(
       '[SOFT TAXONOMY DTO RECEIVED]',
@@ -170,6 +174,7 @@ export class TaxonomyController {
     status: 400,
     description: 'Business unit is required',
   })
+  @RedisCache('taxonomy:technical')
   async findAllTechnical(@Query('businessUnit') businessUnit: string) {
     if (!businessUnit) {
       throw new Error('Business unit is required to find technical records.');
@@ -195,6 +200,7 @@ export class TaxonomyController {
     status: 403,
     description: 'Forbidden',
   })
+  @RedisCache('taxonomy:soft')
   async findAllSoft() {
     return this.taxonomyService.findAllSoft();
   }
@@ -243,6 +249,9 @@ export class TaxonomyController {
       updatedAt: '2024-11-06T19:11:58.141Z',
     },
   })
+  @RedisCache({
+    keyGenerator: (ctx) => `taxonomy:technical:${ctx.request.params.docId}`,
+  })
   async findOneTechnical(
     @Param('docId') docId: string,
     @Query('businessUnit') businessUnit: string,
@@ -269,6 +278,9 @@ export class TaxonomyController {
     status: 200,
     description: 'Returns a soft skill taxonomy record',
     example: {},
+  })
+  @RedisCache({
+    keyGenerator: (ctx) => `taxonomy:soft:${ctx.request.params.docId}`,
   })
   @Get('soft/:docId')
   async findOneSoft(@Param('docId') docId: string) {
@@ -343,6 +355,10 @@ export class TaxonomyController {
       },
     ],
   })
+  @RedisCache({
+    keyGenerator: (ctx) =>
+      `taxonomy:technical:title:${ctx.request.params.title}`,
+  })
   async findByTitleTechnical(
     @Param('title') title: string,
     @Query('businessUnit') businessUnit: string,
@@ -373,6 +389,9 @@ export class TaxonomyController {
     status: 200,
     description: 'Returns matching taxonomy records',
     example: [],
+  })
+  @RedisCache({
+    keyGenerator: (ctx) => `taxonomy:soft:title:${ctx.request.params.title}`,
   })
   async findByTitleSoft(@Param('title') title: string) {
     return this.taxonomyService.findSoftByTitle(title);

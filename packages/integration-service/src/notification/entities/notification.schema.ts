@@ -9,9 +9,18 @@ export class Notification {
   @ApiProperty({
     type: 'object',
     properties: {
-      id: { type: 'string' },
-      name: { type: 'string' },
+      id: {
+        type: 'string',
+        example: '123',
+        description: 'Workflow identifier',
+      },
+      name: {
+        type: 'string',
+        example: 'Data Sync Workflow',
+        description: 'Workflow name',
+      },
     },
+    description: 'Information about the workflow',
   })
   @Prop({
     type: {
@@ -28,11 +37,31 @@ export class Notification {
   @ApiProperty({
     type: 'object',
     properties: {
-      id: { type: 'string' },
-      status: { type: 'string', enum: ['success', 'error', 'running'] },
-      startedAt: { type: 'string', format: 'date-time' },
-      finishedAt: { type: 'string', format: 'date-time' },
+      id: {
+        type: 'string',
+        example: 'exec_456',
+        description: 'Execution identifier',
+      },
+      status: {
+        type: 'string',
+        enum: ['success', 'error', 'running'],
+        example: 'success',
+        description: 'Current execution status',
+      },
+      startedAt: {
+        type: 'string',
+        format: 'date-time',
+        example: '2024-12-13T04:32:49Z',
+        description: 'Execution start timestamp',
+      },
+      finishedAt: {
+        type: 'string',
+        format: 'date-time',
+        example: '2024-12-13T04:33:49Z',
+        description: 'Execution completion timestamp',
+      },
     },
+    description: 'Information about the workflow execution',
   })
   @Prop({
     type: {
@@ -53,8 +82,13 @@ export class Notification {
   @ApiPropertyOptional({
     type: 'object',
     properties: {
-      recordsProcessed: { type: 'number' },
+      recordsProcessed: {
+        type: 'number',
+        example: 42,
+        description: 'Number of records processed in this execution',
+      },
     },
+    description: 'Additional execution data',
   })
   @Prop({
     type: {
@@ -65,15 +99,22 @@ export class Notification {
     recordsProcessed?: number;
   };
 
-  @ApiProperty({ default: false })
+  @ApiProperty({
+    default: false,
+    description: 'Indicates if the notification has been read',
+    example: false,
+  })
   @Prop({ type: Boolean, default: false })
   read: boolean = false;
 
-  @ApiPropertyOptional({ type: Date })
+  @ApiPropertyOptional({
+    type: Date,
+    description: 'Timestamp when the notification was marked as read',
+    example: '2024-12-13T04:35:49Z',
+  })
   @Prop({ type: Date })
   readAt?: Date;
 }
-
 export const NotificationSchema = SchemaFactory.createForClass(Notification);
 
 NotificationSchema.index({ 'execution.startedAt': -1 });

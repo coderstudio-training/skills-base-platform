@@ -55,6 +55,10 @@ export class SecurityConfigurationManager {
     const customConfig = this.loadCustomConfig();
 
     return {
+      adminEmail:
+        customConfig.adminEmail ||
+        envOverrides.adminEmail ||
+        envConfig.adminEmail,
       rateLimit: {
         ...envConfig.rateLimit,
         ...envOverrides.rateLimit,
@@ -80,6 +84,7 @@ export class SecurityConfigurationManager {
 
   private loadCustomConfig(): PartialSecurityConfig {
     return {
+      adminEmail: process.env.ADMIN_EMAIL,
       rateLimit: {
         ...(process.env.RATE_LIMIT_ENABLED && {
           enabled: process.env.RATE_LIMIT_ENABLED === 'true',

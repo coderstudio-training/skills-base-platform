@@ -16,7 +16,13 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
+import {
+  JwtAuthGuard,
+  RedisCache,
+  Roles,
+  RolesGuard,
+  UserRole,
+} from '@skills-base/shared';
 import {
   DistributionsResponseDto,
   EmployeeRankingsResponseDto,
@@ -40,7 +46,7 @@ export class SkillsMatrixController {
   constructor(private readonly skillsMatrixService: SkillsMatrixService) {}
 
   @Get('user')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.USER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @ApiOperation({
     summary: 'Get employee skills assessment',
     description:
@@ -72,6 +78,9 @@ export class SkillsMatrixController {
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
     description: 'User does not have required permissions',
+  })
+  @RedisCache({
+    keyGenerator: (ctx) => `assessments:user:${ctx.request.query.email}`,
   })
   async getEmployeeSkills(
     @Query('email', new EmailValidationPipe()) email: string,
@@ -108,7 +117,7 @@ export class SkillsMatrixController {
   }
 
   @Get('user/summary')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.USER)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
   @ApiOperation({
     summary: 'Get employee skills summary',
     description:
@@ -140,6 +149,10 @@ export class SkillsMatrixController {
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
     description: 'User does not have required permissions',
+  })
+  @RedisCache({
+    keyGenerator: (ctx) =>
+      `assessments:user:summary:${ctx.request.query.email}`,
   })
   async getEmployeeSkillsSummary(
     @Query('email', new EmailValidationPipe()) email: string,
@@ -197,6 +210,7 @@ export class SkillsMatrixController {
     status: HttpStatus.FORBIDDEN,
     description: 'User does not have required permissions',
   })
+  @RedisCache('assessments:admin:analysis')
   async getAdminSkillsAnalysis(): Promise<OrganizationSkillsAnalysisDto> {
     this.logger.log(
       'Received request for organization technical skills analysis',
@@ -242,6 +256,7 @@ export class SkillsMatrixController {
     status: HttpStatus.FORBIDDEN,
     description: 'User does not have required permissions',
   })
+  @RedisCache('assessments:distributions')
   async getDistributions(): Promise<DistributionsResponseDto> {
     this.logger.log('Received request for skill distributions');
 
@@ -283,6 +298,7 @@ export class SkillsMatrixController {
     status: HttpStatus.FORBIDDEN,
     description: 'User does not have required permissions',
   })
+  @RedisCache('assessments:rankings')
   async getEmployeeRankings(): Promise<EmployeeRankingsResponseDto> {
     this.logger.log('Received request for employee rankings');
 
@@ -319,6 +335,10 @@ export class SkillsMatrixController {
     type: TeamSkillsResponseDto,
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
+  @RedisCache({
+    keyGenerator: (ctx) =>
+      `assessments:manager:${ctx.request.params.managerName}`,
+  })
   async getTeamSkills(
     @Param('managerName') managerName: string,
   ): Promise<TeamSkillsResponseDto> {

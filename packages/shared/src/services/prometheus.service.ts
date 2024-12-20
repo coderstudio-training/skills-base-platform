@@ -15,6 +15,18 @@ export class ApplicationMetricsService extends BaseMetricsService {
     eventsTotal: client.Counter;
   };
 
+  private systemMetrics: {
+    memoryUsage: client.Gauge;
+    cpuUsage: client.Gauge;
+    eventLoopLag: client.Gauge;
+  };
+
+  private applicationMetrics: {
+    errorRate: client.Counter;
+    warningRate: client.Counter;
+    responseTime: client.Histogram;
+  };
+
   protected initializeMetrics(): void {
     // Initialize HTTP metrics
     this.httpMetrics = {
@@ -51,6 +63,49 @@ export class ApplicationMetricsService extends BaseMetricsService {
         'business_events_total',
         'Total number of business events',
         ['event_type', 'status'],
+      ),
+    };
+
+    // Add new system metrics
+    this.systemMetrics = {
+      memoryUsage: this.createMetric<client.Gauge>(
+        'gauge',
+        'memory_usage_bytes',
+        'Memory usage in bytes',
+        ['type'],
+      ),
+      cpuUsage: this.createMetric<client.Gauge>(
+        'gauge',
+        'cpu_usage_percent',
+        'CPU usage percentage',
+        ['core'],
+      ),
+      eventLoopLag: this.createMetric<client.Gauge>(
+        'gauge',
+        'event_loop_lag_seconds',
+        'Event loop lag in seconds',
+      ),
+    };
+
+    // Add new application metrics
+    this.applicationMetrics = {
+      errorRate: this.createMetric<client.Counter>(
+        'counter',
+        'error_total',
+        'Total number of errors',
+        ['type', 'service'],
+      ),
+      warningRate: this.createMetric<client.Counter>(
+        'counter',
+        'warning_total',
+        'Total number of warnings',
+        ['type', 'service'],
+      ),
+      responseTime: this.createMetric<client.Histogram>(
+        'histogram',
+        'response_time_seconds',
+        'Response time in seconds',
+        ['endpoint', 'method'],
       ),
     };
 
@@ -110,6 +165,32 @@ export class ApplicationMetricsService extends BaseMetricsService {
     this.businessMetrics.eventsTotal.inc({
       event_type: eventType,
       status,
+      service: this.serviceName,
+    });
+  }
+
+  trackSystemMetrics(): void {
+    this.systemMetrics.memoryUsage.set(
+      { type: 'rss', service: this.serviceName },
+      process.memoryUsage().rss,
+    );
+    this.systemMetrics.memoryUsage.set(
+      { type: 'heapTotal', service: this.serviceName },
+      process.memoryUsage().heapTotal,
+    );
+    this.systemMetrics.memoryUsage.set(
+      { type: 'heapUsed', service: this.serviceName },
+      process.memoryUsage().heapUsed,
+    );
+  }
+
+  trackApplicationMetrics(): void {
+    this.applicationMetrics.errorRate.inc({
+      type: 'error',
+      service: this.serviceName,
+    });
+    this.applicationMetrics.warningRate.inc({
+      type: 'warning',
       service: this.serviceName,
     });
   }

@@ -26,11 +26,13 @@ export * from './utils/date.util';
 export * from './utils/validation.util';
 
 // logging
+export * from './filters/global-exception.filter';
 export * from './interceptors/logging.interceptor';
 export * from './interfaces/logging.interfaces';
 export * from './middlewares/logger.middleware';
 export * from './modules/logging.module';
 export * from './services/logger.service';
+export * from './utils/string.utils';
 
 // monitoring
 export * from './controllers/metrics.controller';
@@ -51,6 +53,7 @@ export * from './guards/rate-limit.guard';
 export * from './interfaces/security.interfaces';
 export * from './middlewares/security.middleware';
 export * from './modules/security.module';
+export * from './services/google-auth-security.service';
 export * from './services/security-monitoring.service';
 export * from './validators/security.validator';
 
@@ -61,3 +64,11 @@ export * from './utils/swagger.utils';
 export * from './constants/permissions.constant';
 export * from './decorators/require-permissions.decorator';
 export * from './guards/permissions.guard';
+
+// redis
+export * from './decorators/cache-invalidator.decorator';
+export * from './decorators/redis-cache.decorator';
+export * from './interceptors/cache-invalidate.interceptor';
+export * from './interceptors/redis-cache.interceptor';
+export * from './modules/redis.module';
+export * from './services/redis.service';
