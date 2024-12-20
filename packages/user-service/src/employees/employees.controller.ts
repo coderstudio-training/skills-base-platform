@@ -20,7 +20,9 @@ import {
   InvalidateCache,
   JwtAuthGuard,
   PaginationDto,
+  Permission,
   RedisCache,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -85,6 +87,7 @@ export class EmployeesController {
 
   @Get()
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
   @ApiOperation({ summary: 'Get all employees with pagination' })
   @ApiResponse({
     status: 200,
@@ -100,6 +103,7 @@ export class EmployeesController {
 
   @Get('search')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
   @ApiOperation({ summary: 'Search employees' })
   @ApiResponse({
     status: 200,
@@ -114,6 +118,7 @@ export class EmployeesController {
 
   @Get('business-units')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
   @ApiOperation({ summary: 'Get all business units and their distribution' })
   @ApiResponse({
     status: 200,
@@ -146,6 +151,7 @@ export class EmployeesController {
 
   @Get('stats')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
   @ApiOperation({ summary: 'Get employee statistics' })
   @ApiResponse({
     status: 200,
@@ -167,6 +173,7 @@ export class EmployeesController {
 
   @Get(':employeeId')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
   @ApiOperation({ summary: 'Get employee by ID' })
   @ApiParam({
     name: 'employeeId',
@@ -219,6 +226,7 @@ export class EmployeesController {
 
   @Get('manager/:managerName')
   @Roles(UserRole.MANAGER)
+  @RequirePermissions(Permission.MANAGE_TEAM)
   @ApiOperation({ summary: 'Get employees by manager name' })
   @ApiParam({
     name: 'managerName',
