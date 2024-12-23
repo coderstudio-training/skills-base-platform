@@ -1,0 +1,15 @@
+{
+  "title": "Business Metrics Dashboard",
+  "panels": [
+    {
+      "title": "Assessment Completion Rate",
+      "type": "graph",
+      "query": "sum(rate({app=\"frontend\"} | json | type=\"assessment.complete\" | severity=\"INFO\" [5m]))"
+    },
+    {
+      "title": "Skill Updates",
+      "type": "graph",
+      "query": "sum(rate({app=\"frontend\"} | json | type=\"skills.update.complete\" | severity=\"INFO\" [5m]))"
+    }
+  ]
+}

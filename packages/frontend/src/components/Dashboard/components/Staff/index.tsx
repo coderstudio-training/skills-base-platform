@@ -19,7 +19,8 @@ export default function StaffDashboard(user: DashboardProps) {
   const email = user.email;
   const { skillsData, selectedCategory, setSelectedCategory } = useStaffData(email, hasPermission);
 
-  if (!hasPermission('canViewDashboard') || !isStaff) {
+  const isAccessDenied = !hasPermission('canViewDashboard') || !isStaff;
+  if (isAccessDenied) {
     return (
       <Alert variant="destructive">
         <AlertTitle>Access Denied</AlertTitle>
