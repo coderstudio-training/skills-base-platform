@@ -15,8 +15,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
+  InvalidateCache,
   JwtAuthGuard,
   LoggingInterceptor,
+  Permission,
+  RedisCache,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -40,6 +44,7 @@ export class CoursesController {
 
   @Post('bulk-update')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.EDIT_ALL_LEARNING)
   @ApiOperation({
     summary: 'Bulk update courses',
     description:
@@ -53,6 +58,7 @@ export class CoursesController {
     status: 400,
     description: 'Validation error in request body',
   })
+  @InvalidateCache(['learning', 'learning:*'])
   async bulkUpdate(
     @Body() bulkUpdateDto: BulkUpdateCoursesDto,
   ): Promise<BulkUpsertResponse> {
@@ -62,6 +68,7 @@ export class CoursesController {
 
   @Get()
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
   @ApiOperation({
     summary: 'Get all courses',
     description:
@@ -81,12 +88,14 @@ export class CoursesController {
     required: false,
     description: 'Filter by required level',
   })
+  @RedisCache('learning:courses')
   async getCourses(@Query() query: GetCoursesQueryDto) {
     return this.coursesService.getCourses(query);
   }
 
   @Get('resources')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_SYSTEM)
   @ApiOperation({
     summary: 'Get learning resources',
     description:
@@ -102,6 +111,7 @@ export class CoursesController {
     required: false,
     description: 'Filter resources by category',
   })
+  @RedisCache('learning:resources')
   async getResources(
     @Query('category') category?: string,
   ): Promise<ResourcesResponseDto> {

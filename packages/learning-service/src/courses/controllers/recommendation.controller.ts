@@ -16,6 +16,9 @@ import {
 import {
   JwtAuthGuard,
   LoggingInterceptor,
+  Permission,
+  RedisCache,
+  RequirePermissions,
   Roles,
   RolesGuard,
   TransformInterceptor,
@@ -34,6 +37,7 @@ export class RecommendationController {
 
   @Get('recommendations/:email')
   @Roles(UserRole.STAFF, UserRole.MANAGER)
+  @RequirePermissions(Permission.VIEW_LEARNING)
   @ApiOperation({
     summary: 'Get learning recommendations',
     description: `
@@ -60,6 +64,10 @@ export class RecommendationController {
   @ApiResponse({
     status: 404,
     description: 'No skill gap data found for the user',
+  })
+  @RedisCache({
+    keyGenerator: (ctx) =>
+      `learning:recommendations:${ctx.request.params.email}`,
   })
   async getRecommendations(
     @Param('email') email: string,

@@ -1,12 +1,5 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
-import { CACHE_MANAGER } from '@skills-base/shared';
-import { Cache } from 'cache-manager';
 import type { mongo } from 'mongoose';
 import { Connection, Model, Schema } from 'mongoose';
 import {
@@ -26,15 +19,11 @@ import { SkillsMatrixService } from './skills-matrix.service';
 export class AssessmentsService {
   private readonly logger = new Logger(AssessmentsService.name);
   private readonly BATCH_SIZE = 1000;
-  private readonly cacheManager: Cache;
 
   constructor(
     @InjectConnection() private readonly connection: Connection,
-    @Inject(CACHE_MANAGER) cacheManager: Cache,
     private readonly skillsMatrixService: SkillsMatrixService,
-  ) {
-    this.cacheManager = cacheManager;
-  }
+  ) {}
   private getSchemaForAssessmentType(assessmentType: string): Schema<any> {
     if (assessmentType === 'manager') {
       return ManagerAssessmentSchema;
@@ -46,24 +35,6 @@ export class AssessmentsService {
       throw new BadRequestException(
         `Invalid assessment type: ${assessmentType}`,
       );
-    }
-  }
-
-  private async invalidateRelevantCaches(
-    assessmentType: string,
-  ): Promise<void> {
-    try {
-      // Always invalidate analysis and distributions as they depend on all types
-      await Promise.all([
-        this.cacheManager.reset(), // This will clear all cache
-        this.logger.log('All cache cleared'),
-      ]);
-
-      this.logger.log(
-        `Cache invalidated for ${assessmentType} assessment update`,
-      );
-    } catch (error) {
-      this.logger.error('Error invalidating cache:', error);
     }
   }
 
@@ -128,12 +99,6 @@ export class AssessmentsService {
           errors.push({ error });
         }
       }
-
-      // If we had any successful updates, invalidate relevant caches
-      if (totalUpdatedCount > 0) {
-        await this.invalidateRelevantCaches(assessmentType);
-      }
-
       return { updatedCount: totalUpdatedCount, errors };
     } catch (error) {
       this.logger.error('Error in bulk upsert operation:', error);

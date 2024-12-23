@@ -1,6 +1,3 @@
-'use client';
-
-import { CustomTooltip } from '@/components/ui/tooltip';
 import * as React from 'react';
 import {
   Bar,
@@ -9,6 +6,7 @@ import {
   Cell,
   Legend,
   ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
@@ -18,7 +16,7 @@ interface SkillData {
   average: number;
   requiredRating: number;
   gap: number;
-  [key: string]: string | number; // For additional properties
+  [key: string]: string | number;
 }
 
 type StaticColor = { type: 'static'; value: string };
@@ -41,11 +39,6 @@ interface BarChartProps extends React.HTMLAttributes<HTMLDivElement> {
   yAxisTicks?: number[];
   series: SeriesConfig[];
   height?: number;
-  tooltipFormatter?: (
-    value: number | string,
-    name: string,
-    entry: { payload: SkillData },
-  ) => number | string;
 }
 
 const CustomXAxisTick = ({
@@ -72,6 +65,30 @@ const CustomXAxisTick = ({
   </g>
 );
 
+interface TooltipProps {
+  active?: boolean;
+  payload?: {
+    value: number;
+    payload: SkillData;
+  }[];
+}
+
+const CustomTooltip = ({ active, payload }: TooltipProps) => {
+  if (active && payload?.length) {
+    const data = payload[0].payload as SkillData;
+
+    return (
+      <div className="bg-background p-4 rounded-lg space-y-1 shadow-lg border">
+        <p className="font-semibold mb-2">{data.skill}</p>
+        <p className="text-blue-600">Current Level: {data.average.toFixed(1)}</p>
+        <p className="text-gray-600">Required Level: {data.requiredRating.toFixed(1)}</p>
+        <p className="text-red-600">Gap: {data.gap.toFixed(1)}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const getBarColor = (config: ColorConfig, data: SkillData): string => {
   if (config.type === 'static') {
     return config.value;
@@ -86,7 +103,6 @@ export function CustomBarChart({
   yAxisTicks = [0, 1.5, 3, 4.5, 6],
   series,
   height = 500,
-  // tooltipFormatter,
 }: BarChartProps) {
   return (
     <div style={{ height: `${height}px`, width: '100%' }}>
@@ -106,7 +122,7 @@ export function CustomBarChart({
             tick={{ fill: '#666', fontSize: '11px' }}
             tickLine={false}
           />
-          <CustomTooltip />
+          <Tooltip content={<CustomTooltip />} />
           <Legend
             verticalAlign="bottom"
             height={36}
@@ -114,6 +130,20 @@ export function CustomBarChart({
               paddingTop: '50px',
               paddingBottom: '0px',
             }}
+            content={({ payload }) => (
+              <div className="flex justify-center items-center gap-8 pt-12">
+                {payload?.map((entry, index) => (
+                  <div key={`legend-${index}`} className="flex items-center gap-2">
+                    {entry.value === 'Skill Gap' ? (
+                      <div className="w-3 h-3" style={{ backgroundColor: '#dc2626' }}></div>
+                    ) : (
+                      <div className="w-3 h-3" style={{ backgroundColor: 'entry.color' }}></div>
+                    )}
+                    <span className="text-sm text-gray-700">{entry.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           />
           {series.map(s => (
             <Bar

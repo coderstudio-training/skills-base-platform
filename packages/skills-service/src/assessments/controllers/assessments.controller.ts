@@ -6,7 +6,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard, Roles, RolesGuard, UserRole } from '@skills-base/shared';
+import {
+  InvalidateCache,
+  JwtAuthGuard,
+  Permission,
+  RequirePermissions,
+  Roles,
+  RolesGuard,
+  UserRole,
+} from '@skills-base/shared';
 import {
   BaseAssessmentDto,
   BulkUpdateAssessmentsDto,
@@ -23,6 +31,7 @@ export class AssessmentsController {
 
   @Post('bulk-update-assessments')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.EDIT_ALL_SKILLS)
   @ApiOperation({
     summary: 'Bulk update skills assessments',
     description:
@@ -44,6 +53,7 @@ export class AssessmentsController {
     status: 403,
     description: 'Forbidden - User is not an admin',
   })
+  @InvalidateCache(['assessments', 'assessments:*'])
   async bulkUpdate(
     @Body()
     body: {

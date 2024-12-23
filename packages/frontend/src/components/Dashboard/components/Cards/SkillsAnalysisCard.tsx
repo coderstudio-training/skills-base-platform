@@ -1,19 +1,10 @@
-import { ApiError } from '@/lib/api/types';
 import { ArrowDownUp, CheckCircle2, Scale, XCircle } from 'lucide-react';
-import { StaffData } from '../../types';
+import { StaffSkillsProps } from '../../types';
 import SkillCategoryButton from '../Buttons/SkillCategoryButton';
 import { SkillsGapChart } from '../Charts/SkillsBarChart';
 import { SkillsTable } from '../Tables/SkillsTable';
 import BaseCard from './BaseCard';
 import { MetricCard } from './MetricCard';
-
-interface SkillsAnalysisCardProps {
-  skillsData: StaffData | null;
-  selectedCategory: 'Technical Skills' | 'Soft Skills';
-  onCategoryChange: (category: 'Technical Skills' | 'Soft Skills') => void;
-  loading?: boolean;
-  error?: ApiError | null;
-}
 
 export function SkillsAnalysisCard({
   skillsData,
@@ -21,7 +12,7 @@ export function SkillsAnalysisCard({
   onCategoryChange,
   loading,
   error,
-}: SkillsAnalysisCardProps) {
+}: StaffSkillsProps) {
   const categoryMetrics =
     selectedCategory === 'Technical Skills'
       ? skillsData?.metrics?.technicalSkills

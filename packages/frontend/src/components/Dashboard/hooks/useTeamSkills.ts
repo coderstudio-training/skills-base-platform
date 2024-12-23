@@ -1,8 +1,10 @@
 import { skillsApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 import { TeamData } from '../types';
 
 export default function useTeamSkills(name: string) {
+  const { hasPermission } = useAuth();
+
   const {
     data: teamSkills,
     error: teamSkillsError,
@@ -13,6 +15,7 @@ export default function useTeamSkills(name: string) {
     {
       requiresAuth: true,
       cacheStrategy: 'force-cache',
+      enabled: hasPermission('canViewSkills'),
     },
   );
 

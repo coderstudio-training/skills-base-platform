@@ -1,12 +1,12 @@
 // hooks/useStaffData.ts
 import { skillsApi } from '@/lib/api/client';
 import { useSuspenseQuery } from '@/lib/api/hooks';
+import { Permission } from '@/lib/api/types';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { StaffData, StaffSkills, UserMetrics } from '../types';
 
-export function useStaffData(email: string) {
-  const [activeTab, setActiveTab] = useState('overview');
+export function useStaffData(email: string, hasPermission: (permission: Permission) => boolean) {
   const [selectedCategory, setSelectedCategory] = useState<'Technical Skills' | 'Soft Skills'>(
     'Technical Skills',
   );
@@ -18,6 +18,7 @@ export function useStaffData(email: string) {
     {
       requiresAuth: true,
       cacheStrategy: 'force-cache',
+      enabled: hasPermission('canViewSkills'),
     },
   );
 
@@ -27,10 +28,10 @@ export function useStaffData(email: string) {
     {
       requiresAuth: true,
       cacheStrategy: 'force-cache',
+      enabled: hasPermission('canViewSkills'),
     },
   );
 
-  // Get category-specific metrics based on selected category
   const getCategoryMetrics = () => {
     if (!metrics) return null;
     return selectedCategory === 'Technical Skills' ? metrics.technicalSkills : metrics.softSkills;
@@ -51,8 +52,6 @@ export function useStaffData(email: string) {
     status,
     skillsData,
     categoryMetrics,
-    activeTab,
-    setActiveTab,
     selectedCategory,
     setSelectedCategory,
   };

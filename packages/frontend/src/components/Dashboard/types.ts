@@ -660,3 +660,27 @@ export interface StaffSkillsProps {
   loading?: boolean;
   error?: ApiError | null;
 }
+
+export interface BusinessUnitSkillsProps {
+  businessUnit: {
+    businessUnit: string;
+    categories: Array<{
+      category: string;
+      skills: Array<SkillDistributionItem>;
+    }>;
+  };
+}
+
+export interface CapabilityGapsProps {
+  capability: {
+    capability: string;
+    skillGaps: Array<SkillGap>;
+  };
+}
+
+export interface GradeItemProps {
+  grade: {
+    grade: string;
+    userCount: number;
+  };
+}
