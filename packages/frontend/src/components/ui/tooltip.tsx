@@ -17,7 +17,7 @@ export const CustomTooltip = React.forwardRef<HTMLDivElement, TooltipProps<numbe
       const data = payload[0].payload as SkillTooltipData;
 
       return (
-        <div ref={ref} className="bg-white p-4 rounded-lg space-y-1 shadow-lg border">
+        <div ref={ref} className="bg-background p-4 rounded-lg space-y-1 shadow-lg border">
           <p className="font-semibold mb-2">{data.skill}</p>
           <p className="text-blue-600">Current Level: {data.average.toFixed(1)}</p>
           <p className="text-gray-600">Required Level: {data.requiredRating.toFixed(1)}</p>

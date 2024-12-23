@@ -280,7 +280,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business Unit Long Text
                   </Skeleton>
-                  <Skeleton className="bg-gray-400 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     XXX
                   </Skeleton>
                 </div>
@@ -288,7 +288,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business Unit Text
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     XXX
                   </Skeleton>
                 </div>
@@ -296,7 +296,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business Text A
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     XXX
                   </Skeleton>
                 </div>
@@ -304,7 +304,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     XXX
                   </Skeleton>
                 </div>
@@ -312,7 +312,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business Unit
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     XXX
                   </Skeleton>
                 </div>
@@ -320,7 +320,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business A
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     XX
                   </Skeleton>
                 </div>
@@ -328,7 +328,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business Unit Long Text ABD
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     XX
                   </Skeleton>
                 </div>
@@ -336,7 +336,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business Unit AB
                   </Skeleton>
-                  <Skeleton className="bg-gray-400 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     XX
                   </Skeleton>
                 </div>
@@ -344,7 +344,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     BU Text
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     XX
                   </Skeleton>
                 </div>
@@ -352,7 +352,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business Unit Text A
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     XX
                   </Skeleton>
                 </div>
@@ -360,7 +360,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     BU A
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     X
                   </Skeleton>
                 </div>
@@ -368,7 +368,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business Text AB
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     X
                   </Skeleton>
                 </div>
@@ -376,7 +376,7 @@ export default function AdminLoading() {
                   <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent w-fit rounded-md">
                     Business Text
                   </Skeleton>
-                  <Skeleton className="bg-gray-400  text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
+                  <Skeleton className="bg-gray-400 dark:bg-gray-800 text-transparent inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ">
                     X
                   </Skeleton>
                 </div>

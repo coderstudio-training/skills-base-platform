@@ -44,6 +44,7 @@ export class EmployeesController {
 
   @Post('sync')
   @Roles(UserRole.ADMIN)
+  @RequirePermissions(Permission.MANAGE_USERS)
   @ApiOperation({ summary: 'Sync employee data' })
   @ApiResponse({
     status: 201,

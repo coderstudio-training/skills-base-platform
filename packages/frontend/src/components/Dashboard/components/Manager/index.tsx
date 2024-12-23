@@ -29,7 +29,7 @@ export default function ManagerDashboard(user: DashboardProps) {
   const { teamMembers } = useTeamData(managerName);
   const isManager = role?.includes('manager');
 
-  if (!hasPermission('canManageTeam') || !isManager) {
+  if (!hasPermission('canViewDashboard') || !isManager) {
     return (
       <Alert variant="destructive">
         <AlertDescription>Access Denied</AlertDescription>

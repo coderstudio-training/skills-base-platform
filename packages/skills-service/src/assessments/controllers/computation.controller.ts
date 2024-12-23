@@ -15,7 +15,9 @@ import {
 } from '@nestjs/swagger';
 import {
   JwtAuthGuard,
+  Permission,
   RedisCache,
+  RequirePermissions,
   Roles,
   RolesGuard,
   UserRole,
@@ -33,6 +35,7 @@ export class PerformanceController {
 
   @Roles(UserRole.ADMIN)
   @Get('bulk-performance')
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({
     summary: 'Calculate bulk performance metrics',
     description:
@@ -88,6 +91,8 @@ export class PerformanceController {
   }
 
   @Get('required-skills')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({
     summary: 'Get required skills by capability',
     description: 'Get all required skills for a specific capability',
