@@ -9,7 +9,7 @@ import { useLogout } from '../../hooks/useLogout';
 
 export function UserHeader() {
   const { userProfile, isManager, fullName } = useUserProfile();
-  const { preference, handleThemeChange } = useDarkTheme();
+  const { theme: preference, toggleTheme: handleThemeChange } = useDarkTheme();
   const { handleLogout } = useLogout();
 
   return (

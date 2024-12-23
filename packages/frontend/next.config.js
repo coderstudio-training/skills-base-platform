@@ -5,7 +5,7 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@skills-base/shared'],
   images: {
-    domains: ['lh3.googleusercontent.com'],
+    domains: ['lh3.googleusercontent.com', 'minio-s3.rcdc.me'],
   },
   webpack: config => {
     // Add an alias for static assets
