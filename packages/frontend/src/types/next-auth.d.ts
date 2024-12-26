@@ -10,6 +10,7 @@ declare module 'next-auth' {
       image?: string;
       accessToken: string;
       role: Roles;
+      perms: number[];
     };
   }
 
@@ -20,6 +21,7 @@ declare module 'next-auth' {
     accessToken: string;
     image?: string;
     role: Roles;
+    perms: number[];
   }
 }
 
@@ -31,5 +33,6 @@ declare module 'next-auth/jwt' {
     image?: string;
     accessToken: string;
     role: Roles;
+    perms: number[];
   }
 }

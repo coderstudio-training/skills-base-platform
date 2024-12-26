@@ -44,7 +44,12 @@ export const authOptions: NextAuthOptions = {
           logger.log('Decoded token:', JSON.stringify(decodedToken));
 
           // Validate the decoded token
-          if (!decodedToken.email || !decodedToken.userId || !Array.isArray(decodedToken.roles)) {
+          if (
+            !decodedToken.email ||
+            !decodedToken.userId ||
+            !Array.isArray(decodedToken.roles) ||
+            !Array.isArray(decodedToken.perms)
+          ) {
             logger.error('Invalid token structure');
             return null;
           }
@@ -68,6 +73,7 @@ export const authOptions: NextAuthOptions = {
             email: decodedToken.email,
             accessToken: credentials.access_token,
             role: role,
+            perms: decodedToken.perms,
           };
         } catch (error) {
           logger.error('Token decode error:', error);
@@ -100,9 +106,33 @@ export const authOptions: NextAuthOptions = {
           logger.log('Google Auth: ', JSON.stringify(data));
 
           if (response.ok) {
+            // decode token for perms
+            logger.log('Decoding token');
+            const decodedToken = jwtDecode<DecodedToken>(data.access_token);
+            logger.log('Decoded token:', JSON.stringify(decodedToken));
+
+            if (
+              !decodedToken.email ||
+              !decodedToken.userId ||
+              !Array.isArray(decodedToken.roles) ||
+              !Array.isArray(decodedToken.perms)
+            ) {
+              logger.error('Invalid token structure');
+              return '/auth/error';
+            }
+
+            // Check token expiration
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (decodedToken.exp && decodedToken.exp < currentTime) {
+              logger.error('Token has expired');
+              return '/auth/error';
+            }
+
             user.role = data.roles[0];
             user.accessToken = data.access_token;
             user.image = profile?.image;
+            user.perms = decodedToken.perms;
+
             logger.log('Google Auth USER: ', JSON.stringify(user));
             return true;
           } else {
@@ -124,6 +154,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.accessToken = user.accessToken;
         token.role = user.role;
+        token.perms = user.perms;
       }
       return token;
     },
@@ -136,6 +167,7 @@ export const authOptions: NextAuthOptions = {
         accessToken: token.accessToken as string,
         image: token.picture as string,
         role: token.role as Roles,
+        perms: token.perms as number[],
       };
       logger.log('Session Callback - Session:', JSON.stringify(session));
       return session;
