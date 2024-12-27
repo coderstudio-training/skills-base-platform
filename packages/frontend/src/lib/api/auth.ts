@@ -1,13 +1,7 @@
 // lib/auth.ts
 
 import { authConfig, errorMessages, rolePermissions } from '@/lib/api/config';
-import {
-  AuthState,
-  Permission,
-  RolePermissions,
-  Roles,
-  ServerInterceptOptions,
-} from '@/lib/api/types';
+import { Permission, RolePermissions, Roles, ServerInterceptOptions } from '@/lib/api/types';
 import { logger } from '@/lib/utils';
 import { AuthResponse, DecodedToken } from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
@@ -175,6 +169,7 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       // Customize the redirect based on the user's role
       if (url.startsWith(baseUrl)) {
+        logger.log('Redirecting to:', url);
         const session = await getSession();
         if (session?.user?.role) {
           return `${baseUrl}/dashboard/${session.user.role.toLowerCase()}`;
@@ -214,30 +209,6 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
 
   // Return the authorization header with the token
   return { Authorization: `Bearer ${session.user.accessToken}` };
-}
-
-// Auth management, to be used in conjunction with hasPermission or canAccessRoutes
-export async function getAuthState(): Promise<AuthState> {
-  let session;
-
-  // Check if running on the server or client
-  if (typeof window === 'undefined') {
-    // On the server-side, use getServerSession
-    session = await getServerSession(authOptions);
-  } else {
-    // On the client-side, use getSession
-    session = await getSession();
-  }
-
-  if (!session) {
-    return { isAuthenticated: false, user: null, role: [] };
-  }
-
-  return {
-    isAuthenticated: !!session.user?.accessToken,
-    user: session.user || null,
-    role: session.user ? [session.user.role] : [],
-  };
 }
 
 // Helper function, gets logged in user's role

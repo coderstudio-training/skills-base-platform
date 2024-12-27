@@ -16,7 +16,7 @@ export default function StaffDashboard(user: DashboardProps) {
   const { hasPermission, role } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const email = user.email;
-  const { skillsData, selectedCategory, setSelectedCategory } = useStaffData(email, hasPermission);
+  const { skillsData, selectedCategory, setSelectedCategory } = useStaffData(email);
   const isStaff = role?.includes('staff');
 
   if (!hasPermission('canViewDashboard') || !isStaff) {
