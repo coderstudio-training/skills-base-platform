@@ -13,7 +13,7 @@ export function useStaffData(email: string) {
 
   const metrics = useSuspenseQuery<UserMetrics>(
     skillsApi,
-    email ? `skills-matrix/user/summary?email=${email}` : '',
+    email ? `skills-matrix/user/summary?email=${encodeURIComponent(email)}` : '',
     {
       requiresAuth: true,
       cacheStrategy: 'force-cache',

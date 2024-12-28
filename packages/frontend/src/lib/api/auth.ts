@@ -1,15 +1,16 @@
 // lib/auth.ts
 
-import { authConfig, errorMessages, rolePermissions } from '@/lib/api/config';
-import { Permission, RolePermissions, Roles, ServerInterceptOptions } from '@/lib/api/types';
+import { authConfig, errorMessages } from '@/lib/api/config';
+import { Permission, Roles, ServerInterceptOptions } from '@/lib/api/types';
 import { logger } from '@/lib/utils';
 import { AuthResponse, DecodedToken } from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
-import { getServerSession, NextAuthOptions } from 'next-auth';
+import { getServerSession, NextAuthOptions, Session } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
+import { getPermissionCode } from './permissionMapping';
 logger.log('Starting to load auth options in lib/auth.ts...');
 
 export const authOptions: NextAuthOptions = {
@@ -212,33 +213,20 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
 }
 
 // Helper function, gets logged in user's role
-async function getRoles(): Promise<Roles[]> {
-  let session;
-
-  // Check if running on the server or client
-  if (typeof window === 'undefined') {
-    // On the server-side, use getServerSession
-    session = await getServerSession(authOptions);
-  } else {
-    // On the client-side, use getSession
-    session = await getSession();
-  }
-
+async function getRoles(session: Session): Promise<Roles[]> {
   return session?.user?.role ? [session.user.role] : [];
 }
 
 // Checks the predefined permissions list if user has permission
-export async function hasPermission(permission: Permission): Promise<boolean> {
-  const roles = await getRoles();
-
-  if (!roles.length) return false;
-
-  return roles.some(role => (rolePermissions as RolePermissions)[role][permission]);
+export async function hasPermission(session: Session, permissions: Permission[]): Promise<boolean> {
+  return permissions.every(permission =>
+    session.user.perms.includes(getPermissionCode(permission)),
+  );
 }
 
 // Checks the predefined routes if user has access
-export async function canAccessRoutes(route: string): Promise<boolean> {
-  const roles = await getRoles();
+export async function canAccessRoutes(session: Session, route: string): Promise<boolean> {
+  const roles = await getRoles(session);
 
   if (!roles.length) return false;
 
@@ -284,7 +272,7 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
   }
 
   if (option?.permission) {
-    const isPermitted = await hasPermission(option.permission);
+    const isPermitted = await hasPermission(session, option.permission);
     if (!isPermitted) {
       logger.log(errorMessages.FORBIDDEN);
       redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
@@ -292,7 +280,7 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
   }
 
   if (option?.route) {
-    const canAccess = await canAccessRoutes(option.route);
+    const canAccess = await canAccessRoutes(session, option.route);
     if (!canAccess) {
       logger.log(errorMessages.FORBIDDEN);
       redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);

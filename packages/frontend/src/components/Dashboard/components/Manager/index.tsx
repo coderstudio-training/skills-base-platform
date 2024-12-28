@@ -3,7 +3,6 @@
 import { UserHeader } from '@/components/Dashboard/components/Header/UserHeader';
 import { ManagerOverview } from '@/components/Dashboard/components/Manager/ManagerOverview';
 import { useTeamData } from '@/components/Dashboard/hooks/useTeamData';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -23,19 +22,10 @@ import SkillsView from './SkillsView';
 import Training from './Training';
 
 export default function ManagerDashboard(user: DashboardProps) {
-  const { hasPermission, role } = useAuth();
+  const { hasPermission } = useAuth();
   const managerName = user.name;
   const [activeTab, setActiveTab] = useState('overview');
   const { teamMembers } = useTeamData(managerName);
-  const isManager = role?.includes('manager');
-
-  if (!hasPermission('canViewDashboard') || !isManager) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>Access Denied</AlertDescription>
-      </Alert>
-    );
-  }
 
   return (
     <div className="container mx-auto p-4 max-w-full lg:max-w-[80%]">

@@ -7,6 +7,6 @@ const ManagerDashboard = dynamic(() => import('@/components/Dashboard/components
   loading: () => <ManagerLoading />,
 });
 export default async function ManagerDashboardPage() {
-  const session = await serverSideIntercept({ permission: 'canViewDashboard' });
+  const session = await serverSideIntercept({ permission: ['canViewDashboard'] });
   return <ManagerDashboard {...session?.user} />;
 }

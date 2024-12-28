@@ -7,7 +7,6 @@ import { BusinessUnitDistribution } from '@/components/Dashboard/components/Card
 import { SkillGapOverview } from '@/components/Dashboard/components/Cards/SkillGapOverviewCard';
 import { TopPerformers } from '@/components/Dashboard/components/Cards/TopPerformersCard';
 import { useAdminData } from '@/components/Dashboard/hooks/useAdminData';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
@@ -18,7 +17,7 @@ import AnalysisView from './AnalysisView';
 import { LearningManagement } from './LearningManagement';
 
 export default function AdminDashboard() {
-  const { hasPermission, role } = useAuth();
+  const { hasPermission } = useAuth();
   const {
     employees,
     totalItems,
@@ -38,16 +37,7 @@ export default function AdminDashboard() {
     handleBusinessUnitChange,
   } = useAdminData();
 
-  const isAdmin = role?.includes('admin');
   const { data: tscData } = useTSCManager();
-
-  if (!hasPermission('canViewDashboard') || !isAdmin) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>Access Denied</AlertDescription>
-      </Alert>
-    );
-  }
 
   return (
     <div className="md:min-h-screen bg-gray-50 dark:bg-gray-950">
