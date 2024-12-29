@@ -135,6 +135,7 @@ export function useQuery<T>(
 
     try {
       const response = await apiInstance.get<T>(endpoint, {
+        revalidate: options?.revalidate,
         requiresAuth: options?.requiresAuth,
         cache: options?.cacheStrategy,
       });
@@ -160,6 +161,7 @@ export function useQuery<T>(
     endpoint,
     enabled,
     isAuthenticated,
+    options?.revalidate,
     options?.requiresAuth,
     options?.cacheStrategy,
   ]);
@@ -283,7 +285,6 @@ function suspenseFetcher<T>(
   const promise = apiInstance
     .get<T>(endpoint, {
       ...options,
-      cache: options.cacheStrategy || 'default',
     })
     .then(response => {
       if (response.error) throw new Error(response.error.message || 'Unknown API error');

@@ -10,8 +10,6 @@ import { useAdminData } from '@/components/Dashboard/hooks/useAdminData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
-import { useTSCManager } from '../../hooks/useTSCManager';
-import AdminDashboardHeader from '../Header/AdminHeader';
 import TaxonomyManager from '../TSC';
 import AnalysisView from './AnalysisView';
 import { LearningManagement } from './LearningManagement';
@@ -37,11 +35,8 @@ export default function AdminDashboard() {
     handleBusinessUnitChange,
   } = useAdminData();
 
-  const { data: tscData } = useTSCManager();
-
   return (
     <div className="md:min-h-screen bg-gray-50 dark:bg-gray-950">
-      <AdminDashboardHeader />
       <main className="max-w-7xl mx-auto px-4 py-8">
         {hasPermission('canManageUsers') && (
           <>
@@ -129,7 +124,6 @@ export default function AdminDashboard() {
             <TabsContent value="taxonomy">
               <TaxonomyManager
                 searchQuery={searchQuery}
-                data={tscData ? tscData : []}
                 selectedBusinessUnit={selectedBusinessUnit}
               />
             </TabsContent>

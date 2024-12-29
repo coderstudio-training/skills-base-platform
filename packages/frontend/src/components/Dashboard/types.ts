@@ -319,9 +319,25 @@ export interface IBaseTaxonomy {
   rangeOfApplication?: string[];
 }
 
+export interface ITechnicalTaxonomy {
+  data: IBaseTaxonomy[];
+}
+
+export interface ITaxonomyDTO extends IBaseTaxonomy {
+  businessUnit: string;
+}
+
+export interface IBulkUpsertDTO {
+  data: ITaxonomyDTO[];
+}
+
+export interface ITaxonomyResponse {
+  updatedCount: number;
+  errors: string[];
+}
+
 export interface TSCManagerProps {
   selectedBusinessUnit?: string;
-  data?: IBaseTaxonomy[];
   searchQuery?: string;
 }
 

@@ -1,7 +1,11 @@
 import { ErrorBoundary } from '@/components/Dashboard/components/ErrorBoundary/ErrorBoundary';
+import AdminLoadingHeader from '@/components/Dashboard/components/Header/AdminLoadingHeader';
 import ErrorPage from '@/components/error/ErrorPage';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Suspense } from 'react';
+import { Suspense, lazy } from 'react';
+
+const AdminDashboardHeader = lazy(
+  () => import('@/components/Dashboard/components/Header/AdminHeader'),
+);
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,7 +14,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <ErrorPage statusCode={500} message="Something went wrong while loading the page" />
       }
     >
-      <Suspense fallback={<Skeleton className="w-full h-screen" />}>{children}</Suspense>
+      <Suspense fallback={<AdminLoadingHeader />}>
+        <AdminDashboardHeader />
+      </Suspense>
+      {children}
     </ErrorBoundary>
   );
 }
