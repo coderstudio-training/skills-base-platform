@@ -1,18 +1,21 @@
 'use client';
 
 import { isTokenExpired } from '@/lib/api/auth';
-import { learningApi, skillsApi, userApi } from '@/lib/api/client';
+import { ApiClient, learningApi, skillsApi, userApi } from '@/lib/api/client';
 import { authConfig, rolePermissions } from '@/lib/api/config';
 import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
 import { logger } from '@/lib/utils';
 import { signOut, useSession } from 'next-auth/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { cacheStore } from './cache-store';
 
+// Types and Interfaces
 interface CacheOptions {
   requiresAuth?: boolean;
   cacheStrategy?: RequestCache;
   revalidate?: number;
   enabled?: boolean;
+  tags?: string[];
 }
 
 interface CacheEntry<T> {
@@ -22,21 +25,35 @@ interface CacheEntry<T> {
   promise?: Promise<T>;
 }
 
-// Cache key generation
+interface FetchState<T> {
+  data: T | null;
+  error: ApiError | null;
+  isLoading: boolean;
+}
+
+type ApiInstance = typeof userApi | typeof skillsApi | typeof learningApi;
+
+// Cache Configuration
+const DEFAULT_CACHE_CONFIG = {
+  cache: 'force-cache' as RequestCache,
+  tags: ['all'] as string[],
+};
+
+// Cache Implementation
+const cache = new Map<string, CacheEntry<unknown>>();
+
 function getCacheKey(endpoint: string, options?: CacheOptions): string {
   return JSON.stringify({
     endpoint,
     options: {
-      requiresAuth: options?.requiresAuth,
-      cacheStrategy: options?.cacheStrategy,
-      revalidate: options?.revalidate,
+      cache: options?.cacheStrategy || DEFAULT_CACHE_CONFIG.cache,
+      tags: [...(options?.tags || []), ...DEFAULT_CACHE_CONFIG.tags],
+      version: cacheStore.getVersion(), // Add version to cache key
     },
   });
 }
 
-// Memoized cache for suspense fetching
-const cache = new Map<string, CacheEntry<unknown>>();
-
+// Auth Hook
 export function useAuth() {
   const { data: session, status } = useSession();
   const [authState, setAuthState] = useState<AuthState>({
@@ -62,11 +79,7 @@ export function useAuth() {
           role: session.user.role ? [session.user.role] : [],
         });
       } else {
-        setAuthState({
-          isAuthenticated: false,
-          user: null,
-          role: [],
-        });
+        setAuthState({ isAuthenticated: false, user: null, role: [] });
       }
     };
 
@@ -74,18 +87,12 @@ export function useAuth() {
   }, [session, status]);
 
   const hasPermission = useCallback(
-    (permission: Permission) => {
-      if (!authState.role.length) return false;
-      return authState.role.some(role => rolePermissions[role][permission]);
-    },
+    (permission: Permission) => authState.role.some(role => rolePermissions[role]?.[permission]),
     [authState.role],
   );
 
   const canAccessRoutes = useCallback(
-    (route: string) => {
-      if (!authState.role.length) return false;
-      return authState.role.some(role => authConfig.routes[role].includes(route));
-    },
+    (route: string) => authState.role.some(role => authConfig.routes[role]?.includes(route)),
     [authState.role],
   );
 
@@ -96,15 +103,7 @@ export function useAuth() {
   };
 }
 
-interface FetchState<T> {
-  data: T | null;
-  error: ApiError | null;
-  isLoading: boolean;
-}
-
-type ApiInstance = typeof userApi | typeof skillsApi | typeof learningApi;
-
-// Hook for fetching data in client components
+// Query Hook
 export function useQuery<T>(
   apiInstance: ApiInstance,
   endpoint: string,
@@ -113,6 +112,7 @@ export function useQuery<T>(
     requiresAuth?: boolean;
     cacheStrategy?: RequestCache;
     revalidate?: number;
+    tags?: string[];
   },
 ) {
   const [state, setState] = useState<FetchState<T>>({
@@ -124,8 +124,30 @@ export function useQuery<T>(
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
 
+  useEffect(() => {
+    const unsubscribe = cacheStore.subscribe(() => {
+      if (enabled) {
+        fetchData();
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [enabled]);
+
+  // Memoize options to prevent unnecessary re-renders
+  const finalOptions = useMemo(
+    () => ({
+      requiresAuth: options?.requiresAuth,
+      cache: options?.cacheStrategy || DEFAULT_CACHE_CONFIG.cache,
+      tags: [...(options?.tags || []), ...DEFAULT_CACHE_CONFIG.tags],
+    }),
+    [options?.requiresAuth, options?.cacheStrategy, options?.tags],
+  );
+
   const fetchData = useCallback(async () => {
-    if (!enabled || (options?.requiresAuth !== false && !isAuthenticated)) {
+    if (!enabled || (finalOptions.requiresAuth !== false && !isAuthenticated)) {
       setState(prev => ({ ...prev, isLoading: false }));
       return;
     }
@@ -133,10 +155,7 @@ export function useQuery<T>(
     setState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      const response = await apiInstance.get<T>(endpoint, {
-        requiresAuth: options?.requiresAuth,
-        cache: options?.cacheStrategy,
-      });
+      const response = await apiInstance.get<T>(endpoint, finalOptions);
 
       setState({
         data: response.data,
@@ -154,33 +173,21 @@ export function useQuery<T>(
         isLoading: false,
       });
     }
-  }, [
-    apiInstance,
-    endpoint,
-    enabled,
-    isAuthenticated,
-    options?.requiresAuth,
-    options?.cacheStrategy,
-  ]);
+  }, [apiInstance, endpoint, enabled, isAuthenticated, finalOptions]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  return {
-    ...state,
-    refetch: fetchData,
-  };
+  return { ...state, refetch: fetchData };
 }
 
-// Hook for mutations (POST, PUT, DELETE) in client components
+// Mutation Hook
 export function useMutation<T, TData = unknown>(
-  apiInstance: ApiInstance,
+  apiInstance: ApiClient,
   endpoint: string,
   method: 'POST' | 'PUT' | 'DELETE' = 'POST',
-  options?: {
-    requiresAuth?: boolean;
-  },
+  options?: { requiresAuth?: boolean },
 ) {
   const [state, setState] = useState<FetchState<T>>({
     data: null,
@@ -218,7 +225,9 @@ export function useMutation<T, TData = unknown>(
           });
           break;
         case 'DELETE':
-          response = await apiInstance.delete<T>(endpoint, { requiresAuth: options?.requiresAuth });
+          response = await apiInstance.delete<T>(endpoint, {
+            requiresAuth: options?.requiresAuth,
+          });
           break;
         default:
           throw new Error(`Unsupported method: ${method}`);
@@ -238,106 +247,76 @@ export function useMutation<T, TData = unknown>(
         message: error instanceof Error ? error.message : 'An error occurred',
       };
 
-      setState({
-        data: null,
-        error: apiError,
-        isLoading: false,
-      });
-
-      return { data: null as T, error: apiError };
+      setState({ data: null, error: apiError, isLoading: false });
+      return { data: null as T, error: apiError, status: 500 };
     }
   };
 
-  return {
-    ...state,
-    mutate,
-  };
+  return { ...state, mutate };
 }
 
-// Suspense fetcher implementation
-function suspenseFetcher<T>(
-  apiInstance: ApiInstance,
-  endpoint: string,
-  options: CacheOptions = {},
-): T {
-  const key = getCacheKey(endpoint, options);
+// Suspense Implementation
+function suspenseFetcher<T>(apiInstance: ApiInstance, endpoint: string, options: CacheOptions): T {
+  const cacheKey = getCacheKey(endpoint, options);
+  const cachedResult = cache.get(cacheKey) as CacheEntry<T>;
 
-  if (cache.has(key)) {
-    const result = cache.get(key) as CacheEntry<T>;
+  if (!cachedResult) {
+    const promise = apiInstance
+      .get<T>(endpoint, options)
+      .then(response => {
+        if (response.error) throw new Error(response.error.message);
+        cache.set(cacheKey, { status: 'success', data: response.data });
+        return response.data;
+      })
+      .catch(error => {
+        cache.set(cacheKey, { status: 'error', error });
+        throw error;
+      });
 
-    if (result.status === 'success' && result.data) {
-      return result.data;
-    }
-
-    if (result.status === 'pending' && result.promise) {
-      throw result.promise;
-    }
-
-    if (result.status === 'error' && result.error) {
-      logger.error('[Suspense Error]', result.error);
-      throw result.error;
-    }
+    cache.set(cacheKey, { status: 'pending', promise });
+    throw promise;
   }
 
-  const promise = apiInstance
-    .get<T>(endpoint, {
-      ...options,
-      cache: options.cacheStrategy || 'default',
-    })
-    .then(response => {
-      if (response.error) throw new Error(response.error.message || 'Unknown API error');
-
-      cache.set(key, {
-        status: 'success',
-        data: response.data,
-      });
-
-      return response.data;
-    })
-    .catch(error => {
-      const wrappedError = new Error(error.message || 'Failed to fetch data');
-      wrappedError.stack = error.stack;
-      cache.set(key, {
-        status: 'error',
-        error: wrappedError,
-      });
-      throw wrappedError;
-    });
-
-  cache.set(key, {
-    status: 'pending',
-    promise,
-  });
-
-  throw promise;
+  if (cachedResult.status === 'success') return cachedResult.data as T;
+  if (cachedResult.status === 'error') throw cachedResult.error;
+  throw cachedResult.promise;
 }
-
 // Suspense Query Hook
 export function useSuspenseQuery<T>(
   apiInstance: ApiInstance,
   endpoint: string,
   options?: CacheOptions,
 ): T {
-  return suspenseFetcher<T>(apiInstance, endpoint, options);
+  const finalOptions = useMemo(
+    () => ({
+      ...DEFAULT_CACHE_CONFIG,
+      cache: options?.cacheStrategy || DEFAULT_CACHE_CONFIG.cache,
+      tags: [...(options?.tags || []), ...DEFAULT_CACHE_CONFIG.tags],
+    }),
+    [options?.cacheStrategy, options?.tags],
+  );
+
+  return suspenseFetcher<T>(apiInstance, endpoint, finalOptions);
 }
 
-// Server component data fetching function
+// Server Data Fetching
 export async function fetchServerData<T>(
   apiInstance: ApiInstance,
   endpoint: string,
-  options?: {
-    requiresAuth?: boolean;
-  },
+  options?: { requiresAuth?: boolean },
 ): Promise<ApiResponse<T>> {
   try {
-    return await apiInstance.get<T>(endpoint, options);
+    return await apiInstance.get<T>(endpoint, {
+      ...options,
+      ...DEFAULT_CACHE_CONFIG,
+    });
   } catch (error) {
     return {
       data: null as T,
       error: {
         status: 500,
         code: 'SERVER_FETCH_ERROR',
-        message: error instanceof Error ? error.message : 'An error occurred during server fetch',
+        message: error instanceof Error ? error.message : 'Server fetch error occurred',
       },
     };
   }

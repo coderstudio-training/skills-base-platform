@@ -48,7 +48,6 @@ export function useAdminData() {
     isLoading: employeesLoading,
     error: employeesError,
   } = useQuery<EmployeesResponse>(userApi, `${endpoint}?${queryParams}`, {
-    cacheStrategy: 'force-cache',
     requiresAuth: true,
     enabled: hasPermission('canManageSystem'),
   });
@@ -58,7 +57,6 @@ export function useAdminData() {
     userApi,
     '/employees/business-units',
     {
-      cacheStrategy: 'force-cache',
       requiresAuth: true,
       enabled: hasPermission('canManageSystem'),
     },
@@ -66,7 +64,6 @@ export function useAdminData() {
 
   // Stats query
   const statsData = useSuspenseQuery<EmployeeStats>(userApi, '/employees/stats', {
-    cacheStrategy: 'force-cache',
     requiresAuth: true,
     enabled: hasPermission('canManageSystem'),
   });
@@ -76,7 +73,6 @@ export function useAdminData() {
     skillsApi,
     '/skills-matrix/admin/analysis',
     {
-      cacheStrategy: 'force-cache',
       requiresAuth: true,
       enabled: hasPermission('canManageSystem'),
     },
@@ -87,7 +83,6 @@ export function useAdminData() {
     skillsApi,
     '/skills-matrix/rankings',
     {
-      cacheStrategy: 'force-cache',
       requiresAuth: true,
       enabled: hasPermission('canManageSystem'),
     },

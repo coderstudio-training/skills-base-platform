@@ -20,6 +20,8 @@ import { RedisService } from '../services/redis.service';
 export class CacheInvalidateInterceptor implements NestInterceptor {
   private readonly logger = new Logger(CacheInvalidateInterceptor.name);
   private readonly environment = process.env.NODE_ENV || 'development';
+  private readonly frontendUrl =
+    process.env.FRONTEND_URL || 'http://localhost:3000';
 
   constructor(
     private readonly redisService: RedisService,
@@ -54,7 +56,40 @@ export class CacheInvalidateInterceptor implements NestInterceptor {
               : `${this.environment}:${key}`,
           );
 
+          // Invalidate cache in Redis
           await this.redisService.invalidateMultiple(prefixedKeys);
+
+          // Notify frontend about cache invalidation
+          try {
+            await fetch(`${this.frontendUrl}/api/cache/invalidate`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                keys: prefixedKeys,
+                timestamp: new Date().toISOString(),
+                environment: this.environment,
+              }),
+            });
+
+            this.logger.debug(
+              'Cache invalidation notification sent to frontend',
+              {
+                keys: prefixedKeys,
+                handler: context.getHandler().name,
+              },
+            );
+          } catch (error) {
+            this.logger.error(
+              'Failed to notify frontend about cache invalidation',
+              {
+                error,
+                handler: context.getHandler().name,
+                frontendUrl: this.frontendUrl,
+              },
+            );
+          }
 
           this.logger.debug('Cache invalidated', {
             keys: prefixedKeys,
