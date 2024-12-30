@@ -6,9 +6,10 @@ import { Logger } from './logger.service';
 @Injectable()
 export class RedisService implements OnModuleDestroy {
   private client: Redis;
-  private subscribers: Map<string, Redis> = new Map();
   private readonly logger = new Logger(RedisService.name);
   private readonly config = RedisConfigurationManager.getInstance().getConfig();
+  private readonly frontendUrl =
+    process.env.FRONTEND_URL || 'http://localhost:3000';
 
   constructor() {
     this.initializeRedisClient();
@@ -82,11 +83,6 @@ export class RedisService implements OnModuleDestroy {
   async onModuleDestroy() {
     this.logger.info('Shutting down Redis connections');
     await this.client.quit();
-
-    for (const [channel, subscriber] of this.subscribers.entries()) {
-      this.logger.info('Closing subscriber connection', { channel });
-      await subscriber.quit();
-    }
   }
 
   // Basic operations with logging
@@ -221,6 +217,14 @@ export class RedisService implements OnModuleDestroy {
         results,
         duration: Date.now() - startTime,
       });
+
+      // Notify frontend about cache invalidation asynchronously
+      this.notifyFrontendOfInvalidation(patterns).catch((error) => {
+        this.logger.error('Frontend cache invalidation notification failed', {
+          error,
+          patterns,
+        });
+      });
     } catch (error) {
       this.logger.error('Cache invalidation failed', {
         patterns,
@@ -231,119 +235,55 @@ export class RedisService implements OnModuleDestroy {
     }
   }
 
-  async invalidateByPrefix(prefix: string): Promise<void> {
-    const startTime = Date.now();
-    let cursor = '0';
-    let totalDeleted = 0;
+  private async notifyFrontendOfInvalidation(
+    patterns: string[],
+  ): Promise<void> {
+    const maxRetries = 3;
+    let retryCount = 0;
 
-    try {
-      // Ensure prefix consistency with keyPrefix configuration
-      let searchPattern = prefix;
-      if (!prefix.startsWith(this.config.keyPrefix || '')) {
-        searchPattern = `${this.config.keyPrefix}${prefix}`;
-      }
-      searchPattern = `${searchPattern}:*`;
+    const payload = {
+      paths: ['/'],
+      tags: ['all'],
+    };
 
-      // Use SCAN to find keys that match the pattern
-      do {
-        const [newCursor, keys] = await this.client.scan(
-          cursor,
-          'MATCH',
-          searchPattern,
-          'COUNT',
-          100,
-        );
-        cursor = newCursor;
+    while (retryCount < maxRetries) {
+      try {
+        const response = await fetch(`${this.frontendUrl}/api/revalidate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
 
-        if (keys.length > 0) {
-          const deletedCount = await this.client.del(...keys);
-          totalDeleted += deletedCount;
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      } while (cursor !== '0');
 
-      this.logger.info('Prefix-based cache invalidation completed', {
-        prefix,
-        deletedKeys: totalDeleted,
-        duration: Date.now() - startTime,
-      });
-    } catch (error) {
-      this.logger.error('Prefix-based cache invalidation failed', {
-        prefix,
-        error,
-        duration: Date.now() - startTime,
-      });
-      throw error;
-    }
-  }
+        const data = await response.json();
 
-  // Lock management with logging
-  async lock(key: string, ttl: number): Promise<string | null> {
-    const token = Math.random().toString(36).slice(2);
-    const startTime = Date.now();
+        this.logger.info('Frontend cache invalidation notification sent', {
+          patterns,
+          response: data,
+        });
+        return;
+      } catch (error) {
+        retryCount++;
 
-    try {
-      const result = await this.client.set(
-        `lock:${key}`,
-        token,
-        'EX',
-        ttl,
-        'NX',
-      );
+        if (retryCount === maxRetries) {
+          this.logger.error('Failed to notify frontend of cache invalidation', {
+            error,
+            patterns,
+            frontendUrl: this.frontendUrl,
+            attempts: retryCount,
+          });
+          return;
+        }
 
-      const duration = Date.now() - startTime;
-      this.logger.debug('Lock operation', {
-        key,
-        acquired: result === 'OK',
-        ttl,
-        duration,
-        operation: 'lock',
-      });
-
-      return result === 'OK' ? token : null;
-    } catch (error) {
-      this.logger.error('Lock operation failed', {
-        key,
-        ttl,
-        error,
-        duration: Date.now() - startTime,
-        operation: 'lock',
-      });
-      throw error;
-    }
-  }
-
-  async unlock(key: string, token: string): Promise<boolean> {
-    const startTime = Date.now();
-    const script = `
-      if redis.call("get", KEYS[1]) == ARGV[1] then
-        return redis.call("del", KEYS[1])
-      else
-        return 0
-      end
-    `;
-
-    try {
-      const result = await this.client.eval(script, 1, `lock:${key}`, token);
-
-      const duration = Date.now() - startTime;
-      const unlocked = result === 1;
-
-      this.logger.debug('Unlock operation', {
-        key,
-        unlocked,
-        duration,
-        operation: 'unlock',
-      });
-
-      return unlocked;
-    } catch (error) {
-      this.logger.error('Unlock operation failed', {
-        key,
-        error,
-        duration: Date.now() - startTime,
-        operation: 'unlock',
-      });
-      throw error;
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.min(1000 * Math.pow(2, retryCount), 5000)),
+        );
+      }
     }
   }
 }

@@ -328,7 +328,7 @@ export class SkillsMatrixController {
   }
 
   @Get('manager/:managerName')
-  @Roles(UserRole.MANAGER)
+  @Roles(UserRole.MANAGER, UserRole.ADMIN)
   @RequirePermissions(Permission.VIEW_SKILLS)
   @ApiOperation({ summary: 'Get team members skills by manager name' })
   @ApiParam({

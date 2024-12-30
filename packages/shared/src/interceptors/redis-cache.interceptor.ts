@@ -150,6 +150,7 @@ export class RedisCacheInterceptor implements NestInterceptor {
         .map(([, value]) => `${value}`)
         .join(':'),
       Object.entries(query)
+        .filter(([key]) => !key.includes('_cache')) // Filter out _cache parameters
         .map(([, value]) => `${value}`)
         .join(':'),
     ].filter(Boolean);

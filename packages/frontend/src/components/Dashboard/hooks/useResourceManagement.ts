@@ -16,7 +16,6 @@ export function useResourceManagement(category?: string) {
     {
       requiresAuth: true,
       // revalidate: 300, // Cache for 5 minutes
-      cacheStrategy: 'force-cache',
       enabled: hasPermission('canManageSystem'),
     },
   );

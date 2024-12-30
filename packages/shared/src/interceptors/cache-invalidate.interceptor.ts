@@ -20,6 +20,8 @@ import { RedisService } from '../services/redis.service';
 export class CacheInvalidateInterceptor implements NestInterceptor {
   private readonly logger = new Logger(CacheInvalidateInterceptor.name);
   private readonly environment = process.env.NODE_ENV || 'development';
+  private readonly frontendUrl =
+    process.env.FRONTEND_URL || 'http://localhost:3000';
 
   constructor(
     private readonly redisService: RedisService,
@@ -54,6 +56,7 @@ export class CacheInvalidateInterceptor implements NestInterceptor {
               : `${this.environment}:${key}`,
           );
 
+          // Invalidate cache in Redis
           await this.redisService.invalidateMultiple(prefixedKeys);
 
           this.logger.debug('Cache invalidated', {
