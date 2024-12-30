@@ -1,6 +1,6 @@
 import { mapCodesToPermissions } from '@/lib/api/permissionMapping';
 import { Permission } from '@/lib/api/types';
-import { logger } from '@/lib/utils';
+import { logger } from '@/lib/utils/logger';
 import { jwtDecode } from 'jwt-decode';
 import { useSession } from 'next-auth/react';
 
@@ -23,7 +23,7 @@ export function usePermissions() {
       const decoded = jwtDecode<DecodedToken>(accessToken);
       permissions = mapCodesToPermissions(decoded.perms || []);
     } catch (error) {
-      logger.error('Error decoding JWT token:', error);
+      logger.error('Error decoding JWT token:' + error);
     }
   }
 

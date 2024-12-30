@@ -1,4 +1,4 @@
-import { logger } from '@/lib/utils';
+import { logger } from '@/lib/utils/logger';
 import { Session } from 'next-auth';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -67,7 +67,7 @@ export function useHome() {
           loginHint: email,
         });
       } catch (err) {
-        logger.error(err);
+        logger.error(err as Error);
         setError('An unexpected error occurred. Please try again.');
       }
     } else {

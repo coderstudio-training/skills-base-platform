@@ -3,7 +3,7 @@ import { authConfig, errorMessages } from '@/lib/api/config';
 import { useMutation } from '@/lib/api/hooks';
 import { ApiResponse } from '@/lib/api/types';
 import { AuthResponse } from '@/lib/users/types';
-import { logger } from '@/lib/utils';
+import { logger } from '@/lib/utils/logger';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -40,7 +40,7 @@ export function useLoginForm() {
     email: string,
     password: string,
   ): Promise<{ success: boolean; error?: string }> {
-    logger.log('Starting authentication process');
+    logger.info('Starting authentication process');
 
     const userServiceUrl = process.env.NEXT_PUBLIC_USER_SERVICE_URL;
     if (!userServiceUrl) {
@@ -76,17 +76,17 @@ export function useLoginForm() {
       });
 
       if (!result?.ok) {
-        logger.error('NextAuth signin failed:', result?.error);
+        logger.error('NextAuth signin failed:' + result?.error);
         return {
           success: false,
           error: 'Failed to establish session',
         };
       }
 
-      logger.log('Authentication successful');
+      logger.info('Authentication successful');
       return { success: true };
     } catch (error) {
-      logger.error('Authentication error:', error);
+      logger.error('Authentication error:' + error);
       return {
         success: false,
         error: 'Network error occurred. Please try again.',
@@ -102,7 +102,7 @@ export function useLoginForm() {
         router.push('/dashboard/admin');
       }
     } catch (err) {
-      logger.error('Login Error:', err);
+      logger.error('Login Error:' + err);
     }
   };
 
