@@ -1,6 +1,6 @@
 import { Skill, SkillDetail, StaffSkills, TaxonomyResponse } from '@/components/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
-import { useQuery } from '@/lib/api/hooks';
+import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useEffect, useState } from 'react';
 
 export function useEmployeeSkills() {
@@ -8,6 +8,7 @@ export function useEmployeeSkills() {
   const [processedSkills, setProcessedSkills] = useState<SkillDetail[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { hasPermission } = useAuth();
 
   // Query for employee skills
   const {
@@ -18,8 +19,9 @@ export function useEmployeeSkills() {
     skillsApi,
     selectedEmail ? `skills-matrix/user/?email=${selectedEmail}` : '',
     {
-      enabled: !!selectedEmail,
+      cacheStrategy: 'force-cache',
       requiresAuth: true,
+      enabled: hasPermission('canViewSkills'),
     },
   );
 
@@ -38,7 +40,7 @@ export function useEmployeeSkills() {
               // Using useQuery's underlying client for consistency
               const taxonomyResponse = await skillsApi.get<TaxonomyResponse>(
                 `/taxonomy/technical/title/${skill.name}?businessUnit=QA`,
-                { requiresAuth: true },
+                { requiresAuth: true, cache: 'force-cache' },
               );
 
               if (!taxonomyResponse.data?.[0]) {
