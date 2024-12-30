@@ -1,12 +1,10 @@
 import LoadingCard from '@/components/Dashboard/components/Cards/LoadingCard';
-import LoadingHeader from '@/components/Dashboard/components/Header/LoadingHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 
 export default function ManagerLoading() {
   return (
     <div className="container mx-auto p-4 max-w-[80%] select-none">
-      <LoadingHeader />
       <div>
         <div className="h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground grid w-full grid-cols-5">
           <div className="bg-background text-transparent inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium">

@@ -1,7 +1,6 @@
 // components/Staff/StaffDashboard.tsx
 'use client';
 
-import { UserHeader } from '@/components/Dashboard/components/Header/UserHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
 import { useState } from 'react';
@@ -19,8 +18,6 @@ export default function StaffDashboard(user: DashboardProps) {
 
   return (
     <div className="container mx-auto p-4 max-w-max md:max-w-[80%]">
-      <UserHeader />
-
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>

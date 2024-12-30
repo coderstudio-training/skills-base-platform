@@ -1,3 +1,4 @@
+'use client';
 import { useUserProfile } from '@/components/Dashboard/hooks/useUserProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -7,13 +8,13 @@ import { LogOut, Moon, Sun } from 'lucide-react';
 import useDarkTheme from '../../hooks/useDarkTheme';
 import { useLogout } from '../../hooks/useLogout';
 
-export function UserHeader() {
+export default function UserHeader() {
   const { userProfile, isManager, fullName } = useUserProfile();
   const { theme: preference, toggleTheme: handleThemeChange } = useDarkTheme();
   const { handleLogout } = useLogout();
 
   return (
-    <header className="overflow-x-hidden">
+    <header className="container mx-auto p-4 max-w-max md:max-w-[80%] overflow-x-hidden">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-6">
         {/* Left Section */}
         <div className="flex flex-col items-center md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4 text-center md:text-left">

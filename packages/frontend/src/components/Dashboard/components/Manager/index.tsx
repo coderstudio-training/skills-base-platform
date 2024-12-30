@@ -1,6 +1,5 @@
 'use client';
 
-import { UserHeader } from '@/components/Dashboard/components/Header/UserHeader';
 import { ManagerOverview } from '@/components/Dashboard/components/Manager/ManagerOverview';
 import { useTeamData } from '@/components/Dashboard/hooks/useTeamData';
 import { Button } from '@/components/ui/button';
@@ -29,8 +28,6 @@ export default function ManagerDashboard(user: DashboardProps) {
 
   return (
     <div className="container mx-auto p-4 max-w-full lg:max-w-[80%]">
-      <UserHeader />
-
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>

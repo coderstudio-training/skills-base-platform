@@ -1,8 +1,6 @@
 'use client';
 
 import { SearchAndFilter } from '@/components/Dashboard/components/Admin/SearchAndFilter';
-import { UserDirectory } from '@/components/Dashboard/components/Admin/UserDirectory';
-import { AdminMetricCards } from '@/components/Dashboard/components/Cards/AdminMetricCards';
 import { BusinessUnitDistribution } from '@/components/Dashboard/components/Cards/BusinessUnitDistributionCard';
 import { SkillGapOverview } from '@/components/Dashboard/components/Cards/SkillGapOverviewCard';
 import { TopPerformers } from '@/components/Dashboard/components/Cards/TopPerformersCard';
@@ -10,9 +8,18 @@ import { useAdminData } from '@/components/Dashboard/hooks/useAdminData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
-import TaxonomyManager from '../TSC';
-import AnalysisView from './AnalysisView';
-import { LearningManagement } from './LearningManagement';
+import { Suspense, lazy } from 'react';
+import AdminMetricCardLoading from '../Cards/AdminMetricCardLoading';
+
+const UserDirectory = lazy(() => import('@/components/Dashboard/components/Admin/UserDirectory'));
+const AnalysisView = lazy(() => import('@/components/Dashboard/components/Admin/AnalysisView'));
+const LearningManagement = lazy(
+  () => import('@/components/Dashboard/components/Admin/LearningManagement'),
+);
+const TaxonomyManager = lazy(() => import('@/components/Dashboard/components/TSC/index'));
+const AdminMetricCards = lazy(
+  () => import('@/components/Dashboard/components/Cards/AdminMetricCards'),
+);
 
 export default function AdminDashboard() {
   const { hasPermission } = useAuth();
@@ -48,8 +55,9 @@ export default function AdminDashboard() {
               onSearchChange={handleSearch}
               isLoading={employeesLoading}
             />
-
-            <AdminMetricCards stats={stats} />
+            <Suspense fallback={<AdminMetricCardLoading />}>
+              <AdminMetricCards stats={stats} />
+            </Suspense>
 
             <div className="grid grid-cols-3 gap-4 mb-6">
               <TopPerformers rankings={topPerformers} />
@@ -95,37 +103,45 @@ export default function AdminDashboard() {
 
           {hasPermission('canManageUsers') && (
             <TabsContent value="users">
-              <UserDirectory
-                employees={employees}
-                totalItems={totalItems}
-                totalPages={totalPages}
-                loading={employeesLoading}
-                page={page}
-                limit={limit}
-                onPageChange={handlePageChange}
-                onLimitChange={handleLimitChange}
-              />
+              <Suspense fallback={<div>Loading Users...</div>}>
+                <UserDirectory
+                  employees={employees}
+                  totalItems={totalItems}
+                  totalPages={totalPages}
+                  loading={employeesLoading}
+                  page={page}
+                  limit={limit}
+                  onPageChange={handlePageChange}
+                  onLimitChange={handleLimitChange}
+                />
+              </Suspense>
             </TabsContent>
           )}
 
           {hasPermission('canViewReports') && (
             <TabsContent value="metrics">
-              <AnalysisView />
+              <Suspense fallback={<div>Loading Metrics...</div>}>
+                <AnalysisView />
+              </Suspense>
             </TabsContent>
           )}
 
           {hasPermission('canEditAllLearning') && (
             <TabsContent value="learning">
-              <LearningManagement />
+              <Suspense fallback={<div>Loading Learning Management...</div>}>
+                <LearningManagement />
+              </Suspense>
             </TabsContent>
           )}
 
           {hasPermission('canManageSystem') && (
             <TabsContent value="taxonomy">
-              <TaxonomyManager
-                searchQuery={searchQuery}
-                selectedBusinessUnit={selectedBusinessUnit}
-              />
+              <Suspense fallback={<div>Loading Taxonomy Manager...</div>}>
+                <TaxonomyManager
+                  searchQuery={searchQuery}
+                  selectedBusinessUnit={selectedBusinessUnit}
+                />
+              </Suspense>
             </TabsContent>
           )}
         </Tabs>

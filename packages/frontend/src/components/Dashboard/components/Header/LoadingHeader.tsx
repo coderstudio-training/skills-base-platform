@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoadingHeader() {
   return (
-    <header className="overflow-x-hidden">
+    <header className="container mx-auto p-4 max-w-max md:max-w-[80%] overflow-x-hidden">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-6">
         <div className="flex flex-col items-center md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4 text-center md:text-left">
           <Skeleton className="bg-gray-200 dark:bg-gray-800 relative flex shrink-0 overflow-hidden rounded-full h-20 w-20" />
