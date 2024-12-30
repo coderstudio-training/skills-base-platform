@@ -17,7 +17,6 @@ export function useStaffData(email: string, hasPermission: (permission: Permissi
     email ? `skills-matrix/user/summary?email=${encodeURIComponent(email)}` : '',
     {
       requiresAuth: true,
-      cacheStrategy: 'force-cache',
       enabled: hasPermission('canViewSkills'),
     },
   );
@@ -27,7 +26,6 @@ export function useStaffData(email: string, hasPermission: (permission: Permissi
     email ? `skills-matrix/user?email=${encodeURIComponent(email)}` : '',
     {
       requiresAuth: true,
-      cacheStrategy: 'force-cache',
       enabled: hasPermission('canViewSkills'),
     },
   );

@@ -15,7 +15,6 @@ export function useRecommendations(email: string) {
     learningApi,
     `/api/learning/recommendations/${email}`,
     {
-      cacheStrategy: 'force-cache',
       requiresAuth: true,
       enabled: hasPermission('canViewLearning'),
     },

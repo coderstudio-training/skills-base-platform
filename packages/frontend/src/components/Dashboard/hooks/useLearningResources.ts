@@ -17,7 +17,6 @@ export function useLearningResources() {
     error,
   } = useQuery<Course[]>(learningApi, '/api/courses', {
     requiresAuth: true,
-    cacheStrategy: 'force-cache',
     enabled: hasPermission('canManageSystem'),
   });
 

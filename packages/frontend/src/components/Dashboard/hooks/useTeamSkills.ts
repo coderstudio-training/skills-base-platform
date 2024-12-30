@@ -14,7 +14,6 @@ export default function useTeamSkills(name: string) {
     name ? `skills-matrix/manager/${encodeURIComponent(name)}` : '',
     {
       requiresAuth: true,
-      cacheStrategy: 'force-cache',
       enabled: hasPermission('canViewSkills'),
     },
   );

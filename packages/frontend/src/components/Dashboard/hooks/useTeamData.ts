@@ -10,7 +10,6 @@ export function useTeamData(managerName: string) {
     `/employees/manager/${encodeURIComponent(managerName)}`,
     {
       requiresAuth: true,
-      cacheStrategy: 'force-cache',
       enabled: hasPermission('canManageTeam'),
     },
   );
