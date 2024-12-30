@@ -520,6 +520,10 @@ export interface TopPerformersProps {
   error?: ApiError | null;
 }
 
+export interface ManagerEvaluationProps {
+  teamMembers: TeamMember[];
+}
+
 //in use
 export interface TeamMember {
   employeeId: number;

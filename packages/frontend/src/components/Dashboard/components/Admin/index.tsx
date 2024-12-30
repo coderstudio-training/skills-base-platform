@@ -10,6 +10,10 @@ import { useAuth } from '@/lib/api/hooks';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { Suspense, lazy } from 'react';
 import AdminMetricCardLoading from '../Cards/AdminMetricCardLoading';
+import DistributionLoading from '../Cards/DistributionLoading';
+import RankingLoadingCard from '../Cards/RankingLoadingCard';
+import SkillGapLoadingCard from '../Cards/SkillGapLoadingCard';
+import StatsLoadingCard from '../Cards/StatsLoadingCard';
 
 const UserDirectory = lazy(() => import('@/components/Dashboard/components/Admin/UserDirectory'));
 const AnalysisView = lazy(() => import('@/components/Dashboard/components/Admin/AnalysisView'));
@@ -55,15 +59,24 @@ export default function AdminDashboard() {
               onSearchChange={handleSearch}
               isLoading={employeesLoading}
             />
+
             <Suspense fallback={<AdminMetricCardLoading />}>
               <AdminMetricCards stats={stats} />
             </Suspense>
 
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <TopPerformers rankings={topPerformers} />
-              <SkillGapOverview skillGaps={skillGaps} />
-              <BusinessUnitDistribution businessUnits={businessUnits} />
-            </div>
+            <Suspense fallback={<StatsLoadingCard />}>
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <Suspense fallback={<RankingLoadingCard />}>
+                  <TopPerformers rankings={topPerformers} />
+                </Suspense>
+                <Suspense fallback={<SkillGapLoadingCard />}>
+                  <SkillGapOverview skillGaps={skillGaps} />
+                </Suspense>
+                <Suspense fallback={<DistributionLoading />}>
+                  <BusinessUnitDistribution businessUnits={businessUnits} />
+                </Suspense>
+              </div>
+            </Suspense>
           </>
         )}
 

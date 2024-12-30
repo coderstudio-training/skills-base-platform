@@ -3,7 +3,11 @@ import { TeamMembersListProps } from '@/components/Dashboard/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-export function IndividualPerformanceCard({ members, loading, error }: TeamMembersListProps) {
+export default function IndividualPerformanceCard({
+  members,
+  loading,
+  error,
+}: TeamMembersListProps) {
   return (
     <BaseCard
       title="Individual Performance"

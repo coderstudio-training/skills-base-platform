@@ -4,7 +4,7 @@ import { TeamMembersListCard } from '@/components/Dashboard/components/Cards/Tea
 import { TeamMetricCards } from '@/components/Dashboard/components/Cards/TeamMetricCards';
 import { ManagerOverviewProps } from '@/components/Dashboard/types';
 
-export function ManagerOverview({ teamMembers, loading, error }: ManagerOverviewProps) {
+export default function ManagerOverview({ teamMembers, loading, error }: ManagerOverviewProps) {
   return (
     <div className="space-y-4">
       {/* Team Stats */}

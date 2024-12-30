@@ -3,12 +3,13 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useStaffData } from '../../hooks/useStaffData';
 import { DashboardProps } from '../../types';
-import GrowthPlan from './GrowthPlan';
-import Overview from './Overview';
-import SkillsView from './SkillsView';
+
+const Overview = lazy(() => import('@/components/Dashboard/components/Staff/Overview'));
+const SkillsView = lazy(() => import('@/components/Dashboard/components/Staff/SkillsView'));
+const GrowthPlan = lazy(() => import('@/components/Dashboard/components/Staff/GrowthPlan'));
 
 export default function StaffDashboard(user: DashboardProps) {
   const { hasPermission } = useAuth();
@@ -27,27 +28,33 @@ export default function StaffDashboard(user: DashboardProps) {
 
         {hasPermission('canViewDashboard') && (
           <TabsContent value="overview">
-            <Overview
-              skillsData={skillsData}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-            />
+            <Suspense fallback={<div>Loading...</div>}>
+              <Overview
+                skillsData={skillsData}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+              />
+            </Suspense>
           </TabsContent>
         )}
 
         {hasPermission('canViewSkills') && (
           <TabsContent value="skills">
-            <SkillsView
-              skillsData={skillsData}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-            />
+            <Suspense fallback={<div>Loading...</div>}>
+              <SkillsView
+                skillsData={skillsData}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+              />
+            </Suspense>
           </TabsContent>
         )}
 
         {hasPermission('canViewLearning') && (
           <TabsContent value="growth-plan">
-            <GrowthPlan email={email} />
+            <Suspense fallback={<div>Loading...</div>}>
+              <GrowthPlan email={email} />
+            </Suspense>
           </TabsContent>
         )}
       </Tabs>
