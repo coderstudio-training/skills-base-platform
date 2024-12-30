@@ -1,0 +1,15 @@
+{
+  "title": "API Performance Dashboard",
+  "panels": [
+    {
+      "title": "Average Response Time by Route",
+      "type": "graph",
+      "query": "avg by (path) (rate({app=\"frontend\"} | json | type=~\"api.*.response\" | unwrap duration [5m]))"
+    },
+    {
+      "title": "Error Rate by Route",
+      "type": "graph",
+      "query": "sum by (path) (rate({app=\"frontend\"} | json | type=~\"api.*.error\" [5m]))"
+    }
+  ]
+}
