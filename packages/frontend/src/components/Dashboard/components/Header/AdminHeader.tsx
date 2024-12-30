@@ -17,7 +17,7 @@ import { ReportManager } from '../Reports/ReportManager';
 import { NotificationCenter } from './AdminNotifications';
 export default function AdminDashboardHeader() {
   const { lastSyncTime, handleLastNotificationDate } = useAdminDashboardHeader();
-  const { preference, handleThemeChange } = useDarkTheme();
+  const { theme: preference, toggleTheme: handleThemeChange } = useDarkTheme();
   const { handleLogout } = useLogout();
 
   return (

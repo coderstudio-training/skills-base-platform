@@ -1,11 +1,9 @@
 import LoadingCard from '@/components/Dashboard/components/Cards/LoadingCard';
-import AdminLoadingHeader from '@/components/Dashboard/components/Header/AdminLoadingHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminLoading() {
   return (
     <div className="md:min-h-screen bg-gray-50 dark:bg-gray-950 select-none">
-      <AdminLoadingHeader />
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Search & Filter */}
         <div className="flex gap-4 mb-6">

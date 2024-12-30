@@ -1,12 +1,11 @@
 // hooks/useStaffData.ts
 import { skillsApi } from '@/lib/api/client';
 import { useSuspenseQuery } from '@/lib/api/hooks';
-import { Permission } from '@/lib/api/types';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { StaffData, StaffSkills, UserMetrics } from '../types';
 
-export function useStaffData(email: string, hasPermission: (permission: Permission) => boolean) {
+export function useStaffData(email: string) {
   const [selectedCategory, setSelectedCategory] = useState<'Technical Skills' | 'Soft Skills'>(
     'Technical Skills',
   );
@@ -18,7 +17,6 @@ export function useStaffData(email: string, hasPermission: (permission: Permissi
     {
       requiresAuth: true,
       cacheStrategy: 'force-cache',
-      enabled: hasPermission('canViewSkills'),
     },
   );
 
@@ -28,7 +26,6 @@ export function useStaffData(email: string, hasPermission: (permission: Permissi
     {
       requiresAuth: true,
       cacheStrategy: 'force-cache',
-      enabled: hasPermission('canViewSkills'),
     },
   );
 

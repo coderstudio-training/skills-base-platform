@@ -1,6 +1,5 @@
 import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
 import { ApiError, Roles } from '@/lib/api/types';
-import { IBaseTaxonomy } from '@/lib/skills/types';
 import { LucideIcon } from 'lucide-react';
 import React, { Dispatch, SetStateAction } from 'react';
 
@@ -307,9 +306,38 @@ export interface EmployeeRankingsResponse {
   rankings: EmployeeRanking[];
 }
 
+export interface IBaseTaxonomy {
+  docTitle: string;
+  docId: string;
+  docRevisionId: string;
+  category: string;
+  title: string;
+  description: string;
+  proficiencyDescription: Record<string, string[]>;
+  abilities: Record<string, string[]>;
+  knowledge: Record<string, string[]>;
+  rangeOfApplication?: string[];
+}
+
+export interface ITechnicalTaxonomy {
+  data: IBaseTaxonomy[];
+}
+
+export interface ITaxonomyDTO extends IBaseTaxonomy {
+  businessUnit: string;
+}
+
+export interface IBulkUpsertDTO {
+  data: ITaxonomyDTO[];
+}
+
+export interface ITaxonomyResponse {
+  updatedCount: number;
+  errors: string[];
+}
+
 export interface TSCManagerProps {
   selectedBusinessUnit?: string;
-  data?: IBaseTaxonomy[];
   searchQuery?: string;
 }
 

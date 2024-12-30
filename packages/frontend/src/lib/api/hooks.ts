@@ -2,11 +2,12 @@
 
 import { isTokenExpired } from '@/lib/api/auth';
 import { learningApi, skillsApi, userApi } from '@/lib/api/client';
-import { authConfig, rolePermissions } from '@/lib/api/config';
+import { authConfig } from '@/lib/api/config';
 import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
 import { logger } from '@/lib/utils';
 import { signOut, useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
+import { getPermissionCode } from './permissionMapping';
 
 interface CacheOptions {
   requiresAuth?: boolean;
@@ -38,7 +39,7 @@ function getCacheKey(endpoint: string, options?: CacheOptions): string {
 const cache = new Map<string, CacheEntry<unknown>>();
 
 export function useAuth() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
@@ -47,7 +48,7 @@ export function useAuth() {
 
   useEffect(() => {
     const checkAuthState = async () => {
-      if (status === 'authenticated' && session?.user?.accessToken) {
+      if (session && session?.user?.accessToken) {
         const tokenExpired = await isTokenExpired(session.user.accessToken);
 
         if (tokenExpired) {
@@ -71,14 +72,14 @@ export function useAuth() {
     };
 
     checkAuthState();
-  }, [session, status]);
+  }, [session]);
 
   const hasPermission = useCallback(
     (permission: Permission) => {
       if (!authState.role.length) return false;
-      return authState.role.some(role => rolePermissions[role][permission]);
+      return session?.user.perms.includes(getPermissionCode(permission));
     },
-    [authState.role],
+    [session, authState.role],
   );
 
   const canAccessRoutes = useCallback(
@@ -134,6 +135,7 @@ export function useQuery<T>(
 
     try {
       const response = await apiInstance.get<T>(endpoint, {
+        revalidate: options?.revalidate,
         requiresAuth: options?.requiresAuth,
         cache: options?.cacheStrategy,
       });
@@ -159,6 +161,7 @@ export function useQuery<T>(
     endpoint,
     enabled,
     isAuthenticated,
+    options?.revalidate,
     options?.requiresAuth,
     options?.cacheStrategy,
   ]);
@@ -282,7 +285,6 @@ function suspenseFetcher<T>(
   const promise = apiInstance
     .get<T>(endpoint, {
       ...options,
-      cache: options.cacheStrategy || 'default',
     })
     .then(response => {
       if (response.error) throw new Error(response.error.message || 'Unknown API error');

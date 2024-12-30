@@ -8,7 +8,6 @@ export const metadata = {
   title: 'Skills Base Platform',
   description: "Manage and develop your team's skills",
 };
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const themeScript = `
     (function() {

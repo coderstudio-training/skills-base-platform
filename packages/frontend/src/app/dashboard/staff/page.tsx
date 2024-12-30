@@ -8,7 +8,7 @@ const StaffDashboard = dynamic(() => import('@/components/Dashboard/components/S
 });
 
 export default async function StaffDashboardPage() {
-  const session = await serverSideIntercept({ permission: 'canViewDashboard' });
+  const session = await serverSideIntercept({ permission: ['canViewDashboard'] });
 
   return <StaffDashboard {...session?.user} />;
 }

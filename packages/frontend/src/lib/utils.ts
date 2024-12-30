@@ -1,3 +1,5 @@
+import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
+import { BusinessUnit, IBaseTaxonomy, TSCProficiency } from '@/components/Dashboard/types';
 import { cacheConfig, errorMessages } from '@/lib/api/config';
 import { ApiError, FetchOptions } from '@/lib/api/types';
 import { type ClassValue, clsx } from 'clsx';
@@ -94,10 +96,6 @@ export const handleApiError = (error: ApiError): { statusCode: number; message: 
 
   return { statusCode: error.status, message };
 };
-
-import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
-import { BusinessUnit, TSCProficiency } from '@/components/Dashboard/types';
-import { IBaseTaxonomy } from '@/lib/skills/types';
 
 export function validateTextData(text: string): boolean {
   const regex = /^(n\/a|)$/i; // This regex matches "N/A" (case-insensitive) or an empty string
