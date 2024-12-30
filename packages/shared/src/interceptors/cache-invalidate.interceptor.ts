@@ -59,38 +59,6 @@ export class CacheInvalidateInterceptor implements NestInterceptor {
           // Invalidate cache in Redis
           await this.redisService.invalidateMultiple(prefixedKeys);
 
-          // Notify frontend about cache invalidation
-          try {
-            await fetch(`${this.frontendUrl}/api/cache/invalidate`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                keys: prefixedKeys,
-                timestamp: new Date().toISOString(),
-                environment: this.environment,
-              }),
-            });
-
-            this.logger.debug(
-              'Cache invalidation notification sent to frontend',
-              {
-                keys: prefixedKeys,
-                handler: context.getHandler().name,
-              },
-            );
-          } catch (error) {
-            this.logger.error(
-              'Failed to notify frontend about cache invalidation',
-              {
-                error,
-                handler: context.getHandler().name,
-                frontendUrl: this.frontendUrl,
-              },
-            );
-          }
-
           this.logger.debug('Cache invalidated', {
             keys: prefixedKeys,
             handler: context.getHandler().name,

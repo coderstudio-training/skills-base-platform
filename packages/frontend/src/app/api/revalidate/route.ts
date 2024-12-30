@@ -6,6 +6,8 @@ export async function POST(request: NextRequest) {
   try {
     const { tags = ['all'] } = await request.json();
 
+    console.log('Revalidating cache with tags:', tags);
+
     // First, trigger version update by calling version endpoint
     const versionResponse = await fetch(new URL('/api/version', request.url).toString(), {
       method: 'POST',
