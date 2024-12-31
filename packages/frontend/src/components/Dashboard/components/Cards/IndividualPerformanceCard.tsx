@@ -22,7 +22,7 @@ export default function IndividualPerformanceCard({
           {members.map(member => (
             <div
               key={member.employeeId}
-              className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">

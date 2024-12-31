@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@radix-ui/react-select';
+} from '@/components/ui/select';
 import { BookOpen } from 'lucide-react';
 
 export default function ManagerEvaluation({ teamMembers }: ManagerEvaluationProps) {
