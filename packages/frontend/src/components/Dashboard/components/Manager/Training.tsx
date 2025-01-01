@@ -15,7 +15,7 @@ function Training(user: TabViewProps) {
       title="Training Recommendations"
       description="Personalized course recommendations based on skill gaps"
     >
-      <ScrollArea className="h-[600px]">
+      <ScrollArea className="h-[566px]">
         <div className="space-y-8">
           {teamData.map(member => (
             <div key={member.employeeId} className="space-y-4 pb-6 border-b last:border-b-0">

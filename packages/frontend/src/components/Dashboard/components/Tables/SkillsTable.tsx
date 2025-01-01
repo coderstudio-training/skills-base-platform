@@ -1,17 +1,8 @@
 // components/Staff/Tables/SkillsTable.tsx
 import { ColumnConfig, DataTable } from '@/components/Dashboard/components/Tables/DataTable';
-import { Skill, SkillStatus } from '@/components/Dashboard/types';
+import { statusStyles } from '@/components/Dashboard/constants';
+import { Skill, SkillsTableProps } from '@/components/Dashboard/types';
 import { Progress } from '@/components/ui/progress';
-
-interface SkillsTableProps {
-  skills: Skill[];
-  category: 'Technical Skills' | 'Soft Skills';
-}
-
-const statusStyles = {
-  [SkillStatus.PROFICIENT]: 'text-white bg-green-500 px-2 py-1 rounded-md text-sm font-medium',
-  [SkillStatus.DEVELOPING]: 'text-white bg-orange-500 px-2 py-1 rounded-md text-sm font-medium',
-};
 
 const RatingCell = ({ value }: { value: number }) => (
   <div className="flex items-center gap-2">

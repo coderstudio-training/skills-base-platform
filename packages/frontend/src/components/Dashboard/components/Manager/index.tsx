@@ -1,6 +1,8 @@
 'use client';
 
+import ManagerEvaluationLoading from '@/components/Dashboard/components/Skeletons/ManagerEvaluationLoading';
 import ManagerOverviewLoadingCard from '@/components/Dashboard/components/Skeletons/ManagerOverviewLoading';
+import ManagerTrainingLoading from '@/components/Dashboard/components/Skeletons/TabLoadingCard';
 import { useTeamData } from '@/components/Dashboard/hooks/useTeamData';
 import { DashboardProps } from '@/components/Dashboard/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -36,42 +38,66 @@ export default function ManagerDashboard(user: DashboardProps) {
           <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
-          <Suspense fallback={<ManagerOverviewLoadingCard />}>
+        <Suspense fallback={<ManagerOverviewLoadingCard />}>
+          <TabsContent value="overview" className="space-y-4">
             <ManagerOverview teamMembers={teamMembers} />
-          </Suspense>
-        </TabsContent>
+          </TabsContent>
+        </Suspense>
 
         {hasPermission('canViewReports') && (
-          <TabsContent value="performance">
-            <Suspense fallback={<div>Loading...</div>}>
+          <Suspense
+            fallback={
+              <ManagerTrainingLoading
+                title="Individual Performance"
+                description="Average team performance over the last 6 months"
+                loading_message="Loading Individual Performance"
+              />
+            }
+          >
+            <TabsContent value="performance">
               <IndividualPerformanceCard members={teamMembers} />
-            </Suspense>
-          </TabsContent>
+            </TabsContent>
+          </Suspense>
         )}
 
         {hasPermission('canViewSkills') && (
-          <TabsContent value="skills">
-            <Suspense fallback={<div>Loading...</div>}>
+          <Suspense
+            fallback={
+              <ManagerTrainingLoading
+                title="Team Skills Breakdown"
+                description="Detailed view of individual skills"
+                loading_message="Loading Team Skills Breakdown"
+              />
+            }
+          >
+            <TabsContent value="skills">
               <SkillsView name={managerName || ''} />
-            </Suspense>
-          </TabsContent>
+            </TabsContent>
+          </Suspense>
         )}
 
         {hasPermission('canViewLearning') && (
-          <TabsContent value="training">
-            <Suspense fallback={<div>Loading...</div>}>
+          <Suspense
+            fallback={
+              <ManagerTrainingLoading
+                title="Training Recommendations"
+                description="Personalized course recommendations based on skill gaps"
+                loading_message="Loading Training Recommendations"
+              />
+            }
+          >
+            <TabsContent value="training">
               <Training name={managerName || ''} />
-            </Suspense>
-          </TabsContent>
+            </TabsContent>
+          </Suspense>
         )}
 
         {hasPermission('canEditTeamSkills') && (
-          <TabsContent value="evaluation">
-            <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<ManagerEvaluationLoading />}>
+            <TabsContent value="evaluation">
               <ManagerEvaluation teamMembers={teamMembers} />
-            </Suspense>
-          </TabsContent>
+            </TabsContent>
+          </Suspense>
         )}
       </Tabs>
     </div>

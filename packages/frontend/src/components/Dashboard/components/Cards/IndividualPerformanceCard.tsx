@@ -17,7 +17,7 @@ export default function IndividualPerformanceCard({
       errorMessage={'Error loading individual performance'}
       loadingMessage="Loading team members performance..."
     >
-      <ScrollArea className="h-[400px]">
+      <ScrollArea className="h-[566px]">
         <div className="space-y-4 pr-4">
           {members.map(member => (
             <div

@@ -1,3 +1,4 @@
+import ProficiencyTable from '@/components/Dashboard/components/TSC/ProficiencyTable';
 import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
 import { TSCContentProps } from '@/components/Dashboard/types';
 import {
@@ -9,7 +10,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { validateTextData } from '@/lib/utils';
 import { Pencil, Trash2 } from 'lucide-react';
-import ProficiencyTable from './ProficiencyTable';
 
 export default function TSCContent({
   filteredTSCs,

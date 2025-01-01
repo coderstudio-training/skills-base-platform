@@ -499,6 +499,11 @@ export interface AdminMetricCardsProps {
   error?: ApiError | null;
 }
 
+export interface SkillsTableProps {
+  skills: Skill[];
+  category: 'Technical Skills' | 'Soft Skills';
+}
+
 //in use
 export interface BusinessUnitDistributionProps {
   businessUnits: BusinessUnitStat[];

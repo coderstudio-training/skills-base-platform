@@ -1,6 +1,6 @@
+import ManagerLoading from '@/app/dashboard/manager/loading';
 import { serverSideIntercept } from '@/lib/api/auth';
 import dynamic from 'next/dynamic';
-import ManagerLoading from './loading';
 
 const ManagerDashboard = dynamic(() => import('@/components/Dashboard/components/Manager'), {
   ssr: false,

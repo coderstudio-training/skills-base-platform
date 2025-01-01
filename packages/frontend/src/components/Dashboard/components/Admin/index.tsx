@@ -4,11 +4,14 @@ import { SearchAndFilter } from '@/components/Dashboard/components/Admin/SearchA
 import { BusinessUnitDistribution } from '@/components/Dashboard/components/Cards/BusinessUnitDistributionCard';
 import { SkillGapOverview } from '@/components/Dashboard/components/Cards/SkillGapOverviewCard';
 import { TopPerformers } from '@/components/Dashboard/components/Cards/TopPerformersCard';
+import AdminAnalysisLoading from '@/components/Dashboard/components/Skeletons/AdminAnalysisLoading';
+import AdminLearningLoading from '@/components/Dashboard/components/Skeletons/AdminLearningLoading';
 import AdminMetricCardLoading from '@/components/Dashboard/components/Skeletons/AdminMetricCardLoading';
 import DistributionLoading from '@/components/Dashboard/components/Skeletons/DistributionLoading';
 import RankingLoadingCard from '@/components/Dashboard/components/Skeletons/RankingLoadingCard';
 import SkillGapLoadingCard from '@/components/Dashboard/components/Skeletons/SkillGapLoadingCard';
 import StatsLoadingCard from '@/components/Dashboard/components/Skeletons/StatsLoadingCard';
+import TSCManagerLoading from '@/components/Dashboard/components/Skeletons/TSCManagerLoading';
 import { useAdminData } from '@/components/Dashboard/hooks/useAdminData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
@@ -80,7 +83,7 @@ export default function AdminDashboard() {
           </>
         )}
 
-        <Tabs defaultValue="users" className="space-y-4">
+        <Tabs defaultValue="skills" className="space-y-4">
           <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
             <TabsList className="inline-flex max-w-max">
               <TabsTrigger value="users" className="flex items-center gap-2">
@@ -115,8 +118,21 @@ export default function AdminDashboard() {
           </div>
 
           {hasPermission('canManageUsers') && (
-            <TabsContent value="users">
-              <Suspense fallback={<div>Loading Users...</div>}>
+            <Suspense
+              fallback={
+                <UserDirectory
+                  employees={[]}
+                  loading={true}
+                  totalItems={0}
+                  totalPages={0}
+                  page={0}
+                  limit={0}
+                  onPageChange={() => {}}
+                  onLimitChange={() => {}}
+                />
+              }
+            >
+              <TabsContent value="users">
                 <UserDirectory
                   employees={employees}
                   totalItems={totalItems}
@@ -127,35 +143,35 @@ export default function AdminDashboard() {
                   onPageChange={handlePageChange}
                   onLimitChange={handleLimitChange}
                 />
-              </Suspense>
-            </TabsContent>
+              </TabsContent>
+            </Suspense>
           )}
 
           {hasPermission('canViewReports') && (
-            <TabsContent value="metrics">
-              <Suspense fallback={<div>Loading Metrics...</div>}>
+            <Suspense fallback={<AdminAnalysisLoading />}>
+              <TabsContent value="metrics">
                 <AnalysisView />
-              </Suspense>
-            </TabsContent>
+              </TabsContent>
+            </Suspense>
           )}
 
           {hasPermission('canEditAllLearning') && (
-            <TabsContent value="learning">
-              <Suspense fallback={<div>Loading Learning Management...</div>}>
+            <Suspense fallback={<AdminLearningLoading />}>
+              <TabsContent value="learning">
                 <LearningManagement />
-              </Suspense>
-            </TabsContent>
+              </TabsContent>
+            </Suspense>
           )}
 
           {hasPermission('canManageSystem') && (
-            <TabsContent value="taxonomy">
-              <Suspense fallback={<div>Loading Taxonomy Manager...</div>}>
+            <Suspense fallback={<TSCManagerLoading />}>
+              <TabsContent value="taxonomy">
                 <TaxonomyManager
                   searchQuery={searchQuery}
                   selectedBusinessUnit={selectedBusinessUnit}
                 />
-              </Suspense>
-            </TabsContent>
+              </TabsContent>
+            </Suspense>
           )}
         </Tabs>
       </main>

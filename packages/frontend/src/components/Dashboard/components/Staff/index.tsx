@@ -1,6 +1,10 @@
 // components/Staff/StaffDashboard.tsx
 'use client';
 
+import OverviewCardLoading from '@/components/Dashboard/components/Skeletons/OverviewCardLoading';
+import StaffSkillsOverviewLoading from '@/components/Dashboard/components/Skeletons/StaffSkillsOverviewLoading';
+import StaffSkillsViewLoading from '@/components/Dashboard/components/Skeletons/StaffSkillsViewLoading';
+import TabLoadingCard from '@/components/Dashboard/components/Skeletons/TabLoadingCard';
 import { useStaffData } from '@/components/Dashboard/hooks/useStaffData';
 import { DashboardProps } from '@/components/Dashboard/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,35 +31,53 @@ export default function StaffDashboard(user: DashboardProps) {
         </TabsList>
 
         {hasPermission('canViewDashboard') && (
-          <TabsContent value="overview">
-            <Suspense fallback={<div>Loading...</div>}>
+          <Suspense
+            fallback={
+              <div className="mt-2 space-y-4">
+                <div className="space-y-4">
+                  <OverviewCardLoading />
+                  <StaffSkillsOverviewLoading />
+                </div>
+              </div>
+            }
+          >
+            <TabsContent value="overview">
               <Overview
                 skillsData={skillsData}
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
               />
-            </Suspense>
-          </TabsContent>
+            </TabsContent>
+          </Suspense>
         )}
 
         {hasPermission('canViewSkills') && (
-          <TabsContent value="skills">
-            <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<StaffSkillsViewLoading />}>
+            <TabsContent value="skills">
               <SkillsView
                 skillsData={skillsData}
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
               />
-            </Suspense>
-          </TabsContent>
+            </TabsContent>
+          </Suspense>
         )}
 
         {hasPermission('canViewLearning') && (
-          <TabsContent value="growth-plan">
-            <Suspense fallback={<div>Loading...</div>}>
+          <Suspense
+            fallback={
+              <TabLoadingCard
+                title="Growth Plan"
+                description="Skill gaps and recommended training courses"
+                height="[600px]"
+                loading_message="Loading Growth Plan"
+              />
+            }
+          >
+            <TabsContent value="growth-plan">
               <GrowthPlan email={email} />
-            </Suspense>
-          </TabsContent>
+            </TabsContent>
+          </Suspense>
         )}
       </Tabs>
     </div>
