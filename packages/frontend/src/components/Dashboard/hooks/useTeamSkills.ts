@@ -1,10 +1,8 @@
+import { TeamData } from '@/components/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
-import { useAuth, useQuery } from '@/lib/api/hooks';
-import { TeamData } from '../types';
+import { useQuery } from '@/lib/api/hooks';
 
 export default function useTeamSkills(name: string) {
-  const { hasPermission } = useAuth();
-
   const {
     data: teamSkills,
     error: teamSkillsError,
@@ -14,8 +12,6 @@ export default function useTeamSkills(name: string) {
     name ? `skills-matrix/manager/${encodeURIComponent(name)}` : '',
     {
       requiresAuth: true,
-      cacheStrategy: 'force-cache',
-      enabled: hasPermission('canViewSkills'),
     },
   );
 

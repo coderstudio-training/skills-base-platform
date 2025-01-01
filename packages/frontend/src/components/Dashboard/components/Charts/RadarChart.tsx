@@ -1,3 +1,4 @@
+import { Skill } from '@/components/Dashboard/types'; // Update to use the new Skill interface
 import { CustomTooltip } from '@/components/ui/tooltip';
 import {
   Legend,
@@ -9,7 +10,6 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
-import { Skill } from '../../types'; // Update to use the new Skill interface
 
 interface SkillsChartProps {
   skills: Skill[];

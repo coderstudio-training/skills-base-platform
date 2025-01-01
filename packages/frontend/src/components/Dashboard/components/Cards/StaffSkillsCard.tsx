@@ -1,9 +1,9 @@
+import { SkillStatus, TeamData } from '@/components/Dashboard/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ApiError } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
-import { SkillStatus, TeamData } from '../../types';
 import BaseCard from './BaseCard';
 
 interface StaffSkillsCardProps {

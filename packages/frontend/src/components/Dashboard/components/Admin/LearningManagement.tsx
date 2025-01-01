@@ -1,10 +1,10 @@
 // src/app/dashboard/admin/components/LearningManagement.tsx
 
-import BaseCard from '../Cards/BaseCard';
-import { CareerProgressionPaths } from '../Cards/CareerProgressionCard';
-import { LearningResources } from '../Cards/LearningResourcesCard';
-import { PathProgressTracking } from '../Cards/PathProgressCard';
-import { ResourceManagement } from '../Cards/ResourceManagementCard';
+import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
+import { CareerProgressionPaths } from '@/components/Dashboard/components/Cards/CareerProgressionCard';
+import { LearningResources } from '@/components/Dashboard/components/Cards/LearningResourcesCard';
+import { PathProgressTracking } from '@/components/Dashboard/components/Cards/PathProgressCard';
+import { ResourceManagement } from '@/components/Dashboard/components/Cards/ResourceManagementCard';
 
 export default function LearningManagement() {
   return (

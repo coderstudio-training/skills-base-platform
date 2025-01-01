@@ -1,6 +1,6 @@
+import { EmployeeRankingsResponse } from '@/components/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useQuery } from '@/lib/api/hooks';
-import { EmployeeRankingsResponse } from '../types';
 
 export function useEmployeeRankings() {
   const {

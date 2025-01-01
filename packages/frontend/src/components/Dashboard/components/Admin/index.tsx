@@ -4,16 +4,16 @@ import { SearchAndFilter } from '@/components/Dashboard/components/Admin/SearchA
 import { BusinessUnitDistribution } from '@/components/Dashboard/components/Cards/BusinessUnitDistributionCard';
 import { SkillGapOverview } from '@/components/Dashboard/components/Cards/SkillGapOverviewCard';
 import { TopPerformers } from '@/components/Dashboard/components/Cards/TopPerformersCard';
+import AdminMetricCardLoading from '@/components/Dashboard/components/Skeletons/AdminMetricCardLoading';
+import DistributionLoading from '@/components/Dashboard/components/Skeletons/DistributionLoading';
+import RankingLoadingCard from '@/components/Dashboard/components/Skeletons/RankingLoadingCard';
+import SkillGapLoadingCard from '@/components/Dashboard/components/Skeletons/SkillGapLoadingCard';
+import StatsLoadingCard from '@/components/Dashboard/components/Skeletons/StatsLoadingCard';
 import { useAdminData } from '@/components/Dashboard/hooks/useAdminData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
 import { Suspense, lazy } from 'react';
-import AdminMetricCardLoading from '../Cards/AdminMetricCardLoading';
-import DistributionLoading from '../Cards/DistributionLoading';
-import RankingLoadingCard from '../Cards/RankingLoadingCard';
-import SkillGapLoadingCard from '../Cards/SkillGapLoadingCard';
-import StatsLoadingCard from '../Cards/StatsLoadingCard';
 
 const UserDirectory = lazy(() => import('@/components/Dashboard/components/Admin/UserDirectory'));
 const AnalysisView = lazy(() => import('@/components/Dashboard/components/Admin/AnalysisView'));

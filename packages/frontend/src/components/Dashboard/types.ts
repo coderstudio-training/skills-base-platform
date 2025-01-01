@@ -716,3 +716,9 @@ export interface GradeItemProps {
     userCount: number;
   };
 }
+
+export interface AuthResponse {
+  access_token?: string;
+  message?: string;
+  status?: number;
+}

@@ -1,12 +1,12 @@
 'use client';
+import { useDarkTheme } from '@/components/Dashboard/hooks/useDarkTheme';
+import { useLogout } from '@/components/Dashboard/hooks/useLogout';
 import { useUserProfile } from '@/components/Dashboard/hooks/useUserProfile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getInitials } from '@/lib/utils/string-utils';
 import { LogOut, Moon, Sun } from 'lucide-react';
-import useDarkTheme from '../../hooks/useDarkTheme';
-import { useLogout } from '../../hooks/useLogout';
 
 export default function UserHeader() {
   const { userProfile, isManager, fullName } = useUserProfile();

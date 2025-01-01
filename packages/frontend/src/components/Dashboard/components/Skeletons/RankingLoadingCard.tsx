@@ -1,5 +1,5 @@
+import LoadingCard from '@/components/Dashboard/components/Skeletons/LoadingCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import LoadingCard from './LoadingCard';
 
 const TableRowSkeleton = ({ rank, name, score }: { rank: string; name: string; score: string }) => (
   <div className="grid grid-cols-12 px-4 py-3 items-center transition-colors bg-muted/20">

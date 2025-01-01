@@ -1,5 +1,5 @@
-import { SkillDistributionItem } from '../../types';
-import { StatusIcon } from '../Icons/StatusIcon';
+import { StatusIcon } from '@/components/Dashboard/components/Icons/StatusIcon';
+import { SkillDistributionItem } from '@/components/Dashboard/types';
 
 export const SkillItem = ({ skill }: { skill: SkillDistributionItem }) => (
   <div className="flex items-center justify-between">

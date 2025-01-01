@@ -1,10 +1,11 @@
 'use client';
 
+import ManagerOverviewLoadingCard from '@/components/Dashboard/components/Skeletons/ManagerOverviewLoading';
 import { useTeamData } from '@/components/Dashboard/hooks/useTeamData';
+import { DashboardProps } from '@/components/Dashboard/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
 import { lazy, Suspense, useState } from 'react';
-import { DashboardProps } from '../../types';
 
 const ManagerOverview = lazy(
   () => import('@/components/Dashboard/components/Manager/ManagerOverview'),
@@ -36,7 +37,7 @@ export default function ManagerDashboard(user: DashboardProps) {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<ManagerOverviewLoadingCard />}>
             <ManagerOverview teamMembers={teamMembers} />
           </Suspense>
         </TabsContent>

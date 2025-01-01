@@ -1,4 +1,5 @@
-import LoadingCard from '@/components/Dashboard/components/Cards/LoadingCard';
+import OverviewCardLoading from '@/components/Dashboard/components/Skeletons/OverviewCardLoading';
+import TabListLoading from '@/components/Dashboard/components/Skeletons/TabListLoading';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 
@@ -6,48 +7,10 @@ export default function StaffLoading() {
   return (
     <div className="container mx-auto p-4 w-full md:max-w-[80%] select-none">
       <div>
-        <div className="h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground grid w-full grid-cols-3">
-          <div className="bg-background text-transparent inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium">
-            <Skeleton className="bg-gray-200 dark:bg-gray-800 text-transparent rounded-sm">
-              Tab List 1{' '}
-            </Skeleton>
-          </div>
-          <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium text-transparent">
-            <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent rounded-sm">
-              Tab List 2{' '}
-            </Skeleton>
-          </div>
-          <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium text-transparent">
-            <Skeleton className="bg-gray-300 dark:bg-gray-700 text-transparent rounded-sm">
-              Tab List 3{' '}
-            </Skeleton>
-          </div>
-        </div>
+        <TabListLoading tab_count={3} />
         <div className="mt-2 space-y-4">
           <div className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <LoadingCard
-                bodyChildren={
-                  <Skeleton className="bg-gray-300 dark:bg-gray-700 text-2xl rounded-md font-bold text-transparent">
-                    ****
-                  </Skeleton>
-                }
-              />
-              <LoadingCard
-                bodyChildren={
-                  <Skeleton className="bg-gray-300 dark:bg-gray-700 text-2xl rounded-md font-bold text-transparent">
-                    ****
-                  </Skeleton>
-                }
-              />
-              <LoadingCard
-                bodyChildren={
-                  <Skeleton className="bg-gray-300 dark:bg-gray-700 text-2xl rounded-md font-bold text-transparent">
-                    ****
-                  </Skeleton>
-                }
-              />
-            </div>
+            <OverviewCardLoading />
             <div className="rounded-xl border bg-card text-card-foreground shadow">
               <div className="flex flex-col space-y-1.5 p-6">
                 <div className="flex items-center justify-between">

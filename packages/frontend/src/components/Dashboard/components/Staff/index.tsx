@@ -1,11 +1,11 @@
 // components/Staff/StaffDashboard.tsx
 'use client';
 
+import { useStaffData } from '@/components/Dashboard/hooks/useStaffData';
+import { DashboardProps } from '@/components/Dashboard/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
 import { lazy, Suspense, useState } from 'react';
-import { useStaffData } from '../../hooks/useStaffData';
-import { DashboardProps } from '../../types';
 
 const Overview = lazy(() => import('@/components/Dashboard/components/Staff/Overview'));
 const SkillsView = lazy(() => import('@/components/Dashboard/components/Staff/SkillsView'));

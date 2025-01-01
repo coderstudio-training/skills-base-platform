@@ -1,5 +1,5 @@
+import LoadingCard from '@/components/Dashboard/components/Skeletons/LoadingCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import LoadingCard from './LoadingCard';
 
 export default function AdminMetricCardLoading() {
   return (

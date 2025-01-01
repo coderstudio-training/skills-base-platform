@@ -1,7 +1,7 @@
+import { Course } from '@/components/Dashboard/types';
 import { learningApi } from '@/lib/api/client';
 import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useEffect, useMemo, useState } from 'react';
-import { Course } from '../types';
 
 export function useLearningResources() {
   const [allResources, setAllResources] = useState<Course[]>([]);

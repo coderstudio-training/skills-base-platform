@@ -1,3 +1,4 @@
+import { ReportTemplateProps } from '@/components/Dashboard/types';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -15,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ReportTemplateProps } from '../../types';
 
 export function ReportTemplate({ data }: ReportTemplateProps) {
   return (

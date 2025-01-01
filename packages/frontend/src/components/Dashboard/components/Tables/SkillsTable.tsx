@@ -1,7 +1,7 @@
 // components/Staff/Tables/SkillsTable.tsx
+import { ColumnConfig, DataTable } from '@/components/Dashboard/components/Tables/DataTable';
+import { Skill, SkillStatus } from '@/components/Dashboard/types';
 import { Progress } from '@/components/ui/progress';
-import { Skill, SkillStatus } from '../../types';
-import { ColumnConfig, DataTable } from './DataTable';
 
 interface SkillsTableProps {
   skills: Skill[];

@@ -1,11 +1,11 @@
 // src/blocks/Dashboard/components/Manager/Training.tsx
 import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
 import { useTeamRecommendations } from '@/components/Dashboard/hooks/useTeamRecommendations';
+import { TabViewProps } from '@/components/Dashboard/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { TabViewProps } from '../../types';
 
 function Training(user: TabViewProps) {
   const { teamData } = useTeamRecommendations(user.name || '');

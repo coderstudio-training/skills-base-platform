@@ -1,11 +1,11 @@
 'use client';
 
+import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
 import { useRecommendations } from '@/components/Dashboard/hooks/useRecommendation';
+import { TabViewProps } from '@/components/Dashboard/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@radix-ui/react-scroll-area';
 import { X } from 'lucide-react';
-import { TabViewProps } from '../../types';
-import BaseCard from '../Cards/BaseCard';
 
 function GrowthPlan(user: TabViewProps) {
   const {

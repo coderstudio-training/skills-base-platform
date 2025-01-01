@@ -1,6 +1,6 @@
-import AdminMetricCardLoading from '@/components/Dashboard/components/Cards/AdminMetricCardLoading';
-import StatsLoadingCard from '@/components/Dashboard/components/Cards/StatsLoadingCard';
-import TablistLoadingCard from '@/components/Dashboard/components/Cards/TablistLoadingCard';
+import AdminMetricCardLoading from '@/components/Dashboard/components/Skeletons/AdminMetricCardLoading';
+import AdminTabListLoading from '@/components/Dashboard/components/Skeletons/AdminTabListLoading';
+import StatsLoadingCard from '@/components/Dashboard/components/Skeletons/StatsLoadingCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminLoading() {
@@ -37,7 +37,7 @@ export default function AdminLoading() {
         {/* Stat Cards */}
         <StatsLoadingCard />
         {/* Tablist */}
-        <TablistLoadingCard />
+        <AdminTabListLoading />
       </main>
     </div>
   );

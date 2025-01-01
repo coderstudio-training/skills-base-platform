@@ -9,7 +9,7 @@ const SkeletonTab = ({ iconClass, label }: { iconClass: string; label: string })
   </div>
 );
 
-export default function TablistLoadingCard() {
+export default function AdminTabListLoading() {
   const tabs = [
     { iconClass: 'w-4 h-4', label: 'User' },
     { iconClass: 'w-4 h-4', label: 'Skills' },

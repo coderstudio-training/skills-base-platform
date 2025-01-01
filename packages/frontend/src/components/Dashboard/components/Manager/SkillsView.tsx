@@ -1,6 +1,6 @@
-import useTeamSkills from '../../hooks/useTeamSkills';
-import { TabViewProps } from '../../types';
-import StaffSkillsCard from '../Cards/StaffSkillsCard';
+import StaffSkillsCard from '@/components/Dashboard/components/Cards/StaffSkillsCard';
+import useTeamSkills from '@/components/Dashboard/hooks/useTeamSkills';
+import { TabViewProps } from '@/components/Dashboard/types';
 
 export default function SkillsView({ name }: TabViewProps) {
   const { teamSkills, error, loading } = useTeamSkills(name || '');

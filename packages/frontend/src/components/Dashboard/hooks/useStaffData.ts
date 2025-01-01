@@ -1,9 +1,9 @@
 // hooks/useStaffData.ts
+import { StaffData, StaffSkills, UserMetrics } from '@/components/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useSuspenseQuery } from '@/lib/api/hooks';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
-import { StaffData, StaffSkills, UserMetrics } from '../types';
 
 export function useStaffData(email: string) {
   const [selectedCategory, setSelectedCategory] = useState<'Technical Skills' | 'Soft Skills'>(

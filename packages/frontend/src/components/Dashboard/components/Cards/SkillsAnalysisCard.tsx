@@ -1,10 +1,10 @@
+import SkillCategoryButton from '@/components/Dashboard/components/Buttons/SkillCategoryButton';
+import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
+import { MetricCard } from '@/components/Dashboard/components/Cards/MetricCard';
+import { SkillsGapChart } from '@/components/Dashboard/components/Charts/SkillsBarChart';
+import { SkillsTable } from '@/components/Dashboard/components/Tables/SkillsTable';
+import { StaffSkillsProps } from '@/components/Dashboard/types';
 import { ArrowDownUp, CheckCircle2, Scale, XCircle } from 'lucide-react';
-import { StaffSkillsProps } from '../../types';
-import SkillCategoryButton from '../Buttons/SkillCategoryButton';
-import { SkillsGapChart } from '../Charts/SkillsBarChart';
-import { SkillsTable } from '../Tables/SkillsTable';
-import BaseCard from './BaseCard';
-import { MetricCard } from './MetricCard';
 
 export function SkillsAnalysisCard({
   skillsData,

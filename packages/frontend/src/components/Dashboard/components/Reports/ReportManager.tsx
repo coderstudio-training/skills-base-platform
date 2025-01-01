@@ -1,4 +1,7 @@
+import { EmployeeSkillsReport } from '@/components/Dashboard/components/Reports/EmployeeSkillsReport';
 import { ReportTemplate } from '@/components/Dashboard/components/Reports/ReportTemplate';
+import { useAdminReportManager } from '@/components/Dashboard/hooks/useAdminReportManager';
+import { EmployeeSkillsReportData } from '@/components/Dashboard/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,9 +21,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
-import { useAdminReportManager } from '../../hooks/useAdminReportManager';
-import { EmployeeSkillsReportData } from '../../types';
-import { EmployeeSkillsReport } from './EmployeeSkillsReport';
 
 export function ReportManager() {
   const {

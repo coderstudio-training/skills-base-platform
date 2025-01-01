@@ -1,5 +1,5 @@
 import { ErrorBoundary } from '@/components/Dashboard/components/ErrorBoundary/ErrorBoundary';
-import LoadingHeader from '@/components/Dashboard/components/Header/LoadingHeader';
+import LoadingHeader from '@/components/Dashboard/components/Skeletons/LoadingHeader';
 import ErrorPage from '@/components/error/ErrorPage';
 import { lazy, Suspense } from 'react';
 

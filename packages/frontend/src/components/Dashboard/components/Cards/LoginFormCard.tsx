@@ -1,8 +1,8 @@
+import { LoginFormCardProps } from '@/components/Dashboard/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LoginFormCardProps } from '../../types';
 import BaseCard from './BaseCard';
 
 export function LoginFormCard({

@@ -1,5 +1,5 @@
+import { Skill } from '@/components/Dashboard/types';
 import { CustomBarChart } from '@/components/ui/barchart';
-import { Skill } from '../../types';
 
 interface SkillsGapChartProps {
   skills: Skill[];

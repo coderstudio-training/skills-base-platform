@@ -1,9 +1,9 @@
 // components/Staff/SkillsOverviewCard.tsx
+import SkillCategoryButton from '@/components/Dashboard/components/Buttons/SkillCategoryButton';
+import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
+import { SkillsRadarChart } from '@/components/Dashboard/components/Charts/RadarChart';
+import { Skill } from '@/components/Dashboard/types';
 import { ApiError } from '@/lib/api/types';
-import { Skill } from '../../types';
-import SkillCategoryButton from '../Buttons/SkillCategoryButton';
-import { SkillsRadarChart } from '../Charts/RadarChart';
-import BaseCard from './BaseCard';
 
 interface SkillsOverviewCardProps {
   skills: Skill[];

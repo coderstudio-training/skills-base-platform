@@ -1,5 +1,5 @@
+import LoadingCard from '@/components/Dashboard/components/Skeletons/LoadingCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import LoadingCard from './LoadingCard';
 
 const SkillGapSkeletonItem = ({ text }: { text: string }) => (
   <div className="space-y-1">
