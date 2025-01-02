@@ -1,6 +1,6 @@
+import { LoadingCardProps } from '@/components/Dashboard/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { LoadingCardProps } from '../../types';
 
 export default function LoadingCard({
   skeleton_cn,

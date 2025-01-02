@@ -1,8 +1,12 @@
+import { useTeamData } from '@/components/Dashboard/hooks/useTeamData';
+import {
+  MemberRecommendations,
+  RecommendationResponse,
+  TeamMember,
+} from '@/components/Dashboard/types';
 import { learningApi } from '@/lib/api/client';
 import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useEffect, useState } from 'react';
-import { MemberRecommendations, RecommendationResponse, TeamMember } from '../types';
-import { useTeamData } from './useTeamData';
 
 export function useTeamRecommendations(managerName: string) {
   const { hasPermission } = useAuth();

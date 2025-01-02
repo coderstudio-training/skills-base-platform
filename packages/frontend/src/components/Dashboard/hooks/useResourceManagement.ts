@@ -1,7 +1,7 @@
+import type { ResourcesResponse } from '@/components/Dashboard/types';
 import { learningApi } from '@/lib/api/client';
 import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useMemo } from 'react';
-import type { ResourcesResponse } from '../types';
 
 export function useResourceManagement(category?: string) {
   const { hasPermission } = useAuth();

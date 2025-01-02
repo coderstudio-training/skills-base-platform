@@ -1,17 +1,17 @@
 'use client';
 
 import DeletePopup from '@/components/Dashboard/components/TSC/DeletePopup';
+import TSCContent from '@/components/Dashboard/components/TSC/TSCContent';
 import TSCForm from '@/components/Dashboard/components/TSC/TSCForm';
 import TSCManagerHeader from '@/components/Dashboard/components/TSC/TSCManagerHeader';
 import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
 import { useFilteredTSCs } from '@/components/Dashboard/hooks/useFilteredTSCs';
 import { useTSCFormValidation } from '@/components/Dashboard/hooks/useTSCFormValidation';
+import { useTSCManager } from '@/components/Dashboard/hooks/useTSCManager';
 import { useTSCOperations } from '@/components/Dashboard/hooks/useTSCOperations';
 import { TSC, TSCManagerProps } from '@/components/Dashboard/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { buildProficiency, getKeyFromValue } from '@/lib/utils';
-import { useTSCManager } from '../../hooks/useTSCManager';
-import TSCContent from './TSCContent';
 
 export default function TaxonomyManager({
   selectedBusinessUnit = BUSINESS_UNITS.ALL,

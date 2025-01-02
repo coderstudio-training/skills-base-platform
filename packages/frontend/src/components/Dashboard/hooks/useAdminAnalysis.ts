@@ -1,6 +1,6 @@
+import { DistributionsResponse, OrganizationSkillsAnalysis } from '@/components/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useAuth, useQuery } from '@/lib/api/hooks';
-import { DistributionsResponse, OrganizationSkillsAnalysis } from '../types';
 
 export function useAdminAnalysis() {
   const { hasPermission } = useAuth();

@@ -1,7 +1,7 @@
 'use client';
 
+import { LoginFormCard } from '@/components/Dashboard/components/Cards/LoginFormCard';
 import { useLoginForm } from '@/components/Dashboard/hooks/useLoginForm';
-import { LoginFormCard } from '../Dashboard/components/Cards/LoginFormCard';
 
 export default function LoginForm() {
   const { formState, adminLoginError, adminLoginLoading, handleSubmit, handleInputChange } =

@@ -1,3 +1,4 @@
+import { AuthResponse } from '@/components/Dashboard/types';
 import { userApi } from '@/lib/api/client';
 import { authConfig, errorMessages } from '@/lib/api/config';
 import { useMutation } from '@/lib/api/hooks';

@@ -1,3 +1,4 @@
+import { COLORS } from '@/components/Dashboard/constants';
 import { BaseBarChartProps } from '@/components/Dashboard/types';
 import { Loader2 } from 'lucide-react';
 import {
@@ -10,7 +11,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { COLORS } from '../../constants';
 
 export function TeamCompositionBarChart({
   data,

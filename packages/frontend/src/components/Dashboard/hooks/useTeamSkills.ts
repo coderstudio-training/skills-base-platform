@@ -1,10 +1,9 @@
+import { TeamData } from '@/components/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useAuth, useQuery } from '@/lib/api/hooks';
-import { TeamData } from '../types';
 
 export default function useTeamSkills(name: string) {
   const { hasPermission } = useAuth();
-
   const {
     data: teamSkills,
     error: teamSkillsError,

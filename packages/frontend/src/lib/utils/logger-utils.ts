@@ -19,6 +19,7 @@ export const maskSensitiveData = <T extends object>(info: T): T => {
   return masked;
 };
 
-export const handleLokiError = (error: Error): void => {
+export const handleLokiError = (error: Error) => {
   console.error('Loki connection error:', error);
+  // Implement fallback logging if needed
 };

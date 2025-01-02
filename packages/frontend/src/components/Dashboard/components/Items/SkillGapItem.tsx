@@ -1,5 +1,5 @@
+import { SkillGap } from '@/components/Dashboard/types';
 import { cn } from '@/lib/utils';
-import { SkillGap } from '../../types';
 
 export const SkillGapItem = ({ skill }: { skill: SkillGap }) => (
   <div className="space-y-2">

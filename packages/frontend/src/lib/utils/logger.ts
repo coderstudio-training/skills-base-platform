@@ -1,39 +1,35 @@
+import { LOGGER_CONFIG } from '@/lib/config/logger-config';
+import { LogMetadata } from '@/lib/types/logger';
 import winston from 'winston';
 import LokiTransport from 'winston-loki';
-import { LOGGER_CONFIG } from '../config/logger-config';
-import { LogLevel, LogMetadata } from '../types/logger';
 import { handleLokiError, maskSensitiveData } from './logger-utils';
 
-interface ProductionMetadata extends LogMetadata {
-  environment: string;
-  version: string;
-  nodeVersion: string;
-  severity: Uppercase<LogLevel>;
-}
-
-const createProductionLogger = (): winston.Logger | null => {
+// Create Winston logger for production
+const createProductionLogger = () => {
   if (process.env.NODE_ENV !== 'production') {
     return null;
   }
 
+  // Custom format for production
   const productionFormat = winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format((info: winston.Logform.TransformableInfo) => {
+    winston.format(info => {
+      // Mask sensitive data
       const masked = maskSensitiveData(info);
 
-      return {
-        ...masked,
-        environment: process.env.NEXT_PUBLIC_ENV || 'production',
-        version: process.env.NEXT_PUBLIC_VERSION,
-        nodeVersion: process.version,
-      } as winston.Logform.TransformableInfo;
+      // Add required production metadata
+      masked.environment = process.env.NEXT_PUBLIC_ENV || 'production';
+      masked.version = process.env.NEXT_PUBLIC_VERSION;
+      masked.nodeVersion = process.version;
+
+      return masked;
     })(),
     winston.format.json(),
   );
 
   return winston.createLogger({
-    level: 'info',
+    level: 'info', // Only info and above in production
     format: productionFormat,
     defaultMeta: {
       service: LOGGER_CONFIG.service,
@@ -66,19 +62,16 @@ const createProductionLogger = (): winston.Logger | null => {
 
 const productionLogger = createProductionLogger();
 
+// Production-safe logger implementation
 export const logger = {
-  error: (message: string | Error, metadata?: Partial<LogMetadata>): void => {
+  error: (message: string | Error, metadata?: LogMetadata): void => {
     if (!productionLogger) return;
 
-    const errorMeta: ProductionMetadata = {
-      ...(metadata as LogMetadata),
+    const errorMeta = {
+      ...metadata,
       correlationId: metadata?.correlationId || crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       severity: 'ERROR',
-      type: metadata?.type || 'error',
-      environment: process.env.NEXT_PUBLIC_ENV || 'production',
-      version: process.env.NEXT_PUBLIC_VERSION || 'unknown',
-      nodeVersion: process.version,
     };
 
     if (message instanceof Error) {
@@ -92,38 +85,26 @@ export const logger = {
     productionLogger.error(typeof message === 'string' ? message : message.message, errorMeta);
   },
 
-  warn: (message: string, metadata?: Partial<LogMetadata>): void => {
+  warn: (message: string, metadata?: LogMetadata): void => {
     if (!productionLogger) return;
 
-    const warnMeta: ProductionMetadata = {
-      ...(metadata as LogMetadata),
+    productionLogger.warn(message, {
+      ...metadata,
       correlationId: metadata?.correlationId || crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       severity: 'WARN',
-      type: metadata?.type || 'warning',
-      environment: process.env.NEXT_PUBLIC_ENV || 'production',
-      version: process.env.NEXT_PUBLIC_VERSION || 'unknown',
-      nodeVersion: process.version,
-    };
-
-    productionLogger.warn(message, warnMeta);
+    });
   },
 
-  info: (message: string, metadata?: Partial<LogMetadata>): void => {
+  info: (message: string, metadata?: LogMetadata): void => {
     if (!productionLogger) return;
 
-    const infoMeta: ProductionMetadata = {
-      ...(metadata as LogMetadata),
+    productionLogger.info(message, {
+      ...metadata,
       correlationId: metadata?.correlationId || crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       severity: 'INFO',
-      type: metadata?.type || 'info',
-      environment: process.env.NEXT_PUBLIC_ENV || 'production',
-      version: process.env.NEXT_PUBLIC_VERSION || 'unknown',
-      nodeVersion: process.version,
-    };
-
-    productionLogger.info(message, infoMeta);
+    });
   },
 
   // Debug is disabled in production

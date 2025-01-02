@@ -1,6 +1,6 @@
-import { BUSINESS_UNITS } from '../../constants';
-import { BusinessUnitSkillsProps } from '../../types';
-import { SkillItem } from './SkillItem';
+import { SkillItem } from '@/components/Dashboard/components/Items/SkillItem';
+import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
+import { BusinessUnitSkillsProps } from '@/components/Dashboard/types';
 
 export const BusinessUnitSkills = ({ businessUnit }: BusinessUnitSkillsProps) => {
   const getBusinessUnitName = (code: string) => {

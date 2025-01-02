@@ -499,6 +499,11 @@ export interface AdminMetricCardsProps {
   error?: ApiError | null;
 }
 
+export interface SkillsTableProps {
+  skills: Skill[];
+  category: 'Technical Skills' | 'Soft Skills';
+}
+
 //in use
 export interface BusinessUnitDistributionProps {
   businessUnits: BusinessUnitStat[];
@@ -518,6 +523,10 @@ export interface TopPerformersProps {
   rankings: TopPerformer[];
   loading?: boolean;
   error?: ApiError | null;
+}
+
+export interface ManagerEvaluationProps {
+  teamMembers: TeamMember[];
 }
 
 //in use
@@ -711,4 +720,10 @@ export interface GradeItemProps {
     grade: string;
     userCount: number;
   };
+}
+
+export interface AuthResponse {
+  access_token?: string;
+  message?: string;
+  status?: number;
 }

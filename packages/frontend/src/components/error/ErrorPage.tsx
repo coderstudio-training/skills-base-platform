@@ -1,9 +1,9 @@
 'use client';
 
+import { useLogout } from '@/components/Dashboard/hooks/useLogout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
-import { useLogout } from '../Dashboard/hooks/useLogout';
 
 interface ErrorPageProps {
   statusCode: number | string;

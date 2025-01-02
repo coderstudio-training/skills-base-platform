@@ -1,7 +1,7 @@
+import { Recommendation } from '@/components/Dashboard/types';
 import { learningApi } from '@/lib/api/client';
 import { useAuth, useQuery } from '@/lib/api/hooks';
 import { useState } from 'react';
-import { Recommendation } from '../types';
 
 export function useRecommendations(email: string) {
   const [selectedCourse, setSelectedCourse] = useState<Recommendation | null>(null);
