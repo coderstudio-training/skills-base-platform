@@ -11,6 +11,7 @@ import { buildFetchOptions } from '@/lib/utils';
 import { cache } from 'react';
 import { getAuthHeaders } from './auth';
 import { cacheStore } from './cache-store';
+import { performanceMonitor } from '../utils/performance-monitor';
 
 const DEFAULT_CACHE_CONFIG = {
   cache: 'force-cache' as RequestCache,
@@ -114,25 +115,40 @@ export class ApiClient {
   }
 
   private async retryRequest<T>(url: string, requestInit: RequestInit): Promise<ApiResponse<T>> {
-    let attempt = 0;
-    while (attempt <= this.retryConfig.retryCount) {
-      try {
-        const response = await this.fetch(url, requestInit);
-        return this.handleResponse<T>(response);
-      } catch (error) {
-        if (attempt < this.retryConfig.retryCount) {
-          attempt++;
-          await new Promise(resolve => setTimeout(resolve, this.retryConfig.retryDelay));
-          continue;
+    const correlationId = crypto.randomUUID();
+
+    return performanceMonitor.trackRequest(
+      async () => {
+        let attempt = 0;
+        while (attempt <= this.retryConfig.retryCount) {
+          try {
+            const response = await this.fetch(url, {
+              ...requestInit,
+              headers: {
+                ...requestInit.headers,
+                'X-Correlation-ID': correlationId,
+              },
+            });
+            return this.handleResponse<T>(response);
+          } catch (error) {
+            if (attempt < this.retryConfig.retryCount) {
+              attempt++;
+              await new Promise(resolve => setTimeout(resolve, this.retryConfig.retryDelay));
+              continue;
+            }
+            return this.createErrorResponse<T>(
+              500,
+              'FETCH_ERROR',
+              `Network error after ${this.retryConfig.retryCount} retries`,
+            );
+          }
         }
-        return this.createErrorResponse<T>(
-          500,
-          'FETCH_ERROR',
-          `Network error after ${this.retryConfig.retryCount} retries`,
-        );
-      }
-    }
-    return this.createErrorResponse<T>(500, 'FETCH_ERROR', 'Max retries exceeded');
+        return this.createErrorResponse<T>(500, 'FETCH_ERROR', 'Max retries exceeded');
+      },
+      url,
+      requestInit.method || 'GET',
+      { correlationId },
+    );
   }
 
   private cachedFetch = cache(

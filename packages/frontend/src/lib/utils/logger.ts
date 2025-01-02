@@ -1,68 +1,25 @@
+import type { Logger, transport } from 'winston';
 import { LOGGER_CONFIG } from '../config/logger-config';
-import { LogMetadata } from '../types/logger';
-import type { Logger } from 'winston';
+import type { LogMetadata } from '../types/logger';
+import { CustomLokiTransport } from './custom-loki-transport';
 
-// Define interface for log info object
-import type { TransformableInfo } from 'logform';
+const isClient = typeof window !== 'undefined';
 
-let winstonLogger: Logger | undefined;
+type LogData = Record<string, unknown>;
 
-// Initialize server-side Winston logger
-if (typeof window === 'undefined') {
-  const initializeServerLogger = async () => {
-    const winston = (await import('winston')).default;
-    const { default: LokiTransport } = await import('winston-loki');
-
-    const prodFormat = winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.errors({ stack: true }),
-      winston.format((info: TransformableInfo) => maskSensitiveData(info))(),
-      winston.format.json(),
-    );
-
-    const lokiTransport = new LokiTransport({
-      host: LOGGER_CONFIG.loki.host,
-      labels: {
-        app: LOGGER_CONFIG.service,
-        environment: process.env.NEXT_PUBLIC_ENV || 'production',
-      },
-      json: true,
-      format: prodFormat,
-      replaceTimestamp: true,
-      interval: LOGGER_CONFIG.loki.batchInterval,
-      batching: true,
-      onConnectionError: (error: Error) => {
-        console.error('Loki connection error:', error);
-      },
-    });
-
-    winstonLogger = winston.createLogger({
-      level: 'info',
-      format: prodFormat,
-      defaultMeta: {
-        service: LOGGER_CONFIG.service,
-      },
-      transports: [lokiTransport],
-    });
-  };
-
-  // Initialize server logger
-  initializeServerLogger().catch(console.error);
-}
-
-// Mask sensitive data in logs
-export const maskSensitiveData = (info: TransformableInfo): TransformableInfo => {
-  if (typeof info !== 'object' || info === null) {
-    return info;
+// Helper to mask sensitive data
+const maskSensitiveData = (data: LogData): LogData => {
+  if (typeof data !== 'object' || data === null) {
+    return data;
   }
 
-  const masked = { ...info };
-
+  const masked = { ...data };
   const maskValue = (obj: Record<string, unknown>): void => {
     for (const key in obj) {
-      if (typeof obj[key] === 'object' && obj[key] !== null) {
-        maskValue(obj[key] as Record<string, unknown>);
-      } else if (typeof obj[key] === 'string') {
+      const value = obj[key];
+      if (typeof value === 'object' && value !== null) {
+        maskValue(value as Record<string, unknown>);
+      } else if (typeof value === 'string') {
         if (LOGGER_CONFIG.sensitive.patterns.some(pattern => pattern.test(key))) {
           obj[key] = '***';
         }
@@ -74,63 +31,134 @@ export const maskSensitiveData = (info: TransformableInfo): TransformableInfo =>
   return masked;
 };
 
-// Helper to format log message with metadata
-const formatLogMessage = (message: string | Error, metadata?: LogMetadata): TransformableInfo => {
-  const baseMetadata = {
-    correlationId: metadata?.correlationId || crypto.randomUUID(),
-    timestamp: new Date().toISOString(),
+// Simple client-side logger
+const clientLogger = {
+  error: (message: string | Error, metadata?: LogMetadata) => {
+    const maskedMetadata = metadata ? maskSensitiveData(metadata) : metadata;
+    if (message instanceof Error) {
+      console.error('[Client]', message.message, {
+        ...maskedMetadata,
+        error: {
+          name: message.name,
+          stack: process.env.NODE_ENV === 'production' ? undefined : message.stack,
+          message: message.message,
+        },
+      });
+    } else {
+      console.error('[Client]', message, maskedMetadata);
+    }
+  },
+  warn: (message: string, metadata?: LogMetadata) => {
+    const maskedMetadata = metadata ? maskSensitiveData(metadata) : metadata;
+    console.warn('[Client]', message, maskedMetadata);
+  },
+  info: (message: string, metadata?: LogMetadata) => {
+    const maskedMetadata = metadata ? maskSensitiveData(metadata) : metadata;
+    console.log('[Client]', message, maskedMetadata);
+  },
+};
+
+// Server-side logger initialization
+const createServerLogger = () => {
+  let winstonLogger: Logger | undefined;
+
+  const initializeServerLogger = async () => {
+    try {
+      const winston = (await import('winston')).default;
+
+      // Create console format (keep existing format)
+      const consoleFormat = winston.format.printf(({ level, message, timestamp, ...metadata }) => {
+        const maskedMetadata = maskSensitiveData(metadata as LogData);
+        return `${timestamp} [${level.toUpperCase()}] ${message} ${
+          Object.keys(maskedMetadata).length ? JSON.stringify(maskedMetadata) : ''
+        }`;
+      });
+
+      const transports: transport[] = [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.colorize(),
+            consoleFormat,
+          ),
+        }),
+      ];
+
+      if (process.env.NODE_ENV === 'production') {
+        try {
+          const lokiTransport = new CustomLokiTransport({
+            host: LOGGER_CONFIG.loki.host,
+            labels: {
+              app: LOGGER_CONFIG.service,
+              environment: process.env.NEXT_PUBLIC_ENV || 'production',
+            },
+            interval: LOGGER_CONFIG.loki.batchInterval,
+            timeout: LOGGER_CONFIG.loki.timeout,
+          });
+
+          lokiTransport.on('error', error => {
+            console.error('Loki transport error:', error);
+          });
+
+          transports.push(lokiTransport as transport);
+        } catch (error) {
+          console.warn('Failed to initialize Loki transport:', error);
+        }
+      }
+
+      winstonLogger = winston.createLogger({
+        level: 'info',
+        format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+        defaultMeta: {
+          service: LOGGER_CONFIG.service,
+        },
+        transports,
+      });
+    } catch (error) {
+      console.error('Failed to initialize server logger:', error);
+    }
   };
 
-  if (message instanceof Error) {
-    return {
-      message: message.message,
-      level: (metadata?.level as string) || 'info',
-      ...baseMetadata,
-      error: {
-        name: message.name,
-        message: message.message,
-        stack: process.env.NODE_ENV === 'production' ? undefined : message.stack,
-      },
-    };
-  }
+  initializeServerLogger();
 
   return {
-    message,
-    level: (metadata?.level as string) || 'info',
-    ...baseMetadata,
+    error: (message: string | Error, metadata?: LogMetadata) => {
+      const maskedMetadata = metadata ? maskSensitiveData(metadata) : metadata;
+      if (winstonLogger) {
+        if (message instanceof Error) {
+          winstonLogger.error(message.message, {
+            ...maskedMetadata,
+            error: {
+              name: message.name,
+              stack: process.env.NODE_ENV === 'production' ? undefined : message.stack,
+              message: message.message,
+            },
+          });
+        } else {
+          winstonLogger.error(message, maskedMetadata);
+        }
+      } else {
+        console.error('[Server]', message, maskedMetadata);
+      }
+    },
+    warn: (message: string, metadata?: LogMetadata) => {
+      const maskedMetadata = metadata ? maskSensitiveData(metadata) : metadata;
+      if (winstonLogger) {
+        winstonLogger.warn(message, maskedMetadata);
+      } else {
+        console.warn('[Server]', message, maskedMetadata);
+      }
+    },
+    info: (message: string, metadata?: LogMetadata) => {
+      const maskedMetadata = metadata ? maskSensitiveData(metadata) : metadata;
+      if (winstonLogger) {
+        winstonLogger.info(message, maskedMetadata);
+      } else {
+        console.log('[Server]', message, maskedMetadata);
+      }
+    },
   };
 };
 
-// Universal logger that works in both client and server
-export const logger = {
-  error: (message: string | Error, metadata?: LogMetadata): void => {
-    const logData = formatLogMessage(message, { ...metadata, level: 'error' });
-    if (typeof window === 'undefined' && winstonLogger) {
-      // Server-side logging
-      winstonLogger.error(logData.message as string, maskSensitiveData(logData));
-    } else {
-      // Client-side logging
-      console.error(maskSensitiveData(logData));
-    }
-  },
-  warn: (message: string, metadata?: LogMetadata): void => {
-    const logData = formatLogMessage(message, { ...metadata, level: 'warn' });
-    if (typeof window === 'undefined' && winstonLogger) {
-      // Server-side logging
-      winstonLogger.error(logData.message as string, maskSensitiveData(logData));
-    } else {
-      // Client-side logging
-      console.warn(maskSensitiveData(logData));
-    }
-  },
-  info: (message: string, metadata?: LogMetadata): void => {
-    const logData = formatLogMessage(message, { ...metadata, level: 'info' });
-    if (typeof window === 'undefined' && winstonLogger) {
-      // Server-side logging
-      winstonLogger.error(logData.message as string, maskSensitiveData(logData));
-    } else {
-      // Client-side logging
-      console.log(maskSensitiveData(logData));
-    }
-  },
-};
+// Export the appropriate logger based on environment
+export const logger = isClient ? clientLogger : createServerLogger();
