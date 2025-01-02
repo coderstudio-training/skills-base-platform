@@ -1,12 +1,11 @@
-import type { TSC } from '@/components/Dashboard/types';
+import { IBaseTaxonomy } from '@/components/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
-import { useMutation, useQuery } from '@/lib/api/hooks';
-import { IBaseTaxonomy, IBulkUpsertDTO } from '@/lib/skills/types';
+import { useSuspenseQuery } from '@/lib/api/hooks';
 
 export function useTSCManager() {
   const TAXONOMY_BASE_URL = '/taxonomy/technical';
 
-  const { data, isLoading, error, refetch } = useQuery<IBaseTaxonomy[]>(
+  const data = useSuspenseQuery<IBaseTaxonomy[]>(
     skillsApi,
     `${TAXONOMY_BASE_URL}?businessUnit=QA`,
     {
@@ -15,37 +14,7 @@ export function useTSCManager() {
     },
   );
 
-  // WIP
-  const { mutate: createTSC, isLoading: isCreating } = useMutation<TSC, IBulkUpsertDTO>(
-    skillsApi,
-    '/tscs',
-    'POST',
-  );
-
-  // WIP
-  const { mutate: updateTSC, isLoading: isUpdating } = useMutation<TSC, Partial<TSC>>(
-    skillsApi,
-    '/tscs',
-    'PUT',
-  );
-
-  // WIP
-  const { mutate: deleteTSC, isLoading: isDeleting } = useMutation<void, string>(
-    skillsApi,
-    '/tscs',
-    'DELETE',
-  );
-
   return {
     data,
-    isLoading,
-    error,
-    refetch,
-    isCreating,
-    isUpdating,
-    isDeleting,
-    createTSC,
-    updateTSC,
-    deleteTSC,
   };
 }

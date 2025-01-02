@@ -1,6 +1,6 @@
-import { BUSINESS_UNITS } from '../../constants';
-import { CapabilityGapsProps } from '../../types';
-import { SkillGapItem } from './SkillGapItem';
+import { SkillGapItem } from '@/components/Dashboard/components/Items/SkillGapItem';
+import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
+import { CapabilityGapsProps } from '@/components/Dashboard/types';
 
 export const CapabilityGaps = ({ capability }: CapabilityGapsProps) => {
   const getBusinessUnitName = (code: string) => {

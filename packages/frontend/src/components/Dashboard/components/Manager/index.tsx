@@ -1,46 +1,32 @@
 'use client';
 
-import { UserHeader } from '@/components/Dashboard/components/Header/UserHeader';
-import { ManagerOverview } from '@/components/Dashboard/components/Manager/ManagerOverview';
+import ManagerEvaluationLoading from '@/components/Dashboard/components/Skeletons/ManagerEvaluationLoading';
+import ManagerOverviewLoadingCard from '@/components/Dashboard/components/Skeletons/ManagerOverviewLoading';
+import ManagerTrainingLoading from '@/components/Dashboard/components/Skeletons/TabLoadingCard';
 import { useTeamData } from '@/components/Dashboard/hooks/useTeamData';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { DashboardProps } from '@/components/Dashboard/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
-import { BookOpen } from 'lucide-react';
-import { useState } from 'react';
-import { DashboardProps } from '../../types';
-import { IndividualPerformanceCard } from '../Cards/IndividualPerformanceCard';
-import SkillsView from './SkillsView';
-import Training from './Training';
+import { lazy, Suspense, useState } from 'react';
+
+const ManagerOverview = lazy(
+  () => import('@/components/Dashboard/components/Manager/ManagerOverview'),
+);
+const Performance = lazy(() => import('@/components/Dashboard/components/Manager/Performance'));
+const SkillsView = lazy(() => import('@/components/Dashboard/components/Manager/SkillsView'));
+const Training = lazy(() => import('@/components/Dashboard/components/Manager/Training'));
+const ManagerEvaluation = lazy(
+  () => import('@/components/Dashboard/components/Cards/ManagerEvaluation'),
+);
 
 export default function ManagerDashboard(user: DashboardProps) {
-  const { hasPermission, role } = useAuth();
+  const { hasPermission } = useAuth();
   const managerName = user.name;
   const [activeTab, setActiveTab] = useState('overview');
   const { teamMembers } = useTeamData(managerName);
-  const isManager = role?.includes('manager');
-
-  if (!hasPermission('canViewDashboard') || !isManager) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>Access Denied</AlertDescription>
-      </Alert>
-    );
-  }
 
   return (
     <div className="container mx-auto p-4 max-w-full lg:max-w-[80%]">
-      <UserHeader />
-
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -50,108 +36,66 @@ export default function ManagerDashboard(user: DashboardProps) {
           <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
-          <ManagerOverview teamMembers={teamMembers} />
-        </TabsContent>
+        <Suspense fallback={<ManagerOverviewLoadingCard />}>
+          <TabsContent value="overview" className="space-y-4">
+            <ManagerOverview teamMembers={teamMembers} />
+          </TabsContent>
+        </Suspense>
 
         {hasPermission('canViewReports') && (
-          <TabsContent value="performance">
-            <IndividualPerformanceCard members={teamMembers} />
-          </TabsContent>
+          <Suspense
+            fallback={
+              <ManagerTrainingLoading
+                title="Individual Performance"
+                description="Average team performance over the last 6 months"
+                loading_message="Loading Individual Performance"
+              />
+            }
+          >
+            <TabsContent value="performance">
+              <Performance members={teamMembers} />
+            </TabsContent>
+          </Suspense>
         )}
 
         {hasPermission('canViewSkills') && (
-          <TabsContent value="skills">
-            <SkillsView name={managerName || ''} />
-          </TabsContent>
+          <Suspense
+            fallback={
+              <ManagerTrainingLoading
+                title="Team Skills Breakdown"
+                description="Detailed view of individual skills"
+                loading_message="Loading Team Skills Breakdown"
+              />
+            }
+          >
+            <TabsContent value="skills">
+              <SkillsView name={managerName || ''} />
+            </TabsContent>
+          </Suspense>
         )}
 
         {hasPermission('canViewLearning') && (
-          <TabsContent value="training">
-            <Training name={managerName || ''} />
-          </TabsContent>
+          <Suspense
+            fallback={
+              <ManagerTrainingLoading
+                title="Training Recommendations"
+                description="Personalized course recommendations based on skill gaps"
+                loading_message="Loading Training Recommendations"
+              />
+            }
+          >
+            <TabsContent value="training">
+              <Training name={managerName || ''} />
+            </TabsContent>
+          </Suspense>
         )}
 
         {hasPermission('canEditTeamSkills') && (
-          <TabsContent value="evaluation">
-            <Card>
-              <CardHeader>
-                <CardTitle>Team Evaluation</CardTitle>
-                <CardDescription>
-                  Conduct performance evaluations for your team members
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-4">Select a team member to start their performance evaluation:</p>
-                <Select>
-                  <SelectTrigger className="w-[280px]">
-                    <SelectValue placeholder="Select team member" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {teamMembers.map(member => (
-                      <SelectItem
-                        key={member.employeeId}
-                        value={`${member.firstName}-${member.lastName}`.toLowerCase()}
-                      >
-                        {member.firstName} {member.lastName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-2">Evaluation Criteria</h3>
-                  <div className="space-y-4">
-                    {[
-                      'Technical Skills',
-                      'Communication',
-                      'Teamwork',
-                      'Problem Solving',
-                      'Initiative',
-                    ].map((criteria, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <span>{criteria}</span>
-                        <Select>
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select rating" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {[1, 2, 3, 4, 5].map(rating => (
-                              <SelectItem key={rating} value={rating.toString()}>
-                                {rating} -{' '}
-                                {rating === 1
-                                  ? 'Poor'
-                                  : rating === 2
-                                    ? 'Fair'
-                                    : rating === 3
-                                      ? 'Good'
-                                      : rating === 4
-                                        ? 'Very Good'
-                                        : 'Excellent'}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-2">Comments</h3>
-                  <textarea
-                    className="w-full h-32 p-2 border rounded-md"
-                    placeholder="Enter your comments here..."
-                  ></textarea>
-                </div>
-
-                <Button className="mt-4">
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  Submit Evaluation
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
+          <Suspense fallback={<ManagerEvaluationLoading />}>
+            <TabsContent value="evaluation">
+              <ManagerEvaluation teamMembers={teamMembers} />
+            </TabsContent>
+          </Suspense>
         )}
       </Tabs>
     </div>

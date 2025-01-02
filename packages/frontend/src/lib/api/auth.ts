@@ -1,21 +1,16 @@
 // lib/auth.ts
 
-import { authConfig, errorMessages, rolePermissions } from '@/lib/api/config';
-import {
-  AuthState,
-  Permission,
-  RolePermissions,
-  Roles,
-  ServerInterceptOptions,
-} from '@/lib/api/types';
+import { authConfig, errorMessages } from '@/lib/api/config';
+import { Permission, Roles, ServerInterceptOptions } from '@/lib/api/types';
 import { logger } from '@/lib/utils';
 import { AuthResponse, DecodedToken } from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
-import { getServerSession, NextAuthOptions } from 'next-auth';
+import { getServerSession, NextAuthOptions, Session } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
+import { getPermissionCode } from './permissionMapping';
 logger.log('Starting to load auth options in lib/auth.ts...');
 
 export const authOptions: NextAuthOptions = {
@@ -44,7 +39,12 @@ export const authOptions: NextAuthOptions = {
           logger.log('Decoded token:', JSON.stringify(decodedToken));
 
           // Validate the decoded token
-          if (!decodedToken.email || !decodedToken.userId || !Array.isArray(decodedToken.roles)) {
+          if (
+            !decodedToken.email ||
+            !decodedToken.userId ||
+            !Array.isArray(decodedToken.roles) ||
+            !Array.isArray(decodedToken.perms)
+          ) {
             logger.error('Invalid token structure');
             return null;
           }
@@ -68,6 +68,7 @@ export const authOptions: NextAuthOptions = {
             email: decodedToken.email,
             accessToken: credentials.access_token,
             role: role,
+            perms: decodedToken.perms,
           };
         } catch (error) {
           logger.error('Token decode error:', error);
@@ -100,9 +101,33 @@ export const authOptions: NextAuthOptions = {
           logger.log('Google Auth: ', JSON.stringify(data));
 
           if (response.ok) {
+            // decode token for perms
+            logger.log('Decoding token');
+            const decodedToken = jwtDecode<DecodedToken>(data.access_token);
+            logger.log('Decoded token:', JSON.stringify(decodedToken));
+
+            if (
+              !decodedToken.email ||
+              !decodedToken.userId ||
+              !Array.isArray(decodedToken.roles) ||
+              !Array.isArray(decodedToken.perms)
+            ) {
+              logger.error('Invalid token structure');
+              return '/auth/error';
+            }
+
+            // Check token expiration
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (decodedToken.exp && decodedToken.exp < currentTime) {
+              logger.error('Token has expired');
+              return '/auth/error';
+            }
+
             user.role = data.roles[0];
             user.accessToken = data.access_token;
             user.image = profile?.image;
+            user.perms = decodedToken.perms;
+
             logger.log('Google Auth USER: ', JSON.stringify(user));
             return true;
           } else {
@@ -124,6 +149,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.accessToken = user.accessToken;
         token.role = user.role;
+        token.perms = user.perms;
       }
       return token;
     },
@@ -136,6 +162,7 @@ export const authOptions: NextAuthOptions = {
         accessToken: token.accessToken as string,
         image: token.picture as string,
         role: token.role as Roles,
+        perms: token.perms as number[],
       };
       logger.log('Session Callback - Session:', JSON.stringify(session));
       return session;
@@ -143,6 +170,7 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       // Customize the redirect based on the user's role
       if (url.startsWith(baseUrl)) {
+        logger.log('Redirecting to:', url);
         const session = await getSession();
         if (session?.user?.role) {
           return `${baseUrl}/dashboard/${session.user.role.toLowerCase()}`;
@@ -184,58 +212,21 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
   return { Authorization: `Bearer ${session.user.accessToken}` };
 }
 
-// Auth management, to be used in conjunction with hasPermission or canAccessRoutes
-export async function getAuthState(): Promise<AuthState> {
-  let session;
-
-  // Check if running on the server or client
-  if (typeof window === 'undefined') {
-    // On the server-side, use getServerSession
-    session = await getServerSession(authOptions);
-  } else {
-    // On the client-side, use getSession
-    session = await getSession();
-  }
-
-  if (!session) {
-    return { isAuthenticated: false, user: null, role: [] };
-  }
-
-  return {
-    isAuthenticated: !!session.user?.accessToken,
-    user: session.user || null,
-    role: session.user ? [session.user.role] : [],
-  };
-}
-
 // Helper function, gets logged in user's role
-async function getRoles(): Promise<Roles[]> {
-  let session;
-
-  // Check if running on the server or client
-  if (typeof window === 'undefined') {
-    // On the server-side, use getServerSession
-    session = await getServerSession(authOptions);
-  } else {
-    // On the client-side, use getSession
-    session = await getSession();
-  }
-
+async function getRoles(session: Session): Promise<Roles[]> {
   return session?.user?.role ? [session.user.role] : [];
 }
 
 // Checks the predefined permissions list if user has permission
-export async function hasPermission(permission: Permission): Promise<boolean> {
-  const roles = await getRoles();
-
-  if (!roles.length) return false;
-
-  return roles.some(role => (rolePermissions as RolePermissions)[role][permission]);
+export async function hasPermission(session: Session, permissions: Permission[]): Promise<boolean> {
+  return permissions.every(permission =>
+    session.user.perms.includes(getPermissionCode(permission)),
+  );
 }
 
 // Checks the predefined routes if user has access
-export async function canAccessRoutes(route: string): Promise<boolean> {
-  const roles = await getRoles();
+export async function canAccessRoutes(session: Session, route: string): Promise<boolean> {
+  const roles = await getRoles(session);
 
   if (!roles.length) return false;
 
@@ -281,7 +272,7 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
   }
 
   if (option?.permission) {
-    const isPermitted = await hasPermission(option.permission);
+    const isPermitted = await hasPermission(session, option.permission);
     if (!isPermitted) {
       logger.log(errorMessages.FORBIDDEN);
       redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
@@ -289,7 +280,7 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
   }
 
   if (option?.route) {
-    const canAccess = await canAccessRoutes(option.route);
+    const canAccess = await canAccessRoutes(session, option.route);
     if (!canAccess) {
       logger.log(errorMessages.FORBIDDEN);
       redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);

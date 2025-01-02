@@ -1,6 +1,6 @@
+import AdminLoading from '@/app/dashboard/admin/loading';
 import { serverSideIntercept } from '@/lib/api/auth';
 import dynamic from 'next/dynamic';
-import AdminLoading from './loading';
 
 const AdminDashboard = dynamic(() => import('@/components/Dashboard/components/Admin'), {
   ssr: false,
@@ -8,6 +8,7 @@ const AdminDashboard = dynamic(() => import('@/components/Dashboard/components/A
 });
 
 export default async function AdminDashboardPage() {
-  await serverSideIntercept({ permission: 'canViewDashboard' });
+  await serverSideIntercept({ permission: ['canViewDashboard'] });
+
   return <AdminDashboard />;
 }

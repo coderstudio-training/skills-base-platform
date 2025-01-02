@@ -1,8 +1,8 @@
-import { useAdminAnalysis } from '../../hooks/useAdminAnalysis';
-import BaseCard from '../Cards/BaseCard';
-import { BusinessUnitSkills } from '../Items/BusinessUnitSkills';
-import { CapabilityGaps } from '../Items/CapabilityGaps';
-import { GradeItem } from '../Items/GradeItem';
+import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
+import { BusinessUnitSkills } from '@/components/Dashboard/components/Items/BusinessUnitSkills';
+import { CapabilityGaps } from '@/components/Dashboard/components/Items/CapabilityGaps';
+import { GradeItem } from '@/components/Dashboard/components/Items/GradeItem';
+import { useAdminAnalysis } from '@/components/Dashboard/hooks/useAdminAnalysis';
 
 export default function AnalysisView() {
   const { analysisData, distributionsData, error, loading } = useAdminAnalysis();

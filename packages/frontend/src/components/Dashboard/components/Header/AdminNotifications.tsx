@@ -1,3 +1,4 @@
+import { useNotificationCenter } from '@/components/Dashboard/hooks/useNotificationCenter';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,7 +8,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Bell, Circle } from 'lucide-react';
-import { useNotificationCenter } from '../../hooks/useNotificationCenter';
 
 export function NotificationCenter({
   onLastNotificationDateChange,
