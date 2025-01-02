@@ -12,9 +12,7 @@ import { lazy, Suspense, useState } from 'react';
 const ManagerOverview = lazy(
   () => import('@/components/Dashboard/components/Manager/ManagerOverview'),
 );
-const IndividualPerformanceCard = lazy(
-  () => import('@/components/Dashboard/components/Cards/IndividualPerformanceCard'),
-);
+const Performance = lazy(() => import('@/components/Dashboard/components/Manager/Performance'));
 const SkillsView = lazy(() => import('@/components/Dashboard/components/Manager/SkillsView'));
 const Training = lazy(() => import('@/components/Dashboard/components/Manager/Training'));
 const ManagerEvaluation = lazy(
@@ -55,7 +53,7 @@ export default function ManagerDashboard(user: DashboardProps) {
             }
           >
             <TabsContent value="performance">
-              <IndividualPerformanceCard members={teamMembers} />
+              <Performance members={teamMembers} />
             </TabsContent>
           </Suspense>
         )}
