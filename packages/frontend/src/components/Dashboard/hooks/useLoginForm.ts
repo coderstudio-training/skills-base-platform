@@ -4,7 +4,6 @@ import { authConfig, errorMessages } from '@/lib/api/config';
 import { useMutation } from '@/lib/api/hooks';
 import { ApiResponse } from '@/lib/api/types';
 import { logger } from '@/lib/utils';
-import { AuthResponse } from '@/types/auth';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -56,7 +55,7 @@ export function useLoginForm() {
       // First step: Get token from user service
       const apiResponse = await adminLoginPost({ email, password });
       console.log('Api response:', apiResponse);
-      if (!apiResponse.data?.accessToken || apiResponse.error) {
+      if (!apiResponse.data?.access_token || apiResponse.error) {
         logger.error('Authentication failed:', {
           status: apiResponse.status,
           message: apiResponse.error?.message,
@@ -72,7 +71,7 @@ export function useLoginForm() {
         redirect: false,
         email,
         password,
-        accessToken: apiResponse.data.accessToken,
+        access_token: apiResponse.data.access_token,
         callbackUrl: `${window.location.origin}/dashboard/admin`,
       });
 

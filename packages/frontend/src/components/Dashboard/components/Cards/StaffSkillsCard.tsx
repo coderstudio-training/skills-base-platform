@@ -1,6 +1,6 @@
 import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
 import { SkillStatus, TeamData } from '@/components/Dashboard/types';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ApiError } from '@/lib/api/types';
@@ -28,15 +28,27 @@ export default function StaffSkillsCard({ skillsData, loading, error }: StaffSki
               className="space-y-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
             >
               <div className="flex items-start gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback className="uppercase bg-secondary text-secondary-foreground">
+                <Avatar className="h-10 w-10">
+                  {member.picture ? (
+                    <AvatarImage
+                      src={member.picture}
+                      alt={member.name
+                        .split(' ')
+                        .map(n => n[0])
+                        .join('')}
+                      onError={e => {
+                        const imgElement = e.target as HTMLImageElement;
+                        imgElement.style.display = 'none';
+                      }}
+                    />
+                  ) : null}
+                  <AvatarFallback className="uppercase bg-gray-100 text-gray-600">
                     {member.name
                       .split(' ')
                       .map(n => n[0])
                       .join('')}
                   </AvatarFallback>
                 </Avatar>
-
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div>

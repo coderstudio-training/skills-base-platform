@@ -234,6 +234,7 @@ export interface StaffSkills {
   name: string;
   careerLevel: string;
   capability: string;
+  picture?: string;
   skills: Skill[];
 }
 
