@@ -10,7 +10,6 @@ export function useAdminAnalysis() {
     isLoading: analysisLoading,
   } = useQuery<OrganizationSkillsAnalysis>(skillsApi, 'skills-matrix/admin/analysis', {
     requiresAuth: true,
-    cacheStrategy: 'force-cache',
     enabled: hasPermission('canViewReports'),
   });
 
@@ -20,7 +19,6 @@ export function useAdminAnalysis() {
     isLoading: distributionsLoading,
   } = useQuery<DistributionsResponse>(skillsApi, 'skills-matrix/distributions', {
     requiresAuth: true,
-    cacheStrategy: 'force-cache',
     enabled: hasPermission('canViewReports'),
   });
 

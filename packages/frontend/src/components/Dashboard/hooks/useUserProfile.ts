@@ -11,7 +11,6 @@ export function useUserProfile() {
     isLoading,
   } = useQuery<UserProfile>(userApi, '/users/profile', {
     requiresAuth: true,
-    cacheStrategy: 'force-cache',
     enabled: hasPermission('canViewDashboard'),
   });
 

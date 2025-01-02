@@ -8,6 +8,7 @@ export function useTeamData(managerName: string) {
     `/employees/manager/${encodeURIComponent(managerName)}`,
     {
       requiresAuth: true,
+      enabled: hasPermission('canManageTeam'),
     },
   );
 

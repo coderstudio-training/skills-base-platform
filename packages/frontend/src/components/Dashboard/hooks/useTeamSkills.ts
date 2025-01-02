@@ -12,6 +12,7 @@ export default function useTeamSkills(name: string) {
     name ? `skills-matrix/manager/${encodeURIComponent(name)}` : '',
     {
       requiresAuth: true,
+      enabled: hasPermission('canViewSkills'),
     },
   );
 

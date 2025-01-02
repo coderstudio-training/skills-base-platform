@@ -167,7 +167,7 @@ export class EmployeesController {
     },
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  @RedisCache('employee:stats')
+  @RedisCache('employees:stats')
   async getEmployeeStats() {
     return this.employeesService.getEmployeeStats();
   }
@@ -191,7 +191,7 @@ export class EmployeesController {
   @ApiResponse({ status: 404, description: 'Employee not found' })
   @RedisCache({
     keyGenerator: (ctx) =>
-      `employee:employeeId:${ctx.request.params.employeeId}`,
+      `employees:employeeId:${ctx.request.params.employeeId}`,
   })
   async findOne(@Param('employeeId') employeeId: number) {
     return this.employeesService.findByEmployeeId(employeeId);
@@ -214,7 +214,7 @@ export class EmployeesController {
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Employee not found' })
   @RedisCache({
-    keyGenerator: (ctx) => `employee:email:${ctx.request.params.email}`,
+    keyGenerator: (ctx) => `employees:email:${ctx.request.params.email}`,
   })
   async findByEmail(@Param('email') email: string) {
     this.logger.log(`Fetching employee details for email: ${email}`);
