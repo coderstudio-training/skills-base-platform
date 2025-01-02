@@ -1,6 +1,6 @@
+import { Notification, NotificationCenterProps } from '@/components/Dashboard/types';
 import { useCallback, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { Notification, NotificationCenterProps } from '../types';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_INTEGRATION_SERVICE_URL || 'http://localhost:3004';
 

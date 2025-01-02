@@ -16,7 +16,7 @@ import {
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useState } from 'react';
 
-export function UserDirectory({
+export default function UserDirectory({
   employees,
   loading,
   totalItems,

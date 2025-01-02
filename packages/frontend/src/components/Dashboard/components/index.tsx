@@ -1,5 +1,4 @@
 'use client';
-import skillPoint from '@/assets/skillpoint_v2.png';
 import { useHome } from '@/components/Dashboard/hooks/useHome';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -36,6 +35,13 @@ export default function LandingDashboard() {
     handleSubmit,
   } = useHome();
 
+  const handleScrollToForm = () => {
+    const formElement = document.getElementById('get-started-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4">
@@ -44,7 +50,7 @@ export default function LandingDashboard() {
           <div className="relative z-10 flex flex-col items-center justify-center space-y-4">
             <div className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <Image
-                src={skillPoint}
+                src={'https://minio-s3.rcdc.me/public/trans_bg-removebg.png?v=1'}
                 alt="SkillPoint Logo"
                 width={160}
                 height={160}
@@ -52,9 +58,6 @@ export default function LandingDashboard() {
                 priority
               />
             </div>
-            {/* <h1 className="text-4xl md:text-5xl font-bold tracking-wider text-white animate-fade-in-up mt-4 drop-shadow-lg">
-              SkillPoint
-            </h1> */}
             <p className="text-2xl md:text-3xl font-semibold tracking-wide text-white animate-fade-in-up mt-2 max-w-2xl mx-auto leading-relaxed">
               Skills Crafted with <span className="text-yellow-300 font-bold">CARE</span>
             </p>
@@ -62,7 +65,10 @@ export default function LandingDashboard() {
               <Button className="bg-white text-blue-600 hover:bg-blue-50 transition-colors duration-300 text-lg py-2 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                 Learn More
               </Button>
-              <Button className="bg-yellow-400 text-blue-800 hover:bg-yellow-300 transition-colors duration-300 text-lg py-2 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+              <Button
+                className="bg-yellow-400 text-blue-800 hover:bg-yellow-300 transition-colors duration-300 text-lg py-2 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                onClick={handleScrollToForm}
+              >
                 Get Started
               </Button>
             </div>
@@ -239,7 +245,10 @@ export default function LandingDashboard() {
           </TabsContent>
         </Tabs>
 
-        <div className="mt-16 text-center bg-gradient-to-r from-blue-100 to-purple-100 dark:bg-gradient-to-r dark:from-blue-900 dark:to-purple-900 p-12 rounded-2xl shadow-inner">
+        <div
+          id="get-started-form"
+          className="mt-16 text-center bg-gradient-to-r from-blue-100 to-purple-100 dark:bg-gradient-to-r dark:from-blue-900 dark:to-purple-900 p-12 rounded-2xl shadow-inner"
+        >
           <h2 className="text-4xl font-bold mb-8 text-gray-900 dark:text-gray-100">
             Ready to Transform Your Team&apos;s Skills?
           </h2>
@@ -258,7 +267,7 @@ export default function LandingDashboard() {
             </div>
             <Button
               type="submit"
-              className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition-all duration-300 text-lg py-4 px-10 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="w-full md:w-auto dark:bg-gradient-to-r dark:from-blue-400 dark:to-purple-400 bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-700 hover:to-purple-800 transition-all duration-300 text-lg py-4 px-10 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1"
               disabled={isLoading || !email}
             >
               {isLoading ? (

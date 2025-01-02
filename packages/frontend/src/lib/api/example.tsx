@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { formatError } from '../utils';
 import { skillsApi } from './client';
 import { useAuth, useMutation } from './hooks';
@@ -33,8 +33,7 @@ interface ITaxonomyResponse {
 }
 
 export default function ShowcaseDashboard() {
-  const { hasPermission, user } = useAuth();
-  const [canViewDashboard, setCanViewDashboard] = useState(false);
+  const { user } = useAuth();
 
   const [docTitle, setDocTitle] = useState('');
   const [docId, setDocId] = useState('');
@@ -47,15 +46,6 @@ export default function ShowcaseDashboard() {
   const [abilities, setAbilities] = useState('');
   const [rangeOfApplication, setRangeOfApplication] = useState('');
   const [businessUnit, setBusinessUnit] = useState('');
-
-  // not the proper implementation of RBAC.
-  useEffect(() => {
-    const checkPermission = async () => {
-      const canView = await hasPermission('canViewDashboard');
-      setCanViewDashboard(canView);
-    };
-    checkPermission();
-  });
 
   const {
     mutate,
@@ -106,10 +96,6 @@ export default function ShowcaseDashboard() {
       alert(`Updated count: ${response.data.updatedCount}`);
     }
   };
-
-  if (!canViewDashboard) {
-    return <div>Cannot view taxonomy dashboard!</div>;
-  }
 
   return (
     <div className="container mx-auto p-4">

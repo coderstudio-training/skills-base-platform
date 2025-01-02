@@ -1,6 +1,6 @@
+import StaffLoading from '@/app/dashboard/staff/loading';
 import { serverSideIntercept } from '@/lib/api/auth';
 import dynamic from 'next/dynamic';
-import StaffLoading from './loading';
 
 const StaffDashboard = dynamic(() => import('@/components/Dashboard/components/Staff'), {
   ssr: false,
@@ -8,7 +8,7 @@ const StaffDashboard = dynamic(() => import('@/components/Dashboard/components/S
 });
 
 export default async function StaffDashboardPage() {
-  const session = await serverSideIntercept({ permission: 'canViewDashboard' });
+  const session = await serverSideIntercept({ permission: ['canViewDashboard'] });
 
   return <StaffDashboard {...session?.user} />;
 }

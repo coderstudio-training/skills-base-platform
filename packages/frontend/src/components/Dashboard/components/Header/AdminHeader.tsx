@@ -1,4 +1,9 @@
 'use client';
+import { NotificationCenter } from '@/components/Dashboard/components/Header/AdminNotifications';
+import { ReportManager } from '@/components/Dashboard/components/Reports/ReportManager';
+import { useAdminDashboardHeader } from '@/components/Dashboard/hooks/useAdminDashboardHeader';
+import { useDarkTheme } from '@/components/Dashboard/hooks/useDarkTheme';
+import { useLogout } from '@/components/Dashboard/hooks/useLogout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,14 +15,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Moon, Sun } from 'lucide-react';
-import { useAdminDashboardHeader } from '../../hooks/useAdminDashboardHeader';
-import useDarkTheme from '../../hooks/useDarkTheme';
-import { useLogout } from '../../hooks/useLogout';
-import { ReportManager } from '../Reports/ReportManager';
-import { NotificationCenter } from './AdminNotifications';
 export default function AdminDashboardHeader() {
   const { lastSyncTime, handleLastNotificationDate } = useAdminDashboardHeader();
-  const { preference, handleThemeChange } = useDarkTheme();
+  const { theme: preference, toggleTheme: handleThemeChange } = useDarkTheme();
   const { handleLogout } = useLogout();
 
   return (

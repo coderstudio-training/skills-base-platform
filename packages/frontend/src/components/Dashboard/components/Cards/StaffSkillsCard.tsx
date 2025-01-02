@@ -1,10 +1,10 @@
+import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
+import { SkillStatus, TeamData } from '@/components/Dashboard/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ApiError } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
-import { SkillStatus, TeamData } from '../../types';
-import BaseCard from './BaseCard';
 
 interface StaffSkillsCardProps {
   skillsData: TeamData | null;
@@ -20,7 +20,7 @@ export default function StaffSkillsCard({ skillsData, loading, error }: StaffSki
       error={error}
       description="Detailed view of individual skills"
     >
-      <ScrollArea className="h-[500px] w-full">
+      <ScrollArea className="h-[566px] w-full">
         <div className="space-y-6 pr-4">
           {skillsData?.members.map(member => (
             <div

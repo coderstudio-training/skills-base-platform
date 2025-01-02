@@ -3,7 +3,11 @@ import { TeamMembersListProps } from '@/components/Dashboard/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-export function IndividualPerformanceCard({ members, loading, error }: TeamMembersListProps) {
+export default function IndividualPerformanceCard({
+  members,
+  loading,
+  error,
+}: TeamMembersListProps) {
   return (
     <BaseCard
       title="Individual Performance"
@@ -13,12 +17,12 @@ export function IndividualPerformanceCard({ members, loading, error }: TeamMembe
       errorMessage={'Error loading individual performance'}
       loadingMessage="Loading team members performance..."
     >
-      <ScrollArea className="h-[400px]">
+      <ScrollArea className="h-[566px]">
         <div className="space-y-4 pr-4">
           {members.map(member => (
             <div
               key={member.employeeId}
-              className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">

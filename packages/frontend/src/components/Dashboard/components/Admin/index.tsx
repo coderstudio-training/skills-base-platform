@@ -1,24 +1,35 @@
 'use client';
 
 import { SearchAndFilter } from '@/components/Dashboard/components/Admin/SearchAndFilter';
-import { UserDirectory } from '@/components/Dashboard/components/Admin/UserDirectory';
-import { AdminMetricCards } from '@/components/Dashboard/components/Cards/AdminMetricCards';
 import { BusinessUnitDistribution } from '@/components/Dashboard/components/Cards/BusinessUnitDistributionCard';
 import { SkillGapOverview } from '@/components/Dashboard/components/Cards/SkillGapOverviewCard';
 import { TopPerformers } from '@/components/Dashboard/components/Cards/TopPerformersCard';
+import AdminAnalysisLoading from '@/components/Dashboard/components/Skeletons/AdminAnalysisLoading';
+import AdminLearningLoading from '@/components/Dashboard/components/Skeletons/AdminLearningLoading';
+import AdminMetricCardLoading from '@/components/Dashboard/components/Skeletons/AdminMetricCardLoading';
+import DistributionLoading from '@/components/Dashboard/components/Skeletons/DistributionLoading';
+import RankingLoadingCard from '@/components/Dashboard/components/Skeletons/RankingLoadingCard';
+import SkillGapLoadingCard from '@/components/Dashboard/components/Skeletons/SkillGapLoadingCard';
+import StatsLoadingCard from '@/components/Dashboard/components/Skeletons/StatsLoadingCard';
+import TSCManagerLoading from '@/components/Dashboard/components/Skeletons/TSCManagerLoading';
 import { useAdminData } from '@/components/Dashboard/hooks/useAdminData';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
 import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
-import { useTSCManager } from '../../hooks/useTSCManager';
-import AdminDashboardHeader from '../Header/AdminHeader';
-import TaxonomyManager from '../TSC';
-import AnalysisView from './AnalysisView';
-import { LearningManagement } from './LearningManagement';
+import { Suspense, lazy } from 'react';
+
+const UserDirectory = lazy(() => import('@/components/Dashboard/components/Admin/UserDirectory'));
+const AnalysisView = lazy(() => import('@/components/Dashboard/components/Admin/AnalysisView'));
+const LearningManagement = lazy(
+  () => import('@/components/Dashboard/components/Admin/LearningManagement'),
+);
+const TaxonomyManager = lazy(() => import('@/components/Dashboard/components/TSC/index'));
+const AdminMetricCards = lazy(
+  () => import('@/components/Dashboard/components/Cards/AdminMetricCards'),
+);
 
 export default function AdminDashboard() {
-  const { hasPermission, role } = useAuth();
+  const { hasPermission } = useAuth();
   const {
     employees,
     totalItems,
@@ -38,20 +49,8 @@ export default function AdminDashboard() {
     handleBusinessUnitChange,
   } = useAdminData();
 
-  const isAdmin = role?.includes('admin');
-  const { data: tscData } = useTSCManager();
-
-  if (!hasPermission('canViewDashboard') || !isAdmin) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>Access Denied</AlertDescription>
-      </Alert>
-    );
-  }
-
   return (
     <div className="md:min-h-screen bg-gray-50 dark:bg-gray-950">
-      <AdminDashboardHeader />
       <main className="max-w-7xl mx-auto px-4 py-8">
         {hasPermission('canManageUsers') && (
           <>
@@ -64,17 +63,27 @@ export default function AdminDashboard() {
               isLoading={employeesLoading}
             />
 
-            <AdminMetricCards stats={stats} />
+            <Suspense fallback={<AdminMetricCardLoading />}>
+              <AdminMetricCards stats={stats} />
+            </Suspense>
 
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <TopPerformers rankings={topPerformers} />
-              <SkillGapOverview skillGaps={skillGaps} />
-              <BusinessUnitDistribution businessUnits={businessUnits} />
-            </div>
+            <Suspense fallback={<StatsLoadingCard />}>
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <Suspense fallback={<RankingLoadingCard />}>
+                  <TopPerformers rankings={topPerformers} />
+                </Suspense>
+                <Suspense fallback={<SkillGapLoadingCard />}>
+                  <SkillGapOverview skillGaps={skillGaps} />
+                </Suspense>
+                <Suspense fallback={<DistributionLoading />}>
+                  <BusinessUnitDistribution businessUnits={businessUnits} />
+                </Suspense>
+              </div>
+            </Suspense>
           </>
         )}
 
-        <Tabs defaultValue="users" className="space-y-4">
+        <Tabs defaultValue="skills" className="space-y-4">
           <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
             <TabsList className="inline-flex max-w-max">
               <TabsTrigger value="users" className="flex items-center gap-2">
@@ -109,40 +118,60 @@ export default function AdminDashboard() {
           </div>
 
           {hasPermission('canManageUsers') && (
-            <TabsContent value="users">
-              <UserDirectory
-                employees={employees}
-                totalItems={totalItems}
-                totalPages={totalPages}
-                loading={employeesLoading}
-                page={page}
-                limit={limit}
-                onPageChange={handlePageChange}
-                onLimitChange={handleLimitChange}
-              />
-            </TabsContent>
+            <Suspense
+              fallback={
+                <UserDirectory
+                  employees={[]}
+                  loading={true}
+                  totalItems={0}
+                  totalPages={0}
+                  page={0}
+                  limit={0}
+                  onPageChange={() => {}}
+                  onLimitChange={() => {}}
+                />
+              }
+            >
+              <TabsContent value="users">
+                <UserDirectory
+                  employees={employees}
+                  totalItems={totalItems}
+                  totalPages={totalPages}
+                  loading={employeesLoading}
+                  page={page}
+                  limit={limit}
+                  onPageChange={handlePageChange}
+                  onLimitChange={handleLimitChange}
+                />
+              </TabsContent>
+            </Suspense>
           )}
 
           {hasPermission('canViewReports') && (
-            <TabsContent value="metrics">
-              <AnalysisView />
-            </TabsContent>
+            <Suspense fallback={<AdminAnalysisLoading />}>
+              <TabsContent value="metrics">
+                <AnalysisView />
+              </TabsContent>
+            </Suspense>
           )}
 
           {hasPermission('canEditAllLearning') && (
-            <TabsContent value="learning">
-              <LearningManagement />
-            </TabsContent>
+            <Suspense fallback={<AdminLearningLoading />}>
+              <TabsContent value="learning">
+                <LearningManagement />
+              </TabsContent>
+            </Suspense>
           )}
 
           {hasPermission('canManageSystem') && (
-            <TabsContent value="taxonomy">
-              <TaxonomyManager
-                searchQuery={searchQuery}
-                data={tscData ? tscData : []}
-                selectedBusinessUnit={selectedBusinessUnit}
-              />
-            </TabsContent>
+            <Suspense fallback={<TSCManagerLoading />}>
+              <TabsContent value="taxonomy">
+                <TaxonomyManager
+                  searchQuery={searchQuery}
+                  selectedBusinessUnit={selectedBusinessUnit}
+                />
+              </TabsContent>
+            </Suspense>
           )}
         </Tabs>
       </main>

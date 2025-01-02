@@ -1,4 +1,4 @@
-import { GradeItemProps } from '../../types';
+import { GradeItemProps } from '@/components/Dashboard/types';
 
 export const GradeItem = ({ grade }: GradeItemProps) => (
   <div className="flex items-center justify-between">

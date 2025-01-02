@@ -243,7 +243,8 @@ export class EmployeesController {
   })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @RedisCache({
-    keyGenerator: (ctx) => `employee:manager:${ctx.request.params.managerName}`,
+    keyGenerator: (ctx) =>
+      `employees:manager:${ctx.request.params.managerName}`,
   })
   async findTeamMembers(@Param('managerName') managerName: string) {
     return this.employeesService.findByManager(managerName);

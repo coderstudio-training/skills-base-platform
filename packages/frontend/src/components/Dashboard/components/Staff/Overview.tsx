@@ -1,10 +1,10 @@
 // components/Staff/Overview.tsx
 'use client';
 
+import { MetricCard } from '@/components/Dashboard/components/Cards/MetricCard';
+import { SkillsOverviewCard } from '@/components/Dashboard/components/Cards/SkillsOverviewCard';
+import { StaffSkillsProps } from '@/components/Dashboard/types';
 import { Blocks, BrainCircuit, User2 } from 'lucide-react';
-import { StaffSkillsProps } from '../../types';
-import { MetricCard } from '../Cards/MetricCard';
-import { SkillsOverviewCard } from '../Cards/SkillsOverviewCard';
 
 export default function Overview({
   skillsData,
