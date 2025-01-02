@@ -1,7 +1,7 @@
 // hooks/useStaffData.ts
 import { StaffData, StaffSkills, UserMetrics } from '@/components/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
-import { useSuspenseQuery } from '@/lib/api/hooks';
+import { useAuth, useSuspenseQuery } from '@/lib/api/hooks';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 
@@ -10,6 +10,7 @@ export function useStaffData(email: string) {
     'Technical Skills',
   );
   const { data: session, status } = useSession();
+  const { hasPermission } = useAuth();
 
   const metrics = useSuspenseQuery<UserMetrics>(
     skillsApi,
