@@ -1,4 +1,3 @@
-// components/Staff/StaffDashboard.tsx
 'use client';
 
 import OverviewCardLoading from '@/components/Dashboard/components/Skeletons/OverviewCardLoading';

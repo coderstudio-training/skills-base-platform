@@ -1,5 +1,3 @@
-// src/app/dashboard/admin/components/LearningManagement.tsx
-
 import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
 import { CareerProgressionPaths } from '@/components/Dashboard/components/Cards/CareerProgressionCard';
 import { LearningResources } from '@/components/Dashboard/components/Cards/LearningResourcesCard';

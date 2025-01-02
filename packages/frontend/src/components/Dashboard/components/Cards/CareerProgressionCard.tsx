@@ -1,4 +1,3 @@
-// src/components/dashboard/admin/CareerProgressionPaths.tsx
 'use client';
 
 import { Badge } from '@/components/ui/badge';

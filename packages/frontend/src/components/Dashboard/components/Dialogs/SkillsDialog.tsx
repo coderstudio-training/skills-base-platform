@@ -1,5 +1,5 @@
 import { ViewSkillsButton } from '@/components/Dashboard/components/Buttons/ViewSkillsButton';
-import { SkillsDialogProps } from '@/components/Dashboard/types'; // Adjust the import path as needed
+import { SkillsDialogProps } from '@/components/Dashboard/types';
 import {
   Dialog,
   DialogContent,

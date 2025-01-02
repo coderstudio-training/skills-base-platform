@@ -1,4 +1,3 @@
-// components/Staff/Overview.tsx
 'use client';
 
 import { MetricCard } from '@/components/Dashboard/components/Cards/MetricCard';

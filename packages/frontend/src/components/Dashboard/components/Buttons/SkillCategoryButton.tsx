@@ -1,4 +1,3 @@
-// components/Staff/Buttons/SkillCategoryButton.tsx
 import { Button } from '@/components/ui/button';
 
 interface SkillCategoryButtonProps {
