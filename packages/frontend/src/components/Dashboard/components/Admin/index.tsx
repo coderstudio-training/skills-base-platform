@@ -83,7 +83,7 @@ export default function AdminDashboard() {
           </>
         )}
 
-        <Tabs defaultValue="Users" className="space-y-4">
+        <Tabs defaultValue="users" className="space-y-4">
           <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
             <TabsList className="inline-flex max-w-max">
               <TabsTrigger value="users" className="flex items-center gap-2">
