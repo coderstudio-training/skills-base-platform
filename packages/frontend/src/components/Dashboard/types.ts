@@ -351,6 +351,7 @@ export interface TSCFormProps {
 }
 
 export interface TSCContentProps {
+  itemsBeforeScroll?: number;
   filteredTSCs: TSC[];
   searchQuery: string;
   handleEdit: (tsc: TSC) => void;

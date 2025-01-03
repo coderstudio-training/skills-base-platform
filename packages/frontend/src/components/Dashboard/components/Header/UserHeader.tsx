@@ -25,13 +25,22 @@ export default function UserHeader() {
                 alt={fullName}
                 width={120}
                 height={120}
+                loading="eager"
+                fetchPriority="high"
+                decoding="sync" // Change to sync for LCP image
+                sizes="120px" // Add specific sizes
+                className="object-cover block" // Add block to avoid CLS
                 onError={e => {
                   const imgElement = e.target as HTMLImageElement;
                   imgElement.style.display = 'none';
                 }}
               />
-            ) : null}
-            <AvatarFallback className="text-lg">{getInitials(fullName)}</AvatarFallback>
+            ) : (
+              // Move fallback outside conditional to avoid layout shift
+              <AvatarFallback className="text-lg bg-primary/10">
+                {getInitials(fullName)}
+              </AvatarFallback>
+            )}
           </Avatar>
           <div>
             <h1 className="text-lg md:text-3xl font-bold">{fullName}</h1>

@@ -1,5 +1,6 @@
 import ProficiencyTable from '@/components/Dashboard/components/TSC/ProficiencyTable';
 import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
+import useTSCScroll from '@/components/Dashboard/hooks/useTSCScroll';
 import { TSCContentProps } from '@/components/Dashboard/types';
 import {
   Accordion,
@@ -9,7 +10,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { validateTextData } from '@/lib/utils';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Loader2, Pencil, Trash2 } from 'lucide-react';
 
 export default function TSCContent({
   filteredTSCs,
@@ -17,6 +18,8 @@ export default function TSCContent({
   handleEdit,
   handleDelete,
 }: TSCContentProps) {
+  const { loaderRef, items, hasMore } = useTSCScroll(filteredTSCs, 5);
+
   return (
     <div className="space-y-4">
       {filteredTSCs.length === 0 ? (
@@ -26,7 +29,7 @@ export default function TSCContent({
             : 'No TSCs found for this business unit'}
         </div>
       ) : (
-        filteredTSCs.map(tsc => (
+        items.map(tsc => (
           <Accordion type="single" collapsible key={tsc.id}>
             <AccordionItem value={tsc.id}>
               <AccordionTrigger>
@@ -95,6 +98,14 @@ export default function TSCContent({
             </AccordionItem>
           </Accordion>
         ))
+      )}
+      {hasMore && (
+        <div ref={loaderRef}>
+          <div className="w-full flex flex-col items-center p-3 justify-center align-middle">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <div className="text-sm text-muted-foreground">Loading more taxonomy...</div>
+          </div>
+        </div>
       )}
     </div>
   );
