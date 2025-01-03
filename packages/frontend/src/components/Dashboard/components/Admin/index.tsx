@@ -68,7 +68,7 @@ export default function AdminDashboard() {
             </Suspense>
 
             <Suspense fallback={<StatsLoadingCard />}>
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="grid lg:grid-cols-3 gap-4 mb-6">
                 <Suspense fallback={<RankingLoadingCard />}>
                   <TopPerformers rankings={topPerformers} />
                 </Suspense>
