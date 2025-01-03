@@ -14,7 +14,7 @@ export default function UserHeader() {
   const { handleLogout } = useLogout();
 
   return (
-    <header className="container mx-auto p-4 max-w-max md:max-w-[80%] overflow-x-hidden">
+    <header className="container mx-auto p-4 max-w-max md:max-w-[80%] overflow-x-hidden border-b sticky top-0 z-50 bg-background">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-6">
         {/* Left Section */}
         <div className="flex flex-col items-center md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4 text-center md:text-left">

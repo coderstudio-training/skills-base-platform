@@ -26,15 +26,15 @@ export default function TSCForm({
 }: TSCFormProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-[90vw] max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-[90vw] max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400">
+        <DialogHeader className="bg-background sticky top-0 z-50 border-b pb-2 mt-5">
           <DialogTitle>{targetTSC?.id ? 'Edit TSC' : 'Create New TSC'}</DialogTitle>
           <DialogDescription>
             {targetTSC?.id ? 'Edit the TSC details below.' : 'Enter the details for the new TSC.'}
           </DialogDescription>
         </DialogHeader>
         {targetTSC && (
-          <div className="space-y-6">
+          <div className="space-y-6 p-2">
             <div>
               <Label htmlFor="title">Title</Label>
               <Input
@@ -142,7 +142,7 @@ export default function TSCForm({
                             {formErrors[`proficiency_${level}_description`]}
                           </p>
                         )}
-                        <div>
+                        <div className="flex flex-col justify-between space-y-2">
                           <Label className="text-sm">Knowledge</Label>
                           {prof.knowledge?.map((item, index) => (
                             <div key={index} className="flex space-x-2 mb-2">
@@ -178,6 +178,7 @@ export default function TSCForm({
                                 type="button"
                                 variant="ghost"
                                 size="sm"
+                                className="hover:text-red-500"
                                 onClick={() => {
                                   const newProficiencies = [...targetTSC.proficiencies];
                                   const profIndex = newProficiencies.findIndex(
@@ -207,6 +208,7 @@ export default function TSCForm({
                             type="button"
                             variant="outline"
                             size="sm"
+                            className="hover:font-bold hover:text-blue-400"
                             onClick={() => {
                               const newProficiencies = [...targetTSC.proficiencies];
                               const index = newProficiencies.findIndex(p => p.level === level);
@@ -228,7 +230,7 @@ export default function TSCForm({
                             Add Knowledge
                           </Button>
                         </div>
-                        <div>
+                        <div className="flex flex-col justify-between space-y-2">
                           <Label className="text-sm">Abilities</Label>
                           {prof.abilities?.map((item, index) => (
                             <div key={index} className="flex space-x-2 mb-2">
@@ -263,6 +265,7 @@ export default function TSCForm({
                               <Button
                                 type="button"
                                 variant="ghost"
+                                className="hover:text-red-500"
                                 size="sm"
                                 onClick={() => {
                                   const newProficiencies = [...targetTSC.proficiencies];
@@ -293,6 +296,7 @@ export default function TSCForm({
                             type="button"
                             variant="outline"
                             size="sm"
+                            className="hover:font-bold hover:text-blue-400"
                             onClick={() => {
                               const newProficiencies = [...targetTSC.proficiencies];
                               const index = newProficiencies.findIndex(p => p.level === level);
@@ -320,7 +324,7 @@ export default function TSCForm({
                 })}
               </div>
             </div>
-            <div>
+            <div className="flex flex-col justify-between space-y-2">
               <Label>Range of Application</Label>
               {targetTSC.rangeOfApplication.map((item, index) => (
                 <div key={index} className="flex space-x-2 mb-2">
@@ -335,6 +339,7 @@ export default function TSCForm({
                   <Button
                     type="button"
                     variant="ghost"
+                    className="hover:text-red-500 "
                     size="sm"
                     onClick={() => {
                       const newRange = targetTSC.rangeOfApplication.filter((_, i) => i !== index);
@@ -349,6 +354,7 @@ export default function TSCForm({
               <Button
                 type="button"
                 variant="outline"
+                className="max-w-fit hover:text-blue-400 hover:font-bold"
                 size="sm"
                 onClick={() =>
                   setTargetTSC({
@@ -361,10 +367,14 @@ export default function TSCForm({
               </Button>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                className="hover:text-red-500 "
+              >
                 Cancel
               </Button>
-              <Button onClick={handleSave}>
+              <Button onClick={handleSave} className="bg-blue-500 hover:bg-blue-600">
                 <Save className="mr-2 h-4 w-4" />
                 Save TSC
               </Button>

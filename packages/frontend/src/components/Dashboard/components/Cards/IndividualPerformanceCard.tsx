@@ -49,8 +49,11 @@ export default function IndividualPerformanceCard({
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <div className="w-48 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-black rounded-full" style={{ width: `90%` }} />
+                <div className="w-48 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-black dark:bg-white rounded-full"
+                    style={{ width: `90%` }}
+                  />
                 </div>
                 <span className="font-medium w-12 text-right">90%</span>
               </div>

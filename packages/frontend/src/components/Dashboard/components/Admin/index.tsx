@@ -15,7 +15,7 @@ import TSCManagerLoading from '@/components/Dashboard/components/Skeletons/TSCMa
 import { useAdminData } from '@/components/Dashboard/hooks/useAdminData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';
-import { Award, BarChart2, BookOpen, Network, Users } from 'lucide-react';
+import { Award, BarChart2, BookOpen, GraduationCap, Network, Users } from 'lucide-react';
 import { Suspense, lazy } from 'react';
 
 const UserDirectory = lazy(() => import('@/components/Dashboard/components/Admin/UserDirectory'));
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
           </>
         )}
 
-        <Tabs defaultValue="skills" className="space-y-4">
+        <Tabs defaultValue="Users" className="space-y-4">
           <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
             <TabsList className="inline-flex max-w-max">
               <TabsTrigger value="users" className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
                 Metrics
               </TabsTrigger>
               <TabsTrigger value="learning" className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
+                <GraduationCap className="h-4 w-4" />
                 Learning
               </TabsTrigger>
               <TabsTrigger value="taxonomy" className="flex items-center gap-2">

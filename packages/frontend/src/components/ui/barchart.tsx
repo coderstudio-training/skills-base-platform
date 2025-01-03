@@ -137,9 +137,9 @@ export function CustomBarChart({
                     {entry.value === 'Skill Gap' ? (
                       <div className="w-3 h-3" style={{ backgroundColor: '#dc2626' }}></div>
                     ) : (
-                      <div className="w-3 h-3" style={{ backgroundColor: 'entry.color' }}></div>
+                      <div className="w-3 h-3" style={{ backgroundColor: `${entry.color}` }}></div>
                     )}
-                    <span className="text-sm text-gray-700">{entry.value}</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{entry.value}</span>
                   </div>
                 ))}
               </div>

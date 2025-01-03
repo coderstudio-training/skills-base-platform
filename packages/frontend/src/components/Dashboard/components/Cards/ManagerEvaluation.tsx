@@ -72,7 +72,7 @@ export default function ManagerEvaluation({ teamMembers }: ManagerEvaluationProp
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2">Comments</h3>
           <textarea
-            className="w-full h-16 p-2 border rounded-md"
+            className="w-full h-16 p-2 border bg-background rounded-md"
             placeholder="Enter your comments here..."
           ></textarea>
         </div>

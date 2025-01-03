@@ -21,7 +21,7 @@ export default function AdminDashboardHeader() {
   const { handleLogout } = useLogout();
 
   return (
-    <header className="bg-background border-b w-screen overflow-x-hidden">
+    <header className="bg-background border-b overflow-x-hidden sticky top-0 z-50">
       <div className="h-auto sm:h-16 max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
         {/* Left section */}
         <div className="flex flex-col p-1 sm:p-0 sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
@@ -57,7 +57,12 @@ export default function AdminDashboardHeader() {
               <DropdownMenuLabel>Admin User</DropdownMenuLabel>
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer text-red-500 focus:bg-red-500 dark:text-red-700 dark:focus:text-black"
+                onClick={handleLogout}
+              >
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

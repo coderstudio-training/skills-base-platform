@@ -18,7 +18,7 @@ interface DataTableProps<T> {
 export function DataTable<T>({ data, columns, height = 'h-[360px]' }: DataTableProps<T>) {
   return (
     <div className="rounded-md border">
-      <div className="bg-white dark:bg-gray-800 border-b">
+      <div className="bg-gray-200 dark:bg-gray-800 border-b">
         <table className="w-full">
           <thead>
             <tr className="text-left">

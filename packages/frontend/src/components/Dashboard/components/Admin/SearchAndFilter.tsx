@@ -55,7 +55,7 @@ export function SearchAndFilter({
         <div className="relative flex-1 max-w-[300px]">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search by name or email..."
+            placeholder="Search by name or skill..."
             className="pl-8"
             value={searchQuery}
             onChange={onSearchChange}

@@ -46,11 +46,7 @@ export function LoginFormCard({
             <AlertDescription>{adminLoginError.message}</AlertDescription>
           </Alert>
         )}
-        <Button
-          type="submit"
-          className="w-full dark:hover:bg-green-400"
-          disabled={adminLoginLoading}
-        >
+        <Button type="submit" className="w-full hover:bg-blue-500" disabled={adminLoginLoading}>
           {adminLoginLoading ? 'Logging in...' : 'Log in'}
         </Button>
       </form>

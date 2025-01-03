@@ -63,7 +63,7 @@ export default function StaffSkillsOverviewLoading() {
             Breakdown of your {selectedCategory.toLowerCase()}
           </p>
           <div className="rounded-md border">
-            <div className="bg-white dark:bg-gray-800 border-b">
+            <div className="bg-gray-200 dark:bg-gray-800 border-b">
               <table className="w-full">
                 <thead>
                   <tr className="text-left">

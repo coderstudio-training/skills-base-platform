@@ -1,5 +1,6 @@
 // components/Staff/Buttons/SkillCategoryButton.tsx
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface SkillCategoryButtonProps {
   selectedCategory: 'Technical Skills' | 'Soft Skills';
@@ -13,14 +14,24 @@ export default function SkillCategoryButton({
   return (
     <div className="space-x-2">
       <Button
-        variant={selectedCategory === 'Technical Skills' ? 'default' : 'outline'}
+        className={cn(
+          'text-white',
+          selectedCategory === 'Technical Skills'
+            ? 'bg-blue-600 hover:bg-blue-700'
+            : 'bg-gray-400 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700',
+        )}
         size="sm"
         onClick={() => onCategoryChange('Technical Skills')}
       >
         Technical Skills
       </Button>
       <Button
-        variant={selectedCategory === 'Soft Skills' ? 'default' : 'outline'}
+        className={cn(
+          'text-white',
+          selectedCategory === 'Soft Skills'
+            ? 'bg-blue-600 hover:bg-blue-700'
+            : 'bg-gray-400 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700',
+        )}
         size="sm"
         onClick={() => onCategoryChange('Soft Skills')}
       >
