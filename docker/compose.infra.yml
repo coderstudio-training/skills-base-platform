@@ -34,6 +34,15 @@ services:
     ports:
       - '6379:6379'
 
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    ports:
+      - '8081:8081'
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+
 volumes:
   mongodb_data:
   n8n_data:
