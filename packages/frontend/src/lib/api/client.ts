@@ -12,6 +12,7 @@ import { cache } from 'react';
 import { getAuthHeaders } from './auth';
 import { cacheStore } from './cache-store';
 import { performanceMonitor } from '../utils/performance-monitor';
+import { logger } from '../utils/logger';
 
 const DEFAULT_CACHE_CONFIG = {
   cache: 'force-cache' as RequestCache,
@@ -135,6 +136,11 @@ export class ApiClient {
               attempt++;
               await new Promise(resolve => setTimeout(resolve, this.retryConfig.retryDelay));
               continue;
+            }
+            if (error instanceof Error) {
+              logger.error(`Network error after ${attempt} retries`, { error });
+            } else {
+              logger.error(`Unknown error after ${attempt} retries`);
             }
             return this.createErrorResponse<T>(
               500,

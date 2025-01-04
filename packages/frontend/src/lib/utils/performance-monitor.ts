@@ -1,5 +1,4 @@
 // utils/performance-monitor.ts
-import { LOGGER_CONFIG } from '../config/logger-config';
 import type { LogMetadata } from '../types/logger';
 import { logger } from './logger';
 
@@ -11,14 +10,40 @@ export interface RequestMetrics {
   memoryUsage?: number;
 }
 
+interface Performance {
+  memory?: {
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+    jsHeapSizeLimit: number;
+  };
+}
+
+declare global {
+  interface Window {
+    performance: Performance;
+  }
+}
+
 export class PerformanceMonitor {
   private async getMemoryUsage(): Promise<number | undefined> {
     if (typeof window === 'undefined') {
+      // Server-side memory measurement
       try {
         const used = process.memoryUsage();
         return used.heapUsed;
       } catch {
         return undefined;
+      }
+    } else {
+      // Client-side memory measurement
+      try {
+        // Note: performance.memory is currently only available in Chromium-based browsers
+        const performance = window.performance as Performance;
+        if (performance.memory?.usedJSHeapSize !== undefined) {
+          return performance.memory.usedJSHeapSize;
+        }
+      } catch {
+        // Silently fail if memory API is not available
       }
     }
     return undefined;
@@ -48,19 +73,19 @@ export class PerformanceMonitor {
       };
 
       // Check performance thresholds
-      if (metrics.duration > LOGGER_CONFIG.performance.apiTimeout) {
-        logger.warn('Request exceeded timeout threshold', {
-          ...metadata,
-          performance: metrics,
-        });
-      }
+      // if (metrics.duration > LOGGER_CONFIG.performance.apiTimeout) {
+      //   logger.warn('Request exceeded timeout threshold', {
+      //     ...metadata,
+      //     performance: metrics,
+      //   });
+      // }
 
-      if (metrics.memoryUsage && metrics.memoryUsage > LOGGER_CONFIG.performance.memoryThreshold) {
-        logger.warn('Memory usage exceeded threshold', {
-          ...metadata,
-          performance: metrics,
-        });
-      }
+      // if (metrics.memoryUsage && metrics.memoryUsage > LOGGER_CONFIG.performance.memoryThreshold) {
+      //   logger.warn('Memory usage exceeded threshold', {
+      //     ...metadata,
+      //     performance: metrics,
+      //   });
+      // }
 
       // Log successful request metrics
       logger.info('Request completed', {

@@ -99,7 +99,11 @@ export function useLoginForm() {
     try {
       const result = await authenticateUser(adminLoginPost, formState.email, formState.password);
       if (result.success) {
+        logger.info('Login successful');
         router.push('/dashboard/admin');
+      }
+      if (result.error) {
+        logger.error('Login Error:' + result.error);
       }
     } catch (err) {
       logger.error('Login Error:' + err);
