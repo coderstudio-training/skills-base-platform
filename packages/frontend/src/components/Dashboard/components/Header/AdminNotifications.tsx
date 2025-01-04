@@ -28,7 +28,11 @@ export function NotificationCenter({
     <div className="relative">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="relative">
+          <Button
+            variant="outline"
+            size="icon"
+            className="relative hover:text-blue-400 dark:hover:text-blue-600"
+          >
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
               <Badge

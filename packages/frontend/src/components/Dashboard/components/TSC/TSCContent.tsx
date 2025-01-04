@@ -44,6 +44,7 @@ export default function TSCContent({
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="hover:text-blue-500"
                       onClick={e => {
                         e.stopPropagation();
                         handleEdit(tsc);
@@ -55,6 +56,7 @@ export default function TSCContent({
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="hover:text-red-500 "
                       onClick={e => {
                         e.stopPropagation();
                         handleDelete(tsc.id);

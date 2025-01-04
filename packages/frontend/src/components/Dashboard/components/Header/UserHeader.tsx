@@ -25,11 +25,6 @@ export default function UserHeader() {
                 alt={fullName}
                 width={120}
                 height={120}
-                loading="eager"
-                fetchPriority="high"
-                decoding="sync" // Change to sync for LCP image
-                sizes="120px" // Add specific sizes
-                className="object-cover block" // Add block to avoid CLS
                 onError={e => {
                   const imgElement = e.target as HTMLImageElement;
                   imgElement.style.display = 'none';
@@ -49,7 +44,9 @@ export default function UserHeader() {
                 ? `${userProfile.designation} - ${userProfile.businessUnit}`
                 : 'Loading...'}
             </p>
-            <Badge className="mt-1">{userProfile ? userProfile.grade : 'Loading...'}</Badge>
+            <Badge className="mt-1 bg-violet-500 dark:bg-violet-400 hover:bg-violet-500">
+              {userProfile ? userProfile.grade : '...'}
+            </Badge>
           </div>
         </div>
 
@@ -68,7 +65,7 @@ export default function UserHeader() {
             )}
           </Button>
           <Button>{isManager ? 'Team Settings' : 'Update Profile'}</Button>
-          <Button onClick={handleLogout}>
+          <Button onClick={handleLogout} className="hover:bg-red-500 hover:text-foreground">
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>

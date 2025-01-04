@@ -3,6 +3,7 @@ import { Session } from 'next-auth';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import useScrollTo from './useScrollTo';
 
 export function useHome() {
   const { data: session, status } = useSession() as {
@@ -93,6 +94,12 @@ export function useHome() {
     handleInitialRouting();
   }, [session, status, router]);
 
+  const { scrollTo } = useScrollTo();
+
+  const handleScrollToForm = () => {
+    scrollTo('get-started-form'); // Pass the `id` when the button is clicked.
+  };
+
   return {
     featuresData,
     benefitsData,
@@ -108,5 +115,6 @@ export function useHome() {
     handleSubmit,
     handleAllowedDomain,
     handleAdminEmail,
+    handleScrollToForm,
   };
 }

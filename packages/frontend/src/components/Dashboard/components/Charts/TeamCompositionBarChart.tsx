@@ -47,7 +47,7 @@ export function TeamCompositionBarChart({
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey={xAxisKey} />
         <YAxis />
-        <Tooltip />
+        <Tooltip /> {/* Add custom tool tip, doesn't work well with dark mode. */}
         <Legend />
         {series.map((item, index) => (
           <Bar

@@ -12,6 +12,7 @@ import { useTSCOperations } from '@/components/Dashboard/hooks/useTSCOperations'
 import { TSC, TSCManagerProps } from '@/components/Dashboard/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { buildProficiency, getKeyFromValue } from '@/lib/utils';
+import TSCFooter from './TSCFooter';
 
 export default function TaxonomyManager({
   selectedBusinessUnit = BUSINESS_UNITS.ALL,
@@ -77,6 +78,7 @@ export default function TaxonomyManager({
         setOpen={setDeleteConfirmOpen}
         onConfirm={confirmDelete}
       />
+      <TSCFooter />
     </Card>
   );
 }

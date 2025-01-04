@@ -1,15 +1,11 @@
 import { UserProfile } from '@/components/Dashboard/types';
 import { userApi } from '@/lib/api/client';
-import { useAuth, useQuery } from '@/lib/api/hooks';
+import { useAuth, useSuspenseQuery } from '@/lib/api/hooks';
 
 export function useUserProfile() {
   const { hasPermission } = useAuth();
 
-  const {
-    data: userProfile,
-    error,
-    isLoading,
-  } = useQuery<UserProfile>(userApi, '/users/profile', {
+  const userProfile = useSuspenseQuery<UserProfile>(userApi, '/users/profile', {
     requiresAuth: true,
     enabled: hasPermission('canViewDashboard'),
   });
@@ -19,8 +15,6 @@ export function useUserProfile() {
 
   return {
     userProfile,
-    isLoading,
-    error,
     isManager,
     fullName,
   };

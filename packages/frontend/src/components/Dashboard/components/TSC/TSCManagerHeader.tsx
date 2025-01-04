@@ -17,12 +17,16 @@ export default function TSCManagerHeader({
   handleCreate,
 }: TSCManagerHeaderProps) {
   return (
-    <CardHeader className="flex flex-row items-center justify-between">
+    <CardHeader id={'tsc-header'} className="flex flex-row items-center justify-between">
       <CardTitle>
         TSC Manager
         {buCode !== 'ALL' && ` - ${selectedBusinessUnit}`}
       </CardTitle>
-      <Button onClick={handleCreate} disabled={buCode === 'ALL'}>
+      <Button
+        className="bg-violet-300 hover:bg-violet-500 dark:bg-violet-700 dark:hover:bg-violet-500 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
+        onClick={handleCreate}
+        disabled={buCode === 'ALL'}
+      >
         <PlusCircle className="mr-2 h-4 w-4" />
         Create New TSC
       </Button>

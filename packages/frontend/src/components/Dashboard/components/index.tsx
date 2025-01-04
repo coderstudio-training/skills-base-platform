@@ -33,14 +33,8 @@ export default function LandingDashboard() {
     isLoading,
     error,
     handleSubmit,
+    handleScrollToForm,
   } = useHome();
-
-  const handleScrollToForm = () => {
-    const formElement = document.getElementById('get-started-form');
-    if (formElement) {
-      formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
