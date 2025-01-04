@@ -1,4 +1,5 @@
 'use client';
+import ThemeChangeButton from '@/components/Dashboard/components/Buttons/ThemeChangeButton';
 import { useDarkTheme } from '@/components/Dashboard/hooks/useDarkTheme';
 import { useLogout } from '@/components/Dashboard/hooks/useLogout';
 import { useUserProfile } from '@/components/Dashboard/hooks/useUserProfile';
@@ -6,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getInitials } from '@/lib/utils/string-utils';
-import { LogOut, Moon, Sun } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 export default function UserHeader() {
   const { userProfile, isManager, fullName } = useUserProfile();
@@ -52,18 +53,7 @@ export default function UserHeader() {
 
         {/* Right Section */}
         <div className="flex items-center space-x-2 sm:space-y-0 sm:space-x-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleThemeChange}
-            className="dark:hover:bg-slate-600 dark:bg-slate transition-colors duration-200 relative"
-          >
-            {preference === 'dark' ? (
-              <Moon className="h-5 w-5 animate-scaleIn absolute" />
-            ) : (
-              <Sun className="h-5 w-5 animate-scaleIn absolute" />
-            )}
-          </Button>
+          <ThemeChangeButton handleThemeChange={handleThemeChange} preference={preference} />
           <Button>{isManager ? 'Team Settings' : 'Update Profile'}</Button>
           <Button onClick={handleLogout} className="hover:bg-red-500 hover:text-foreground">
             <LogOut className="mr-2 h-4 w-4" />

@@ -594,6 +594,11 @@ export interface RecommendationResponse {
   message?: string;
 }
 
+export interface ThemeChangeButtonProps {
+  handleThemeChange: () => void;
+  preference: string | null;
+}
+
 //in use
 export interface MemberRecommendations {
   success: boolean;

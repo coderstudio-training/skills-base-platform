@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Moon, Sun } from 'lucide-react';
+import ThemeChangeButton from '../Buttons/ThemeChangeButton';
 export default function AdminDashboardHeader() {
   const { lastSyncTime, handleLastNotificationDate } = useAdminDashboardHeader();
   const { theme: preference, toggleTheme: handleThemeChange } = useDarkTheme();
@@ -35,18 +35,7 @@ export default function AdminDashboardHeader() {
         <div className="flex items-center space-x-2 p-2 sm:p-0 sm:space-x-4">
           <ReportManager />
           <NotificationCenter onLastNotificationDateChange={handleLastNotificationDate} />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleThemeChange}
-            className="dark:hover:bg-slate-600 dark:bg-slate transition-colors duration-200 relative"
-          >
-            {preference === 'dark' ? (
-              <Moon className="h-5 w-5 animate-scaleIn absolute text-gray-500 hover:text-gray-400 dark:hover:text-white" />
-            ) : (
-              <Sun className="h-5 w-5 animate-scaleIn absolute hover:text-yellow-400 dark:hover:text-yellow-600" />
-            )}
-          </Button>
+          <ThemeChangeButton handleThemeChange={handleThemeChange} preference={preference} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" className="relative h-8 w-8 rounded-full">
