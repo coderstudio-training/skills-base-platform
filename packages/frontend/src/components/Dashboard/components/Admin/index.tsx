@@ -110,10 +110,6 @@ export default function AdminDashboard() {
                 <GraduationCap className="h-4 w-4" />
                 Learning
               </TabsTrigger>
-              <TabsTrigger value="taxonomy" className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Taxonomy
-              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -165,7 +161,7 @@ export default function AdminDashboard() {
 
           {hasPermission('canManageSystem') && (
             <Suspense fallback={<TSCManagerLoading />}>
-              <TabsContent value="taxonomy">
+              <TabsContent value="skills">
                 <TaxonomyManager
                   searchQuery={searchQuery}
                   selectedBusinessUnit={selectedBusinessUnit}

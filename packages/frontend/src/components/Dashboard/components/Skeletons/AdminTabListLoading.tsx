@@ -17,7 +17,6 @@ export default function AdminTabListLoading() {
     { iconClass: 'w-4 h-4', label: 'Organization' },
     { iconClass: 'w-4 h-4', label: 'Metrics' },
     { iconClass: 'w-4 h-4', label: 'Learning' },
-    { iconClass: 'w-4 h-4', label: 'Taxonomy' },
   ];
 
   return (
