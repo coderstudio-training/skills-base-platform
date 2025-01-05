@@ -1,10 +1,10 @@
 {
-  "name": "Employee Sync Workflow",
+  "name": "Skillpoint Employee Workflow",
   "nodes": [
     {
       "parameters": {
         "method": "POST",
-        "url": "http://192.168.143.2:3001/employees/sync",
+        "url": "http://172.16.207.249:3001/employees/sync",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -19,7 +19,7 @@
         "jsonBody": "={{ $json.validItems.toJsonString() }}",
         "options": {}
       },
-      "id": "1e51d390-5975-47b9-9ea9-d646b1830c48",
+      "id": "cc1e8806-8f0f-490b-abea-f141fc0d4c19",
       "name": "HTTP Request",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -44,15 +44,15 @@
         },
         "options": {}
       },
-      "id": "8f5f4d23-da05-4b6f-a213-f2a5f2d36f9e",
+      "id": "9ba08bf8-3baa-4d32-8b8e-7272c1cfbc04",
       "name": "Google Sheets2",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [-480, 560],
       "credentials": {
         "googleApi": {
-          "id": "WxPVvjosN7A9UGbt",
-          "name": "Google Service Account account"
+          "id": "Umdu9Kgsl94ijMRb",
+          "name": "Google Drive account 2"
         }
       }
     },
@@ -71,7 +71,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [0, 900],
-      "id": "0ad74533-bd6a-4691-a97f-0707c232d81c"
+      "id": "96b2dd86-6ebe-4bf8-bc1e-beab11597167"
     },
     {
       "parameters": {
@@ -101,7 +101,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [260, 900],
-      "id": "657617c5-7d65-4e28-958f-cb088a335189",
+      "id": "ee249d8e-c1d2-4e13-afd5-7dfb1cba029b",
       "disabled": true
     },
     {
@@ -119,7 +119,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [260, 560],
-      "id": "fde48033-3951-4a3e-b849-a4c8a85b8ce5"
+      "id": "31d3e6bd-bd96-4767-93fd-ab42aee71550"
     },
     {
       "parameters": {
@@ -134,7 +134,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [460, 460],
-      "id": "f90a6b67-a418-49dd-8af7-85d5cc0ca368"
+      "id": "3a8a95f5-8a2f-489f-8721-ca10166a9e26",
+      "disabled": true
     },
     {
       "parameters": {
@@ -149,7 +150,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [460, 660],
-      "id": "a9b87640-c41c-4949-b486-d389a04f2887"
+      "id": "46d8bd42-f7e4-4c51-a23e-d3cf9bb02ad4",
+      "disabled": true
     },
     {
       "parameters": {
@@ -166,8 +168,7 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
       "position": [-1420, 560],
-      "id": "34e58a48-b84d-407f-9e29-bf14223dc258",
-      "disabled": true
+      "id": "e34f0f15-668a-452b-8fc8-e4d694f45185"
     },
     {
       "parameters": {
@@ -177,7 +178,7 @@
         "filter": {},
         "options": {}
       },
-      "id": "17576302-c633-4f1a-a865-b2f7dd6d7a7a",
+      "id": "34e3a494-08ba-4989-92d1-f19d9fbe6577",
       "name": "Check for Folder and File2",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
@@ -185,8 +186,8 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleApi": {
-          "id": "WxPVvjosN7A9UGbt",
-          "name": "Google Service Account account"
+          "id": "Umdu9Kgsl94ijMRb",
+          "name": "Google Drive account 2"
         }
       }
     },
@@ -215,7 +216,7 @@
         },
         "options": {}
       },
-      "id": "ce99561d-c911-4da7-9c23-a9d404dc5752",
+      "id": "dfbde08b-397b-4f25-a4d6-1ef2fb80b1ed",
       "name": "If Exists2",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -227,7 +228,7 @@
         "path": "0d255f04-41b2-4f32-aea4-efe224bb20e8",
         "options": {}
       },
-      "id": "bae99f61-b115-47f0-b59e-4978193d9ece",
+      "id": "fefad8c2-cc23-46b4-9a74-01595a1571e6",
       "name": "Webhook2",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -238,7 +239,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://192.168.143.2:3001/auth/login",
+        "url": "http://172.16.207.249:3001/auth/login",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -258,17 +259,49 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [-1160, 560],
-      "id": "23c1761e-02c2-4991-addc-34cd52b7bee8"
+      "id": "1c2cefda-1b5c-4440-bf04-08c39021ae6c"
     },
     {
       "parameters": {
         "jsCode": "const accessToken = $node['Login to API'].json.access_token;\nif (!accessToken) {\n  throw new Error('Failed to obtain access token');\n}\n\nfunction normalizeKey(key) {\n  return key.replace(/(?:^\\w|[A-Z]|\\b\\w)/g, (letter, index) => \n    index === 0 ? letter.toLowerCase() : letter.toUpperCase()\n  ).replace(/\\s+/g, '');\n}\n\nfunction processCertifications(row) {\n  const certifications = [];\n  const certificationFields = new Set();\n  \n  // Collect all certification related fields\n  Object.keys(row).forEach(key => {\n    if (key.startsWith('certifications.')) {\n      certificationFields.add(key);\n    }\n  });\n  \n  // Get unique certification indices\n  const certIndices = new Set(\n    Array.from(certificationFields).map(field => {\n      const match = field.match(/^certifications\\.(\\d+)\\./);\n      return match ? parseInt(match[1]) : null;\n    }).filter(index => index !== null)\n  );\n  \n  // Process each certification\n  Array.from(certIndices).sort((a, b) => a - b).forEach(index => {\n    const cert = {};\n    const prefix = `certifications.${index}.`;\n    \n    // Check each potential field for this certification\n    certificationFields.forEach(field => {\n      if (field.startsWith(prefix)) {\n        const fieldName = field.substring(prefix.length);\n        const value = row[field];\n        \n        // Only include non-empty values\n        if (value !== null && value !== undefined && value !== '' && value !== '[empty]') {\n          cert[fieldName] = value;\n        }\n      }\n    });\n    \n    // Only add certification if it has any non-empty fields\n    if (Object.keys(cert).length > 0) {\n      certifications.push(cert);\n    }\n  });\n  \n  return certifications;\n}\n\nconst finalOutput = {};\nconst errors = [];\nlet recordCounter = 1;\n\n$input.all().forEach((item, index) => {\n  const row = item.json;\n  \n  const keyMapping = Object.keys(row);\n  const rowValues = Object.values(row);\n  \n  const empIdIndex = keyMapping.findIndex(key => {\n    const normalizedKey = normalizeKey(key);\n    return normalizedKey === 'employeeId';\n  });\n  \n  const employeeId = rowValues[empIdIndex !== -1 ? empIdIndex : 1];\n  if (typeof employeeId !== 'number' || isNaN(employeeId)) {\n    errors.push({\n      index,\n      error: 'Invalid or missing employeeId',\n      data: row\n    });\n    return;\n  }\n  \n  try {\n    const certifications = processCertifications(row);\n    const validatedDocument = {};\n    \n    Object.keys(row).forEach(key => {\n      // Skip certification dot notation fields\n      if (key.startsWith('certifications.')) {\n        return;\n      }\n      \n      let normalizedKey = normalizeKey(key);\n      if (normalizedKey === 'empId') {\n        normalizedKey = 'employeeId';\n      }\n      \n      validatedDocument[normalizedKey] = row[key];\n    });\n    \n    ['row_number'].forEach(field => {\n      delete validatedDocument[normalizeKey(field)];\n    });\n    \n    // Add processed certifications\n    validatedDocument.certifications = certifications;\n    \n    finalOutput[recordCounter.toString()] = validatedDocument;\n    recordCounter++;\n    \n  } catch (error) {\n    errors.push({\n      index,\n      error: error.message,\n      data: row\n    });\n  }\n});\n\nreturn {\n  json: {\n    accessToken,\n    validItems: finalOutput,\n    errors\n  }\n};"
       },
-      "id": "3ad53f54-9fb9-47de-aa49-be579eb18780",
+      "id": "89e51027-c249-42f1-a67b-7cc87078defc",
       "name": "Validate and Transform",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [-260, 560]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://192.168.100.70:3004/workflows/webhook",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"workflow\": {\n    \"id\": \"123\",\n    \"name\": \"Employee Sync Workflow\"\n  },\n  \"execution\": {\n    \"id\": \"exec_456\",\n    \"status\": \"success\"\n  },\n  \"data\": {\n    \"recordsProcessed\": \"42\"\n  }\n}",
+        "options": {}
+      },
+      "id": "5ebb31e0-5e89-457b-9e18-5adbb25d5e05",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 460],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.100.70:3004/workflows/webhook",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"workflow\": {\n    \"id\": \"123\",\n    \"name\": \"Employee Sync Workflow\"\n  },\n  \"execution\": {\n    \"id\": \"exec_456\",\n    \"status\": \"failed\"\n  },\n  \"data\": {\n    \"recordsProcessed\": \"42\"\n  }\n}",
+        "options": {}
+      },
+      "id": "17856a6e-8558-422e-932b-6ffcc79f269a",
+      "name": "HTTP Request2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 660],
+      "disabled": true
     },
     {
       "parameters": {
@@ -289,17 +322,18 @@
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11iiQ37L7GzO1OE6cyOeumfSlP-4JWGS3foIn5lI4SKw/edit?usp=drivesdk"
         }
       },
-      "id": "b7c5cab1-721f-4390-bdbb-cdc1797c5f1b",
+      "id": "9097120c-383c-4204-bc2a-e057fc727277",
       "name": "Google Drive Trigger",
       "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
       "position": [-1420, 360],
       "credentials": {
         "googleApi": {
-          "id": "WxPVvjosN7A9UGbt",
-          "name": "Google Service Account account"
+          "id": "Umdu9Kgsl94ijMRb",
+          "name": "Google Drive account 2"
         }
-      }
+      },
+      "disabled": true
     }
   ],
   "pinData": {},
@@ -426,6 +460,28 @@
         ]
       ]
     },
+    "Send Success Notification API1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Error Notification API1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Google Drive Trigger": {
       "main": [
         [
@@ -442,11 +498,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "f176f154-8826-40b3-a0e4-d8fbece3c2bb",
+  "versionId": "142c7589-cd20-4234-b37b-1f757b5de9b9",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "86f5c9b55c596bbebddee8dababbdbd4d400371496a13e11367d7b42b8b1bccd"
+    "instanceId": "f5176b00fa2d24bacd6209668b23765657e914066e3bf11efab5df2b9a884b80"
   },
-  "id": "LKk94dwrjHcsifnH",
+  "id": "NaY8api3hwEflQSc",
   "tags": []
 }
