@@ -18,8 +18,8 @@ import {
   TSCManagerProps,
 } from '@/components/Dashboard/types';
 import { Card, CardContent } from '@/components/ui/card';
-import { logger } from '@/lib/utils';
 import { getKeyFromValue } from '@/lib/utils/taxonomy-utils';
+import { useMemo } from 'react';
 
 export default function TaxonomyManager({
   selectedBusinessUnit = BUSINESS_UNITS.ALL,
@@ -48,26 +48,26 @@ export default function TaxonomyManager({
     validateForm,
   );
 
-  logger.log('BU ', getKeyFromValue(selectedBusinessUnit as string) === 'ALL');
-  const computedTargetSkill = editingSkill
-    ? editingSkill
-    : getKeyFromValue(selectedBusinessUnit as string) === 'ALL'
-      ? ({
-          id: '',
-          ...emptySSC,
-          proficiencies: PROFICIENCY_LEVELS.map(() => ({
-            type: 'soft',
-            benchmark: [],
-            description: [],
-          })),
-        } as SoftSkill)
-      : ({
-          id: '',
-          ...emptyTSC,
-          businessUnit: getKeyFromValue(selectedBusinessUnit as string),
-        } as TSC);
+  const computedTargetSkill = useMemo(() => {
+    if (editingSkill) return editingSkill;
+    if (getKeyFromValue(selectedBusinessUnit as string) === 'ALL') {
+      return {
+        id: '',
+        ...emptySSC,
+        proficiencies: PROFICIENCY_LEVELS.map(() => ({
+          type: 'soft',
+          benchmark: [],
+          description: [],
+        })),
+      } as SoftSkill;
+    }
+    return {
+      id: '',
+      ...emptyTSC,
+      businessUnit: getKeyFromValue(selectedBusinessUnit as string),
+    } as TSC;
+  }, [editingSkill, selectedBusinessUnit]);
 
-  logger.log('Computed Target Skill:', computedTargetSkill);
   return (
     <Card className="w-full">
       <SKillManagerHeader
