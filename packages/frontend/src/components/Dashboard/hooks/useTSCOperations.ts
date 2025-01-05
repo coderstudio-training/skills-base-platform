@@ -1,61 +1,60 @@
-import { TSC, emptyTSC } from '@/components/Dashboard/types';
-import { getKeyFromValue } from '@/lib/utils';
+import { Taxonomy } from '@/components/Dashboard/types';
 import { Dispatch, SetStateAction, useCallback, useState } from 'react';
 
 export const useTSCOperations = (
   selectedBusinessUnit: string,
-  initialTSCs: TSC[],
+  initialTSCs: Taxonomy[],
   setFormErrors: Dispatch<SetStateAction<{ [key: string]: string }>>,
-  validateForm: (tsc: TSC) => boolean,
+  validateForm: (taxonomy: Taxonomy) => boolean,
 ) => {
-  const [tscs, setTSCs] = useState<TSC[]>(initialTSCs);
-  const [editingTSC, setEditingTSC] = useState<TSC | null>(null);
+  const [tscs, setTSCs] = useState<Taxonomy[]>(initialTSCs);
+  const [editingSkill, setEditingSkill] = useState<Taxonomy | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [tscToDelete, setTscToDelete] = useState<string | null>(null);
+  const [skillToDelete, setSkillToDelete] = useState<string | null>(null);
 
   const handleCreate = useCallback(() => {
     setFormErrors({});
-    setEditingTSC({ ...emptyTSC, id: '', businessUnit: getKeyFromValue(selectedBusinessUnit) });
+    setEditingSkill(editingSkill);
     setIsDialogOpen(true);
   }, [selectedBusinessUnit]);
 
-  const handleEdit = useCallback((tsc: TSC) => {
+  const handleEdit = useCallback((taxonomy: Taxonomy) => {
     setFormErrors({});
-    setEditingTSC(tsc);
+    setEditingSkill(taxonomy);
     setIsDialogOpen(true);
   }, []);
 
   const handleDelete = useCallback((id: string) => {
-    setTscToDelete(id);
+    setSkillToDelete(id);
     setDeleteConfirmOpen(true);
   }, []);
 
   const confirmDelete = useCallback(() => {
-    if (tscToDelete !== null) {
-      setTSCs(prev => prev.filter(tsc => tsc.id !== tscToDelete));
+    if (skillToDelete !== null) {
+      setTSCs(prev => prev.filter(tsc => tsc.id !== skillToDelete));
       setDeleteConfirmOpen(false);
-      setTscToDelete(null);
+      setSkillToDelete(null);
     }
-  }, [tscToDelete]);
+  }, [skillToDelete]);
 
   const handleSave = useCallback(() => {
-    if (editingTSC && validateForm(editingTSC)) {
+    if (editingSkill && validateForm(editingSkill)) {
       const maxId = Math.max(...tscs.map(tsc => parseInt(tsc.id)), 0);
-      const updatedTSCs = editingTSC.id
-        ? tscs.map(tsc => (tsc.id === editingTSC.id ? editingTSC : tsc))
-        : [...tscs, { ...editingTSC, id: (maxId + 1).toString() }];
+      const updatedTSCs = editingSkill.id
+        ? tscs.map(tsc => (tsc.id === editingSkill.id ? editingSkill : tsc))
+        : [...tscs, { ...editingSkill, id: (maxId + 1).toString() }];
       setTSCs(updatedTSCs);
-      setEditingTSC(null);
+      setEditingSkill(null);
       setIsDialogOpen(false);
       setFormErrors({});
     }
-  }, [editingTSC, tscs]);
+  }, [editingSkill, tscs]);
 
   return {
     tscs,
     setTSCs,
-    editingTSC,
+    editingSkill,
     isDialogOpen,
     deleteConfirmOpen,
     handleCreate,
@@ -63,7 +62,7 @@ export const useTSCOperations = (
     handleDelete,
     confirmDelete,
     handleSave,
-    setEditingTSC,
+    setEditingSkill,
     setIsDialogOpen,
     setDeleteConfirmOpen,
   };

@@ -24,9 +24,9 @@ export default function DeletePopup({ open, setOpen, onConfirm }: DeletePopupPro
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete TSC</AlertDialogTitle>
+          <AlertDialogTitle>Delete Skill</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete this TSC? This action cannot be undone.
+            Are you sure you want to delete this skill? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

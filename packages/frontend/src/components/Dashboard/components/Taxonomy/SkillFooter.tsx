@@ -1,9 +1,9 @@
+import useScrollTo from '@/components/Dashboard/hooks/useScrollTo';
 import { Button } from '@/components/ui/button';
 import { CardFooter } from '@/components/ui/card';
 import { ChevronUpCircle } from 'lucide-react';
-import useScrollTo from '../../hooks/useScrollTo';
 
-export default function TSCFooter() {
+export default function SkillFooter() {
   const { scrollTo } = useScrollTo();
   const handleScrollToForm = () => {
     scrollTo('tsc-header');

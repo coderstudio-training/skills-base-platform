@@ -11,7 +11,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-export default function ProficiencyTable({ proficiencies }: { proficiencies: TSCProficiency[] }) {
+export default function TechnicalProficiencyTable({
+  proficiencies,
+}: {
+  proficiencies: TSCProficiency[];
+}) {
   return (
     <div className="space-y-8">
       <Table>

@@ -11,7 +11,7 @@ interface TSCManagerHeaderProps {
   handleCreate: () => void;
 }
 
-export default function TSCManagerHeader({
+export default function SKillManagerHeader({
   buCode,
   selectedBusinessUnit,
   handleCreate,
@@ -19,16 +19,15 @@ export default function TSCManagerHeader({
   return (
     <CardHeader id={'tsc-header'} className="flex flex-row items-center justify-between">
       <CardTitle>
-        TSC Manager
+        Skills Manager
         {buCode !== 'ALL' && ` - ${selectedBusinessUnit}`}
       </CardTitle>
       <Button
         className="bg-violet-300 hover:bg-violet-500 dark:bg-violet-700 dark:hover:bg-violet-500 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
         onClick={handleCreate}
-        disabled={buCode === 'ALL'}
       >
         <PlusCircle className="mr-2 h-4 w-4" />
-        Create New TSC
+        Create New Skill
       </Button>
     </CardHeader>
   );

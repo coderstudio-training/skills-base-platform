@@ -319,6 +319,18 @@ export interface IBaseTaxonomy {
   rangeOfApplication?: string[];
 }
 
+export interface ISoftTaxonomy {
+  docTitle: string;
+  docId: string;
+  docRevisionId: string;
+  category: string;
+  title: string;
+  description: string;
+  rating: string[];
+  proficiencyDescription: Record<string, string[]>;
+  benchmark: Record<string, string[]>;
+}
+
 export interface ITechnicalTaxonomy {
   data: IBaseTaxonomy[];
 }
@@ -344,21 +356,22 @@ export interface TSCManagerProps {
 export interface TSCFormProps {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
-  targetTSC: TSC | null; // null equates to new tsc
-  setTargetTSC: Dispatch<SetStateAction<TSC | null>>;
+  targetSkill: Taxonomy | null; // null equates to new tsc
+  setTargetSkill: Dispatch<SetStateAction<Taxonomy | null>>;
   formErrors: { [key: string]: string };
   handleSave: () => void;
 }
 
 export interface TSCContentProps {
   itemsBeforeScroll?: number;
-  filteredTSCs: TSC[];
+  filteredTaxonomies: Taxonomy[];
   searchQuery: string;
-  handleEdit: (tsc: TSC) => void;
+  handleEdit: (taxonomy: Taxonomy) => void;
   handleDelete: (id: string) => void;
 }
 
 export interface TSCProficiency {
+  type: 'technical';
   level: string;
   code: string;
   description: string;
@@ -366,7 +379,16 @@ export interface TSCProficiency {
   abilities: string[];
 }
 
+export interface SoftSkillProficiency {
+  type: 'soft';
+  benchmark: string[];
+  description: string[];
+}
+
+export type Taxonomy = TSC | SoftSkill;
+
 export interface TSC {
+  type: 'technical';
   id: string;
   businessUnit: BusinessUnit;
   category: string;
@@ -376,7 +398,18 @@ export interface TSC {
   rangeOfApplication: string[];
 }
 
+export interface SoftSkill {
+  type: 'soft';
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  rating: string[];
+  proficiencies: SoftSkillProficiency[];
+}
+
 export const emptyTSC: Omit<TSC, 'id' | 'businessUnit'> = {
+  type: 'technical',
   category: '',
   title: '',
   description: '',
@@ -384,12 +417,28 @@ export const emptyTSC: Omit<TSC, 'id' | 'businessUnit'> = {
   rangeOfApplication: [],
 };
 
+export const emptySSC: Omit<SoftSkill, 'id'> = {
+  type: 'soft',
+  category: '',
+  title: '',
+  description: '',
+  rating: [],
+  proficiencies: [],
+};
+
 export const emptyProficiency: TSCProficiency = {
+  type: 'technical',
   level: '',
   code: '',
   description: '',
   knowledge: [],
   abilities: [],
+};
+
+export const emptySSCProficiency: SoftSkillProficiency = {
+  type: 'soft',
+  benchmark: [],
+  description: [],
 };
 
 export type BusinessUnit = keyof typeof BUSINESS_UNITS;

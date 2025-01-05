@@ -1,9 +1,9 @@
 import { useInfiniteScroll } from '@/components/Dashboard/hooks/useInfiniteScrolling';
-import { TSC } from '@/components/Dashboard/types';
+import { Taxonomy } from '@/components/Dashboard/types';
 import { useState } from 'react';
 
-export default function useTSCScroll(filteredTSCs: TSC[], itemsBeforeScroll: number = 3) {
-  const [items, setItems] = useState<TSC[]>(filteredTSCs.slice(0, itemsBeforeScroll));
+export default function useTaxonomyScroll(filteredTSCs: Taxonomy[], itemsBeforeScroll: number = 3) {
+  const [items, setItems] = useState<Taxonomy[]>(filteredTSCs.slice(0, itemsBeforeScroll));
   const [hasMore, setHasMore] = useState(filteredTSCs.length > itemsBeforeScroll);
 
   const loadMore = () => {
