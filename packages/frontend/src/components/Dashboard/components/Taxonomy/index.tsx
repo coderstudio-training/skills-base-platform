@@ -20,6 +20,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { getKeyFromValue } from '@/lib/utils/taxonomy-utils';
 import { useMemo } from 'react';
+import { useFilteredSkills } from '../../hooks/useFilteredSkills';
 
 export default function TaxonomyManager({
   selectedBusinessUnit = BUSINESS_UNITS.ALL,
@@ -68,6 +69,8 @@ export default function TaxonomyManager({
     } as TSC;
   }, [editingSkill, selectedBusinessUnit]);
 
+  const filteredTSCs = useFilteredSkills(tscs, selectedBusinessUnit, searchQuery);
+
   return (
     <Card className="w-full">
       <SKillManagerHeader
@@ -77,7 +80,7 @@ export default function TaxonomyManager({
       />
       <CardContent>
         <SkillContent
-          filteredTaxonomies={tscs}
+          filteredTaxonomies={filteredTSCs}
           handleEdit={handleEdit}
           handleDelete={handleDelete}
           searchQuery={searchQuery}

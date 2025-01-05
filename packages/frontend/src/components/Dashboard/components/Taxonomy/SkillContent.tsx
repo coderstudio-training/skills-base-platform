@@ -1,7 +1,7 @@
 import SoftProficiencyTable from '@/components/Dashboard/components/Taxonomy/SoftProficiencyTable';
 import TechnicalProficiencyTable from '@/components/Dashboard/components/Taxonomy/TechnicalProficiencyTable';
 import { BUSINESS_UNITS } from '@/components/Dashboard/constants';
-import useTaxonomyScroll from '@/components/Dashboard/hooks/useTSCScroll';
+import useTaxonomyScroll from '@/components/Dashboard/hooks/useTaxonomyScroll';
 import { TSC, TSCContentProps } from '@/components/Dashboard/types';
 import {
   Accordion,
@@ -20,18 +20,21 @@ export default function SkillContent({
   handleEdit,
   handleDelete,
 }: TSCContentProps) {
-  const { loaderRef, items, hasMore } = useTaxonomyScroll(filteredTaxonomies, 5);
+  const isSearching = searchQuery.trim().length > 0;
+  const { loaderRef, items, hasMore } = useTaxonomyScroll(filteredTaxonomies, 5, isSearching);
+
+  const displayedItems = isSearching ? filteredTaxonomies : items;
 
   return (
     <div className="space-y-4">
       {filteredTaxonomies.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
           {searchQuery
-            ? `No taxonomies found matching "${searchQuery}"`
-            : 'No taxonomies found for this business unit'}
+            ? `No skills found matching "${searchQuery}"`
+            : 'No skills found for this business unit'}
         </div>
       ) : (
-        items.map(taxonomy => (
+        displayedItems.map(taxonomy => (
           <Accordion type="single" collapsible key={taxonomy.id}>
             <AccordionItem value={taxonomy.id}>
               <AccordionTrigger>

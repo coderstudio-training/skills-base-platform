@@ -11,7 +11,7 @@ import DistributionLoading from '@/components/Dashboard/components/Skeletons/Dis
 import RankingLoadingCard from '@/components/Dashboard/components/Skeletons/RankingLoadingCard';
 import SkillGapLoadingCard from '@/components/Dashboard/components/Skeletons/SkillGapLoadingCard';
 import StatsLoadingCard from '@/components/Dashboard/components/Skeletons/StatsLoadingCard';
-import TaxonomyManagerLoading from '@/components/Dashboard/components/Skeletons/TSCManagerLoading';
+import TaxonomyManagerLoading from '@/components/Dashboard/components/Skeletons/TaxonomyManagerLoading';
 import { useAdminData } from '@/components/Dashboard/hooks/useAdminData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/lib/api/hooks';

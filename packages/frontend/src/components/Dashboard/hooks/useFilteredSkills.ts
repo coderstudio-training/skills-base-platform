@@ -1,5 +1,5 @@
 import { Taxonomy } from '@/components/Dashboard/types';
-import { filterBU, getValueFromKey, isSoftSkill, isTSC } from '@/lib/utils/taxonomy-utils';
+import { filterBU, getValueFromKey, isTSC } from '@/lib/utils/taxonomy-utils';
 import { useMemo } from 'react';
 
 export function useFilteredSkills(
@@ -7,29 +7,26 @@ export function useFilteredSkills(
   selectedBusinessUnit: string,
   searchQuery?: string,
 ) {
-  return useMemo(
-    () =>
-      selectedBusinessUnit === getValueFromKey('ALL')
-        ? skills.filter(skills =>
-            skills.title
-              .toLowerCase()
-              .includes(searchQuery ? searchQuery.trim().toLowerCase() : ''),
-          )
-        : searchQuery
-          ? ([
-              ...skills.filter(skills => isSoftSkill(skills)),
-              filterBU(
-                skills.filter(skills => isTSC(skills)),
-                selectedBusinessUnit,
-              ).filter(tsc => tsc.title.toLowerCase().includes(searchQuery.trim().toLowerCase())),
-            ] as Taxonomy[])
-          : ([
-              ...skills.filter(skills => isSoftSkill(skills)),
-              filterBU(
-                skills.filter(skills => isTSC(skills)),
-                selectedBusinessUnit,
-              ),
-            ] as Taxonomy[]),
-    [skills, selectedBusinessUnit, searchQuery],
-  );
+  return useMemo(() => {
+    const lowerCaseQuery = searchQuery?.trim().toLowerCase() || '';
+
+    if (selectedBusinessUnit === getValueFromKey('ALL')) {
+      // Case 1: All Business Units
+      return skills.filter(skill => skill.title.toLowerCase().includes(lowerCaseQuery));
+    }
+
+    // Case 2: Specific Business Unit (only TSCs)
+    const filteredTSCs = filterBU(
+      skills.filter(isTSC), // Only TSCs
+      selectedBusinessUnit, // Filtered by BU
+    );
+
+    if (searchQuery) {
+      // Case 2a: With search query
+      return filteredTSCs.filter(tsc => tsc.title.toLowerCase().includes(lowerCaseQuery));
+    }
+
+    // Case 2b: Without search query
+    return filteredTSCs;
+  }, [skills, selectedBusinessUnit, searchQuery]);
 }
