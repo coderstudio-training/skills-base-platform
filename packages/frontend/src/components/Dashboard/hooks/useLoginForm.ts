@@ -103,10 +103,10 @@ export function useLoginForm() {
         router.push('/dashboard/admin');
       }
       if (result.error) {
-        logger.error('Login Error:' + result.error);
+        logger.error('Login failed');
       }
     } catch (err) {
-      logger.error('Login Error:' + err);
+      logger.error('Login failed');
     }
   };
 

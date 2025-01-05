@@ -160,7 +160,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"frontend\", message=~\"Authentication successful.*\"} [1m])) by (level)",
+          "expr": "sum by(level) (count_over_time({service=\"frontend\"} | json | message=\"Login successful\" [6h]))",
           "legendFormat": "Success",
           "queryType": "range",
           "refId": "A"
@@ -171,7 +171,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"frontend\", message=~\"Authentication failed.*\"} [1m])) by (level)",
+          "expr": "sum by(level) (count_over_time({service=\"frontend\"} | json | message=\"Login failed\" [6h]))",
           "hide": false,
           "legendFormat": "Failed",
           "queryType": "range",
@@ -273,7 +273,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "avg(rate({service=\"frontend\"} | json | unwrap performance_duration [1m])) by (method)",
+          "expr": "avg(rate({service=\"frontend\"} | json | unwrap performance_duration [6h])) by (method)",
           "legendFormat": "{{method}}",
           "queryType": "range",
           "refId": "A"
@@ -399,7 +399,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service=\"frontend\", level=\"error\"} [1m])) / sum(count_over_time({service=\"frontend\"} [1m]))",
+          "expr": "(sum(count_over_time({service=\"frontend\", level=\"error\"}[6h])) OR vector(0)) \n/ \n(sum(count_over_time({service=\"frontend\"}[6h])) OR vector(1))",
           "legendFormat": "Error Rate",
           "queryType": "range",
           "refId": "A"
@@ -521,55 +521,84 @@
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
+      "description": "Distribution of HTTP status codes over time showing success and error rates",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Request Count",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.8,
+            "drawStyle": "bars",
+            "fillOpacity": 85,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "area"
             }
           },
+          "decimals": 0,
           "mappings": [
             {
               "options": {
                 "200": {
-                  "color": "green",
-                  "index": 0,
+                  "color": "rgb(87, 148, 242)",
                   "text": "Success (200)"
                 },
-                "400": {
-                  "color": "yellow",
-                  "index": 1,
-                  "text": "Bad Request (400)"
-                },
                 "401": {
-                  "color": "orange",
-                  "index": 2,
+                  "color": "rgb(255, 170, 0)",
                   "text": "Unauthorized (401)"
                 },
-                "403": {
-                  "color": "red",
-                  "index": 3,
-                  "text": "Forbidden (403)"
-                },
                 "404": {
-                  "color": "purple",
-                  "index": 4,
+                  "color": "rgb(170, 95, 217)",
                   "text": "Not Found (404)"
                 },
                 "500": {
-                  "color": "dark-red",
-                  "index": 5,
+                  "color": "rgb(224, 47, 68)",
                   "text": "Server Error (500)"
                 }
               },
               "type": "value"
             }
-          ]
+          ],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
         },
         "overrides": []
       },
@@ -582,20 +611,16 @@
       "id": 5,
       "options": {
         "legend": {
+          "calcs": ["lastNotNull", "max", "mean"],
           "displayMode": "table",
-          "placement": "right",
+          "placement": "bottom",
           "showLegend": true,
-          "values": ["value", "percent"]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
+          "sortBy": "Last *",
+          "sortDesc": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "pluginVersion": "11.3.0",
@@ -606,32 +631,65 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum by (status) (count_over_time({service=\"frontend\"} | json | unwrap performance_status [1h]))",
-          "legendFormat": "{{status}}",
+          "expr": "sum by (performance_status) (\n  count_over_time(\n    {service=\"frontend\"} \n    | json \n    | __error__=`` \n    | performance_status=~\"200|401|404|500\"\n    [6h]\n  )\n)",
+          "legendFormat": "{{performance_status}}",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "HTTP Status Code Distribution (Last Hour)",
-      "type": "piechart"
+      "title": "HTTP Status Code Distribution",
+      "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
-          }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "reqps"
         },
         "overrides": []
       },
@@ -641,39 +699,19 @@
         "x": 12,
         "y": 25
       },
-      "id": 6,
+      "id": 8,
       "options": {
-        "calculate": false,
-        "cellGap": 1,
-        "color": {
-          "exponent": 0.5,
-          "fill": "dark-orange",
-          "mode": "scheme",
-          "reverse": false,
-          "scale": "exponential",
-          "scheme": "RdYlGr",
-          "steps": 64
-        },
-        "exemplars": {
-          "color": "rgba(255,0,255,0.7)"
-        },
-        "filterValues": {
-          "le": 1e-9
-        },
         "legend": {
-          "show": true
-        },
-        "rowsFrame": {
-          "layout": "auto"
+          "calcs": ["mean", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
         },
         "tooltip": {
-          "mode": "single",
-          "showColorScale": false,
-          "yHistogram": false
-        },
-        "yAxis": {
-          "axisPlacement": "left",
-          "reverse": false
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "pluginVersion": "11.3.0",
@@ -684,14 +722,14 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum by (status) (count_over_time({service=\"frontend\"} | json | unwrap performance_status [5m]))",
-          "legendFormat": "{{status}}",
+          "expr": "sum by (performance_method, performance_status) (\n  rate(\n    {service=\"frontend\"} \n    | json \n    | __error__=`` \n    | performance_method=~\"GET|POST|PUT|DELETE\"\n    | performance_status=~\"2.*|3.*|4.*|5.*\"\n    [5m]\n  )\n)",
+          "legendFormat": "{{performance_method}} - {{performance_status}}",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Status Codes Heatmap (5min intervals)",
-      "type": "heatmap"
+      "title": "Request Rate by Method and Status Code",
+      "type": "timeseries"
     }
   ],
   "preload": false,
@@ -743,6 +781,6 @@
   "timezone": "",
   "title": "Frontend Monitoring Dashboard",
   "uid": "fe8zf4py6ylmod",
-  "version": 2,
+  "version": 9,
   "weekStart": ""
 }
