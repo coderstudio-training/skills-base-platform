@@ -1,4 +1,3 @@
-// packages/frontend/src/lib/type-guards.ts
 import type { BackendSkillResponse, SkillsResponse } from '@/types/api';
 
 export function isSkillsResponse(

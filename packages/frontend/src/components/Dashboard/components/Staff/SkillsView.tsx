@@ -1,8 +1,6 @@
 import { SkillsAnalysisCard } from '@/components/Dashboard/components/Cards/SkillsAnalysisCard';
 import { StaffSkillsProps } from '@/components/Dashboard/types';
 
-// components/Staff/SkillsView.tsx
-
 export default function SkillsView({
   skillsData,
   selectedCategory,

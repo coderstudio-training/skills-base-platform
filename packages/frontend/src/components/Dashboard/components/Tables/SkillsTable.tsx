@@ -1,4 +1,3 @@
-// components/Staff/Tables/SkillsTable.tsx
 import { ColumnConfig, DataTable } from '@/components/Dashboard/components/Tables/DataTable';
 import { statusStyles } from '@/components/Dashboard/constants';
 import { Skill, SkillsTableProps } from '@/components/Dashboard/types';

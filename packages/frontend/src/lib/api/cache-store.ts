@@ -1,4 +1,3 @@
-// lib/api/cache-store.ts
 'use client';
 
 const CACHE_VERSION_KEY = 'app_cache_version';

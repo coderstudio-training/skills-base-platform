@@ -1,4 +1,3 @@
-// src/blocks/Dashboard/components/Manager/Training.tsx
 import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
 import { useTeamRecommendations } from '@/components/Dashboard/hooks/useTeamRecommendations';
 import { TabViewProps } from '@/components/Dashboard/types';

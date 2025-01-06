@@ -1,5 +1,3 @@
-// lib/auth.ts
-
 import { authConfig, errorMessages } from '@/lib/api/config';
 import { Permission, Roles, ServerInterceptOptions } from '@/lib/api/types';
 import { logger } from '@/lib/utils/logger';

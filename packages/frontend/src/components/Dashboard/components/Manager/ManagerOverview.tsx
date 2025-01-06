@@ -1,4 +1,3 @@
-// blocks/Manager/components/ManagerOverview.tsx
 import { TeamCompositionCard } from '@/components/Dashboard/components/Cards/TeamCompositionCard';
 import { TeamMembersListCard } from '@/components/Dashboard/components/Cards/TeamMembersListCard';
 import { TeamMetricCards } from '@/components/Dashboard/components/Cards/TeamMetricCards';

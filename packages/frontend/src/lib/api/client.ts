@@ -1,4 +1,3 @@
-// lib/api/client.ts
 import { errorMessages, serverActionsConfig, serviceConfigs } from '@/lib/api/config';
 import type {
   ApiClientOptions,

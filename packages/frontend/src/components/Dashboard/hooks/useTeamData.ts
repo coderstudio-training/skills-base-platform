@@ -10,6 +10,7 @@ export function useTeamData(managerName: string) {
     {
       requiresAuth: true,
       enabled: hasPermission('canManageTeam'),
+      cacheStrategy: 'force-cache',
     },
   );
 

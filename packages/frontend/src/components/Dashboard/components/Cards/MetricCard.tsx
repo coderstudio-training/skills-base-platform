@@ -1,4 +1,3 @@
-// blocks/Dashboard/components/Cards/StatCard.tsx
 import BaseCard from '@/components/Dashboard/components/Cards/BaseCard';
 import { MetricCardProps } from '@/components/Dashboard/types';
 

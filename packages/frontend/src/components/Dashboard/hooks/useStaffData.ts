@@ -1,4 +1,3 @@
-// hooks/useStaffData.ts
 import { StaffData, StaffSkills, UserMetrics } from '@/components/Dashboard/types';
 import { skillsApi } from '@/lib/api/client';
 import { useAuth, useSuspenseQuery } from '@/lib/api/hooks';
