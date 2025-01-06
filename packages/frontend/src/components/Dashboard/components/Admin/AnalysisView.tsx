@@ -15,7 +15,7 @@ export default function AnalysisView() {
         loading={loading}
         error={error}
       >
-        <div className="space-y-6 max-h-[400px] overflow-y-auto pr-4">
+        <div className="space-y-6 h-[400px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {distributionsData?.skillDistribution.map((businessUnit, index) => (
             <BusinessUnitSkills key={index} businessUnit={businessUnit} />
           ))}
@@ -28,7 +28,7 @@ export default function AnalysisView() {
         loading={loading}
         error={error}
       >
-        <div className="space-y-4">
+        <div className="space-y-4 h-[400px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {distributionsData?.gradeDistribution.map((grade, index) => (
             <GradeItem key={index} grade={grade} />
           ))}
@@ -41,7 +41,7 @@ export default function AnalysisView() {
         loading={loading}
         error={error}
       >
-        <div className="space-y-6">
+        <div className="space-y-6 h-[400px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {analysisData?.capabilities.map((capability, index) => (
             <CapabilityGaps key={index} capability={capability} />
           ))}

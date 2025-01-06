@@ -420,13 +420,18 @@ export class SkillsMatrixService {
           .filter((analysis) => analysis.skillGaps.length >= 2)
           .map((analysis) => ({
             capability: analysis.capability,
-            skillGaps: analysis.skillGaps.map((gap) => ({
-              name: gap.name,
-              currentAvg: gap.currentAvg,
-              requiredLevel: gap.requiredLevel,
-              gap: gap.gap,
-            })),
-          })),
+            skillGaps: analysis.skillGaps
+              .filter((gap) => gap.gap < 0) // Only include negative gaps
+              .sort((a, b) => a.gap - b.gap) // Sort by gap ascending (most negative first)
+              .slice(0, 3) // Take only top 3 skills
+              .map((gap) => ({
+                name: gap.name,
+                currentAvg: gap.currentAvg,
+                requiredLevel: gap.requiredLevel,
+                gap: gap.gap,
+              })),
+          }))
+          .filter((analysis) => analysis.skillGaps.length > 0), // Only include capabilities that have skills with negative gaps
       };
     } catch (error) {
       this.logger.error('Error computing organization skills analysis:', error);
@@ -436,11 +441,19 @@ export class SkillsMatrixService {
 
   async getDistributions(): Promise<DistributionsResponseDto> {
     try {
-      // Get all assessments at once
-      const allAssessments = await this.connection
-        .collection('Capability_gapAssessments')
-        .find()
-        .toArray();
+      // Get all assessments and soft skills at once
+      const [allAssessments, softSkills] = await Promise.all([
+        this.connection
+          .collection('Capability_gapAssessments')
+          .find()
+          .toArray(),
+        this.connection.collection('soft_skillsInventory').find().toArray(),
+      ]);
+
+      // Create a Set of soft skill titles for faster lookup
+      const softSkillTitles = new Set(
+        softSkills.map((skill) => skill.title.toLowerCase()),
+      );
 
       // Maps for tracking distributions
       const businessUnitMap = new Map<string, Map<string, Set<string>>>();
@@ -449,7 +462,7 @@ export class SkillsMatrixService {
         {
           totalLevel: number;
           userCount: number;
-          users: Map<string, number>; // email -> skill level
+          users: Map<string, number>;
           businessUnit: string;
           totalGap: number;
         }
@@ -458,7 +471,6 @@ export class SkillsMatrixService {
 
       // Process each assessment
       for (const assessment of allAssessments) {
-        // Track grade distribution
         const grade = assessment.careerLevel;
         gradeMap.set(grade, (gradeMap.get(grade) || 0) + 1);
 
@@ -474,38 +486,44 @@ export class SkillsMatrixService {
         }
 
         // Process skills
-        Object.entries(assessment.skillAverages || {}).forEach(
-          ([skillName, level]) => {
-            const transformedName = Object.keys(
-              transformToReadableKeys({ [skillName]: 0 }),
-            )[0];
+        for (const [skillName, level] of Object.entries(
+          assessment.skillAverages || {},
+        )) {
+          const transformedName = Object.keys(
+            transformToReadableKeys({ [skillName]: 0 }),
+          )[0];
 
-            // Track skills within business unit
-            categoryMap.get(SkillCategory.TECHNICAL)?.add(transformedName);
+          // Skip if it's a soft skill
+          if (softSkillTitles.has(transformedName.toLowerCase())) {
+            continue;
+          }
 
-            // Track skill levels and users
-            const skillKey = `${businessUnit}:${transformedName}`;
-            if (!skillMap.has(skillKey)) {
-              skillMap.set(skillKey, {
-                totalLevel: 0,
-                userCount: 0,
-                users: new Map(),
-                businessUnit,
-                totalGap: 0,
-              });
-            }
+          // Track skills within business unit
+          categoryMap.get(SkillCategory.TECHNICAL)?.add(transformedName);
 
-            const skillData = skillMap.get(skillKey)!;
-            skillData.totalLevel += Number(level);
-            skillData.userCount += 1;
-            skillData.users.set(assessment.emailAddress, Number(level));
+          // Track skill levels and users
+          const skillKey = `${businessUnit}:${transformedName}`;
+          if (!skillMap.has(skillKey)) {
+            skillMap.set(skillKey, {
+              totalLevel: 0,
+              userCount: 0,
+              users: new Map(),
+              businessUnit,
+              totalGap: 0,
+            });
+          }
 
-            const gap = assessment.skillGaps?.[skillName] ?? 0;
-            if (gap < 0) {
-              skillData.totalGap += Math.abs(gap);
-            }
-          },
-        );
+          const skillData = skillMap.get(skillKey)!;
+          const numericLevel = Number(level);
+          skillData.totalLevel += numericLevel;
+          skillData.userCount += 1;
+          skillData.users.set(assessment.emailAddress, numericLevel);
+
+          const gap = assessment.skillGaps?.[skillName] ?? 0;
+          if (gap < 0) {
+            skillData.totalGap += Math.abs(gap);
+          }
+        }
       }
 
       // Transform data for response
