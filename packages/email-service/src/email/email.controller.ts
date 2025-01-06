@@ -4,6 +4,7 @@ import {
   Controller,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
@@ -12,6 +13,7 @@ import {
   Roles,
   RolesGuard,
   TrackMetric,
+  TransformInterceptor,
   UserRole,
 } from '@skills-base/shared';
 import { GrafanaWebhookPayload } from '../interfaces/grafana-webhook.interface';
@@ -20,6 +22,8 @@ import { EmailService } from './email.service';
 
 @ApiTags('Email Notifications')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@UseInterceptors(TransformInterceptor)
+@ApiBearerAuth('JWT-Admin')
 @Controller('email')
 export class EmailController {
   constructor(

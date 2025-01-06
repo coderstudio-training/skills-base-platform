@@ -1,10 +1,10 @@
 {
-  "name": "Skillpoint Employee Workflow",
+  "name": "Final Employee Workflow",
   "nodes": [
     {
       "parameters": {
         "method": "POST",
-        "url": "http://172.16.207.249:3001/employees/sync",
+        "url": "http://192.168.100.70:3001/employees/sync",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -125,6 +125,15 @@
       "parameters": {
         "method": "POST",
         "url": "http://192.168.100.70:3005/email/send-success",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer  {{ $('Validate and Transform').item.json.accessToken }}"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "{\n  \"workflowName\": \"Employee Sync Workflow\"\n}",
@@ -134,13 +143,21 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [460, 460],
-      "id": "3a8a95f5-8a2f-489f-8721-ca10166a9e26",
-      "disabled": true
+      "id": "3a8a95f5-8a2f-489f-8721-ca10166a9e26"
     },
     {
       "parameters": {
         "method": "POST",
         "url": "http://192.168.100.70:3005/email/send-error",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer  {{ $('Validate and Transform').item.json.accessToken }}"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "{\n  \"error\": \"An error occurred during the workflow.\",\n  \"workflowName\": \"Employee Sync Workflow\"\n}",
@@ -150,8 +167,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [460, 660],
-      "id": "46d8bd42-f7e4-4c51-a23e-d3cf9bb02ad4",
-      "disabled": true
+      "id": "46d8bd42-f7e4-4c51-a23e-d3cf9bb02ad4"
     },
     {
       "parameters": {
@@ -239,7 +255,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://172.16.207.249:3001/auth/login",
+        "url": "http://192.168.100.70:3001/auth/login",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -273,7 +289,7 @@
     },
     {
       "parameters": {
-        "method": "PATCH",
+        "method": "POST",
         "url": "http://192.168.100.70:3004/workflows/webhook",
         "sendBody": true,
         "specifyBody": "json",
@@ -284,8 +300,7 @@
       "name": "HTTP Request1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 460],
-      "disabled": true
+      "position": [680, 460]
     },
     {
       "parameters": {
@@ -300,8 +315,7 @@
       "name": "HTTP Request2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 660],
-      "disabled": true
+      "position": [680, 660]
     },
     {
       "parameters": {
@@ -498,7 +512,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "142c7589-cd20-4234-b37b-1f757b5de9b9",
+  "versionId": "414b3b0c-7781-4afd-84a9-17b6a1cce44d",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f5176b00fa2d24bacd6209668b23765657e914066e3bf11efab5df2b9a884b80"

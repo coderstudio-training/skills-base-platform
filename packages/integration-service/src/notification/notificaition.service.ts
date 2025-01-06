@@ -29,16 +29,24 @@ export class NotificationService {
     webhookData: N8nWebhookDto,
   ): Promise<NotificationResponseDto> {
     try {
-      if (webhookData.data?.recordsProcessed) {
-        webhookData.data.recordsProcessed = Number(
-          webhookData.data.recordsProcessed,
-        );
-      }
+      // Convert string recordsProcessed to number before saving
+      const processedData = {
+        ...webhookData,
+        data: webhookData.data
+          ? {
+              ...webhookData.data,
+              recordsProcessed: webhookData.data.recordsProcessed
+                ? parseInt(webhookData.data.recordsProcessed, 10)
+                : undefined,
+            }
+          : undefined,
+      };
 
       const notification = new this.notificationModel({
-        ...webhookData,
+        ...processedData,
         read: false,
       });
+
       const saved = await notification.save();
       return plainToClass(NotificationResponseDto, saved.toJSON());
     } catch (error) {

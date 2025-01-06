@@ -3,7 +3,6 @@ import { Type } from 'class-transformer';
 import {
   IsDate,
   IsEnum,
-  IsNumber,
   IsObject,
   IsOptional,
   IsString,
@@ -38,13 +37,13 @@ export class ExecutionDto {
   id: string = 'No Execution ID';
 
   @ApiPropertyOptional({
-    enum: ['success', 'error', 'running'],
+    enum: ['success', 'error', 'running', 'failed'],
     description: 'The current status of the execution',
     example: 'success',
     required: false,
   })
-  @IsEnum(['success', 'error', 'running'])
-  status?: 'success' | 'error' | 'running';
+  @IsEnum(['success', 'error', 'running', 'failed'])
+  status?: 'success' | 'error' | 'running' | 'failed';
 
   @ApiProperty({
     description: 'The timestamp when execution started',
@@ -70,15 +69,12 @@ export class ExecutionDto {
 export class DataDto {
   @ApiPropertyOptional({
     description: 'Number of records processed in this execution',
-    example: 42,
-    type: Number,
-    minimum: 0,
+    example: '42',
     required: false,
   })
-  @IsNumber()
-  @Type(() => Number)
+  @IsString()
   @IsOptional()
-  recordsProcessed?: number;
+  recordsProcessed?: string;
 }
 
 export class N8nWebhookDto {
