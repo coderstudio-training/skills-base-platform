@@ -484,8 +484,8 @@ groups:
             model:
               editorMode: code
               expr: |
-                sum(rate({nodejs_gc_duration_seconds_sum"}[1m])) by (service) /
-                sum(rate({cnodejs_gc_duration_seconds_count"}[1m])) by (service)
+                sum(rate(nodejs_gc_duration_seconds_sum[1m])) by (service) /
+                sum(rate(nodejs_gc_duration_seconds_count[1m])) by (service)
               instant: true
               intervalMs: 1000
               legendFormat: '{{service}}'
@@ -993,6 +993,213 @@ groups:
         labels:
           severity: warning
           category: security
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      - uid: frontend_error_rate
+        title: '[Frontend] Error Rate Above Threshold'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: P8E80F9AEF21F6940
+            model:
+              editorMode: code
+              expr: |
+                sum(
+                  rate({service="frontend"} | json | status >= 400 [1m])
+                ) by (service)
+                /
+                sum(
+                  rate({service="frontend"} | json [1m])
+                ) by (service) * 100
+              instant: true
+              intervalMs: 1000
+              legendFormat: 'Frontend Error Rate'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [5]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        annotations:
+          description: 'Frontend service error rate is above 5%'
+          summary: High Frontend Error Rate
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # High Duration Alert
+      - uid: frontend_duration_alert
+        title: '[Frontend] Request Duration Above Threshold'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: P8E80F9AEF21F6940
+            model:
+              editorMode: code
+              expr: |
+                avg_over_time(
+                  {service="frontend"}
+                  | json
+                  | label_format duration="{{.performance.duration}}"
+                  | unwrap duration [1m]
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: 'Average Duration'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [1000] # Alert if average duration exceeds 1000ms
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        annotations:
+          description: 'Frontend service average request duration is above 1000ms'
+          summary: High Request Duration
+        isPaused: false
+        notification_settings:
+          receiver: skills_base_email_service
+
+      # High Memory Usage Alert
+      - uid: frontend_memory_alert
+        title: '[Frontend] Memory Usage Above Threshold'
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: P8E80F9AEF21F6940
+            model:
+              editorMode: code
+              expr: |
+                avg_over_time(
+                  {service="frontend"}
+                  | json
+                  | label_format memoryUsage="{{.performance.memoryUsage}}"
+                  | unwrap memoryUsage [1m]
+                )
+              instant: true
+              intervalMs: 1000
+              legendFormat: 'Memory Usage'
+              maxDataPoints: 43200
+              range: false
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [B]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: A
+              reducer: last
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [5000] # Alert if memory usage exceeds 5000
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [C]
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              expression: B
+              type: threshold
+        noDataState: NoData
+        execErrState: Error
+        for: 1m
+        annotations:
+          description: 'Frontend service memory usage is above 5000'
+          summary: High Memory Usage
         isPaused: false
         notification_settings:
           receiver: skills_base_email_service

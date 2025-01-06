@@ -4,7 +4,7 @@ import { isTokenExpired } from '@/lib/api/auth';
 import { ApiClient, learningApi, skillsApi, userApi } from '@/lib/api/client';
 import { authConfig, rolePermissions } from '@/lib/api/config';
 import { ApiError, ApiResponse, AuthState, Permission } from '@/lib/api/types';
-import { logger } from '@/lib/utils';
+import { logger } from '@/lib/utils/logger';
 import { signOut, useSession } from 'next-auth/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { cacheStore } from './cache-store';

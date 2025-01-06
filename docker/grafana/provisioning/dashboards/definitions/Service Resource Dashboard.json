@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3,
+  "id": 10,
   "links": [],
   "panels": [
     {
@@ -652,8 +652,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -711,13 +710,13 @@
   "preload": false,
   "refresh": "10s",
   "schemaVersion": 40,
-  "tags": [],
+  "tags": ["monitoring", "backend"],
   "templating": {
     "list": [
       {
         "current": {
-          "text": "email_service",
-          "value": "email_service"
+          "text": "skills-service",
+          "value": "skills-service"
         },
         "datasource": "Prometheus",
         "includeAll": false,
@@ -736,8 +735,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Skills Base Microservice Resource Dashboard",
+  "title": "Service Resource Dashboard",
   "uid": "nodejs-resources",
-  "version": 5,
+  "version": 3,
   "weekStart": ""
 }

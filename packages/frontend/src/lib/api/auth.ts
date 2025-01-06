@@ -2,7 +2,7 @@
 
 import { authConfig, errorMessages } from '@/lib/api/config';
 import { Permission, Roles, ServerInterceptOptions } from '@/lib/api/types';
-import { logger } from '@/lib/utils';
+import { logger } from '@/lib/utils/logger';
 import { AuthResponse, DecodedToken } from '@/types/auth';
 import { jwtDecode } from 'jwt-decode';
 import { getServerSession, NextAuthOptions, Session } from 'next-auth';
@@ -11,7 +11,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import { getSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { getPermissionCode } from './permissionMapping';
-logger.log('Starting to load auth options in lib/auth.ts...');
+logger.info('Starting to load auth options in lib/auth.ts...');
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -23,21 +23,20 @@ export const authOptions: NextAuthOptions = {
         access_token: { label: 'Access Token', type: 'text' },
       },
       async authorize(credentials): Promise<AuthResponse | null> {
-        logger.log(
+        logger.info(
           'Authorize function called with credentials: ' + JSON.stringify(credentials, null, 2),
         );
 
-        logger.log('Starting authorize function');
+        logger.info('Starting authorize function');
         if (!credentials?.access_token) {
           logger.error('No access token provided');
           return null;
         }
 
         try {
-          logger.log('Decoding token');
+          logger.info('Decoding token');
           const decodedToken = jwtDecode<DecodedToken>(credentials.access_token);
-          logger.log('Decoded token:', JSON.stringify(decodedToken));
-
+          logger.info(`Decoded token: ${JSON.stringify(decodedToken)}`);
           // Validate the decoded token
           if (
             !decodedToken.email ||
@@ -71,7 +70,7 @@ export const authOptions: NextAuthOptions = {
             perms: decodedToken.perms,
           };
         } catch (error) {
-          logger.error('Token decode error:', error);
+          logger.error('Token decode error: ' + error);
           return null;
         }
       },
@@ -83,7 +82,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      logger.log('Starting Google login...');
+      logger.info('Starting Google login...');
       try {
         if (account?.provider === 'google') {
           // Call your user service to check/create user and get role
@@ -98,13 +97,12 @@ export const authOptions: NextAuthOptions = {
             },
           );
           const data = await response.json();
-          logger.log('Google Auth: ', JSON.stringify(data));
+          logger.info('Google Auth: ' + JSON.stringify(data));
 
           if (response.ok) {
             // decode token for perms
-            logger.log('Decoding token');
+            logger.info('Decoding token');
             const decodedToken = jwtDecode<DecodedToken>(data.access_token);
-            logger.log('Decoded token:', JSON.stringify(decodedToken));
 
             if (
               !decodedToken.email ||
@@ -128,7 +126,6 @@ export const authOptions: NextAuthOptions = {
             user.image = profile?.image;
             user.perms = decodedToken.perms;
 
-            logger.log('Google Auth USER: ', JSON.stringify(user));
             return true;
           } else {
             return '/auth/error';
@@ -136,13 +133,13 @@ export const authOptions: NextAuthOptions = {
         }
         return true;
       } catch (error) {
-        logger.error('Sign in error:', error);
+        logger.error('Sign in error:' + error);
         return false;
       }
     },
     async jwt({ token, user }) {
-      logger.log('JWT Callback - Token:', JSON.stringify(token));
-      logger.log('JWT Callback - User:', user ? JSON.stringify(user) : 'No user');
+      logger.info('JWT Callback - Token:' + JSON.stringify(token));
+      logger.info('JWT Callback - User:' + user ? JSON.stringify(user) : 'No user');
       if (user) {
         token.id = user.id;
         token.name = user.name;
@@ -154,7 +151,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      logger.log('Session Callback - Token:', JSON.stringify(token));
+      logger.info('Session Callback - Token:' + JSON.stringify(token));
       session.user = {
         id: token.id as string,
         name: token.name as string,
@@ -164,13 +161,13 @@ export const authOptions: NextAuthOptions = {
         role: token.role as Roles,
         perms: token.perms as number[],
       };
-      logger.log('Session Callback - Session:', JSON.stringify(session));
+      logger.info('Session Callback - Session:' + JSON.stringify(session));
       return session;
     },
     async redirect({ url, baseUrl }) {
       // Customize the redirect based on the user's role
       if (url.startsWith(baseUrl)) {
-        logger.log('Redirecting to:', url);
+        logger.info('Redirecting to:' + url);
         const session = await getSession();
         if (session?.user?.role) {
           return `${baseUrl}/dashboard/${session.user.role.toLowerCase()}`;
@@ -194,11 +191,11 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
   // Check if running on the server or client
   if (typeof window === 'undefined') {
     // On the server-side, use getServerSession
-    logger.log('getting server side session');
+    logger.info('getting server side session');
     session = await getServerSession(authOptions);
   } else {
     // On the client-side, use getSession
-    logger.log('getting client side session');
+    logger.info('getting client side session');
     session = await getSession();
   }
 
@@ -251,22 +248,22 @@ export async function isTokenExpired(token: string): Promise<boolean> {
 
 export async function serverSideIntercept(option?: ServerInterceptOptions) {
   const session = await getServerSession(authOptions);
-  logger.log('Server-side session:', session);
+  logger.info('Server-side session:' + session);
 
   if (!session) {
-    logger.log(errorMessages.UNAUTHORIZED);
+    logger.info(errorMessages.UNAUTHORIZED);
     redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
   } else {
     const tokenExpired = await isTokenExpired(session?.user.accessToken);
     if (tokenExpired) {
-      logger.log(errorMessages.TOKEN_EXPIRED);
+      logger.info(errorMessages.TOKEN_EXPIRED);
       redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
     }
   }
 
   if (option?.role) {
     if (session.user.role !== option.role) {
-      logger.log(errorMessages.UNAUTHORIZED);
+      logger.info(errorMessages.UNAUTHORIZED);
       redirect(`${process.env.NEXTAUTH_URL}/error/unauthorized`);
     }
   }
@@ -274,7 +271,7 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
   if (option?.permission) {
     const isPermitted = await hasPermission(session, option.permission);
     if (!isPermitted) {
-      logger.log(errorMessages.FORBIDDEN);
+      logger.info(errorMessages.FORBIDDEN);
       redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
     }
   }
@@ -282,7 +279,7 @@ export async function serverSideIntercept(option?: ServerInterceptOptions) {
   if (option?.route) {
     const canAccess = await canAccessRoutes(session, option.route);
     if (!canAccess) {
-      logger.log(errorMessages.FORBIDDEN);
+      logger.info(errorMessages.FORBIDDEN);
       redirect(`${process.env.NEXTAUTH_URL}/error/forbidden`);
     }
   }

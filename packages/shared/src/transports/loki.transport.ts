@@ -10,7 +10,7 @@ interface LokiTransportOptions {
 export const createLokiTransport = (
   options: LokiTransportOptions,
 ): winston.transport => {
-  return new LokiTransport({
+  const transport = new LokiTransport({
     host: process.env.LOKI_HOST || 'http://localhost:3100',
     interval: 30,
     json: true,
@@ -27,7 +27,24 @@ export const createLokiTransport = (
     replaceTimestamp: false,
     onConnectionError: (err: Error) => {
       console.error('Error connecting to Loki:', err.message);
-      // console.error('Error connecting to Loki:', err);
     },
   });
+
+  // Log connection success after instantiating the transport.
+  console.info('Attempting to connect to Loki...');
+  const checkConnection = async () => {
+    try {
+      await fetch(process.env.LOKI_HOST || 'http://localhost:3100/ready');
+      console.info('Successfully connected to Loki.');
+    } catch (err) {
+      console.warn(
+        'Loki connection success could not be verified:',
+        err.message,
+      );
+    }
+  };
+
+  checkConnection();
+
+  return transport;
 };

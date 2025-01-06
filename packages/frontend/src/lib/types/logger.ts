@@ -1,29 +1,23 @@
-import { Permission, Roles } from '@/lib/api/types';
-
 export interface LogMetadata {
-  type: string;
-  correlationId: string;
-  timestamp: string;
-  environment: string;
+  correlationId?: string;
   userId?: string;
-  role?: Roles;
-  permissions?: Permission[];
+  level?: 'error' | 'warn' | 'info';
+  performance?: {
+    duration?: number;
+  };
   error?: {
-    name?: string;
     code?: string;
     status?: number;
     message?: string;
     stack?: string;
   };
-  performance?: {
-    duration?: number;
-    memory?: number;
-  };
-  request?: {
-    method?: string;
-    path?: string;
-    origin?: string;
-  };
+  [key: string]: unknown;
 }
 
 export type LogLevel = 'error' | 'warn' | 'info';
+
+export interface LoggerInterface {
+  error(message: string | Error, metadata?: LogMetadata): void;
+  warn(message: string, metadata?: LogMetadata): void;
+  info(message: string, metadata?: LogMetadata): void;
+}

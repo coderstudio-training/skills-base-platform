@@ -1,7 +1,7 @@
 export const LOGGER_CONFIG = {
   service: 'frontend',
   loki: {
-    host: process.env.LOKI_HOST || 'http://loki:3100',
+    host: process.env.LOKI_HOST || 'http://localhost:3100',
     batchInterval: 5000, // 5 seconds
     timeout: 10000, // 10 seconds
   },

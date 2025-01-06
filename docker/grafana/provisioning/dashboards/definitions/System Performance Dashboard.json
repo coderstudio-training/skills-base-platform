@@ -17,7 +17,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 5,
+  "id": 11,
   "links": [],
   "panels": [
     {
@@ -614,8 +614,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -714,13 +713,13 @@
   "preload": false,
   "refresh": "5s",
   "schemaVersion": 40,
-  "tags": [],
+  "tags": ["monitoring", "backend"],
   "templating": {
     "list": [
       {
         "current": {
-          "text": "email_service",
-          "value": "email_service"
+          "text": "skills-service",
+          "value": "skills-service"
         },
         "datasource": "Prometheus",
         "includeAll": false,
@@ -739,8 +738,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Skills Base System Performance Dashboard",
+  "title": "System Performance Dashboard",
   "uid": "ae4olmq09g6wwa",
-  "version": 5,
+  "version": 2,
   "weekStart": ""
 }
