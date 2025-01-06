@@ -14,13 +14,16 @@ export const BusinessUnitSkills = ({ businessUnit }: BusinessUnitSkillsProps) =>
     category => category.category === 'Technical Skills',
   );
 
+  // Get only the first 3 skills
+  const topThreeSkills = technicalSkills?.skills?.slice(0, 3);
+
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-primary">
         {getBusinessUnitName(businessUnit.businessUnit)}
       </h3>
       <div className="space-y-2">
-        {technicalSkills?.skills?.map((skill, index) => <SkillItem key={index} skill={skill} />)}
+        {topThreeSkills?.map((skill, index) => <SkillItem key={index} skill={skill} />)}
       </div>
     </div>
   );

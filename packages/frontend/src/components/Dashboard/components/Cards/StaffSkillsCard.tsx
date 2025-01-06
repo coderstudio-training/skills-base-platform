@@ -59,19 +59,21 @@ export default function StaffSkillsCard({ skillsData, loading, error }: StaffSki
                     </div>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {member.skills.map((skill, index) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className={cn(
-                          skill.status === SkillStatus.PROFICIENT
-                            ? 'text-white rounded-md bg-green-500 hover:bg-green-600'
-                            : 'text-white rounded-md bg-red-500 hover:bg-red-600',
-                        )}
-                      >
-                        {skill.name}: {skill.average.toFixed(1)}
-                      </Badge>
-                    ))}
+                    {[...member.skills]
+                      .sort((a, b) => b.gap - a.gap)
+                      .map((skill, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className={cn(
+                            skill.status === SkillStatus.PROFICIENT
+                              ? 'text-white rounded-md bg-green-500 hover:bg-green-600'
+                              : 'text-white rounded-md bg-red-500 hover:bg-red-600',
+                          )}
+                        >
+                          {skill.name}: {skill.average.toFixed(1)}
+                        </Badge>
+                      ))}
                   </div>
                 </div>
               </div>
