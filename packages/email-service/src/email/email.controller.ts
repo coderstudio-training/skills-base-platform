@@ -3,15 +3,12 @@ import {
   Body,
   Controller,
   Post,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
-  JwtAuthGuard,
   Logger,
   Roles,
-  RolesGuard,
   TrackMetric,
   TransformInterceptor,
   UserRole,
@@ -21,7 +18,6 @@ import { EmailDto } from './dto/email.dto';
 import { EmailService } from './email.service';
 
 @ApiTags('Email Notifications')
-@UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(TransformInterceptor)
 @ApiBearerAuth('JWT-Admin')
 @Controller('email')
@@ -55,21 +51,25 @@ export class EmailController {
     });
 
     try {
-      const firstAlert = webhook.alerts[0];
-      const alertData = {
-        alert: webhook.title || firstAlert.labels.alertname,
-        value: firstAlert.valueString || webhook.state,
-        description:
-          webhook.commonAnnotations.summary ||
-          firstAlert.annotations.description ||
-          webhook.message,
-        status: webhook.status,
-        startsAt: firstAlert.startsAt,
-        instance: firstAlert.labels.instance,
-        silenceUrl: firstAlert.silenceURL,
-        viewUrl: firstAlert.dashboardURL || webhook.externalURL,
-      };
+      const firstAlert = webhook.alerts?.[0];
+      if (!firstAlert) {
+        throw new BadRequestException('No alerts provided in webhook payload');
+      }
 
+      const alertData = {
+        alert: webhook.title || firstAlert.labels?.alertname || 'Unknown Alert',
+        value: firstAlert.valueString || webhook.state || 'unknown',
+        description:
+          webhook.commonAnnotations?.summary ||
+          firstAlert.annotations?.description ||
+          webhook.message ||
+          'No description provided',
+        status: webhook.status || 'unknown',
+        startsAt: firstAlert.startsAt || new Date().toISOString(),
+        instance: firstAlert.labels?.instance || 'unknown',
+        silenceUrl: firstAlert.silenceURL || '',
+        viewUrl: firstAlert.dashboardURL || webhook.externalURL || '',
+      };
       this.logger.debug('Processed alert data', {
         correlationId,
         alertData,
@@ -88,9 +88,13 @@ export class EmailController {
         correlationId,
         error: error instanceof Error ? error.message : String(error),
         webhookTitle: webhook.title,
+        webhookPayload: JSON.stringify(webhook), // Add this line
+        stack: error instanceof Error ? error.stack : undefined,
       });
 
-      throw new BadRequestException('Failed to process Grafana alert.');
+      throw new BadRequestException(
+        `Failed to process Grafana alert: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
