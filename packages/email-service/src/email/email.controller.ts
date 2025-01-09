@@ -6,13 +6,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import {
-  Logger,
-  Roles,
-  TrackMetric,
-  TransformInterceptor,
-  UserRole,
-} from '@skills-base/shared';
+import { Logger, TrackMetric, TransformInterceptor } from '@skills-base/shared';
 import { GrafanaWebhookPayload } from '../interfaces/grafana-webhook.interface';
 import { EmailDto } from './dto/email.dto';
 import { EmailService } from './email.service';
@@ -98,7 +92,6 @@ export class EmailController {
     }
   }
 
-  @Roles(UserRole.ADMIN)
   @ApiBearerAuth('JWT-Admin')
   @Post('send-success')
   @TrackMetric({
@@ -126,7 +119,6 @@ export class EmailController {
     return { message: 'Success email sent' };
   }
 
-  @Roles(UserRole.ADMIN)
   @ApiBearerAuth('JWT-Admin')
   @Post('send-error')
   @TrackMetric({

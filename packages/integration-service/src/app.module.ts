@@ -22,7 +22,7 @@ import { NotificationModule } from './notification/notification.module';
 
     // Logging Configuration
     LoggingModule.forRoot({
-      serviceName: process.env.SERVICE_NAME || 'skills-service',
+      serviceName: process.env.SERVICE_NAME || 'integration-service',
       environment: process.env.NODE_ENV,
       enableRequestLogging: true,
       enableGlobalInterceptor: true,
@@ -70,7 +70,7 @@ import { NotificationModule } from './notification/notification.module';
 
     // Monitoring Configuration
     MonitoringModule.forRoot({
-      serviceName: 'skills-service',
+      serviceName: 'integration-service',
       enabled: process.env.ENABLE_METRICS === 'true',
       sampleRate: parseFloat(process.env.MONITOR_SAMPLE_RATE || '1.0'),
       metrics: {

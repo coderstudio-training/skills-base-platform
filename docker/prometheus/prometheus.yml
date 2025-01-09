@@ -8,35 +8,35 @@ scrape_configs:
     params:
       'X-API-KEY': []
     static_configs:
-      - targets: ['192.168.100.70:3001']
+      - targets: ['192.168.203.84:3001']
 
   - job_name: 'skills_service'
     metrics_path: /metrics
     params:
       'X-API-KEY': []
     static_configs:
-      - targets: ['192.168.100.70:3002']
+      - targets: ['192.168.203.84:3002']
 
   - job_name: 'learning_service'
     metrics_path: /metrics
     params:
       'X-API-KEY': []
     static_configs:
-      - targets: ['192.168.100.70:3003']
+      - targets: ['192.168.203.84:3003']
 
   - job_name: 'email_service'
     metrics_path: /metrics
     params:
       'X-API-KEY': []
     static_configs:
-      - targets: ['192.168.100.70:3005']
+      - targets: ['192.168.203.84:3005']
 
   - job_name: 'event_processes_service'
     metrics_path: /metrics
     params:
       'X-API-KEY': []
     static_configs:
-      - targets: ['192.168.100.70:3006']
+      - targets: ['192.168.203.84:3006']
 
   - job_name: 'prometheus'
     static_configs:

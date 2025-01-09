@@ -26,7 +26,7 @@ import { RecommendationService } from './courses/services/recommendation.service
 
     // Logging Configuration
     LoggingModule.forRoot({
-      serviceName: process.env.SERVICE_NAME || 'skills-service',
+      serviceName: process.env.SERVICE_NAME || 'learning-service',
       environment: process.env.NODE_ENV,
       enableRequestLogging: true,
       enableGlobalInterceptor: true,
@@ -74,7 +74,7 @@ import { RecommendationService } from './courses/services/recommendation.service
 
     // Monitoring Configuration
     MonitoringModule.forRoot({
-      serviceName: 'skills-service',
+      serviceName: 'learning-service',
       enabled: process.env.ENABLE_METRICS === 'true',
       sampleRate: parseFloat(process.env.MONITOR_SAMPLE_RATE || '1.0'),
       metrics: {
